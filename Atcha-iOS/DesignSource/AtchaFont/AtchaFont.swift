@@ -8,7 +8,6 @@
 import UIKit
 
 enum AtchaFont {
-    
     // MARK: - Pretendard Weights
     enum Pretendard: String {
         case Bold = "Pretendard-Bold"
@@ -19,7 +18,12 @@ enum AtchaFont {
     }
     
     // MARK: - 공통 생성기
-    private static func styled(_ fontName: Pretendard, size: CGFloat, lineHeight: CGFloat, text: String, color: UIColor = .label, letterSpacing: CGFloat = 0) -> NSAttributedString {
+    private static func styled(_ fontName: Pretendard,
+                               size: CGFloat,
+                               lineHeight: CGFloat,
+                               text: String,
+                               color: UIColor = .label,
+                               letterSpacing: CGFloat = 0) -> NSAttributedString {
         let font = UIFont(name: fontName.rawValue, size: size)!
         let paragraph = NSMutableParagraphStyle()
         paragraph.minimumLineHeight = lineHeight
