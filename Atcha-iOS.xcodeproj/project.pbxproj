@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6D8D8AE02E013819003DABB2 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 6D8D8ADF2E013819003DABB2 /* SnapKit */; };
+		6D8D8AE32E01386D003DABB2 /* PanModal in Frameworks */ = {isa = PBXBuildFile; productRef = 6D8D8AE22E01386D003DABB2 /* PanModal */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXBuildFile section */
 		B68309532E005A3600E2D029 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B683093B2E005A3600E2D029 /* AppDelegate.swift */; };
 		B68309542E005A3600E2D029 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B683093C2E005A3600E2D029 /* SceneDelegate.swift */; };
 		B68309552E005A3600E2D029 /* AtchaColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B683093E2E005A3600E2D029 /* AtchaColor.swift */; };
@@ -52,6 +57,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6D8D8AE32E01386D003DABB2 /* PanModal in Frameworks */,
+				6D8D8AE02E013819003DABB2 /* SnapKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -172,6 +179,8 @@
 			);
 			name = "Atcha-iOS";
 			packageProductDependencies = (
+				6D8D8ADF2E013819003DABB2 /* SnapKit */,
+				6D8D8AE22E01386D003DABB2 /* PanModal */,
 			);
 			productName = "Atcha-iOS";
 			productReference = 6DE42B8D2DFDE6360041344C /* Atcha-iOS.app */;
@@ -201,6 +210,10 @@
 			);
 			mainGroup = 6DE42B842DFDE6360041344C;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				6D8D8ADE2E013819003DABB2 /* XCRemoteSwiftPackageReference "SnapKit" */,
+				6D8D8AE12E01386D003DABB2 /* XCRemoteSwiftPackageReference "PanModal" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 6DE42B8E2DFDE6360041344C /* Products */;
 			projectDirPath = "";
@@ -476,6 +489,38 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		6D8D8ADE2E013819003DABB2 /* XCRemoteSwiftPackageReference "SnapKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SnapKit/SnapKit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.7.1;
+			};
+		};
+		6D8D8AE12E01386D003DABB2 /* XCRemoteSwiftPackageReference "PanModal" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/slackhq/PanModal.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.2.7;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		6D8D8ADF2E013819003DABB2 /* SnapKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6D8D8ADE2E013819003DABB2 /* XCRemoteSwiftPackageReference "SnapKit" */;
+			productName = SnapKit;
+		};
+		6D8D8AE22E01386D003DABB2 /* PanModal */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6D8D8AE12E01386D003DABB2 /* XCRemoteSwiftPackageReference "PanModal" */;
+			productName = PanModal;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 6DE42B852DFDE6360041344C /* Project object */;
 }
