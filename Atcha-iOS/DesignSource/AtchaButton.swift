@@ -11,64 +11,59 @@ import SnapKit
 
 // MARK: - 버튼 사이즈 Enum
 enum ButtonSize {
-    case xl, lg, md, sm, xs
-    
+    case h52, h48, h44, h32
+
     var height: CGFloat {
         switch self {
-        case .xl: return 52
-        case .lg: return 48
-        case .md: return 44
-        case .sm: return 40
-        case .xs: return 32
+        case .h52: return 52
+        case .h48: return 48
+        case .h44: return 44
+        case .h32: return 32
         }
     }
-    
+
     var verticalPadding: CGFloat {
         switch self {
-        case .xl, .lg: return 14
-        case .md: return 13
-        case .sm: return 11
-        case .xs: return 7
+        case .h52, .h48: return 14
+        case .h44: return 13
+        case .h32: return 7
         }
     }
-    
-    var horizontalPadding: CGFloat {
-        return 28
-    }
-    
+
+    var horizontalPadding: CGFloat { 28 }
+
     var cornerRadius: CGFloat {
         switch self {
-        case .xl, .lg, .md: return 10
-        case .sm, .xs: return 8
+        case .h52, .h48, .h44: return 10
+        case .h32: return 8
         }
     }
-    
+
     var contentInsets: UIEdgeInsets {
-        return UIEdgeInsets(
+        UIEdgeInsets(
             top: verticalPadding,
             left: horizontalPadding,
             bottom: verticalPadding,
             right: horizontalPadding
         )
     }
-    
+
     func attributedTitle(_ text: String, color: UIColor = .black) -> NSAttributedString {
         switch self {
-        case .xl:
+        case .h52:
             return AtchaFont.H5_B_17(text, color: color)
-        case .lg:
+        case .h48:
             return AtchaFont.H6_B_15(text, color: color)
-        case .md, .sm, .xs:
+        case .h44, .h32:
             return AtchaFont.Body_SB_14(text, color: color)
         }
     }
 }
 
-
-// MARK: - FilledButtonStyle
+// MARK: - FilledButtonStyle: 테두리 없는 버튼
 enum FilledButtonStyle {
     case primary, white, defaultGray, opacity, disabled
-    
+
     var backgroundColor: UIColor {
         switch self {
         case .primary: return AtchaColor.main
@@ -78,7 +73,7 @@ enum FilledButtonStyle {
         case .disabled: return AtchaColor.opacity200
         }
     }
-    
+
     var textColor: UIColor {
         switch self {
         case .primary, .white: return AtchaColor.black
@@ -89,76 +84,80 @@ enum FilledButtonStyle {
     }
 }
 
-
-// MARK: - FilledButton
-final class FilledButton: BaseButton {
-    init(text: String, size: ButtonSize, style: FilledButtonStyle, onTap: (() -> Void)? = nil) {
-        super.init(text: text, size: size, onTap: onTap)
-        
-        setAttributedTitle(size.attributedTitle(text, color: style.textColor), for: .normal)
-        backgroundColor = style.backgroundColor
-        contentEdgeInsets = size.contentInsets
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-}
-
-
-// MARK: - LineButtonStyle
+// MARK: - LineButtonStyle: 테두리 있는 버튼
 enum LineButtonStyle {
     case line, disabled
-    
+
     var textColor: UIColor {
         switch self {
         case .line: return AtchaColor.white
         case .disabled: return AtchaColor.gray700
         }
     }
-}
 
-
-// MARK: - LineButton
-final class LineButton: BaseButton {
-    init(text: String, size: ButtonSize, style: LineButtonStyle, onTap: (() -> Void)? = nil) {
-        super.init(text: text, size: size, onTap: onTap)
-        
-        setAttributedTitle(size.attributedTitle(text, color: style.textColor), for: .normal)
-        backgroundColor = .clear
-        contentEdgeInsets = size.contentInsets
-        layer.borderWidth = 1
-        layer.borderColor = AtchaColor.gray800.cgColor
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    var borderColor: UIColor {
+        return AtchaColor.gray800
     }
 }
 
+// MARK: - AtchaButton
+final class AtchaButton: UIButton {
+    enum Style {
+        case filled(FilledButtonStyle)
+        case line(LineButtonStyle)
+    }
 
-// MARK: - BaseButton
-class BaseButton: UIButton {
     private var onTap: (() -> Void)?
-    
-    init(text: String, size: ButtonSize, onTap: (() -> Void)? = nil) {
+
+    init(text: String, size: ButtonSize, style: Style, onTap: (() -> Void)? = nil) {
         self.onTap = onTap
         super.init(frame: .zero)
-        
+
         layer.cornerRadius = size.cornerRadius
         clipsToBounds = true
         setContentHuggingPriority(.required, for: .horizontal)
         translatesAutoresizingMaskIntoConstraints = false
         snp.makeConstraints { $0.height.equalTo(size.height) }
-        
+
+        contentEdgeInsets = size.contentInsets
         addTarget(self, action: #selector(handleTap), for: .touchUpInside)
+
+        switch style {
+        case .filled(let filledStyle):
+            setAttributedTitle(size.attributedTitle(text, color: filledStyle.textColor), for: .normal)
+            backgroundColor = filledStyle.backgroundColor
+
+        case .line(let lineStyle):
+            setAttributedTitle(size.attributedTitle(text, color: lineStyle.textColor), for: .normal)
+            backgroundColor = .clear
+            layer.borderWidth = 1
+            layer.borderColor = lineStyle.borderColor.cgColor
+        }
     }
-    
+
     @objc private func handleTap() {
         onTap?()
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 }
+
+// MARK: - 사용예시
+//
+//let button1 = AtchaButton(
+//    text: "확인",
+//    size: .md,
+//    style: .filled(.primary)
+//) {
+//    print("✅ Filled primary tapped")
+//}
+//
+//let button2 = AtchaButton(
+//    text: "취소",
+//    size: .sm,
+//    style: .line(.disabled)
+//) {
+//    print("⚪️ Line disabled tapped")
+//}
