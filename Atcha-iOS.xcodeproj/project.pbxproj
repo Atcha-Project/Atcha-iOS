@@ -11,30 +11,46 @@
 		6D8D8AE32E01386D003DABB2 /* PanModal in Frameworks */ = {isa = PBXBuildFile; productRef = 6D8D8AE22E01386D003DABB2 /* PanModal */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXBuildFile section */
+		B68309532E005A3600E2D029 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B683093B2E005A3600E2D029 /* AppDelegate.swift */; };
+		B68309542E005A3600E2D029 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B683093C2E005A3600E2D029 /* SceneDelegate.swift */; };
+		B68309552E005A3600E2D029 /* AtchaColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B683093E2E005A3600E2D029 /* AtchaColor.swift */; };
+		B68309562E005A3600E2D029 /* AtchaFont.swift in Sources */ = {isa = PBXBuildFile; fileRef = B68309412E005A3600E2D029 /* AtchaFont.swift */; };
+		B68309572E005A3600E2D029 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B68309512E005A3600E2D029 /* ViewController.swift */; };
+		B68309582E005A3600E2D029 /* Colors.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B683093F2E005A3600E2D029 /* Colors.xcassets */; };
+		B68309592E005A3600E2D029 /* Pretendard-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = B68309422E005A3600E2D029 /* Pretendard-Bold.otf */; };
+		B683095A2E005A3600E2D029 /* Pretendard-ExtraBold.otf in Resources */ = {isa = PBXBuildFile; fileRef = B68309432E005A3600E2D029 /* Pretendard-ExtraBold.otf */; };
+		B683095B2E005A3600E2D029 /* Pretendard-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = B68309442E005A3600E2D029 /* Pretendard-Medium.otf */; };
+		B683095C2E005A3600E2D029 /* Pretendard-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = B68309452E005A3600E2D029 /* Pretendard-Regular.otf */; };
+		B683095D2E005A3600E2D029 /* Pretendard-SemiBold.otf in Resources */ = {isa = PBXBuildFile; fileRef = B68309462E005A3600E2D029 /* Pretendard-SemiBold.otf */; };
+		B683095E2E005A3600E2D029 /* Icon.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B68309482E005A3600E2D029 /* Icon.xcassets */; };
+		B683095F2E005A3600E2D029 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B683094A2E005A3600E2D029 /* Assets.xcassets */; };
+		B68309612E005A3600E2D029 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B683094E2E005A3600E2D029 /* LaunchScreen.storyboard */; };
+		B68309622E005A3600E2D029 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B68309502E005A3600E2D029 /* Main.storyboard */; };
+		B68309672E005B5300E2D029 /* UIView+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B68309662E005B5300E2D029 /* UIView+Ext.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		6DE42B8D2DFDE6360041344C /* Atcha-iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Atcha-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B683093B2E005A3600E2D029 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		B683093C2E005A3600E2D029 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		B683093E2E005A3600E2D029 /* AtchaColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtchaColor.swift; sourceTree = "<group>"; };
+		B683093F2E005A3600E2D029 /* Colors.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Colors.xcassets; sourceTree = "<group>"; };
+		B68309412E005A3600E2D029 /* AtchaFont.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtchaFont.swift; sourceTree = "<group>"; };
+		B68309422E005A3600E2D029 /* Pretendard-Bold.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Pretendard-Bold.otf"; sourceTree = "<group>"; };
+		B68309432E005A3600E2D029 /* Pretendard-ExtraBold.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Pretendard-ExtraBold.otf"; sourceTree = "<group>"; };
+		B68309442E005A3600E2D029 /* Pretendard-Medium.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Pretendard-Medium.otf"; sourceTree = "<group>"; };
+		B68309452E005A3600E2D029 /* Pretendard-Regular.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Pretendard-Regular.otf"; sourceTree = "<group>"; };
+		B68309462E005A3600E2D029 /* Pretendard-SemiBold.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Pretendard-SemiBold.otf"; sourceTree = "<group>"; };
+		B68309482E005A3600E2D029 /* Icon.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Icon.xcassets; sourceTree = "<group>"; };
+		B683094A2E005A3600E2D029 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B683094C2E005A3600E2D029 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B683094D2E005A3600E2D029 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		B683094F2E005A3600E2D029 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		B68309512E005A3600E2D029 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		B68309632E005ADE00E2D029 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
+		B68309662E005B5300E2D029 /* UIView+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Ext.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
-
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		6DE42B9F2DFDE6370041344C /* Exceptions for "Atcha-iOS" folder in "Atcha-iOS" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = 6DE42B8C2DFDE6360041344C /* Atcha-iOS */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		6DE42B8F2DFDE6360041344C /* Atcha-iOS */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				6DE42B9F2DFDE6370041344C /* Exceptions for "Atcha-iOS" folder in "Atcha-iOS" target */,
-			);
-			path = "Atcha-iOS";
-			sourceTree = "<group>";
-		};
-/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		6DE42B8A2DFDE6360041344C /* Frameworks */ = {
@@ -52,7 +68,8 @@
 		6DE42B842DFDE6360041344C = {
 			isa = PBXGroup;
 			children = (
-				6DE42B8F2DFDE6360041344C /* Atcha-iOS */,
+				B68309632E005ADE00E2D029 /* .gitignore */,
+				B68309522E005A3600E2D029 /* Atcha-iOS */,
 				6DE42B8E2DFDE6360041344C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -63,6 +80,86 @@
 				6DE42B8D2DFDE6360041344C /* Atcha-iOS.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		B683093D2E005A3600E2D029 /* Delegate */ = {
+			isa = PBXGroup;
+			children = (
+				B683093B2E005A3600E2D029 /* AppDelegate.swift */,
+				B683093C2E005A3600E2D029 /* SceneDelegate.swift */,
+			);
+			path = Delegate;
+			sourceTree = "<group>";
+		};
+		B68309402E005A3600E2D029 /* AtchaColor */ = {
+			isa = PBXGroup;
+			children = (
+				B683093E2E005A3600E2D029 /* AtchaColor.swift */,
+				B683093F2E005A3600E2D029 /* Colors.xcassets */,
+			);
+			path = AtchaColor;
+			sourceTree = "<group>";
+		};
+		B68309472E005A3600E2D029 /* AtchaFont */ = {
+			isa = PBXGroup;
+			children = (
+				B68309412E005A3600E2D029 /* AtchaFont.swift */,
+				B68309422E005A3600E2D029 /* Pretendard-Bold.otf */,
+				B68309432E005A3600E2D029 /* Pretendard-ExtraBold.otf */,
+				B68309442E005A3600E2D029 /* Pretendard-Medium.otf */,
+				B68309452E005A3600E2D029 /* Pretendard-Regular.otf */,
+				B68309462E005A3600E2D029 /* Pretendard-SemiBold.otf */,
+			);
+			path = AtchaFont;
+			sourceTree = "<group>";
+		};
+		B68309492E005A3600E2D029 /* AtchaImage */ = {
+			isa = PBXGroup;
+			children = (
+				B68309482E005A3600E2D029 /* Icon.xcassets */,
+			);
+			path = AtchaImage;
+			sourceTree = "<group>";
+		};
+		B683094B2E005A3600E2D029 /* DesignSource */ = {
+			isa = PBXGroup;
+			children = (
+				B68309402E005A3600E2D029 /* AtchaColor */,
+				B68309472E005A3600E2D029 /* AtchaFont */,
+				B68309492E005A3600E2D029 /* AtchaImage */,
+				B683094A2E005A3600E2D029 /* Assets.xcassets */,
+			);
+			path = DesignSource;
+			sourceTree = "<group>";
+		};
+		B68309522E005A3600E2D029 /* Atcha-iOS */ = {
+			isa = PBXGroup;
+			children = (
+				B68309642E005B3C00E2D029 /* Core */,
+				B683093D2E005A3600E2D029 /* Delegate */,
+				B683094B2E005A3600E2D029 /* DesignSource */,
+				B683094C2E005A3600E2D029 /* Info.plist */,
+				B683094E2E005A3600E2D029 /* LaunchScreen.storyboard */,
+				B68309502E005A3600E2D029 /* Main.storyboard */,
+				B68309512E005A3600E2D029 /* ViewController.swift */,
+			);
+			path = "Atcha-iOS";
+			sourceTree = "<group>";
+		};
+		B68309642E005B3C00E2D029 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				B68309652E005B3F00E2D029 /* Util */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		B68309652E005B3F00E2D029 /* Util */ = {
+			isa = PBXGroup;
+			children = (
+				B68309662E005B5300E2D029 /* UIView+Ext.swift */,
+			);
+			path = Util;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -79,9 +176,6 @@
 			buildRules = (
 			);
 			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				6DE42B8F2DFDE6360041344C /* Atcha-iOS */,
 			);
 			name = "Atcha-iOS";
 			packageProductDependencies = (
@@ -135,6 +229,16 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B68309582E005A3600E2D029 /* Colors.xcassets in Resources */,
+				B68309592E005A3600E2D029 /* Pretendard-Bold.otf in Resources */,
+				B683095A2E005A3600E2D029 /* Pretendard-ExtraBold.otf in Resources */,
+				B683095B2E005A3600E2D029 /* Pretendard-Medium.otf in Resources */,
+				B683095C2E005A3600E2D029 /* Pretendard-Regular.otf in Resources */,
+				B683095D2E005A3600E2D029 /* Pretendard-SemiBold.otf in Resources */,
+				B683095E2E005A3600E2D029 /* Icon.xcassets in Resources */,
+				B683095F2E005A3600E2D029 /* Assets.xcassets in Resources */,
+				B68309612E005A3600E2D029 /* LaunchScreen.storyboard in Resources */,
+				B68309622E005A3600E2D029 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -145,10 +249,35 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B68309532E005A3600E2D029 /* AppDelegate.swift in Sources */,
+				B68309542E005A3600E2D029 /* SceneDelegate.swift in Sources */,
+				B68309672E005B5300E2D029 /* UIView+Ext.swift in Sources */,
+				B68309552E005A3600E2D029 /* AtchaColor.swift in Sources */,
+				B68309562E005A3600E2D029 /* AtchaFont.swift in Sources */,
+				B68309572E005A3600E2D029 /* ViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		B683094E2E005A3600E2D029 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B683094D2E005A3600E2D029 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+		B68309502E005A3600E2D029 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B683094F2E005A3600E2D029 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		6DE42BA12DFDE6370041344C /* Debug */ = {
@@ -158,24 +287,29 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 23SCTLK482;
+				DEVELOPMENT_TEAM = FUV2GHVQ46;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Atcha-iOS/Info.plist";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.riu.Atcha-iOS";
+				PRODUCT_BUNDLE_IDENTIFIER = com.Atcha;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -186,24 +320,29 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 23SCTLK482;
+				DEVELOPMENT_TEAM = FUV2GHVQ46;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Atcha-iOS/Info.plist";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.riu.Atcha-iOS";
+				PRODUCT_BUNDLE_IDENTIFIER = com.Atcha;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
