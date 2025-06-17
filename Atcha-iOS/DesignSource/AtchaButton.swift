@@ -92,8 +92,8 @@ enum FilledButtonStyle {
 
 // MARK: - FilledButton
 final class FilledButton: BaseButton {
-    init(text: String, size: ButtonSize, style: FilledButtonStyle) {
-        super.init(text: text, size: size)
+    init(text: String, size: ButtonSize, style: FilledButtonStyle, onTap: (() -> Void)? = nil) {
+        super.init(text: text, size: size, onTap: onTap)
         
         setAttributedTitle(size.attributedTitle(text, color: style.textColor), for: .normal)
         backgroundColor = style.backgroundColor
@@ -121,8 +121,8 @@ enum LineButtonStyle {
 
 // MARK: - LineButton
 final class LineButton: BaseButton {
-    init(text: String, size: ButtonSize, style: LineButtonStyle) {
-        super.init(text: text, size: size)
+    init(text: String, size: ButtonSize, style: LineButtonStyle, onTap: (() -> Void)? = nil) {
+        super.init(text: text, size: size, onTap: onTap)
         
         setAttributedTitle(size.attributedTitle(text, color: style.textColor), for: .normal)
         backgroundColor = .clear
@@ -139,13 +139,23 @@ final class LineButton: BaseButton {
 
 // MARK: - BaseButton
 class BaseButton: UIButton {
-    init(text: String, size: ButtonSize) {
+    private var onTap: (() -> Void)?
+    
+    init(text: String, size: ButtonSize, onTap: (() -> Void)? = nil) {
+        self.onTap = onTap
         super.init(frame: .zero)
+        
         layer.cornerRadius = size.cornerRadius
         clipsToBounds = true
         setContentHuggingPriority(.required, for: .horizontal)
         translatesAutoresizingMaskIntoConstraints = false
         snp.makeConstraints { $0.height.equalTo(size.height) }
+        
+        addTarget(self, action: #selector(handleTap), for: .touchUpInside)
+    }
+    
+    @objc private func handleTap() {
+        onTap?()
     }
     
     required init?(coder: NSCoder) {
