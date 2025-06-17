@@ -1,0 +1,24 @@
+{
+  "originHash" : "1c02065323048e4451362b0ba84cae46ddc1a353e1a003a5d79e520a79418cbe",
+  "pins" : [
+    {
+      "identity" : "panmodal",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/slackhq/PanModal.git",
+      "state" : {
+        "revision" : "b012aecb6b67a8e46369227f893c12544846613f",
+        "version" : "1.2.7"
+      }
+    },
+    {
+      "identity" : "snapkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/SnapKit/SnapKit.git",
+      "state" : {
+        "revision" : "2842e6e84e82eb9a8dac0100ca90d9444b0307f4",
+        "version" : "5.7.1"
+      }
+    }
+  ],
+  "version" : 3
+}
