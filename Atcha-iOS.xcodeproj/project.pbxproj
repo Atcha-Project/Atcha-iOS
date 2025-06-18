@@ -32,6 +32,8 @@
 		B68309622E005A3600E2D029 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B68309502E005A3600E2D029 /* Main.storyboard */; };
 		B68309672E005B5300E2D029 /* UIView+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B68309662E005B5300E2D029 /* UIView+Ext.swift */; };
 		B6D083302E02CC76003C28E1 /* AtchaToast.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6D0832F2E02CC76003C28E1 /* AtchaToast.swift */; };
+		B6D083332E02D8F5003C28E1 /* AtchaList.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6D083322E02D8F5003C28E1 /* AtchaList.swift */; };
+		B6D083352E02D928003C28E1 /* AtchaListType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6D083342E02D928003C28E1 /* AtchaListType.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -61,6 +63,8 @@
 		B68309632E005ADE00E2D029 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		B68309662E005B5300E2D029 /* UIView+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Ext.swift"; sourceTree = "<group>"; };
 		B6D0832F2E02CC76003C28E1 /* AtchaToast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtchaToast.swift; sourceTree = "<group>"; };
+		B6D083322E02D8F5003C28E1 /* AtchaList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtchaList.swift; sourceTree = "<group>"; };
+		B6D083342E02D928003C28E1 /* AtchaListType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtchaListType.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -156,6 +160,7 @@
 			isa = PBXGroup;
 			children = (
 				6D8D8B152E02BBA3003DABB2 /* AtchaNavigationBar */,
+				B6D083312E02D8E9003C28E1 /* AtchaList */,
 				B6D0832E2E02CC63003C28E1 /* AtchaToast */,
 				6D8D8B112E01B326003DABB2 /* AtchaButton */,
 				B68309402E005A3600E2D029 /* AtchaColor */,
@@ -202,6 +207,15 @@
 				B6D0832F2E02CC76003C28E1 /* AtchaToast.swift */,
 			);
 			path = AtchaToast;
+			sourceTree = "<group>";
+		};
+		B6D083312E02D8E9003C28E1 /* AtchaList */ = {
+			isa = PBXGroup;
+			children = (
+				B6D083322E02D8F5003C28E1 /* AtchaList.swift */,
+				B6D083342E02D928003C28E1 /* AtchaListType.swift */,
+			);
+			path = AtchaList;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -303,7 +317,9 @@
 				B68309562E005A3600E2D029 /* AtchaFont.swift in Sources */,
 				6D368BA82E02E92000144EE7 /* BackOnlyNavigationBar.swift in Sources */,
 				B68309572E005A3600E2D029 /* ViewController.swift in Sources */,
+				B6D083352E02D928003C28E1 /* AtchaListType.swift in Sources */,
 				B6D083302E02CC76003C28E1 /* AtchaToast.swift in Sources */,
+				B6D083332E02D8F5003C28E1 /* AtchaList.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
