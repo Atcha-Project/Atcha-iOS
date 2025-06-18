@@ -15,6 +15,14 @@ enum AtchaNavigationBar {
         return TitleNavigationBar(title: text, onTapBack: onBack, onTapClose: onClose)
     }
     
+    static func iconTitle(_ text: String,
+                          _ icon: UIImage,
+                      onBack: (() -> Void)? = nil,
+                      onClose: (() -> Void)? = nil) -> IconTitleNavigationBar {
+        return IconTitleNavigationBar(title: text, icon: icon, onTapBack: onBack, onTapClose: onClose)
+    }
+    
+    
     // 추후 확장 예시
     // static func iconTitle(...) -> UIView { ... }
     // static func search(...) -> UIView { ... }
