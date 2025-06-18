@@ -17,15 +17,27 @@ enum AtchaNavigationBar {
     
     static func iconTitle(_ text: String,
                           _ icon: UIImage,
-                      onBack: (() -> Void)? = nil,
-                      onClose: (() -> Void)? = nil) -> IconTitleNavigationBar {
+                          onBack: (() -> Void)? = nil,
+                          onClose: (() -> Void)? = nil) -> IconTitleNavigationBar {
         return IconTitleNavigationBar(title: text, icon: icon, onTapBack: onBack, onTapClose: onClose)
+    }
+    
+    static func search(onBack: (() -> Void)? = nil,
+                       onClose: (() -> Void)? = nil) -> SearchNavigationBar {
+        return SearchNavigationBar(onTapBack: onBack, onTapClose: onClose)
     }
     
     static func backOnly(onBack: (() -> Void)? = nil) -> BackOnlyNavigationBar {
         return BackOnlyNavigationBar(onTapBack: onBack)
     }
     
-    // 추후 확장 예시
-    // static func search(...) -> UIView { ... }
+    // MARK: - 사용 예시
+    //
+    // let navi = AtchaNavigationBar.backOnly()
+    // view.addSubview(navi)
+    //
+    // navi.snp.makeConstraints {
+    //     $0.top.equalTo(view.safeAreaLayoutGuide.snp.top)
+    //     $0.leading.trailing.equalToSuperview()
+    // }
 }
