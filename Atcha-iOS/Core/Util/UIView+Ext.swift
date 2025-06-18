@@ -17,3 +17,12 @@ extension UIView {
         clipsToBounds = true
     }
 }
+
+extension UIView {
+    // MARK: - 사용 예시
+    // view.showToast(message: "토스트 사용방법")
+    func showToast(message: String, duration: TimeInterval = 2.0, topOffset: CGFloat = 10) {
+        let atchaToast = AtchaToast(message: message)
+        atchaToast.show(in: self, duration: duration, topOffset: topOffset)
+    }
+}
