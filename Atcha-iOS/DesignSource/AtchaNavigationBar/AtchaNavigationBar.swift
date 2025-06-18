@@ -22,9 +22,10 @@ enum AtchaNavigationBar {
         return IconTitleNavigationBar(title: text, icon: icon, onTapBack: onBack, onTapClose: onClose)
     }
     
+    static func backOnly(onBack: (() -> Void)? = nil) -> BackOnlyNavigationBar {
+        return BackOnlyNavigationBar(onTapBack: onBack)
+    }
     
     // 추후 확장 예시
-    // static func iconTitle(...) -> UIView { ... }
     // static func search(...) -> UIView { ... }
-    // static func backOnly(...) -> UIView { ... }
 }

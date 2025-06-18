@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 import SnapKit
 
-//MARK: - Icon, Title NavigationBar
+// MARK: - Icon, Title NavigationBar
 final class IconTitleNavigationBar: UIView{
     
     var onTapBack: (() -> Void)?
@@ -35,7 +35,7 @@ final class IconTitleNavigationBar: UIView{
         fatalError("init(coder:) has not been implemented")
     }
     
-    //MARK: - IconTitle NavigationBar UI
+    // MARK: - IconTitle NavigationBar UI
     private func setupUI(title: String, icon: UIImage){
         backgroundColor = AtchaColor.gray950
         
@@ -101,7 +101,7 @@ final class IconTitleNavigationBar: UIView{
         snp.makeConstraints { $0.height.equalTo(60) }
     }
     
-    //MARK: - Action Method
+    // MARK: - Action Method
     @objc private func didTapBack() {
         onTapBack?()
     }

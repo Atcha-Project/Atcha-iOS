@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 import SnapKit
 
-//MARK: - Title만 존재하는 NavigationBar
+// MARK: - Title만 존재하는 NavigationBar
 final class TitleNavigationBar: UIView {
     
     var onTapBack: (() -> Void)?
@@ -33,7 +33,7 @@ final class TitleNavigationBar: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    //MARK: - Title NavigationBar UI
+    // MARK: - Title NavigationBar UI
     private func setupUI(title: String) {
         backgroundColor = AtchaColor.gray950
         
@@ -72,7 +72,7 @@ final class TitleNavigationBar: UIView {
         snp.makeConstraints { $0.height.equalTo(60) }
     }
 
-    //MARK: - Action Method
+    // MARK: - Action Method
     @objc private func didTapBack() {
         onTapBack?()
     }
