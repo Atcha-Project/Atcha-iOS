@@ -26,6 +26,7 @@
 		B68309612E005A3600E2D029 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B683094E2E005A3600E2D029 /* LaunchScreen.storyboard */; };
 		B68309622E005A3600E2D029 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B68309502E005A3600E2D029 /* Main.storyboard */; };
 		B68309672E005B5300E2D029 /* UIView+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B68309662E005B5300E2D029 /* UIView+Ext.swift */; };
+		B6D083302E02CC76003C28E1 /* AtchaToast.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6D0832F2E02CC76003C28E1 /* AtchaToast.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -49,6 +50,7 @@
 		B68309512E005A3600E2D029 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		B68309632E005ADE00E2D029 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		B68309662E005B5300E2D029 /* UIView+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Ext.swift"; sourceTree = "<group>"; };
+		B6D0832F2E02CC76003C28E1 /* AtchaToast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtchaToast.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -131,6 +133,7 @@
 		B683094B2E005A3600E2D029 /* DesignSource */ = {
 			isa = PBXGroup;
 			children = (
+				B6D0832E2E02CC63003C28E1 /* AtchaToast */,
 				6D8D8B112E01B326003DABB2 /* AtchaButton */,
 				B68309402E005A3600E2D029 /* AtchaColor */,
 				B68309472E005A3600E2D029 /* AtchaFont */,
@@ -168,6 +171,14 @@
 				B68309662E005B5300E2D029 /* UIView+Ext.swift */,
 			);
 			path = Util;
+			sourceTree = "<group>";
+		};
+		B6D0832E2E02CC63003C28E1 /* AtchaToast */ = {
+			isa = PBXGroup;
+			children = (
+				B6D0832F2E02CC76003C28E1 /* AtchaToast.swift */,
+			);
+			path = AtchaToast;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -264,6 +275,7 @@
 				B68309552E005A3600E2D029 /* AtchaColor.swift in Sources */,
 				B68309562E005A3600E2D029 /* AtchaFont.swift in Sources */,
 				B68309572E005A3600E2D029 /* ViewController.swift in Sources */,
+				B6D083302E02CC76003C28E1 /* AtchaToast.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
