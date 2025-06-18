@@ -14,6 +14,7 @@ final class SearchNavigationBar: UIView {
     
     var onTapBack: (() -> Void)?
     var onTapClose: (() -> Void)?
+    var onTextChange: ((String) -> Void)?
     
     private let backButton = UIButton()
     private let closeButton = UIButton()
@@ -89,6 +90,6 @@ final class SearchNavigationBar: UIView {
     
     @objc private func textFieldDidChange(_ sender: UITextField) {
         let address = sender.text ?? ""
-        print(address)
+        onTextChange?(address)
     }
 }
