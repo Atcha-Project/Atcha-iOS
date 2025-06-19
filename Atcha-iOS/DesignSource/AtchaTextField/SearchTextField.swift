@@ -31,6 +31,13 @@ final class SearchTextField: UIView {
     
     // MARK: - 주소 검색 TextField UI
     private func setupUI() {
+        
+        let spacer10 = UIView()
+        spacer10.setContentHuggingPriority(.required, for: .horizontal)
+        
+        let spacer12 = UIView()
+        spacer10.setContentHuggingPriority(.required, for: .horizontal)
+        
         textField.attributedPlaceholder = AtchaFont.Body_M_15("지번, 도로명, 건물명으로 검색", color: AtchaColor.gray400)
         textField.textColor = AtchaColor.white
         textField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
@@ -44,9 +51,9 @@ final class SearchTextField: UIView {
         dotView.layer.cornerRadius = 2
         
         
-        let textfieldStack = UIStackView(arrangedSubviews: [dotView, textField, resetButton])
+        let textfieldStack = UIStackView(arrangedSubviews: [dotView, spacer10, textField, spacer12, resetButton])
         textfieldStack.axis = .horizontal
-        textfieldStack.spacing = 12
+        textfieldStack.spacing = 0
         textfieldStack.alignment = .center
         textfieldStack.backgroundColor = AtchaColor.gray930
         textfieldStack.layer.cornerRadius = 8
@@ -66,6 +73,14 @@ final class SearchTextField: UIView {
         
         dotView.snp.makeConstraints {
             $0.size.equalTo(4)
+        }
+        
+        spacer10.snp.makeConstraints {
+            $0.width.equalTo(10)
+        }
+        
+        spacer12.snp.makeConstraints {
+            $0.width.equalTo(12)
         }
         
         snp.makeConstraints { $0.height.equalTo(48) }
