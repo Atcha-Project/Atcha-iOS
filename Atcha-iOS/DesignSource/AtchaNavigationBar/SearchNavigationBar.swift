@@ -18,7 +18,7 @@ final class SearchNavigationBar: UIView {
     
     private let backButton = UIButton()
     private let closeButton = UIButton()
-    private let textField = UITextField()
+    private let textField = AtchaTextField.registerTextField()
     
     init(onTapBack: (() -> Void)? = nil,
          onTapClose: (() -> Void)? = nil) {
@@ -27,6 +27,7 @@ final class SearchNavigationBar: UIView {
         super.init(frame: .zero)
         
         setupUI()
+        setupAction()
     }
     
     required init?(coder: NSCoder) {
@@ -44,14 +45,6 @@ final class SearchNavigationBar: UIView {
         closeButton.setImage(UIImage.x, for: .normal)
         closeButton.tintColor = AtchaColor.gray300
         closeButton.addTarget(self, action: #selector(didTapClose), for: .touchUpInside)
-        
-        textField.borderStyle = .roundedRect
-        textField.layer.cornerRadius = 8
-        textField.layer.masksToBounds = true
-        textField.attributedPlaceholder = AtchaFont.Body_M_15("지번, 도로명, 건물명으로 검색", color: AtchaColor.gray400)
-        textField.backgroundColor = AtchaColor.gray930
-        textField.textColor = AtchaColor.white
-        textField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         
         addSubview(backButton)
         addSubview(textField)
@@ -77,6 +70,19 @@ final class SearchNavigationBar: UIView {
         }
         
         snp.makeConstraints { $0.height.equalTo(60) }
+    }
+    
+    private func setupAction() {
+        backButton.addTarget(self, action: #selector(didTapBack), for: .touchUpInside)
+        closeButton.addTarget(self, action: #selector(didTapClose), for: .touchUpInside)
+        
+        //RegisterTextField의 콜백 연결
+        textField.onTextChange = { [weak self] text in
+            self?.onTextChange?(text)
+        }
+        textField.onTextReset = { [weak self] in
+            self?.onTextChange?("")
+        }
     }
     
     // MARK: - Action Method
