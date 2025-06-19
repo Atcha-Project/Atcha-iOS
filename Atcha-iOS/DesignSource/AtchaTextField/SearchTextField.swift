@@ -1,5 +1,5 @@
 //
-//  RegisterTextField.swift
+//  SearchTextField.swift
 //  Atcha-iOS
 //
 //  Created by wodnd on 6/19/25.
@@ -9,13 +9,14 @@ import Foundation
 import UIKit
 import SnapKit
 
-// MARK: - 집주소 등록 시 검색 TextField
-final class RegisterTextField: UIView {
+// MARK: - 주소 검색 TextField
+final class SearchTextField: UIView {
     var onTextChange: ((String) -> Void)?
     var onTextReset: (() -> Void)?
     
     private let textField = UITextField()
     private let resetButton = UIButton()
+    private let dotView = UIView()
     
     init(onTextChange: ((String) -> Void)? = nil) {
         self.onTextChange = onTextChange
@@ -28,7 +29,7 @@ final class RegisterTextField: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    // MARK: - 집주소 등록 시 검색 TextField UI
+    // MARK: - 주소 검색 TextField UI
     private func setupUI() {
         textField.attributedPlaceholder = AtchaFont.Body_M_15("지번, 도로명, 건물명으로 검색", color: AtchaColor.gray400)
         textField.textColor = AtchaColor.white
@@ -39,14 +40,18 @@ final class RegisterTextField: UIView {
         resetButton.isHidden = true
         resetButton.addTarget(self, action: #selector(didTapReset), for: .touchUpInside)
         
-        let textfieldStack = UIStackView(arrangedSubviews: [textField, resetButton])
+        dotView.backgroundColor = AtchaColor.main
+        dotView.layer.cornerRadius = 2
+        
+        
+        let textfieldStack = UIStackView(arrangedSubviews: [dotView, textField, resetButton])
         textfieldStack.axis = .horizontal
         textfieldStack.spacing = 12
         textfieldStack.alignment = .center
         textfieldStack.backgroundColor = AtchaColor.gray930
         textfieldStack.layer.cornerRadius = 8
         textfieldStack.isLayoutMarginsRelativeArrangement = true
-        textfieldStack.layoutMargins = UIEdgeInsets(top: 10, left: 12, bottom: 10, right: 12)
+        textfieldStack.layoutMargins = UIEdgeInsets(top: 10, left: 16, bottom: 10, right: 16)
         
         
         addSubview(textfieldStack)
@@ -59,7 +64,11 @@ final class RegisterTextField: UIView {
             $0.size.equalTo(16)
         }
         
-        snp.makeConstraints { $0.height.equalTo(40) }
+        dotView.snp.makeConstraints {
+            $0.size.equalTo(4)
+        }
+        
+        snp.makeConstraints { $0.height.equalTo(48) }
     }
     
     // MARK: - Action Method

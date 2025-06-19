@@ -18,7 +18,7 @@ final class SearchNavigationBar: UIView {
     
     private let backButton = UIButton()
     private let closeButton = UIButton()
-    private let textField = RegisterTextField()
+    private let textField = AtchaTextField.registerTextField()
     
     init(onTapBack: (() -> Void)? = nil,
          onTapClose: (() -> Void)? = nil) {
