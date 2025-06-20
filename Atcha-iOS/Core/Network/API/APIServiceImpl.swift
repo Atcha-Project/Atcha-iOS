@@ -23,16 +23,16 @@ final class APIServiceImpl: APIService {
         return try await withCheckedThrowingContinuation { continuation in
             session.request(url, method: endpoint.method, parameters: endpoint.parameters, encoding: endpoint.encoding, headers: endpoint.headers)
                 .validate()
-                .responseDecodable(of: T.self) { response in
+                .responseDecodable(of: APIResponse<T>.self) { response in
                     switch response.result {
-                    case .success(let decoded):
-                        continuation.resume(returning: decoded)
-                    case .failure(let error):
-                        if let statusCode = response.response?.statusCode {
-                            continuation.resume(throwing: APIError.serverError(statusCode: statusCode))
+                    case .success(let apiResponse):
+                        if apiResponse.responseCode == "SUCCESS" {
+                            continuation.resume(returning: apiResponse.result)
                         } else {
-                            continuation.resume(throwing: APIError.unknown(error: error))
+                            continuation.resume(throwing: APIError.serverError(statusCode: response.response?.statusCode ?? -1))
                         }
+                    case .failure(let error):
+                        continuation.resume(throwing: APIError.unknown(error: error))
                     }
                 }
         }

@@ -16,6 +16,7 @@ final class SplashViewController: BaseViewController<SplashViewModel> {
         super.viewDidLoad()
         
         setupUI()
+        viewModel.checkAppVersion()
     }
     
     private func setupUI() {

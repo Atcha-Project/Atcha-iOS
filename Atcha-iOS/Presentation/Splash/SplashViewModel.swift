@@ -18,6 +18,7 @@ final class SplashViewModel: BaseViewModel {
     }
     
     func checkAppVersion() {
+        print(#function)
         Task {
             setLoading(true)
             defer { self.setLoading(false) }
