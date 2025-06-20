@@ -8,5 +8,5 @@
 import Foundation
 
 protocol AppVersionRepository {
-    func fetchAppVersion() async throws -> AppVersionInfo
+    func fetchAppVersion() async throws -> String
 }

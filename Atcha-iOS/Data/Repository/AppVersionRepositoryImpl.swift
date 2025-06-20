@@ -14,9 +14,9 @@ final class AppVersionRepositoryImpl: AppVersionRepository {
         self.apiService = apiService
     }
     
-    func fetchAppVersion() async throws -> AppVersionInfo {
+    func fetchAppVersion() async throws -> String {
         return try await apiService.request(
-            Endpoint(path: "/api/app/version", method: .get)
+            Endpoint(path: "http://atcha.p-e.kr/api/app/version", method: .get)
         )
     }
 }

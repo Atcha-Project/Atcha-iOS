@@ -8,7 +8,7 @@
 import Foundation
 
 protocol CheckAppVersionUseCase {
-    func execute() async throws -> AppVersionInfo
+    func execute() async throws -> String
 }
 
 final class CheckAppVersionUseCaseImpl: CheckAppVersionUseCase {
@@ -18,7 +18,7 @@ final class CheckAppVersionUseCaseImpl: CheckAppVersionUseCase {
         self.repository = repository
     }
     
-    func execute() async throws -> AppVersionInfo {
+    func execute() async throws -> String {
         return try await repository.fetchAppVersion()
     }
 }

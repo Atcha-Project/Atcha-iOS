@@ -8,7 +8,7 @@
 import Foundation
 
 final class SplashViewModel: BaseViewModel {
-    @Published private(set) var appVersionInfo: AppVersionInfo?
+    @Published private(set) var appVersionInfo: String?
     
     private let checkAppVersionUseCase: CheckAppVersionUseCase
     
