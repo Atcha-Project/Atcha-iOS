@@ -28,11 +28,19 @@ final class DIContainer {
         UserRepositoryImpl(apiService: apiService)
     }()
     
-    lazy var userUseCase: UserUseCase = {
-        UserUseCase(repositoy: userRepository)
+    lazy var userUseCase: FetchUserUseCase = {
+        FetchUserUseCaseImpl(repositoy: userRepository)
+    }()
+    
+    lazy var appVersionRepository: AppVersionRepository = {
+        AppVersionRepositoryImpl(apiService: apiService)
+    }()
+    
+    lazy var appVersionUseCase: CheckAppVersionUseCase = {
+        CheckAppVersionUseCaseImpl(repository: appVersionRepository)
     }()
     
     func makeSplashViewModel() -> SplashViewModel {
-        return SplashViewModel(useCase: userUseCase)
+        return SplashViewModel(checkAppVersionUseCase: appVersionUseCase)
     }
 }

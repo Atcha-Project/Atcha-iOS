@@ -7,7 +7,11 @@
 
 import Foundation
 
-final class UserUseCase {
+protocol FetchUserUseCase {
+    func fetchUser() async throws -> User
+}
+
+final class FetchUserUseCaseImpl: FetchUserUseCase {
     private let repositoy: UserRepository
     
     init(repositoy: UserRepository) {
