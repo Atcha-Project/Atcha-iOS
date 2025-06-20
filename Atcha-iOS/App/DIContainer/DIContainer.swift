@@ -7,20 +7,40 @@
 
 import Foundation
 
+final class AppDIContainer {
+    static let shared = AppDIContainer()
+    
+    private let tokenStorage: TokenStorage
+    let networkDIContainer: NetworkDIContainer
+    
+    private init() {
+        self.tokenStorage = TokenStorageImpl()
+        self.networkDIContainer = NetworkDIContainer(tokenStorage: tokenStorage)
+    }
+}
+
 final class DIContainer {
-    lazy var apiClient: APIClient = {
-        APIClient()
+    lazy var apiService: APIService = {
+        AppDIContainer.shared.networkDIContainer.makeAPIService()
     }()
     
     lazy var userRepository: UserRepository = {
-        UserRepositoryImpl(apiClient: apiClient)
+        UserRepositoryImpl(apiService: apiService)
     }()
     
-    lazy var userUseCase: UserUseCase = {
-        UserUseCase(repositoy: userRepository)
+    lazy var userUseCase: FetchUserUseCase = {
+        FetchUserUseCaseImpl(repositoy: userRepository)
+    }()
+    
+    lazy var appVersionRepository: AppVersionRepository = {
+        AppVersionRepositoryImpl(apiService: apiService)
+    }()
+    
+    lazy var appVersionUseCase: CheckAppVersionUseCase = {
+        CheckAppVersionUseCaseImpl(repository: appVersionRepository)
     }()
     
     func makeSplashViewModel() -> SplashViewModel {
-        return SplashViewModel(useCase: userUseCase)
+        return SplashViewModel(checkAppVersionUseCase: appVersionUseCase)
     }
 }

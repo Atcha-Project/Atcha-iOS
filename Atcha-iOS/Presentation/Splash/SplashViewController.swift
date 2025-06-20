@@ -8,26 +8,15 @@
 import UIKit
 import SnapKit
 
-final class SplashViewController: UIViewController {
+final class SplashViewController: BaseViewController<SplashViewModel> {
     private let backgroundImageView: UIImageView = UIImageView()
     private let appLogoImageView: UIImageView = UIImageView()
-    
-    private let viewModel: SplashViewModel
-    
-    init(viewModel: SplashViewModel) {
-        self.viewModel = viewModel
-        super.init(nibName: nil, bundle: nil)
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setupUI()
-        bindViewModel()
+        viewModel.checkAppVersion()
     }
     
     private func setupUI() {
@@ -45,7 +34,31 @@ final class SplashViewController: UIViewController {
         }
     }
     
-    private func bindViewModel() {
+    private func setupBindings() {
+        viewModel.$isLoading
+            .receive(on: DispatchQueue.main)
+            .sink { isLoading in
+                // 로딩 UI 표시/숨김
+                print("isLoading: \(isLoading)")
+            }
+            .store(in: &cancellables)
         
+        viewModel.$errorMessage
+            .compactMap { $0 }
+            .receive(on: DispatchQueue.main)
+            .sink { message in
+                // Alert 띄우기
+                print("Error: \(message)")
+            }
+            .store(in: &cancellables)
+        
+        viewModel.$appVersionInfo
+            .compactMap { $0 }
+            .receive(on: DispatchQueue.main)
+            .sink { versionInfo in
+                print("App Version Info: \(versionInfo)")
+                // 버전에 따른 로직 처리
+            }
+            .store(in: &cancellables)
     }
 }

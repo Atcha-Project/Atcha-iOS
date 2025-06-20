@@ -8,10 +8,10 @@
 import Foundation
 
 final class UserRepositoryImpl: UserRepository {
-    private let apiClient: APIClient
+    private let apiService: APIService
     
-    init(apiClient: APIClient) {
-        self.apiClient = apiClient
+    init(apiService: APIService) {
+        self.apiService = apiService
     }
     
     func fetchUser() async throws -> User {

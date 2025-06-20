@@ -7,16 +7,27 @@
 
 import Foundation
 
-final class SplashViewModel {
-    @Published var user: User?
+final class SplashViewModel: BaseViewModel {
+    @Published private(set) var appVersionInfo: String?
     
-    private let useCase: UserUseCase
-
-    init(useCase: UserUseCase) {
-        self.useCase = useCase
+    private let checkAppVersionUseCase: CheckAppVersionUseCase
+    
+    init(checkAppVersionUseCase: CheckAppVersionUseCase) {
+        self.checkAppVersionUseCase = checkAppVersionUseCase
+        super.init()
     }
     
-    func fetchUser() async throws {
-        user = try await useCase.fetchUser()
+    func checkAppVersion() {
+        print(#function)
+        Task {
+            setLoading(true)
+            defer { self.setLoading(false) }
+            do {
+                let versionInfo = try await checkAppVersionUseCase.execute()
+                appVersionInfo = versionInfo
+            } catch {
+                handleError(error)
+            }
+        }
     }
 }
