@@ -32,6 +32,10 @@
 		6DC3BF482E05C77D00831470 /* LoginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DC3BF472E05C77D00831470 /* LoginViewModel.swift */; };
 		6DC3BF4A2E05C79700831470 /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DC3BF492E05C79700831470 /* LoginViewController.swift */; };
 		6DC3BF4C2E05D8C000831470 /* LoginIntroViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DC3BF4B2E05D8C000831470 /* LoginIntroViewController.swift */; };
+		6DC3BF502E05F3B100831470 /* AuthCheckModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DC3BF4F2E05F3B100831470 /* AuthCheckModel.swift */; };
+		6DC3BF582E05F50000831470 /* AuthCheckRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DC3BF572E05F50000831470 /* AuthCheckRepository.swift */; };
+		6DC3BF5A2E05F53E00831470 /* AuthCheckRepositoryImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DC3BF592E05F53E00831470 /* AuthCheckRepositoryImpl.swift */; };
+		6DC3BF5C2E05F5E400831470 /* CheckMemberRegisteredUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DC3BF5B2E05F5E400831470 /* CheckMemberRegisteredUseCase.swift */; };
 		B65C12D72E0429B30016D2F0 /* AppFlowCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C12D62E0429B30016D2F0 /* AppFlowCoordinator.swift */; };
 		B65C12DA2E042A740016D2F0 /* DIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C12D92E042A740016D2F0 /* DIContainer.swift */; };
 		B65C12DE2E042CF00016D2F0 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C12DD2E042CF00016D2F0 /* User.swift */; };
@@ -95,6 +99,10 @@
 		6DC3BF472E05C77D00831470 /* LoginViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewModel.swift; sourceTree = "<group>"; };
 		6DC3BF492E05C79700831470 /* LoginViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
 		6DC3BF4B2E05D8C000831470 /* LoginIntroViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginIntroViewController.swift; sourceTree = "<group>"; };
+		6DC3BF4F2E05F3B100831470 /* AuthCheckModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthCheckModel.swift; sourceTree = "<group>"; };
+		6DC3BF572E05F50000831470 /* AuthCheckRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthCheckRepository.swift; sourceTree = "<group>"; };
+		6DC3BF592E05F53E00831470 /* AuthCheckRepositoryImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthCheckRepositoryImpl.swift; sourceTree = "<group>"; };
+		6DC3BF5B2E05F5E400831470 /* CheckMemberRegisteredUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckMemberRegisteredUseCase.swift; sourceTree = "<group>"; };
 		6DE42B8D2DFDE6360041344C /* Atcha-iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Atcha-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B65C12D62E0429B30016D2F0 /* AppFlowCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFlowCoordinator.swift; sourceTree = "<group>"; };
 		B65C12D92E042A740016D2F0 /* DIContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIContainer.swift; sourceTree = "<group>"; };
@@ -271,6 +279,7 @@
 			children = (
 				B65C12E12E042D400016D2F0 /* FetchUserUseCase.swift */,
 				B65C131B2E058C150016D2F0 /* CheckAppVersionUseCase.swift */,
+				6DC3BF5B2E05F5E400831470 /* CheckMemberRegisteredUseCase.swift */,
 			);
 			path = UseCase;
 			sourceTree = "<group>";
@@ -280,6 +289,7 @@
 			children = (
 				B65C12DF2E042D260016D2F0 /* UserRepository.swift */,
 				B65C131D2E058C250016D2F0 /* AppVersionRepository.swift */,
+				6DC3BF572E05F50000831470 /* AuthCheckRepository.swift */,
 			);
 			path = Repository;
 			sourceTree = "<group>";
@@ -298,6 +308,7 @@
 			children = (
 				B65C12E32E042D6B0016D2F0 /* UserRepositoryImpl.swift */,
 				B65C131F2E058C360016D2F0 /* AppVersionRepositoryImpl.swift */,
+				6DC3BF592E05F53E00831470 /* AuthCheckRepositoryImpl.swift */,
 			);
 			path = Repository;
 			sourceTree = "<group>";
@@ -358,6 +369,7 @@
 			isa = PBXGroup;
 			children = (
 				B65C13222E058C480016D2F0 /* AppVersionInfo.swift */,
+				6DC3BF4F2E05F3B100831470 /* AuthCheckModel.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -601,6 +613,7 @@
 				6D8D8B132E01B338003DABB2 /* AtchaButton.swift in Sources */,
 				6D368BA42E02D5E200144EE7 /* IconTitleNavigationBar.swift in Sources */,
 				6DC3BF4A2E05C79700831470 /* LoginViewController.swift in Sources */,
+				6DC3BF582E05F50000831470 /* AuthCheckRepository.swift in Sources */,
 				B65C13102E057D800016D2F0 /* TokenInterceptor.swift in Sources */,
 				B65C13232E058C490016D2F0 /* AppVersionInfo.swift in Sources */,
 				B65C13082E057C590016D2F0 /* APIService.swift in Sources */,
@@ -610,7 +623,9 @@
 				6DC3BF482E05C77D00831470 /* LoginViewModel.swift in Sources */,
 				6D368BAA2E02F39800144EE7 /* SearchNavigationBar.swift in Sources */,
 				B65C12FC2E057AAD0016D2F0 /* APIError.swift in Sources */,
+				6DC3BF5A2E05F53E00831470 /* AuthCheckRepositoryImpl.swift in Sources */,
 				6D368BA22E02D2AA00144EE7 /* TitleNavigationBar.swift in Sources */,
+				6DC3BF502E05F3B100831470 /* AuthCheckModel.swift in Sources */,
 				B65C12D72E0429B30016D2F0 /* AppFlowCoordinator.swift in Sources */,
 				B65C13042E057B8F0016D2F0 /* TokenStorage.swift in Sources */,
 				B68309562E005A3600E2D029 /* AtchaFont.swift in Sources */,
@@ -622,6 +637,7 @@
 				B673C48F2E0424F600EE4AD0 /* SplashViewController.swift in Sources */,
 				B673C4912E0424FD00EE4AD0 /* SplashViewModel.swift in Sources */,
 				B68309572E005A3600E2D029 /* ViewController.swift in Sources */,
+				6DC3BF5C2E05F5E400831470 /* CheckMemberRegisteredUseCase.swift in Sources */,
 				B6D083352E02D928003C28E1 /* AtchaListType.swift in Sources */,
 				B65C130A2E057C920016D2F0 /* EndPoint.swift in Sources */,
 				B65C130C2E057CAB0016D2F0 /* APIServiceImpl.swift in Sources */,
