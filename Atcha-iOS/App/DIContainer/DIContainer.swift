@@ -7,13 +7,25 @@
 
 import Foundation
 
+final class AppDIContainer {
+    static let shared = AppDIContainer()
+    
+    private let tokenStorage: TokenStorage
+    let networkDIContainer: NetworkDIContainer
+    
+    private init() {
+        self.tokenStorage = TokenStorageImpl()
+        self.networkDIContainer = NetworkDIContainer(tokenStorage: tokenStorage)
+    }
+}
+
 final class DIContainer {
-    lazy var apiClient: APIClient = {
-        APIClient()
+    lazy var apiService: APIService = {
+        AppDIContainer.shared.networkDIContainer.makeAPIService()
     }()
     
     lazy var userRepository: UserRepository = {
-        UserRepositoryImpl(apiClient: apiClient)
+        UserRepositoryImpl(apiService: apiService)
     }()
     
     lazy var userUseCase: UserUseCase = {
