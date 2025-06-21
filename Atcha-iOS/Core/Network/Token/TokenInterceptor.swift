@@ -64,9 +64,3 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
             }
     }
 }
-
-struct RefreshTokenResponse: Decodable {
-    let id: String
-    let accessToken: String
-    let refreshToken: String
-}
