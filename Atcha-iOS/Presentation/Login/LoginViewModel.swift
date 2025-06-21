@@ -8,26 +8,24 @@
 import Foundation
 
 final class LoginViewModel: BaseViewModel {
-    private let checkMemberRegisteredUseCase: CheckMemberRegisteredUseCase
+    private let loginUseCase: LoginUseCase
     
-    init(checkMemberRegisteredUseCase: CheckMemberRegisteredUseCase) {
-        self.checkMemberRegisteredUseCase = checkMemberRegisteredUseCase
+    init(loginUseCase: LoginUseCase) {
+        self.loginUseCase = loginUseCase
     }
     
-    func checkMemberRegistered(provider: Int, accessToken: String) {
+    func checkRegistration(provider: Int, token: String) {
         Task {
-            setLoading(true)
-            defer { self.setLoading(false) }
-            do {
-                let request = AuthCheckRequest(provider: provider, accessToken: accessToken)
-                let result = try await checkMemberRegisteredUseCase.execute(request)
-                print(result)
-                
-                if result.exists {
-                    
-                } else {
-                    
-                }
+            let request = AuthCheckRequest(provider: provider, accessToken: token)
+            let result = try await loginUseCase.checkRegistration(request)
+            
+            switch result {
+            case .registered:
+                print("회원 → 로그인 진행")
+            case .notRegistered:
+                print("비회원 → 회원가입 유도")
+            default:
+                break
             }
         }
     }

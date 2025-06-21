@@ -43,4 +43,17 @@ final class DIContainer {
     func makeSplashViewModel() -> SplashViewModel {
         return SplashViewModel(checkAppVersionUseCase: appVersionUseCase)
     }
+    
+    // MARK: - Login 의존성 주입
+    lazy var loginRepository: LoginRepository = {
+        LoginRepositoryImpl(apiService: apiService)
+    }()
+    
+    lazy var loginUseCase: LoginUseCase = {
+        LoginUseCaseImpl(repository: loginRepository)
+    }()
+    
+    func makeLoginViewModel() -> LoginViewModel {
+        return LoginViewModel(loginUseCase: loginUseCase)
+    }
 }
