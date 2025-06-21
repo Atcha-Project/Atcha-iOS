@@ -14,17 +14,21 @@ class LoginViewController: BaseViewController<LoginViewModel> {
     private let kakaoLoginButton: UIButton = UIButton(type: .custom)
     private let appleLoginButton: UIButton = UIButton(type: .custom)
     
-    private let loginIntroPageVC = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal)
-    private var loginIntroPages: [UIViewController] = []
-    
     private let pageControl = UIPageControl()
     private var autoScrollTimer: Timer?
+    
+    private var loginIntroCollectionView: UICollectionView!
+    private let loginIntroData: [(title: String, subtitle: String, image: UIImage)] = [
+        ("오후 10시에 미리\n막차 알림 등록하세요", "막차를 미리 찾고 알림 설정 할 수 있도록 알림드려요.", UIImage.imgStep1),
+        ("자리에서 떠나기 전에\n여러번 막차 알림 드려요", "막차 까먹지 않게 푸시알림과 타이머를 제공해요.", UIImage.imgStep2),
+        ("탑승하는 곳까지\n시간 확인하며 걸어가요", "탑승하는 곳까지 타이머 보면서 대중교통 시간 맞춰가요", UIImage.imgStep3)
+    ]
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setupUI()
-        setupLoginIntroPages()
+        setupLoginIntroCell()
         setupButtonUI()
         setupPageControl()
         startAutoScroll()
@@ -42,33 +46,23 @@ class LoginViewController: BaseViewController<LoginViewModel> {
     }
     
     // MARK: - Login Intro UI
-    private func setupLoginIntroPages() {
-        loginIntroPages = [
-            LoginIntroViewController(
-                titleText: "오후 10시에 미리\n막차 알림 등록하세요",
-                subtitleText: "막차를 미리 찾고 알림 설정 할 수 있도록 알림드려요.",
-                image: UIImage.imgStep1),
-            
-            LoginIntroViewController(
-                titleText: "자리에서 떠나기 전에\n여러번 막차 알림 드려요",
-                subtitleText: "막차 까먹지 않게 푸시알림과 타이머를 제공해요.",
-                image: UIImage.imgStep2),
-            
-            LoginIntroViewController(
-                titleText: "탑승하는 곳까지\n시간 확인하며 걸어가요",
-                subtitleText: "탑승하는 곳까지 타이머 보면서 대중교통 시간 맞춰가요",
-                image: UIImage.imgStep3)
-        ]
+    private func setupLoginIntroCell() {
+        let layout = UICollectionViewFlowLayout()
+        layout.scrollDirection = .horizontal
+        layout.minimumLineSpacing = 0
+        layout.itemSize = view.bounds.size
         
-        loginIntroPageVC.dataSource = self
-        loginIntroPageVC.delegate = self
-        loginIntroPageVC.setViewControllers([loginIntroPages[0]], direction: .forward, animated: true)
+        loginIntroCollectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        loginIntroCollectionView.backgroundColor = .clear
+        loginIntroCollectionView.isPagingEnabled = true
+        loginIntroCollectionView.showsHorizontalScrollIndicator = false
+        loginIntroCollectionView.dataSource = self
+        loginIntroCollectionView.delegate = self
+        loginIntroCollectionView.register(LoginIntroCell.self, forCellWithReuseIdentifier: LoginIntroCell.id)
         
-        addChild(loginIntroPageVC)
-        view.addSubview(loginIntroPageVC.view)
-        loginIntroPageVC.didMove(toParent: self)
+        view.addSubview(loginIntroCollectionView)
         
-        loginIntroPageVC.view.snp.makeConstraints { make in
+        loginIntroCollectionView.snp.makeConstraints { make in
             make.top.bottom.equalToSuperview()
             make.leading.trailing.equalToSuperview()
         }
@@ -76,7 +70,7 @@ class LoginViewController: BaseViewController<LoginViewModel> {
     
     // MARK: - Page Control UI
     private func setupPageControl() {
-        pageControl.numberOfPages = loginIntroPages.count
+        pageControl.numberOfPages = loginIntroData.count
         pageControl.currentPage = 0
         pageControl.currentPageIndicatorTintColor = AtchaColor.main
         pageControl.pageIndicatorTintColor = AtchaColor.gray300
@@ -101,14 +95,12 @@ class LoginViewController: BaseViewController<LoginViewModel> {
     }
     
     @objc private func goToNextPage() {
-        guard let currentVC = loginIntroPageVC.viewControllers?.first,
-              let currentIndex = loginIntroPages.firstIndex(of: currentVC) else { return }
+        let currentPage = pageControl.currentPage
+        let nextPage = (currentPage + 1) % loginIntroData.count
+        let indexPath = IndexPath(item: nextPage, section: 0)
         
-        let nextIndex = (currentIndex + 1) % loginIntroPages.count
-        let nextVC = loginIntroPages[nextIndex]
-        
-        loginIntroPageVC.setViewControllers([nextVC], direction: .forward, animated: true, completion: nil)
-        pageControl.currentPage = nextIndex
+        loginIntroCollectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: true)
+        pageControl.currentPage = nextPage
     }
     
     
@@ -193,29 +185,24 @@ class LoginViewController: BaseViewController<LoginViewModel> {
     }
 }
 
-extension LoginViewController: UIPageViewControllerDataSource {
-    func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
-        
-        guard let index = loginIntroPages.firstIndex(of: viewController) else { return nil }
-        let previousIndex = (index - 1 + loginIntroPages.count) % loginIntroPages.count
-        return loginIntroPages[previousIndex]
+extension LoginViewController: UICollectionViewDataSource, UICollectionViewDelegate {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return loginIntroData.count
     }
     
-    func pageViewController(_ pageViewController: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: LoginIntroCell.id, for: indexPath) as? LoginIntroCell else {
+            
+            return UICollectionViewCell()
+        }
         
-        guard let index = loginIntroPages.firstIndex(of: viewController) else { return nil }
-        let nextIndex = (index + 1) % loginIntroPages.count
-        return loginIntroPages[nextIndex]
+        let introData = loginIntroData[indexPath.item]
+        cell.configure(title: introData.title, subTitle: introData.subtitle, image: introData.image)
+        return cell
     }
-}
-
-extension LoginViewController: UIPageViewControllerDelegate {
-    func pageViewController(_ pageViewController: UIPageViewController, didFinishAnimating finished: Bool, previousViewControllers: [UIViewController], transitionCompleted completed: Bool) {
-        
-        guard completed,
-              let visibleVC = pageViewController.viewControllers?.first,
-              let index = loginIntroPages.firstIndex(of: visibleVC) else { return }
-        
-        pageControl.currentPage = index
+    
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let page = Int(scrollView.contentOffset.x / scrollView.frame.width + 0.5)
+        pageControl.currentPage = page
     }
 }
