@@ -36,7 +36,7 @@
 		6DC3BF622E07219C00831470 /* LoginRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DC3BF612E07219C00831470 /* LoginRepository.swift */; };
 		6DC3BF662E0721D900831470 /* LoginUseCaseImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DC3BF652E0721D900831470 /* LoginUseCaseImpl.swift */; };
 		6DC3BF682E0721F300831470 /* LoginDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DC3BF672E0721F300831470 /* LoginDTO.swift */; };
-		6DC3BF6A2E0722A500831470 /* LoginRepositoryImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DC3BF692E0722A500831470 /* LoginRepositoryImpl.swift */; };
+		B600CA132E07FD29008B0D87 /* MyPageCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C13472E07A10F0016D2F0 /* MyPageCoordinator.swift */; };
 		B65C12D72E0429B30016D2F0 /* AppFlowCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C12D62E0429B30016D2F0 /* AppFlowCoordinator.swift */; };
 		B65C12DA2E042A740016D2F0 /* AppDIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C12D92E042A740016D2F0 /* AppDIContainer.swift */; };
 		B65C12DE2E042CF00016D2F0 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C12DD2E042CF00016D2F0 /* User.swift */; };
@@ -69,7 +69,6 @@
 		B65C13412E06E0340016D2F0 /* SplashDIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C13402E06E0340016D2F0 /* SplashDIContainer.swift */; };
 		B65C13442E06E0BC0016D2F0 /* SplashCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C13432E06E0BC0016D2F0 /* SplashCoordinator.swift */; };
 		B65C13462E07A0D70016D2F0 /* CoordinatorFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C13452E07A0D70016D2F0 /* CoordinatorFactory.swift */; };
-		B65C13482E07A10F0016D2F0 /* MyPageCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C13472E07A10F0016D2F0 /* MyPageCoordinator.swift */; };
 		B65C134A2E07A1280016D2F0 /* MyPageRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C13492E07A1280016D2F0 /* MyPageRouter.swift */; };
 		B65C134C2E07A18D0016D2F0 /* MyPageNavigationTarget.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C134B2E07A18D0016D2F0 /* MyPageNavigationTarget.swift */; };
 		B65C134F2E07A6C70016D2F0 /* MainCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C134E2E07A6C70016D2F0 /* MainCoordinator.swift */; };
@@ -706,6 +705,7 @@
 				6D8D8B172E02BBC0003DABB2 /* AtchaNavigationBar.swift in Sources */,
 				B65C134C2E07A18D0016D2F0 /* MyPageNavigationTarget.swift in Sources */,
 				B68309542E005A3600E2D029 /* SceneDelegate.swift in Sources */,
+				B600CA132E07FD29008B0D87 /* MyPageCoordinator.swift in Sources */,
 				B65C13312E0658580016D2F0 /* MyPageViewModel.swift in Sources */,
 				B65C133D2E06E00F0016D2F0 /* MyPageDIContainer.swift in Sources */,
 				B65C134F2E07A6C70016D2F0 /* MainCoordinator.swift in Sources */,
