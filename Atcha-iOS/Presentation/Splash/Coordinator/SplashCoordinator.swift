@@ -10,15 +10,15 @@ import Foundation
 
 final class SplashCoordinator {
     private let navigationController: UINavigationController
-    private let diContainer: AppDIContainer
-    
-    init(navigationController: UINavigationController, diContainer: AppDIContainer) {
+    private let diContainer: SplashDIContainer
+
+    init(navigationController: UINavigationController, diContainer: SplashDIContainer) {
         self.navigationController = navigationController
         self.diContainer = diContainer
     }
-    
+
     func start() {
-        let viewModel = diContainer.splashDIContainer.makeSplashViewModel()
+        let viewModel = diContainer.makeSplashViewModel()
         let viewController = SplashViewController(viewModel: viewModel)
         navigationController.pushViewController(viewController, animated: false)
     }
