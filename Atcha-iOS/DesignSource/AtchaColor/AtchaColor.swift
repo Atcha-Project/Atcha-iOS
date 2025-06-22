@@ -73,6 +73,11 @@ enum AtchaColor{
         static let uijeongbu = UIColor(named: "Uijeongbu")!
     }
     
+    // MARK: - Etc
+    enum Etc {
+        static let kakao = UIColor(named: "kakao")!
+        static let kakaoLogo = UIColor(named: "kakaoLogo")!
+    }
     // MARK: - 사용 예시
     //
     // titleLabel.textColor = AtchaColor.gray900
