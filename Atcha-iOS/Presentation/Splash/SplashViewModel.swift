@@ -12,6 +12,8 @@ final class SplashViewModel: BaseViewModel {
     
     private let checkAppVersionUseCase: CheckAppVersionUseCase
     
+    var onSignUpCompleted: (() -> Void)?
+    
     init(checkAppVersionUseCase: CheckAppVersionUseCase) {
         self.checkAppVersionUseCase = checkAppVersionUseCase
         super.init()
@@ -29,5 +31,9 @@ final class SplashViewModel: BaseViewModel {
                 handleError(error)
             }
         }
+    }
+    
+    func signUpFinished() {
+        onSignUpCompleted?()
     }
 }

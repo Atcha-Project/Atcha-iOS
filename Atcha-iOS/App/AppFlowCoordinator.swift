@@ -6,22 +6,40 @@
 //
 
 import UIKit
+import Foundation
 
 class AppFlowCoordinator {
-    private let container: DIContainer
+    private let container: AppDIContainer
     private let window: UIWindow
     
-    init(window: UIWindow, container: DIContainer) {
+    private var splashCoordinator: SplashCoordinator?
+    private var mainCoordinator: MainCoordinator?
+    
+    init(window: UIWindow, container: AppDIContainer) {
         self.window = window
         self.container = container
     }
     
     func startApp() {
-        let viewModel = container.makeSplashViewModel()
-        let viewController = SplashViewController(viewModel: viewModel)
-        
-        let navigationController = UINavigationController(rootViewController: viewController)
+        let navigationController = UINavigationController()
         window.rootViewController = navigationController
         window.makeKeyAndVisible()
+        
+        let splashCoordinator = container.makeSplashCoordinator(navigationController: navigationController)
+        splashCoordinator.onFinish = { [weak self] in
+            guard let self else { return }
+            showMainFlow()
+        }
+        splashCoordinator.start()
+        self.splashCoordinator = splashCoordinator
+    }
+    
+    private func showMainFlow() {
+        let navigationController = UINavigationController()
+        window.rootViewController = navigationController
+        
+        mainCoordinator = MainCoordinator(navigationController: navigationController,
+                                          diContainer: container)
+        mainCoordinator?.start()
     }
 }
