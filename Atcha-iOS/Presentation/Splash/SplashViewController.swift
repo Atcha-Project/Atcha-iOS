@@ -15,8 +15,9 @@ final class SplashViewController: BaseViewController<SplashViewModel> {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        setupUI()
+//        setupUI()
         viewModel.checkAppVersion()
+        view.backgroundColor = .red
     }
     
     private func setupUI() {

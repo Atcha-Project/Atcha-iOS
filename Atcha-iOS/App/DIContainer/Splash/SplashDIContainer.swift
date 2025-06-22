@@ -5,6 +5,7 @@
 //  Created by geonhui Yu on 6/21/25.
 //
 
+import UIKit
 import Foundation
 
 final class SplashDIContainer {
@@ -14,15 +15,16 @@ final class SplashDIContainer {
         self.apiService = apiService
     }
 
-    func makeAppVersionRepository() -> AppVersionRepository {
-        AppVersionRepositoryImpl(apiService: apiService)
-    }
-
     func makeCheckAppVersionUseCase() -> CheckAppVersionUseCase {
-        CheckAppVersionUseCaseImpl(repository: makeAppVersionRepository())
+        let repository = AppVersionRepositoryImpl(apiService: apiService)
+        return CheckAppVersionUseCaseImpl(repository: repository)
     }
 
     func makeSplashViewModel() -> SplashViewModel {
         SplashViewModel(checkAppVersionUseCase: makeCheckAppVersionUseCase())
+    }
+
+    func makeSplashCoordinator(navigationController: UINavigationController) -> SplashCoordinator {
+        SplashCoordinator(navigationController: navigationController, diContainer: self)
     }
 }
