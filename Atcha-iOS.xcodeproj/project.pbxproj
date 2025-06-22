@@ -754,8 +754,6 @@
 				B65C134A2E07A1280016D2F0 /* MyPageRouter.swift in Sources */,
 				B65C131C2E058C150016D2F0 /* CheckAppVersionUseCase.swift in Sources */,
 				B6D083302E02CC76003C28E1 /* AtchaToast.swift in Sources */,
-				6DC3BF6A2E0722A500831470 /* LoginRepositoryImpl.swift in Sources */,
-				B65C13482E07A10F0016D2F0 /* MyPageCoordinator.swift in Sources */,
 				6DC3BEDD2E04F32400831470 /* UserDefaultsKey.swift in Sources */,
 				B65C13442E06E0BC0016D2F0 /* SplashCoordinator.swift in Sources */,
 				B65C13262E058CC30016D2F0 /* BaseViewModel.swift in Sources */,
