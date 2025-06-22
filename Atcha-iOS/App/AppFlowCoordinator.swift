@@ -13,6 +13,7 @@ class AppFlowCoordinator {
     private let window: UIWindow
     
     private var splashCoordinator: SplashCoordinator?
+    private var mainCoordinator: MainCoordinator?
     
     init(window: UIWindow, container: AppDIContainer) {
         self.window = window
@@ -25,7 +26,20 @@ class AppFlowCoordinator {
         window.makeKeyAndVisible()
         
         let splashCoordinator = container.makeSplashCoordinator(navigationController: navigationController)
+        splashCoordinator.onFinish = { [weak self] in
+            guard let self else { return }
+            showMainFlow()
+        }
         splashCoordinator.start()
         self.splashCoordinator = splashCoordinator
+    }
+    
+    private func showMainFlow() {
+        let navigationController = UINavigationController()
+        window.rootViewController = navigationController
+        
+        mainCoordinator = MainCoordinator(navigationController: navigationController,
+                                          diContainer: container)
+        mainCoordinator?.start()
     }
 }

@@ -18,6 +18,10 @@ final class SplashViewController: BaseViewController<SplashViewModel> {
 //        setupUI()
         viewModel.checkAppVersion()
         view.backgroundColor = .red
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            self.viewModel.signUpFinished()
+        }
     }
     
     private func setupUI() {
