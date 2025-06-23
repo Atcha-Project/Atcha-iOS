@@ -7,6 +7,7 @@
 
 import Foundation
 
+
 final class LoginViewModel: BaseViewModel {
     private let loginUseCase: LoginUseCase
     
@@ -14,6 +15,21 @@ final class LoginViewModel: BaseViewModel {
         self.loginUseCase = loginUseCase
     }
     
+    func kakaoLoginTapped() {
+        Task {
+            do {
+                let token = try await loginUseCase.signUpWithKakao()
+                print("카카오 로그인 성공. token: \(token)")
+                checkRegistration(provider: 1, token: token)
+            } catch {
+                print("카카오 로그인 실패: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    func appleLoginTapped() {
+        
+    }
     func checkRegistration(provider: Int, token: String) {
         Task {
             let request = AuthCheckRequest(provider: provider, accessToken: token)

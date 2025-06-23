@@ -8,7 +8,7 @@
 import UIKit
 import SnapKit
 
-class LoginViewController: BaseViewController<LoginViewModel> {
+final class LoginViewController: BaseViewController<LoginViewModel> {
     private let backgroundImageView: UIImageView = UIImageView()
     
     private let kakaoLoginButton: UIButton = UIButton(type: .custom)
@@ -113,6 +113,13 @@ class LoginViewController: BaseViewController<LoginViewModel> {
         
         view.addSubview(buttonStack)
         
+        kakaoLoginButton.addTarget(self,
+                                   action: #selector(didTapKakaoLoginButton),
+                                   for: .touchUpInside)
+        appleLoginButton.addTarget(self,
+                                   action: #selector(didTapAppleLoginButton),
+                                   for: .touchUpInside)
+        
         kakaoButtonUI()
         appleButtonUI()
         
@@ -183,6 +190,19 @@ class LoginViewController: BaseViewController<LoginViewModel> {
         appleLoginButton.snp.makeConstraints { make in
             make.height.equalTo(52)
         }
+    }
+}
+
+extension LoginViewController {
+    // MARK: - Actions
+    @objc private func didTapKakaoLoginButton() {
+        print("카카오 로그인 버튼 터치됨")
+        viewModel.kakaoLoginTapped()
+    }
+
+    @objc private func didTapAppleLoginButton() {
+        print("애플 로그인 버튼 터치됨")
+        viewModel.appleLoginTapped()
     }
 }
 

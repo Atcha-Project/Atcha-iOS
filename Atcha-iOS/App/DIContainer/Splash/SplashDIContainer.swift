@@ -25,6 +25,7 @@ final class SplashDIContainer {
     }
 
     func makeSplashCoordinator(navigationController: UINavigationController) -> SplashCoordinator {
-        SplashCoordinator(navigationController: navigationController, diContainer: self)
+        SplashCoordinator(navigationController: navigationController,
+                          diContainer: self)
     }
 }
