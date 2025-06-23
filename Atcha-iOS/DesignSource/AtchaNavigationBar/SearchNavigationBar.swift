@@ -13,17 +13,17 @@ import SnapKit
 final class SearchNavigationBar: UIView {
     
     var onTapBack: (() -> Void)?
-    var onTapClose: (() -> Void)?
+    var onTapCurrentLocation: (() -> Void)?
     var onTextChange: ((String) -> Void)?
     
     private let backButton = UIButton()
-    private let closeButton = UIButton()
+    private let currentLocationButton = UIButton()
     private let textField = AtchaTextField.registerTextField()
     
     init(onTapBack: (() -> Void)? = nil,
-         onTapClose: (() -> Void)? = nil) {
+         onTapCurrentLocation: (() -> Void)? = nil) {
         self.onTapBack = onTapBack
-        self.onTapClose = onTapClose
+        self.onTapCurrentLocation = onTapCurrentLocation
         super.init(frame: .zero)
         
         setupUI()
@@ -42,13 +42,13 @@ final class SearchNavigationBar: UIView {
         backButton.tintColor = AtchaColor.gray300
         backButton.addTarget(self, action: #selector(didTapBack), for: .touchUpInside)
         
-        closeButton.setImage(UIImage.x, for: .normal)
-        closeButton.tintColor = AtchaColor.gray300
-        closeButton.addTarget(self, action: #selector(didTapClose), for: .touchUpInside)
+        currentLocationButton.setImage(UIImage.mylocationOutlined, for: .normal)
+        currentLocationButton.tintColor = AtchaColor.gray300
+        currentLocationButton.addTarget(self, action: #selector(didTapCurrentLocation), for: .touchUpInside)
         
         addSubview(backButton)
         addSubview(textField)
-        addSubview(closeButton)
+        addSubview(currentLocationButton)
         
         backButton.snp.makeConstraints {
             $0.leading.equalToSuperview().offset(16)
@@ -56,7 +56,7 @@ final class SearchNavigationBar: UIView {
             $0.size.equalTo(24)
         }
         
-        closeButton.snp.makeConstraints {
+        currentLocationButton.snp.makeConstraints {
             $0.trailing.equalToSuperview().inset(16)
             $0.centerY.equalToSuperview()
             $0.size.equalTo(24)
@@ -64,7 +64,7 @@ final class SearchNavigationBar: UIView {
         
         textField.snp.makeConstraints {
             $0.leading.equalTo(backButton.snp.trailing).offset(12)
-            $0.trailing.equalTo(closeButton.snp.leading).offset(-12)
+            $0.trailing.equalTo(currentLocationButton.snp.leading).offset(-12)
             $0.centerY.equalToSuperview()
             $0.height.equalTo(40)
         }
@@ -74,7 +74,7 @@ final class SearchNavigationBar: UIView {
     
     private func setupAction() {
         backButton.addTarget(self, action: #selector(didTapBack), for: .touchUpInside)
-        closeButton.addTarget(self, action: #selector(didTapClose), for: .touchUpInside)
+        currentLocationButton.addTarget(self, action: #selector(didTapCurrentLocation), for: .touchUpInside)
         
         //RegisterTextField의 콜백 연결
         textField.onTextChange = { [weak self] text in
@@ -90,8 +90,8 @@ final class SearchNavigationBar: UIView {
         onTapBack?()
     }
     
-    @objc private func didTapClose() {
-        onTapClose?()
+    @objc private func didTapCurrentLocation() {
+        onTapCurrentLocation?()
     }
     
     @objc private func textFieldDidChange(_ sender: UITextField) {

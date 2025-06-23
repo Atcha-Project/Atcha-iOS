@@ -23,8 +23,8 @@ enum AtchaNavigationBar {
     }
     
     static func search(onBack: (() -> Void)? = nil,
-                       onClose: (() -> Void)? = nil ) -> SearchNavigationBar {
-        return SearchNavigationBar(onTapBack: onBack, onTapClose: onClose)
+                       onCurrentLocation: (() -> Void)? = nil ) -> SearchNavigationBar {
+        return SearchNavigationBar(onTapBack: onBack, onTapCurrentLocation: onCurrentLocation)
     }
     
     static func backOnly(onBack: (() -> Void)? = nil ) -> BackOnlyNavigationBar {

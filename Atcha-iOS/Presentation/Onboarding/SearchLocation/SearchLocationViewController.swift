@@ -6,24 +6,25 @@
 //
 
 import UIKit
+import SnapKit
 
 class SearchLocationViewController: BaseViewController<SearchLocationViewModel> {
 
+    private let searchNavigationBar: SearchNavigationBar = AtchaNavigationBar.search()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Do any additional setup after loading the view.
+        setupUI()
     }
-    
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+        
+    private func setupUI() {
+        view.addSubview(searchNavigationBar)
+        
+        searchNavigationBar.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
+            make.leading.trailing.equalToSuperview()
+        }
     }
-    */
 
 }
