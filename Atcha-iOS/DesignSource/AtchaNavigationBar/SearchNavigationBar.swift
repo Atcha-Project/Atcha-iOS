@@ -15,6 +15,7 @@ final class SearchNavigationBar: UIView{
     var onTapBack: (() -> Void)?
     var onTapCurrentLocation: (() -> Void)?
     var onTextChange: ((String) -> Void)?
+    var onTextSubmit: ((String) -> Void)?
     
     private let backButton = UIButton()
     private let currentLocationButton = UIButton()
@@ -82,6 +83,10 @@ final class SearchNavigationBar: UIView{
         }
         textField.onTextReset = { [weak self] in
             self?.onTextChange?("")
+        }
+        
+        textField.onTextSubmit = { [weak self] text in    // ✅ 추가
+            self?.onTextSubmit?(text)
         }
     }
     

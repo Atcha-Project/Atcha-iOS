@@ -13,6 +13,7 @@ import SnapKit
 final class RegisterTextField: UIView {
     var onTextChange: ((String) -> Void)?
     var onTextReset: (() -> Void)?
+    var onTextSubmit: ((String) -> Void)?
     
     private let textField = UITextField()
     private let resetButton = UIButton()
@@ -82,8 +83,8 @@ final class RegisterTextField: UIView {
 
 extension RegisterTextField: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        // 키보드 내리기
-        textField.resignFirstResponder()
+        textField.resignFirstResponder()  // 키보드 내림
+        onTextSubmit?(textField.text ?? "")
         return true
     }
 }
