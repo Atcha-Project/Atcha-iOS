@@ -38,8 +38,12 @@ class AppFlowCoordinator {
         let navigationController = UINavigationController()
         window.rootViewController = navigationController
         
-        mainCoordinator = MainCoordinator(navigationController: navigationController,
-                                          diContainer: container)
-        mainCoordinator?.start()
+//        mainCoordinator = MainCoordinator(navigationController: navigationController,
+//                                          diContainer: container)
+//        mainCoordinator?.start()
+        
+        let viewModel = HomeRegisterViewModel()
+        let homeRegisterVC = HomeRegisterViewController(viewModel: viewModel)
+        navigationController.pushViewController(homeRegisterVC, animated: false)
     }
 }

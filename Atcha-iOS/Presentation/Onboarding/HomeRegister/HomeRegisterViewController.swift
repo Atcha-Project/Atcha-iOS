@@ -50,6 +50,9 @@ class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel> {
         labelStack.alignment = .leading
         
         
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleSearchLocationTapped))
+        searchLocationContainer.addGestureRecognizer(tapGesture)
+        searchLocationContainer.isUserInteractionEnabled = true
         
         view.addSubViews(labelStack, searchLocationContainer, currentLocationButton)
         
@@ -87,46 +90,46 @@ class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel> {
             setupSelectedStateUI(name: name, address: address)
         }
     }
-
+    
     // MARK: - 위치 미선택 UI
     private func setupNoneStateUI() {
         searchLocationContainer.backgroundColor = AtchaColor.gray930
         searchLocationContainer.layer.cornerRadius = 10
-
+        
         searchLocationLabel.attributedText = AtchaFont.Body_R_17("지번, 도로명, 건물명으로 검색", color: AtchaColor.gray400)
         searchLocationLabel.numberOfLines = 0
         searchLocationLabel.textAlignment = .left
-
+        
         searchLocationContainer.addSubview(searchLocationLabel)
         searchLocationLabel.snp.makeConstraints { make in
             make.leading.equalToSuperview().offset(16)
             make.centerY.equalToSuperview()
         }
-
+        
         setupLocationButton(title: "현 위치 찾기", icon: UIImage.placeFilled)
     }
-
+    
     // MARK: - 위치 선택 UI
     private func setupSelectedStateUI(name: String, address: String) {
         searchLocationContainer.backgroundColor = .clear
-
+        
         locationNameLabel.attributedText = AtchaFont.H6_SB_15(name, color: AtchaColor.white)
         locationAddressLabel.attributedText = AtchaFont.Body_R_14(address, color: AtchaColor.gray200)
-
+        
         let labelStack = UIStackView(arrangedSubviews: [locationNameLabel, locationAddressLabel])
         labelStack.axis = .vertical
         labelStack.spacing = 4
         labelStack.alignment = .leading
-
+        
         searchLocationContainer.addSubview(labelStack)
         labelStack.snp.makeConstraints { make in
             make.leading.equalToSuperview()
             make.centerY.equalToSuperview()
         }
-
+        
         setupLocationButton(title: "수정하기", icon: nil)
     }
-
+    
     // MARK: - 위치 선택/미선택 버튼 UI
     private func setupLocationButton(title: String, icon: UIImage?) {
         currentLocationButton.backgroundColor = .clear
@@ -135,7 +138,7 @@ class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel> {
         currentLocationButton.layer.borderWidth = 1
         currentLocationButton.setAttributedTitle(AtchaFont.Body_R_14(title, color: AtchaColor.white), for: .normal)
         currentLocationButton.tintColor = AtchaColor.white
-
+        
         if let icon = icon {
             let config = UIImage.SymbolConfiguration(pointSize: 16, weight: .regular)
             currentLocationButton.setImage(icon.withConfiguration(config), for: .normal)
@@ -143,5 +146,10 @@ class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel> {
         } else {
             currentLocationButton.setImage(nil, for: .normal)
         }
+    }
+    
+    @objc private func handleSearchLocationTapped() {
+        let vc = SearchLocationViewController(viewModel: SearchLocationViewModel()) // ViewModel 생성 방식에 따라 수정
+        navigationController?.pushViewController(vc, animated: true)
     }
 }

@@ -9,15 +9,20 @@ import UIKit
 import SnapKit
 
 class SearchLocationViewController: BaseViewController<SearchLocationViewModel> {
-
+    
     private let searchNavigationBar: SearchNavigationBar = AtchaNavigationBar.search()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        setupUI()
-    }
         
+        setupUI()
+        
+        // 뒤로가기 버튼 눌렀을 때 dismiss
+        searchNavigationBar.onTapBack = { [weak self] in
+            self?.navigationController?.popViewController(animated: true)
+        }
+    }
+    
     private func setupUI() {
         view.addSubview(searchNavigationBar)
         
@@ -26,5 +31,5 @@ class SearchLocationViewController: BaseViewController<SearchLocationViewModel> 
             make.leading.trailing.equalToSuperview()
         }
     }
-
+    
 }

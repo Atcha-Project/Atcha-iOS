@@ -11,6 +11,8 @@
 		6D1EE2DC2E08E4EA00F7BBF1 /* HomeRegisterViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2DB2E08E4EA00F7BBF1 /* HomeRegisterViewModel.swift */; };
 		6D1EE2DE2E090A3300F7BBF1 /* SearchLocationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2DD2E090A3300F7BBF1 /* SearchLocationViewController.swift */; };
 		6D1EE2E02E090A6B00F7BBF1 /* SearchLocationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2DF2E090A6B00F7BBF1 /* SearchLocationViewModel.swift */; };
+		6D1EE2E52E09A42F00F7BBF1 /* PushAlarmViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2E42E09A42F00F7BBF1 /* PushAlarmViewController.swift */; };
+		6D1EE2E72E09A43700F7BBF1 /* PushAlarmViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2E62E09A43700F7BBF1 /* PushAlarmViewModel.swift */; };
 		6D368BA22E02D2AA00144EE7 /* TitleNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D368BA12E02D2AA00144EE7 /* TitleNavigationBar.swift */; };
 		6D368BA42E02D5E200144EE7 /* IconTitleNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D368BA32E02D5E200144EE7 /* IconTitleNavigationBar.swift */; };
 		6D368BA82E02E92000144EE7 /* BackOnlyNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D368BA72E02E92000144EE7 /* BackOnlyNavigationBar.swift */; };
@@ -104,6 +106,8 @@
 		6D1EE2DB2E08E4EA00F7BBF1 /* HomeRegisterViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeRegisterViewModel.swift; sourceTree = "<group>"; };
 		6D1EE2DD2E090A3300F7BBF1 /* SearchLocationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchLocationViewController.swift; sourceTree = "<group>"; };
 		6D1EE2DF2E090A6B00F7BBF1 /* SearchLocationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchLocationViewModel.swift; sourceTree = "<group>"; };
+		6D1EE2E42E09A42F00F7BBF1 /* PushAlarmViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushAlarmViewController.swift; sourceTree = "<group>"; };
+		6D1EE2E62E09A43700F7BBF1 /* PushAlarmViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushAlarmViewModel.swift; sourceTree = "<group>"; };
 		6D368BA12E02D2AA00144EE7 /* TitleNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitleNavigationBar.swift; sourceTree = "<group>"; };
 		6D368BA32E02D5E200144EE7 /* IconTitleNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconTitleNavigationBar.swift; sourceTree = "<group>"; };
 		6D368BA72E02E92000144EE7 /* BackOnlyNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackOnlyNavigationBar.swift; sourceTree = "<group>"; };
@@ -245,6 +249,8 @@
 		6D1EE2D82E08E4BA00F7BBF1 /* PushAlarm */ = {
 			isa = PBXGroup;
 			children = (
+				6D1EE2E42E09A42F00F7BBF1 /* PushAlarmViewController.swift */,
+				6D1EE2E62E09A43700F7BBF1 /* PushAlarmViewModel.swift */,
 			);
 			path = PushAlarm;
 			sourceTree = "<group>";
@@ -798,6 +804,7 @@
 				B65C133B2E069B4D0016D2F0 /* RefreshTokenResponse.swift in Sources */,
 				6D1EE2E02E090A6B00F7BBF1 /* SearchLocationViewModel.swift in Sources */,
 				B673C4912E0424FD00EE4AD0 /* SplashViewModel.swift in Sources */,
+				6D1EE2E52E09A42F00F7BBF1 /* PushAlarmViewController.swift in Sources */,
 				B68309572E005A3600E2D029 /* ViewController.swift in Sources */,
 				B6D083352E02D928003C28E1 /* AtchaListType.swift in Sources */,
 				B65C130A2E057C920016D2F0 /* EndPoint.swift in Sources */,
@@ -816,6 +823,7 @@
 				B6D083332E02D8F5003C28E1 /* AtchaList.swift in Sources */,
 				B65C12DE2E042CF00016D2F0 /* User.swift in Sources */,
 				B65C13002E057B2A0016D2F0 /* NetworkLogger.swift in Sources */,
+				6D1EE2E72E09A43700F7BBF1 /* PushAlarmViewModel.swift in Sources */,
 				6D1EE2DC2E08E4EA00F7BBF1 /* HomeRegisterViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

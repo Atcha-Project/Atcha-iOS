@@ -33,6 +33,8 @@ final class RegisterTextField: UIView {
         textField.attributedPlaceholder = AtchaFont.Body_M_15("지번, 도로명, 건물명으로 검색", color: AtchaColor.gray400)
         textField.textColor = AtchaColor.white
         textField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
+        textField.returnKeyType = .done // ✅ 완료 버튼 설정
+        textField.delegate = self
         
         resetButton.setImage(UIImage.xCircleGray200, for: .normal)
         resetButton.tintColor = AtchaColor.gray200
@@ -75,5 +77,13 @@ final class RegisterTextField: UIView {
         resetButton.isHidden = true
         onTextReset?()
         onTextChange?("")
+    }
+}
+
+extension RegisterTextField: UITextFieldDelegate {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        // 키보드 내리기
+        textField.resignFirstResponder()
+        return true
     }
 }

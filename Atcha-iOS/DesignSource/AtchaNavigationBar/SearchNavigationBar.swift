@@ -10,7 +10,7 @@ import UIKit
 import SnapKit
 
 // MARK: - Search NavigationBar
-final class SearchNavigationBar: UIView {
+final class SearchNavigationBar: UIView{
     
     var onTapBack: (() -> Void)?
     var onTapCurrentLocation: (() -> Void)?
