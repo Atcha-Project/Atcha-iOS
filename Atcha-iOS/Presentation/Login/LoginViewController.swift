@@ -7,8 +7,10 @@
 
 import UIKit
 import SnapKit
+import AuthenticationServices
 
 final class LoginViewController: BaseViewController<LoginViewModel> {
+    private var appleLoginDelegateWrapper: AppleLoginDelegateWrapper?
     private let backgroundImageView: UIImageView = UIImageView()
     
     private let kakaoLoginButton: UIButton = UIButton(type: .custom)
@@ -201,7 +203,17 @@ extension LoginViewController {
 
     @objc private func didTapAppleLoginButton() {
         print("애플 로그인 버튼 터치됨")
-        viewModel.appleLoginTapped()
+        viewModel.appleLoginTapped(
+            presentationContextProvider: self
+        ) { [weak self] delegate in
+            self?.appleLoginDelegateWrapper = delegate
+        } 
+    }
+}
+
+extension LoginViewController: ASAuthorizationControllerPresentationContextProviding {
+    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
+        return self.view.window!
     }
 }
 
