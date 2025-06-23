@@ -16,12 +16,16 @@ final class AppDIContainer {
     
     let myPageDIContainer: MyPageDIContainer
     let splashDIContainer: SplashDIContainer
+    let loginDIContainer: LoginDIContainer
 
     private init() {
         self.tokenStorage = TokenStorageImpl()
         self.networkDIContainer = NetworkDIContainer(tokenStorage: tokenStorage)
         
-        self.splashDIContainer = SplashDIContainer(apiService: networkDIContainer.makeAPIService())
-        self.myPageDIContainer = MyPageDIContainer(apiService: networkDIContainer.makeAPIService())
+        let apiServce: APIService = networkDIContainer.makeAPIService()
+        
+        self.splashDIContainer = SplashDIContainer(apiService: apiServce)
+        self.myPageDIContainer = MyPageDIContainer(apiService: apiServce)
+        self.loginDIContainer = LoginDIContainer(apiService: apiServce)
     }
 }

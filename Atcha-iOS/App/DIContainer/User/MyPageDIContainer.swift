@@ -20,6 +20,7 @@ final class MyPageDIContainer {
     }
 
     func makeMyPageCoordinator(navigationController: UINavigationController) -> MyPageCoordinator {
-        MyPageCoordinator(navigationController: navigationController, diContainer: self)
+        MyPageCoordinator(navigationController: navigationController,
+                          diContainer: self)
     }
 }
