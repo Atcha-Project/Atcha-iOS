@@ -31,6 +31,7 @@ class LoginViewController: BaseViewController<LoginViewModel> {
         setupLoginIntroCell()
         setupButtonUI()
         setupPageControl()
+        stopAutoScroll()
         startAutoScroll()
     }
     

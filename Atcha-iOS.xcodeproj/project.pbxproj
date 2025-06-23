@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6D1EE2DA2E08E4E000F7BBF1 /* HomeRegisterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2D92E08E4E000F7BBF1 /* HomeRegisterViewController.swift */; };
+		6D1EE2DC2E08E4EA00F7BBF1 /* HomeRegisterViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2DB2E08E4EA00F7BBF1 /* HomeRegisterViewModel.swift */; };
+		6D1EE2DE2E090A3300F7BBF1 /* SearchLocationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2DD2E090A3300F7BBF1 /* SearchLocationViewController.swift */; };
+		6D1EE2E02E090A6B00F7BBF1 /* SearchLocationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2DF2E090A6B00F7BBF1 /* SearchLocationViewModel.swift */; };
 		6D368BA22E02D2AA00144EE7 /* TitleNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D368BA12E02D2AA00144EE7 /* TitleNavigationBar.swift */; };
 		6D368BA42E02D5E200144EE7 /* IconTitleNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D368BA32E02D5E200144EE7 /* IconTitleNavigationBar.swift */; };
 		6D368BA82E02E92000144EE7 /* BackOnlyNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D368BA72E02E92000144EE7 /* BackOnlyNavigationBar.swift */; };
@@ -96,6 +100,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		6D1EE2D92E08E4E000F7BBF1 /* HomeRegisterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeRegisterViewController.swift; sourceTree = "<group>"; };
+		6D1EE2DB2E08E4EA00F7BBF1 /* HomeRegisterViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeRegisterViewModel.swift; sourceTree = "<group>"; };
+		6D1EE2DD2E090A3300F7BBF1 /* SearchLocationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchLocationViewController.swift; sourceTree = "<group>"; };
+		6D1EE2DF2E090A6B00F7BBF1 /* SearchLocationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchLocationViewModel.swift; sourceTree = "<group>"; };
 		6D368BA12E02D2AA00144EE7 /* TitleNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitleNavigationBar.swift; sourceTree = "<group>"; };
 		6D368BA32E02D5E200144EE7 /* IconTitleNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconTitleNavigationBar.swift; sourceTree = "<group>"; };
 		6D368BA72E02E92000144EE7 /* BackOnlyNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackOnlyNavigationBar.swift; sourceTree = "<group>"; };
@@ -199,6 +207,48 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		6D1EE2BC2E08D85F00F7BBF1 /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				6D1EE2D82E08E4BA00F7BBF1 /* PushAlarm */,
+				6D1EE2D72E08E4B400F7BBF1 /* SearchLocation */,
+				6D1EE2D62E08E4AB00F7BBF1 /* HomeRegister */,
+			);
+			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		6D1EE2C12E08DA2000F7BBF1 /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		6D1EE2D62E08E4AB00F7BBF1 /* HomeRegister */ = {
+			isa = PBXGroup;
+			children = (
+				6D1EE2D92E08E4E000F7BBF1 /* HomeRegisterViewController.swift */,
+				6D1EE2DB2E08E4EA00F7BBF1 /* HomeRegisterViewModel.swift */,
+			);
+			path = HomeRegister;
+			sourceTree = "<group>";
+		};
+		6D1EE2D72E08E4B400F7BBF1 /* SearchLocation */ = {
+			isa = PBXGroup;
+			children = (
+				6D1EE2DD2E090A3300F7BBF1 /* SearchLocationViewController.swift */,
+				6D1EE2DF2E090A6B00F7BBF1 /* SearchLocationViewModel.swift */,
+			);
+			path = SearchLocation;
+			sourceTree = "<group>";
+		};
+		6D1EE2D82E08E4BA00F7BBF1 /* PushAlarm */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = PushAlarm;
+			sourceTree = "<group>";
+		};
 		6D368BAB2E0396B100144EE7 /* AtchaTextField */ = {
 			isa = PBXGroup;
 			children = (
@@ -355,6 +405,7 @@
 		B65C12D82E042A320016D2F0 /* DIContainer */ = {
 			isa = PBXGroup;
 			children = (
+				6D1EE2C12E08DA2000F7BBF1 /* Onboarding */,
 				B65C133F2E06E02C0016D2F0 /* Splash */,
 				B65C133E2E06E0270016D2F0 /* User */,
 				B65C12D92E042A740016D2F0 /* AppDIContainer.swift */,
@@ -480,6 +531,7 @@
 		B673C48C2E0424E200EE4AD0 /* Presentation */ = {
 			isa = PBXGroup;
 			children = (
+				6D1EE2BC2E08D85F00F7BBF1 /* Onboarding */,
 				6DC3BF462E05C76E00831470 /* Login */,
 				B65C134D2E07A6BD0016D2F0 /* Main */,
 				B65C132D2E06583E0016D2F0 /* User */,
@@ -701,6 +753,7 @@
 				B65C13062E057BC80016D2F0 /* Encodable+Ext.swift in Sources */,
 				6DC3BEDF2E04F32D00831470 /* UserDefaultsWrapper.swift in Sources */,
 				B65C130E2E057D4D0016D2F0 /* NetworkDIContainer.swift in Sources */,
+				6D1EE2DE2E090A3300F7BBF1 /* SearchLocationViewController.swift in Sources */,
 				B65C132F2E0658470016D2F0 /* MyPageViewController.swift in Sources */,
 				6D8D8B172E02BBC0003DABB2 /* AtchaNavigationBar.swift in Sources */,
 				B65C134C2E07A18D0016D2F0 /* MyPageNavigationTarget.swift in Sources */,
@@ -743,6 +796,7 @@
 				B65C13372E0693A70016D2F0 /* MyPageCell.swift in Sources */,
 				B65C13412E06E0340016D2F0 /* SplashDIContainer.swift in Sources */,
 				B65C133B2E069B4D0016D2F0 /* RefreshTokenResponse.swift in Sources */,
+				6D1EE2E02E090A6B00F7BBF1 /* SearchLocationViewModel.swift in Sources */,
 				B673C4912E0424FD00EE4AD0 /* SplashViewModel.swift in Sources */,
 				B68309572E005A3600E2D029 /* ViewController.swift in Sources */,
 				B6D083352E02D928003C28E1 /* AtchaListType.swift in Sources */,
@@ -754,6 +808,7 @@
 				B65C134A2E07A1280016D2F0 /* MyPageRouter.swift in Sources */,
 				B65C131C2E058C150016D2F0 /* CheckAppVersionUseCase.swift in Sources */,
 				B6D083302E02CC76003C28E1 /* AtchaToast.swift in Sources */,
+				6D1EE2DA2E08E4E000F7BBF1 /* HomeRegisterViewController.swift in Sources */,
 				6DC3BEDD2E04F32400831470 /* UserDefaultsKey.swift in Sources */,
 				B65C13442E06E0BC0016D2F0 /* SplashCoordinator.swift in Sources */,
 				B65C13262E058CC30016D2F0 /* BaseViewModel.swift in Sources */,
@@ -761,6 +816,7 @@
 				B6D083332E02D8F5003C28E1 /* AtchaList.swift in Sources */,
 				B65C12DE2E042CF00016D2F0 /* User.swift in Sources */,
 				B65C13002E057B2A0016D2F0 /* NetworkLogger.swift in Sources */,
+				6D1EE2DC2E08E4EA00F7BBF1 /* HomeRegisterViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
