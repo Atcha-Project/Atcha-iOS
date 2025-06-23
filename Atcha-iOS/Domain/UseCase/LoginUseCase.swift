@@ -13,7 +13,8 @@ import KakaoSDKUser
 protocol LoginUseCase {
     func checkRegistration(_ request: AuthCheckRequest) async throws -> LoginResult
     
-    func signUpWithKakao() async throws -> String
+    @MainActor func signUpWithKakao() async throws -> String
+    @MainActor  func singUpWithApple() async throws -> String
 //    func login(_ request: LoginRequest) async throws -> LoginResult
 //    func logout() async throws -> LoginResult
 //    func signUp(_ request: SignUpRequest) async throws -> LoginResult
@@ -57,5 +58,9 @@ final class LoginUseCaseImpl: LoginUseCase {
                 }
             }
         }
+    }
+    
+    @MainActor func singUpWithApple() async throws -> String {
+        return ""
     }
 }
