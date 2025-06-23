@@ -25,7 +25,4 @@ final class LoginCoordinator {
         let viewController = LoginViewController(viewModel: viewModel)
         navigationController.pushViewController(viewController, animated: true)
     }
-//    func start() {
-//        let viewModel = diContainer.makeLoginCoordinator(navigationController: )
-//    }
 }
