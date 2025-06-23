@@ -37,12 +37,9 @@ class AppFlowCoordinator {
     private func showMainFlow() {
         let navigationController = UINavigationController()
         window.rootViewController = navigationController
-//        
-//        mainCoordinator = MainCoordinator(navigationController: navigationController,
-//                                          diContainer: container)
-//        mainCoordinator?.start()
-        let viewModel = SearchLocationViewModel()
-        let homeRegisterVC = SearchLocationViewController(viewModel: viewModel)
-        navigationController.pushViewController(homeRegisterVC, animated: false)
+        
+        mainCoordinator = MainCoordinator(navigationController: navigationController,
+                                          diContainer: container)
+        mainCoordinator?.start()
     }
 }
