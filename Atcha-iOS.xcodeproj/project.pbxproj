@@ -104,6 +104,7 @@
 		B68309612E005A3600E2D029 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B683094E2E005A3600E2D029 /* LaunchScreen.storyboard */; };
 		B68309622E005A3600E2D029 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B68309502E005A3600E2D029 /* Main.storyboard */; };
 		B68309672E005B5300E2D029 /* UIView+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B68309662E005B5300E2D029 /* UIView+Ext.swift */; };
+		B6ADE18E2E0AE8CF008C4E23 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B6ADE18D2E0AE8CF008C4E23 /* GoogleService-Info.plist */; };
 		B6CF46F12E095FF700304A85 /* LoginDIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6CF46F02E095FF700304A85 /* LoginDIContainer.swift */; };
 		B6CF46F22E09605C00304A85 /* LoginRepositoryImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DC3BF692E0722A500831470 /* LoginRepositoryImpl.swift */; };
 		B6CF46F52E09620100304A85 /* LoginCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6CF46F42E09620100304A85 /* LoginCoordinator.swift */; };
@@ -207,6 +208,7 @@
 		B68309512E005A3600E2D029 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		B68309632E005ADE00E2D029 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		B68309662E005B5300E2D029 /* UIView+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Ext.swift"; sourceTree = "<group>"; };
+		B6ADE18D2E0AE8CF008C4E23 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		B6CF46F02E095FF700304A85 /* LoginDIContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginDIContainer.swift; sourceTree = "<group>"; };
 		B6CF46F42E09620100304A85 /* LoginCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginCoordinator.swift; sourceTree = "<group>"; };
 		B6CF46F72E096CB100304A85 /* LoginResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginResult.swift; sourceTree = "<group>"; };
@@ -662,6 +664,7 @@
 				B673C48C2E0424E200EE4AD0 /* Presentation */,
 				B68309642E005B3C00E2D029 /* Core */,
 				B683094B2E005A3600E2D029 /* DesignSource */,
+				B6ADE18D2E0AE8CF008C4E23 /* GoogleService-Info.plist */,
 				B683094C2E005A3600E2D029 /* Info.plist */,
 				B683094E2E005A3600E2D029 /* LaunchScreen.storyboard */,
 				B68309502E005A3600E2D029 /* Main.storyboard */,
@@ -813,6 +816,7 @@
 				B683095A2E005A3600E2D029 /* Pretendard-ExtraBold.otf in Resources */,
 				B683095B2E005A3600E2D029 /* Pretendard-Medium.otf in Resources */,
 				B683095C2E005A3600E2D029 /* Pretendard-Regular.otf in Resources */,
+				B6ADE18E2E0AE8CF008C4E23 /* GoogleService-Info.plist in Resources */,
 				B683095D2E005A3600E2D029 /* Pretendard-SemiBold.otf in Resources */,
 				B683095E2E005A3600E2D029 /* Icon.xcassets in Resources */,
 				B683095F2E005A3600E2D029 /* Assets.xcassets in Resources */,
@@ -960,7 +964,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.Atcha;
+				PRODUCT_BUNDLE_IDENTIFIER = com.atcha.team;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -994,7 +998,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.Atcha;
+				PRODUCT_BUNDLE_IDENTIFIER = com.atcha.team;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;

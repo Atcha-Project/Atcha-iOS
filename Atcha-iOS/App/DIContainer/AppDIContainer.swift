@@ -11,7 +11,7 @@ import Foundation
 final class AppDIContainer {
     static let shared = AppDIContainer()
 
-    private let tokenStorage: TokenStorage
+    var tokenStorage: TokenStorage
     let networkDIContainer: NetworkDIContainer
     
     let myPageDIContainer: MyPageDIContainer
