@@ -14,6 +14,7 @@ import FirebaseMessaging
 class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // MARK: - Kakao
+        print("Bundle.main.kakaoInitKey : \(Bundle.main.kakaoApiKey)")
         KakaoSDK.initSDK(appKey: Bundle.main.kakaoApiKey)
         
         // MARK: - Firebase
