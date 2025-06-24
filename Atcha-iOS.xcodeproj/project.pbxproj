@@ -13,6 +13,7 @@
 		6D1EE2E02E090A6B00F7BBF1 /* SearchLocationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2DF2E090A6B00F7BBF1 /* SearchLocationViewModel.swift */; };
 		6D1EE2E52E09A42F00F7BBF1 /* PushAlarmViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2E42E09A42F00F7BBF1 /* PushAlarmViewController.swift */; };
 		6D1EE2E72E09A43700F7BBF1 /* PushAlarmViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2E62E09A43700F7BBF1 /* PushAlarmViewModel.swift */; };
+		6D1EE2E92E0A4E2F00F7BBF1 /* Secrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6D1EE2E82E0A4E2F00F7BBF1 /* Secrets.xcconfig */; };
 		6D368BA22E02D2AA00144EE7 /* TitleNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D368BA12E02D2AA00144EE7 /* TitleNavigationBar.swift */; };
 		6D368BA42E02D5E200144EE7 /* IconTitleNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D368BA32E02D5E200144EE7 /* IconTitleNavigationBar.swift */; };
 		6D368BA82E02E92000144EE7 /* BackOnlyNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D368BA72E02E92000144EE7 /* BackOnlyNavigationBar.swift */; };
@@ -79,7 +80,6 @@
 		B65C134F2E07A6C70016D2F0 /* MainCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C134E2E07A6C70016D2F0 /* MainCoordinator.swift */; };
 		B673C48F2E0424F600EE4AD0 /* SplashViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B673C48E2E0424F600EE4AD0 /* SplashViewController.swift */; };
 		B673C4912E0424FD00EE4AD0 /* SplashViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B673C4902E0424FD00EE4AD0 /* SplashViewModel.swift */; };
-		B67E3E532E096E4C0056EEB3 /* Secrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = B67E3E522E096E4C0056EEB3 /* Secrets.xcconfig */; };
 		B67E3E552E0971B70056EEB3 /* Bundle+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B67E3E542E0971B70056EEB3 /* Bundle+Ext.swift */; };
 		B68309532E005A3600E2D029 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B683093B2E005A3600E2D029 /* AppDelegate.swift */; };
 		B68309542E005A3600E2D029 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B683093C2E005A3600E2D029 /* SceneDelegate.swift */; };
@@ -113,6 +113,7 @@
 		6D1EE2DF2E090A6B00F7BBF1 /* SearchLocationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchLocationViewModel.swift; sourceTree = "<group>"; };
 		6D1EE2E42E09A42F00F7BBF1 /* PushAlarmViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushAlarmViewController.swift; sourceTree = "<group>"; };
 		6D1EE2E62E09A43700F7BBF1 /* PushAlarmViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushAlarmViewModel.swift; sourceTree = "<group>"; };
+		6D1EE2E82E0A4E2F00F7BBF1 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 		6D368BA12E02D2AA00144EE7 /* TitleNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitleNavigationBar.swift; sourceTree = "<group>"; };
 		6D368BA32E02D5E200144EE7 /* IconTitleNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconTitleNavigationBar.swift; sourceTree = "<group>"; };
 		6D368BA72E02E92000144EE7 /* BackOnlyNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackOnlyNavigationBar.swift; sourceTree = "<group>"; };
@@ -172,7 +173,6 @@
 		B65C134E2E07A6C70016D2F0 /* MainCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainCoordinator.swift; sourceTree = "<group>"; };
 		B673C48E2E0424F600EE4AD0 /* SplashViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashViewController.swift; sourceTree = "<group>"; };
 		B673C4902E0424FD00EE4AD0 /* SplashViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashViewModel.swift; sourceTree = "<group>"; };
-		B67E3E522E096E4C0056EEB3 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 		B67E3E542E0971B70056EEB3 /* Bundle+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Bundle+Ext.swift"; sourceTree = "<group>"; };
 		B683093B2E005A3600E2D029 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B683093C2E005A3600E2D029 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -617,6 +617,7 @@
 		B68309522E005A3600E2D029 /* Atcha-iOS */ = {
 			isa = PBXGroup;
 			children = (
+				6D1EE2E82E0A4E2F00F7BBF1 /* Secrets.xcconfig */,
 				B65C12D52E0429970016D2F0 /* App */,
 				B65C12D22E0429450016D2F0 /* Data */,
 				B65C12CE2E0429250016D2F0 /* Domain */,
@@ -627,7 +628,6 @@
 				B683094E2E005A3600E2D029 /* LaunchScreen.storyboard */,
 				B68309502E005A3600E2D029 /* Main.storyboard */,
 				B68309512E005A3600E2D029 /* ViewController.swift */,
-				B67E3E522E096E4C0056EEB3 /* Secrets.xcconfig */,
 			);
 			path = "Atcha-iOS";
 			sourceTree = "<group>";
@@ -779,7 +779,7 @@
 				B683095F2E005A3600E2D029 /* Assets.xcassets in Resources */,
 				B68309612E005A3600E2D029 /* LaunchScreen.storyboard in Resources */,
 				B68309622E005A3600E2D029 /* Main.storyboard in Resources */,
-				B67E3E532E096E4C0056EEB3 /* Secrets.xcconfig in Resources */,
+				6D1EE2E92E0A4E2F00F7BBF1 /* Secrets.xcconfig in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -960,7 +960,6 @@
 		};
 		6DE42BA32DFDE6370041344C /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B67E3E522E096E4C0056EEB3 /* Secrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -1025,7 +1024,6 @@
 		};
 		6DE42BA42DFDE6370041344C /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B67E3E522E096E4C0056EEB3 /* Secrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;

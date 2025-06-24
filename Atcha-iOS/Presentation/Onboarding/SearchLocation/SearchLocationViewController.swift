@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import SwiftUI
 
 struct Location {
     let name: String
@@ -16,17 +17,21 @@ struct Location {
 class SearchLocationViewController: BaseViewController<SearchLocationViewModel> {
     
     private let searchNavigationBar: SearchNavigationBar = AtchaNavigationBar.search()
+    private let headerView: UIView = UIView()
+    private let separator: UIView = UIView()
+    private let headerLabel: UILabel = UILabel()
+    private var tableViewTopConstraint: Constraint?
     
     //테스트 용
     private var allLocations: [Location] = [
-//        Location(name: "서울역", detail: "1.9km ㆍ 서울시 중구 세종대로 1"),
-//        Location(name: "서울역 롯데몰", detail: "1.9km ㆍ 서울시 중구 청파로 426"),
-//        Location(name: "서울역 지하쇼핑센터", detail: "1.8km ㆍ 서울시 중구 통일로 20"),
-//        Location(name: "서울역 공항철도", detail: "2.0km ㆍ 서울시 용산구 한강대로 405"),
-//        Location(name: "서울역 카페", detail: "1.7km ㆍ 서울시 중구 만리재로 201"),
-//        Location(name: "서울역 스터디룸", detail: "1.6km ㆍ 서울시 중구 만리동2가 50"),
-//        Location(name: "서울역 버거킹", detail: "1.5km ㆍ 서울시 중구 세종대로 12"),
-//        Location(name: "서울역 고속터미널", detail: "3.2km ㆍ 서울시 서초구 신반포로 194")
+        Location(name: "서울역", detail: "1.9km ㆍ 서울시 중구 세종대로 1"),
+        Location(name: "서울역 롯데몰", detail: "1.9km ㆍ 서울시 중구 청파로 426"),
+        Location(name: "서울역 지하쇼핑센터", detail: "1.8km ㆍ 서울시 중구 통일로 20"),
+        Location(name: "서울역 공항철도", detail: "2.0km ㆍ 서울시 용산구 한강대로 405"),
+        Location(name: "서울역 카페", detail: "1.7km ㆍ 서울시 중구 만리재로 201"),
+        Location(name: "서울역 스터디룸", detail: "1.6km ㆍ 서울시 중구 만리동2가 50"),
+        Location(name: "서울역 버거킹", detail: "1.5km ㆍ 서울시 중구 세종대로 12"),
+        Location(name: "서울역 고속터미널", detail: "3.2km ㆍ 서울시 서초구 신반포로 194")
     ]
     
     private var filteredLocations: [Location] = []
@@ -41,35 +46,80 @@ class SearchLocationViewController: BaseViewController<SearchLocationViewModel> 
         searchNavigationBar.onTapBack = { [weak self] in
             self?.navigationController?.popViewController(animated: true)
         }
-
+        
         searchNavigationBar.onTextChange = { [weak self] text in
-            self?.filterList(with: text, isSubmitted: false)
+            guard let self = self else { return }
+            self.headerView.isHidden = true
+            
+            self.tableView.snp.remakeConstraints { make in
+                make.top.equalTo(self.searchNavigationBar.snp.bottom)
+                make.leading.trailing.bottom.equalToSuperview()
+            }
+            
+            UIView.animate(withDuration: 0.25) {
+                self.view.layoutIfNeeded()
+            }
+            
+            self.filterList(with: text, isSubmitted: false)
         }
         
         searchNavigationBar.onTextSubmit = { [weak self] text in
-            self?.filterList(with: text, isSubmitted: true)
+            guard let self = self else { return }
+            
+            self.headerView.isHidden = false
+            
+            self.tableView.snp.remakeConstraints { make in
+                make.top.equalTo(self.headerView.snp.bottom)
+                make.leading.trailing.bottom.equalToSuperview()
+            }
+            
+            self.filterList(with: text, isSubmitted: true)
         }
     }
     
     // MARK: - Search Location UI
     private func setupUI() {
-        view.addSubViews(searchNavigationBar, tableView)
-        
-        searchNavigationBar.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
-            make.leading.trailing.equalToSuperview()
-        }
-        
-        tableView.snp.makeConstraints { make in
-            make.top.equalTo(searchNavigationBar.snp.bottom)
-            make.leading.trailing.bottom.equalToSuperview()
-        }
+        headerView.backgroundColor = .clear
+        separator.backgroundColor = AtchaColor.black
+        headerLabel.attributedText = AtchaFont.Body_R_14("장소 결과", color: AtchaColor.gray400)
+        headerView.addSubViews(separator, headerLabel)
+        headerView.isHidden = true
         
         tableView.separatorStyle = .none
         tableView.backgroundColor = .clear
         tableView.dataSource = self
         tableView.delegate = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+        
+        view.addSubViews(searchNavigationBar, headerView, tableView)
+        
+        searchNavigationBar.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
+            make.leading.trailing.equalToSuperview()
+        }
+        
+        separator.snp.makeConstraints { make in
+            make.top.equalTo(headerView.snp.top)
+            make.leading.equalTo(headerView.snp.leading)
+            make.trailing.equalTo(headerView.snp.trailing)
+            make.height.equalTo(10)
+        }
+        
+        headerLabel.snp.makeConstraints { make in
+            make.top.equalTo(separator.snp.bottom).offset(14)
+            make.leading.equalTo(headerView.snp.leading).inset(16)
+        }
+        
+        headerView.snp.makeConstraints { make in
+            make.top.equalTo(searchNavigationBar.snp.bottom)
+            make.leading.trailing.equalToSuperview()
+            make.bottom.equalTo(headerLabel.snp.bottom).offset(4)
+        }
+        
+        tableView.snp.makeConstraints { make in
+            self.tableViewTopConstraint = make.top.equalTo(searchNavigationBar.snp.bottom).constraint
+            make.leading.trailing.bottom.equalToSuperview()
+        }
     }
     
     
@@ -128,36 +178,5 @@ extension SearchLocationViewController: UITableViewDataSource, UITableViewDelega
     
     func numberOfSections(in tableView: UITableView) -> Int {
         return filteredLocations.isEmpty ? 0 : 1
-    }
-    
-    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        guard isSubmitted else { return nil }
-
-        let headerView = UIView()
-        headerView.backgroundColor = .clear
-        
-        let separator = UIView()
-        separator.backgroundColor = AtchaColor.black
-        headerView.addSubview(separator)
-        separator.snp.makeConstraints { make in
-            make.top.equalTo(headerView.snp.top)
-            make.leading.trailing.equalToSuperview()
-            make.height.equalTo(10)
-        }
-
-        let label = UILabel()
-        label.attributedText = AtchaFont.Body_R_14("장소 결과", color: AtchaColor.gray400)
-        headerView.addSubview(label)
-        label.snp.makeConstraints { make in
-            make.top.equalTo(separator.snp.bottom).offset(14)
-            make.leading.equalTo(headerView.snp.leading).inset(16)
-            make.bottom.equalTo(headerView.snp.bottom).inset(4)
-        }
-        
-        return headerView
-    }
-    
-    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return isSubmitted ? 46 : 0
     }
 }
