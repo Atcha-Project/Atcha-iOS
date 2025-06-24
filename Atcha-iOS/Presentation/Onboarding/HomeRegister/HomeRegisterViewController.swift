@@ -50,9 +50,9 @@ class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel> {
         labelStack.alignment = .leading
         
         
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleSearchLocationTapped))
-        searchLocationContainer.addGestureRecognizer(tapGesture)
-        searchLocationContainer.isUserInteractionEnabled = true
+//        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleSearchLocationTapped))
+//        searchLocationContainer.addGestureRecognizer(tapGesture)
+//        searchLocationContainer.isUserInteractionEnabled = true
         
         view.addSubViews(labelStack, searchLocationContainer, currentLocationButton)
         
@@ -148,8 +148,8 @@ class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel> {
         }
     }
     
-    @objc private func handleSearchLocationTapped() {
-        let vc = SearchLocationViewController(viewModel: SearchLocationViewModel()) // ViewModel 생성 방식에 따라 수정
-        navigationController?.pushViewController(vc, animated: true)
-    }
+//    @objc private func handleSearchLocationTapped() {
+//        let vc = SearchLocationViewController(viewModel: SearchLocationViewModel()) // ViewModel 생성 방식에 따라 수정
+//        navigationController?.pushViewController(vc, animated: true)
+//    }
 }
