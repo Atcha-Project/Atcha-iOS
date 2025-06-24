@@ -9,11 +9,6 @@ import UIKit
 import SnapKit
 import SwiftUI
 
-struct Location {
-    let name: String
-    let detail: String
-}
-
 class SearchLocationViewController: BaseViewController<SearchLocationViewModel> {
     
     private let searchNavigationBar: SearchNavigationBar = AtchaNavigationBar.search()
@@ -21,18 +16,6 @@ class SearchLocationViewController: BaseViewController<SearchLocationViewModel> 
     private let separator: UIView = UIView()
     private let headerLabel: UILabel = UILabel()
     private var tableViewTopConstraint: Constraint?
-    
-    //테스트 용
-    private var allLocations: [Location] = [
-        Location(name: "서울역", detail: "1.9km ㆍ 서울시 중구 세종대로 1"),
-        Location(name: "서울역 롯데몰", detail: "1.9km ㆍ 서울시 중구 청파로 426"),
-        Location(name: "서울역 지하쇼핑센터", detail: "1.8km ㆍ 서울시 중구 통일로 20"),
-        Location(name: "서울역 공항철도", detail: "2.0km ㆍ 서울시 용산구 한강대로 405"),
-        Location(name: "서울역 카페", detail: "1.7km ㆍ 서울시 중구 만리재로 201"),
-        Location(name: "서울역 스터디룸", detail: "1.6km ㆍ 서울시 중구 만리동2가 50"),
-        Location(name: "서울역 버거킹", detail: "1.5km ㆍ 서울시 중구 세종대로 12"),
-        Location(name: "서울역 고속터미널", detail: "3.2km ㆍ 서울시 서초구 신반포로 194")
-    ]
     
     private var filteredLocations: [Location] = []
     private let tableView = UITableView()
@@ -130,8 +113,9 @@ class SearchLocationViewController: BaseViewController<SearchLocationViewModel> 
         if keyword.isEmpty {
             filteredLocations = []
         } else {
-            let matches = allLocations.filter { $0.name.contains(keyword) }
-            filteredLocations = matches
+            //서버에서 주소 받을 시 사용
+//            let matches = allLocations.filter { $0.name.contains(keyword) }
+//            filteredLocations = matches
         }
         
         tableView.reloadData()
@@ -150,10 +134,11 @@ extension SearchLocationViewController: UITableViewDataSource, UITableViewDelega
         // 기존 content 제거
         cell.contentView.subviews.forEach { $0.removeFromSuperview() }
         
+        //서버에서 주소 받을 시 사용
         let titleLabel = UILabel()
-        titleLabel.attributedText = AtchaFont.Body_R_15(location.name, color: AtchaColor.white)
+//        titleLabel.attributedText = AtchaFont.Body_R_15(location.name, color: AtchaColor.white)
         let detailLabel = UILabel()
-        detailLabel.attributedText = AtchaFont.Body_R_14(location.detail, color: AtchaColor.gray200)
+//        detailLabel.attributedText = AtchaFont.Body_R_14(location.detail, color: AtchaColor.gray200)
         
         let labelStack = UIStackView(arrangedSubviews: [titleLabel, detailLabel])
         labelStack.axis = .vertical

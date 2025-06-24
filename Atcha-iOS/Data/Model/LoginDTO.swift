@@ -24,7 +24,3 @@ struct TokenResponse: Decodable {
     let accessToken: String
     let refreshToken: String
 }
-
-struct SignUpRequest: Encodable {
-
-}
