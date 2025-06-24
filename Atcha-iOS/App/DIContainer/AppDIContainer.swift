@@ -17,6 +17,7 @@ final class AppDIContainer {
     let myPageDIContainer: MyPageDIContainer
     let splashDIContainer: SplashDIContainer
     let loginDIContainer: LoginDIContainer
+    let onboardingDIContainer: OnboardingDIContainer
 
     private init() {
         self.tokenStorage = TokenStorageImpl()
@@ -27,5 +28,6 @@ final class AppDIContainer {
         self.splashDIContainer = SplashDIContainer(apiService: apiServce)
         self.myPageDIContainer = MyPageDIContainer(apiService: apiServce)
         self.loginDIContainer = LoginDIContainer(apiService: apiServce)
+        self.onboardingDIContainer = OnboardingDIContainer(apiService: apiServce)
     }
 }

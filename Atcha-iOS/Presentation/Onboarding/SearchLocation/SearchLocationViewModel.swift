@@ -8,5 +8,9 @@
 import Foundation
 
 final class SearchLocationViewModel: BaseViewModel {
+    private let onboardingUseCase: OnboardingUseCase
     
+    init(onboardingUseCase: OnboardingUseCase) {
+        self.onboardingUseCase = onboardingUseCase
+    }
 }

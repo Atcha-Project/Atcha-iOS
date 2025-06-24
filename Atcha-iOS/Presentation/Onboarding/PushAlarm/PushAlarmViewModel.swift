@@ -8,5 +8,9 @@
 import Foundation
 
 final class PushAlarmViewModel: BaseViewModel {
+    private let onboardingUseCase: OnboardingUseCase
     
+    init(onboardingUseCase: OnboardingUseCase) {
+        self.onboardingUseCase = onboardingUseCase
+    }
 }

@@ -20,6 +20,10 @@ protocol LoginCoordinatorFactory {
     func makeLoginCoordinator(navigationController: UINavigationController) -> LoginCoordinator
 }
 
+protocol OnboardingCoordinatorFactory {
+    func makeOnboardingCoordinator(navigationController: UINavigationController) -> OnboardingCoordinator
+}
+
 extension AppDIContainer: SplashCoordinatorFactory, MyPageCoordinatorFactory {
     func makeSplashCoordinator(navigationController: UINavigationController) -> SplashCoordinator {
         return splashDIContainer.makeSplashCoordinator(navigationController: navigationController)
@@ -31,5 +35,9 @@ extension AppDIContainer: SplashCoordinatorFactory, MyPageCoordinatorFactory {
     
     func makeLoginCoordinator(navigationController: UINavigationController) -> LoginCoordinator {
         return loginDIContainer.makeLoginCoordinator(navigationController: navigationController)
+    }
+    
+    func makeOnboardingCoordinator(navigationController: UINavigationController) -> OnboardingCoordinator {
+        return onboardingDIContainer.makeOnboardingCoordinator(navigationController: navigationController)
     }
 }
