@@ -80,4 +80,9 @@ final class TitleNavigationBar: UIView {
     @objc private func didTapClose() {
         onTapClose?()
     }
+    
+    // MARK: - CloseButton 숨김
+    func hideCloseButton() {
+        closeButton.isHidden = true
+    }
 }

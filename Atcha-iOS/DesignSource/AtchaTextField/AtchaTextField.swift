@@ -11,11 +11,14 @@ enum AtchaTextField {
     // 집 주소 등록 시 사용하는 TextField
     static func registerTextField(
         onTextChange: ((String) -> Void)? = nil,
-        onTextReset: (() -> Void)? = nil ) -> RegisterTextField {
-            let textField = RegisterTextField(onTextChange: onTextChange)
-            textField.onTextReset = onTextReset
-            return textField
-        }
+        onTextReset: (() -> Void)? = nil,
+        onTextSubmit: ((String) -> Void)? = nil
+    ) -> RegisterTextField {
+        let textField = RegisterTextField(onTextChange: onTextChange)
+        textField.onTextReset = onTextReset
+        textField.onTextSubmit = onTextSubmit
+        return textField
+    }
     
     // 초록 점이 포함된 검색 TextField
     static func searchTextField(
