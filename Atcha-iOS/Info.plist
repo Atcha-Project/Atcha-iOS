@@ -5,9 +5,11 @@
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>&gt;$(KAKAO_INIT_KEY)</string>
+				<string>$(KAKAO_INIT_KEY)</string>
 			</array>
 		</dict>
 	</array>
