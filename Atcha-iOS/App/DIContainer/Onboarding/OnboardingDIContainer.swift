@@ -23,7 +23,7 @@ final class OnboardingDIContainer {
     }
     
     func makeHomeRegisterViewModel() -> HomeRegisterViewModel {
-        HomeRegisterViewModel()
+        HomeRegisterViewModel(onboardingUseCase: makeOnboardingUseCase())
     }
     
     func makeSearchLocationViewModel() -> SearchLocationViewModel {

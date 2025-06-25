@@ -16,7 +16,7 @@ final class LoginRepositoryImpl: LoginRepository {
     func checkRegistration(_ request: AuthCheckRequest) async throws -> AuthCheckResponse {
         return try await apiService.request(
             Endpoint(
-                path: "http://atcha.p-e.kr/api/auth/check",
+                path: "https://atcha.p-e.kr/api/auth/check",
                 method: .get,
                 parameters: ["provider": "\(request.provider)"],
                 headers: ["Authorization": "Bearer \(request.accessToken)"]
