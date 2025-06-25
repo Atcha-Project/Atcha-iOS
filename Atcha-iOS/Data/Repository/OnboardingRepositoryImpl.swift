@@ -16,16 +16,24 @@ final class OnboardingRepositoryImpl: OnboardingRepository {
     
     func signUp(_ request: SignUpRequest) async throws -> SignUpResponse {
         
-        return try await apiService.request(Endpoint(path: "https://atcha.p-e.kr/api/auth/sign-up", method: .post), body: request)
+        return try await apiService.request(
+            Endpoint(
+                path: "https://atcha.p-e.kr/api/auth/sign-up",
+                method: .post,
+                headers: ["Authorization": "Bearer "]),
+            body: request)
     }
     
-    func searchLocation(_ request: SearchLocationRequest) async throws -> SearchLocationResponse {
+    func searchLocation(_ request: SearchLocationRequest) async throws -> [Location] {
         
-        return try await apiService.request(Endpoint(path: "https://atcha.p-e.kr/api/locations", method: .get, parameters: [
-            "keyword": "\(request.keyword)",
-            "lat": "\(request.lat)",
-            "lon": "\(request.lon)" ] ))
+        return try await apiService.request(
+            Endpoint(
+                path: "https://atcha.p-e.kr/api/locations",
+                method: .get,
+                parameters: [
+                    "keyword": "\(request.keyword)",
+                    "lat": "\(request.lat)",
+                    "lon": "\(request.lon)" ]
+            ))
     }
-    
-    
 }

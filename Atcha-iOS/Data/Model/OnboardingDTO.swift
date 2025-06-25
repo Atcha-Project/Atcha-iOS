@@ -31,10 +31,6 @@ struct SearchLocationRequest: Codable {
     let lon: Double
 }
 
-struct SearchLocationResponse: Codable {
-    let result: [Location]
-}
-
 struct Location: Codable {
     let name: String
     let lat: Double

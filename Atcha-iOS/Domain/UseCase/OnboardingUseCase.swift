@@ -12,7 +12,7 @@ protocol OnboardingUseCase {
     func signUp(_ request: SignUpRequest) async throws -> SignUpResponse
     
     // 주소 검색
-    func searchLocation(_ request: SearchLocationRequest) async throws -> SearchLocationResponse
+    func searchLocation(_ request: SearchLocationRequest) async throws -> [Location]
 }
 
 final class OnboardingUseCaseImpl: OnboardingUseCase {
@@ -28,7 +28,7 @@ final class OnboardingUseCaseImpl: OnboardingUseCase {
         
     }
     
-    func searchLocation(_ request: SearchLocationRequest) async throws -> SearchLocationResponse {
+    func searchLocation(_ request: SearchLocationRequest) async throws -> [Location] {
         
         return try await repository.searchLocation(request)
     }

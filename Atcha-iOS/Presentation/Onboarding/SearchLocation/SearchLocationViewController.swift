@@ -26,6 +26,13 @@ class SearchLocationViewController: BaseViewController<SearchLocationViewModel> 
         
         setupUI()
         
+        // 실시간 검색 결과 업데이트 시 UI 반영
+        viewModel.onLocationsUpdated = { [weak self] locations in
+            self?.filteredLocations = locations
+            self?.tableView.reloadData()
+        }
+        
+        
         searchNavigationBar.onTapBack = { [weak self] in
             self?.navigationController?.popViewController(animated: true)
         }
@@ -43,7 +50,8 @@ class SearchLocationViewController: BaseViewController<SearchLocationViewModel> 
                 self.view.layoutIfNeeded()
             }
             
-            self.filterList(with: text, isSubmitted: false)
+            //LocationManager 만들어서 위도 경도 수정할 것
+            self.viewModel.searchLocation(keyword: text, lat: 37.556104, lon: 126.972656)
         }
         
         searchNavigationBar.onTextSubmit = { [weak self] text in
@@ -56,7 +64,8 @@ class SearchLocationViewController: BaseViewController<SearchLocationViewModel> 
                 make.leading.trailing.bottom.equalToSuperview()
             }
             
-            self.filterList(with: text, isSubmitted: true)
+            //LocationManager 만들어서 위도 경도 수정할 것
+            self.viewModel.searchLocation(keyword: text, lat: 37.556104, lon: 126.972656)
         }
     }
     
@@ -104,22 +113,6 @@ class SearchLocationViewController: BaseViewController<SearchLocationViewModel> 
             make.leading.trailing.bottom.equalToSuperview()
         }
     }
-    
-    
-    // MARK: - 검색 필터 Method
-    private func filterList(with keyword: String, isSubmitted: Bool = false) {
-        self.isSubmitted = isSubmitted
-        
-        if keyword.isEmpty {
-            filteredLocations = []
-        } else {
-            //서버에서 주소 받을 시 사용
-//            let matches = allLocations.filter { $0.name.contains(keyword) }
-//            filteredLocations = matches
-        }
-        
-        tableView.reloadData()
-    }
 }
 
 extension SearchLocationViewController: UITableViewDataSource, UITableViewDelegate {
@@ -134,11 +127,10 @@ extension SearchLocationViewController: UITableViewDataSource, UITableViewDelega
         // 기존 content 제거
         cell.contentView.subviews.forEach { $0.removeFromSuperview() }
         
-        //서버에서 주소 받을 시 사용
         let titleLabel = UILabel()
-//        titleLabel.attributedText = AtchaFont.Body_R_15(location.name, color: AtchaColor.white)
+        titleLabel.attributedText = AtchaFont.Body_R_15(location.name, color: AtchaColor.white)
         let detailLabel = UILabel()
-//        detailLabel.attributedText = AtchaFont.Body_R_14(location.detail, color: AtchaColor.gray200)
+        detailLabel.attributedText = AtchaFont.Body_R_14(location.address, color: AtchaColor.gray200)
         
         let labelStack = UIStackView(arrangedSubviews: [titleLabel, detailLabel])
         labelStack.axis = .vertical
