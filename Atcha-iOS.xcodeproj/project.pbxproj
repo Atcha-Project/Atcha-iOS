@@ -50,7 +50,7 @@
 		B600CA132E07FD29008B0D87 /* MyPageCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C13472E07A10F0016D2F0 /* MyPageCoordinator.swift */; };
 		B65C12D72E0429B30016D2F0 /* AppFlowCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C12D62E0429B30016D2F0 /* AppFlowCoordinator.swift */; };
 		B65C12DA2E042A740016D2F0 /* AppDIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C12D92E042A740016D2F0 /* AppDIContainer.swift */; };
-		B65C12DE2E042CF00016D2F0 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C12DD2E042CF00016D2F0 /* User.swift */; };
+		B65C12DE2E042CF00016D2F0 /* UserInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C12DD2E042CF00016D2F0 /* UserInfo.swift */; };
 		B65C12E02E042D260016D2F0 /* UserRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C12DF2E042D260016D2F0 /* UserRepository.swift */; };
 		B65C12E22E042D400016D2F0 /* FetchUserUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C12E12E042D400016D2F0 /* FetchUserUseCase.swift */; };
 		B65C12E42E042D6B0016D2F0 /* UserRepositoryImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C12E32E042D6B0016D2F0 /* UserRepositoryImpl.swift */; };
@@ -151,7 +151,7 @@
 		6DE42B8D2DFDE6360041344C /* Atcha-iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Atcha-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B65C12D62E0429B30016D2F0 /* AppFlowCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFlowCoordinator.swift; sourceTree = "<group>"; };
 		B65C12D92E042A740016D2F0 /* AppDIContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDIContainer.swift; sourceTree = "<group>"; };
-		B65C12DD2E042CF00016D2F0 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
+		B65C12DD2E042CF00016D2F0 /* UserInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserInfo.swift; sourceTree = "<group>"; };
 		B65C12DF2E042D260016D2F0 /* UserRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserRepository.swift; sourceTree = "<group>"; };
 		B65C12E12E042D400016D2F0 /* FetchUserUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchUserUseCase.swift; sourceTree = "<group>"; };
 		B65C12E32E042D6B0016D2F0 /* UserRepositoryImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserRepositoryImpl.swift; sourceTree = "<group>"; };
@@ -392,7 +392,7 @@
 		B65C12CF2E04292F0016D2F0 /* Entity */ = {
 			isa = PBXGroup;
 			children = (
-				B65C12DD2E042CF00016D2F0 /* User.swift */,
+				B65C12DD2E042CF00016D2F0 /* UserInfo.swift */,
 			);
 			path = Entity;
 			sourceTree = "<group>";
@@ -917,7 +917,7 @@
 				B65C13262E058CC30016D2F0 /* BaseViewModel.swift in Sources */,
 				B65C132A2E058FD70016D2F0 /* APIResponse.swift in Sources */,
 				B6D083332E02D8F5003C28E1 /* AtchaList.swift in Sources */,
-				B65C12DE2E042CF00016D2F0 /* User.swift in Sources */,
+				B65C12DE2E042CF00016D2F0 /* UserInfo.swift in Sources */,
 				B65C13002E057B2A0016D2F0 /* NetworkLogger.swift in Sources */,
 				6D1EE2E72E09A43700F7BBF1 /* PushAlarmViewModel.swift in Sources */,
 				6D1EE2DC2E08E4EA00F7BBF1 /* HomeRegisterViewModel.swift in Sources */,

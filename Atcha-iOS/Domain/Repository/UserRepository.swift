@@ -8,5 +8,5 @@
 import Foundation
 
 protocol UserRepository {
-    func fetchUser() async throws -> User
+    func fetchUser() async throws -> UserInfo
 }
