@@ -19,7 +19,7 @@
 		6D1EE2F22E0A80AA00F7BBF1 /* OnboardingDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2F12E0A80AA00F7BBF1 /* OnboardingDTO.swift */; };
 		6D1EE2F42E0A8EA400F7BBF1 /* OnboardingRepositoryImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2F32E0A8EA400F7BBF1 /* OnboardingRepositoryImpl.swift */; };
 		6D1EE2F72E0A933000F7BBF1 /* OnboardingCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2F62E0A933000F7BBF1 /* OnboardingCoordinator.swift */; };
-		6D1EE2FB2E0AF24B00F7BBF1 /* Secrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6D1EE2FA2E0AF24B00F7BBF1 /* Secrets.xcconfig */; };
+		6D1EE2FD2E0C1C8900F7BBF1 /* Secrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6D1EE2FC2E0C1C8900F7BBF1 /* Secrets.xcconfig */; };
 		6D368BA22E02D2AA00144EE7 /* TitleNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D368BA12E02D2AA00144EE7 /* TitleNavigationBar.swift */; };
 		6D368BA42E02D5E200144EE7 /* IconTitleNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D368BA32E02D5E200144EE7 /* IconTitleNavigationBar.swift */; };
 		6D368BA82E02E92000144EE7 /* BackOnlyNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D368BA72E02E92000144EE7 /* BackOnlyNavigationBar.swift */; };
@@ -105,7 +105,6 @@
 		B68309622E005A3600E2D029 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B68309502E005A3600E2D029 /* Main.storyboard */; };
 		B68309672E005B5300E2D029 /* UIView+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B68309662E005B5300E2D029 /* UIView+Ext.swift */; };
 		B6ADE18E2E0AE8CF008C4E23 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B6ADE18D2E0AE8CF008C4E23 /* GoogleService-Info.plist */; };
-		B6ADE1922E0C0BF9008C4E23 /* Secrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = B6ADE1912E0C0BF9008C4E23 /* Secrets.xcconfig */; };
 		B6ADE1942E0C0DE6008C4E23 /* LoginType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6ADE1932E0C0DE6008C4E23 /* LoginType.swift */; };
 		B6CF46F12E095FF700304A85 /* LoginDIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6CF46F02E095FF700304A85 /* LoginDIContainer.swift */; };
 		B6CF46F22E09605C00304A85 /* LoginRepositoryImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DC3BF692E0722A500831470 /* LoginRepositoryImpl.swift */; };
@@ -129,7 +128,7 @@
 		6D1EE2F12E0A80AA00F7BBF1 /* OnboardingDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingDTO.swift; sourceTree = "<group>"; };
 		6D1EE2F32E0A8EA400F7BBF1 /* OnboardingRepositoryImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingRepositoryImpl.swift; sourceTree = "<group>"; };
 		6D1EE2F62E0A933000F7BBF1 /* OnboardingCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingCoordinator.swift; sourceTree = "<group>"; };
-		6D1EE2FA2E0AF24B00F7BBF1 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
+		6D1EE2FC2E0C1C8900F7BBF1 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 		6D368BA12E02D2AA00144EE7 /* TitleNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitleNavigationBar.swift; sourceTree = "<group>"; };
 		6D368BA32E02D5E200144EE7 /* IconTitleNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconTitleNavigationBar.swift; sourceTree = "<group>"; };
 		6D368BA72E02E92000144EE7 /* BackOnlyNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackOnlyNavigationBar.swift; sourceTree = "<group>"; };
@@ -211,7 +210,6 @@
 		B68309632E005ADE00E2D029 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		B68309662E005B5300E2D029 /* UIView+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Ext.swift"; sourceTree = "<group>"; };
 		B6ADE18D2E0AE8CF008C4E23 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
-		B6ADE1912E0C0BF9008C4E23 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 		B6ADE1932E0C0DE6008C4E23 /* LoginType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginType.swift; sourceTree = "<group>"; };
 		B6CF46F02E095FF700304A85 /* LoginDIContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginDIContainer.swift; sourceTree = "<group>"; };
 		B6CF46F42E09620100304A85 /* LoginCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginCoordinator.swift; sourceTree = "<group>"; };
@@ -660,8 +658,7 @@
 		B68309522E005A3600E2D029 /* Atcha-iOS */ = {
 			isa = PBXGroup;
 			children = (
-				6D1EE2FA2E0AF24B00F7BBF1 /* Secrets.xcconfig */,
-				B6ADE1912E0C0BF9008C4E23 /* Secrets.xcconfig */,
+				6D1EE2FC2E0C1C8900F7BBF1 /* Secrets.xcconfig */,
 				B67E3E592E09811E0056EEB3 /* Atcha-iOS.entitlements */,
 				B65C12D52E0429970016D2F0 /* App */,
 				B65C12D22E0429450016D2F0 /* Data */,
@@ -819,14 +816,13 @@
 			files = (
 				B68309582E005A3600E2D029 /* Colors.xcassets in Resources */,
 				B68309592E005A3600E2D029 /* Pretendard-Bold.otf in Resources */,
-				B6ADE1922E0C0BF9008C4E23 /* Secrets.xcconfig in Resources */,
 				B683095A2E005A3600E2D029 /* Pretendard-ExtraBold.otf in Resources */,
 				B683095B2E005A3600E2D029 /* Pretendard-Medium.otf in Resources */,
 				B683095C2E005A3600E2D029 /* Pretendard-Regular.otf in Resources */,
 				B6ADE18E2E0AE8CF008C4E23 /* GoogleService-Info.plist in Resources */,
 				B683095D2E005A3600E2D029 /* Pretendard-SemiBold.otf in Resources */,
 				B683095E2E005A3600E2D029 /* Icon.xcassets in Resources */,
-				6D1EE2FB2E0AF24B00F7BBF1 /* Secrets.xcconfig in Resources */,
+				6D1EE2FD2E0C1C8900F7BBF1 /* Secrets.xcconfig in Resources */,
 				B683095F2E005A3600E2D029 /* Assets.xcassets in Resources */,
 				B68309612E005A3600E2D029 /* LaunchScreen.storyboard in Resources */,
 				B68309622E005A3600E2D029 /* Main.storyboard in Resources */,
@@ -952,7 +948,6 @@
 /* Begin XCBuildConfiguration section */
 		6DE42BA12DFDE6370041344C /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6D1EE2FA2E0AF24B00F7BBF1 /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -987,7 +982,6 @@
 		};
 		6DE42BA22DFDE6370041344C /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6D1EE2FA2E0AF24B00F7BBF1 /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -1022,7 +1016,6 @@
 		};
 		6DE42BA32DFDE6370041344C /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6D1EE2FA2E0AF24B00F7BBF1 /* Secrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -1087,7 +1080,6 @@
 		};
 		6DE42BA42DFDE6370041344C /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6D1EE2FA2E0AF24B00F7BBF1 /* Secrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
