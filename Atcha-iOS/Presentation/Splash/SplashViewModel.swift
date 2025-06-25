@@ -33,6 +33,10 @@ final class SplashViewModel: BaseViewModel {
         }
     }
     
+    func checkUserInfo() {
+        
+    }
+    
     func signUpFinished() {
         onSignUpCompleted?()
     }

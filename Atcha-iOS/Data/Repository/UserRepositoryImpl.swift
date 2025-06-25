@@ -14,7 +14,10 @@ final class UserRepositoryImpl: UserRepository {
         self.apiService = apiService
     }
     
-    func fetchUser() async throws -> User {
-        return .init(id: 1, nickname: "")
+    func fetchUser() async throws -> UserInfo {
+        return try await apiService.request(
+            Endpoint(path: "https://atcha.p-e.kr/api/members/me",
+                     method: .get)
+        )
     }
 }
