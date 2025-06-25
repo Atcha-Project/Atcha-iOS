@@ -13,13 +13,13 @@
 		6D1EE2E02E090A6B00F7BBF1 /* SearchLocationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2DF2E090A6B00F7BBF1 /* SearchLocationViewModel.swift */; };
 		6D1EE2E52E09A42F00F7BBF1 /* PushAlarmViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2E42E09A42F00F7BBF1 /* PushAlarmViewController.swift */; };
 		6D1EE2E72E09A43700F7BBF1 /* PushAlarmViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2E62E09A43700F7BBF1 /* PushAlarmViewModel.swift */; };
-		6D1EE2E92E0A4E2F00F7BBF1 /* Secrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6D1EE2E82E0A4E2F00F7BBF1 /* Secrets.xcconfig */; };
 		6D1EE2EC2E0A7BEF00F7BBF1 /* OnboardingDIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2EB2E0A7BEF00F7BBF1 /* OnboardingDIContainer.swift */; };
 		6D1EE2EE2E0A7D7300F7BBF1 /* OnboardingUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2ED2E0A7D7300F7BBF1 /* OnboardingUseCase.swift */; };
 		6D1EE2F02E0A7F0000F7BBF1 /* OnboardingRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2EF2E0A7F0000F7BBF1 /* OnboardingRepository.swift */; };
 		6D1EE2F22E0A80AA00F7BBF1 /* OnboardingDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2F12E0A80AA00F7BBF1 /* OnboardingDTO.swift */; };
 		6D1EE2F42E0A8EA400F7BBF1 /* OnboardingRepositoryImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2F32E0A8EA400F7BBF1 /* OnboardingRepositoryImpl.swift */; };
 		6D1EE2F72E0A933000F7BBF1 /* OnboardingCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2F62E0A933000F7BBF1 /* OnboardingCoordinator.swift */; };
+		6D1EE2FB2E0AF24B00F7BBF1 /* Secrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6D1EE2FA2E0AF24B00F7BBF1 /* Secrets.xcconfig */; };
 		6D368BA22E02D2AA00144EE7 /* TitleNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D368BA12E02D2AA00144EE7 /* TitleNavigationBar.swift */; };
 		6D368BA42E02D5E200144EE7 /* IconTitleNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D368BA32E02D5E200144EE7 /* IconTitleNavigationBar.swift */; };
 		6D368BA82E02E92000144EE7 /* BackOnlyNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D368BA72E02E92000144EE7 /* BackOnlyNavigationBar.swift */; };
@@ -121,13 +121,13 @@
 		6D1EE2DF2E090A6B00F7BBF1 /* SearchLocationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchLocationViewModel.swift; sourceTree = "<group>"; };
 		6D1EE2E42E09A42F00F7BBF1 /* PushAlarmViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushAlarmViewController.swift; sourceTree = "<group>"; };
 		6D1EE2E62E09A43700F7BBF1 /* PushAlarmViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushAlarmViewModel.swift; sourceTree = "<group>"; };
-		6D1EE2E82E0A4E2F00F7BBF1 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 		6D1EE2EB2E0A7BEF00F7BBF1 /* OnboardingDIContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingDIContainer.swift; sourceTree = "<group>"; };
 		6D1EE2ED2E0A7D7300F7BBF1 /* OnboardingUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingUseCase.swift; sourceTree = "<group>"; };
 		6D1EE2EF2E0A7F0000F7BBF1 /* OnboardingRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingRepository.swift; sourceTree = "<group>"; };
 		6D1EE2F12E0A80AA00F7BBF1 /* OnboardingDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingDTO.swift; sourceTree = "<group>"; };
 		6D1EE2F32E0A8EA400F7BBF1 /* OnboardingRepositoryImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingRepositoryImpl.swift; sourceTree = "<group>"; };
 		6D1EE2F62E0A933000F7BBF1 /* OnboardingCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingCoordinator.swift; sourceTree = "<group>"; };
+		6D1EE2FA2E0AF24B00F7BBF1 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 		6D368BA12E02D2AA00144EE7 /* TitleNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitleNavigationBar.swift; sourceTree = "<group>"; };
 		6D368BA32E02D5E200144EE7 /* IconTitleNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconTitleNavigationBar.swift; sourceTree = "<group>"; };
 		6D368BA72E02E92000144EE7 /* BackOnlyNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackOnlyNavigationBar.swift; sourceTree = "<group>"; };
@@ -656,7 +656,7 @@
 		B68309522E005A3600E2D029 /* Atcha-iOS */ = {
 			isa = PBXGroup;
 			children = (
-				6D1EE2E82E0A4E2F00F7BBF1 /* Secrets.xcconfig */,
+				6D1EE2FA2E0AF24B00F7BBF1 /* Secrets.xcconfig */,
 				B67E3E592E09811E0056EEB3 /* Atcha-iOS.entitlements */,
 				B65C12D52E0429970016D2F0 /* App */,
 				B65C12D22E0429450016D2F0 /* Data */,
@@ -819,10 +819,10 @@
 				B6ADE18E2E0AE8CF008C4E23 /* GoogleService-Info.plist in Resources */,
 				B683095D2E005A3600E2D029 /* Pretendard-SemiBold.otf in Resources */,
 				B683095E2E005A3600E2D029 /* Icon.xcassets in Resources */,
+				6D1EE2FB2E0AF24B00F7BBF1 /* Secrets.xcconfig in Resources */,
 				B683095F2E005A3600E2D029 /* Assets.xcassets in Resources */,
 				B68309612E005A3600E2D029 /* LaunchScreen.storyboard in Resources */,
 				B68309622E005A3600E2D029 /* Main.storyboard in Resources */,
-				6D1EE2E92E0A4E2F00F7BBF1 /* Secrets.xcconfig in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -944,14 +944,14 @@
 /* Begin XCBuildConfiguration section */
 		6DE42BA12DFDE6370041344C /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6D1EE2E82E0A4E2F00F7BBF1 /* Secrets.xcconfig */;
+			baseConfigurationReference = 6D1EE2FA2E0AF24B00F7BBF1 /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "Atcha-iOS/Atcha-iOS.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = FWGZZW9F5T;
+				DEVELOPMENT_TEAM = 23SCTLK482;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Atcha-iOS/Info.plist";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
@@ -979,14 +979,14 @@
 		};
 		6DE42BA22DFDE6370041344C /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6D1EE2E82E0A4E2F00F7BBF1 /* Secrets.xcconfig */;
+			baseConfigurationReference = 6D1EE2FA2E0AF24B00F7BBF1 /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "Atcha-iOS/Atcha-iOS.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = FWGZZW9F5T;
+				DEVELOPMENT_TEAM = 23SCTLK482;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Atcha-iOS/Info.plist";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
@@ -1014,7 +1014,7 @@
 		};
 		6DE42BA32DFDE6370041344C /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6D1EE2E82E0A4E2F00F7BBF1 /* Secrets.xcconfig */;
+			baseConfigurationReference = 6D1EE2FA2E0AF24B00F7BBF1 /* Secrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -1079,7 +1079,7 @@
 		};
 		6DE42BA42DFDE6370041344C /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6D1EE2E82E0A4E2F00F7BBF1 /* Secrets.xcconfig */;
+			baseConfigurationReference = 6D1EE2FA2E0AF24B00F7BBF1 /* Secrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
