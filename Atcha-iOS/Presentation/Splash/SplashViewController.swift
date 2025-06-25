@@ -15,11 +15,10 @@ final class SplashViewController: BaseViewController<SplashViewModel> {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-//        setupUI()
+        setupUI()
         viewModel.checkAppVersion()
-        view.backgroundColor = .red
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+        DispatchQueue.main.asyncAfter(deadline: .now()) {
             self.viewModel.signUpFinished()
         }
     }
@@ -31,11 +30,11 @@ final class SplashViewController: BaseViewController<SplashViewModel> {
         appLogoImageView.image = UIImage.imgAtcha
         
         backgroundImageView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+            make.edges.equalTo(view.safeAreaLayoutGuide)
         }
         appLogoImageView.snp.makeConstraints { make in
-            make.centerX.equalToSuperview()
-            make.centerY.equalToSuperview()
+            make.centerX.equalTo(view.safeAreaLayoutGuide)
+            make.centerY.equalTo(view.safeAreaLayoutGuide)
         }
     }
     

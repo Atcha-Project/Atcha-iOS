@@ -51,9 +51,9 @@ class AppFlowCoordinator {
         window.rootViewController = navigationController
         
         let loginCoordinator = container.makeLoginCoordinator(navigationController: navigationController)
-        loginCoordinator.onFinish = { [weak self] in
+        loginCoordinator.onFinishWithExistUser = { [weak self] isExist in
             DispatchQueue.main.async {
-                self?.showOnboardingFlow()
+                isExist ? self?.showMainFlow() : self?.showOnboardingFlow()
             }
         }
         loginCoordinator.start()
