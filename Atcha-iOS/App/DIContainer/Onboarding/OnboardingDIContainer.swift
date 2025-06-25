@@ -8,7 +8,6 @@
 import UIKit
 import Foundation
 
-
 final class OnboardingDIContainer {
     private let apiService: APIService
     
@@ -35,7 +34,6 @@ final class OnboardingDIContainer {
     }
     
     func makeOnboardingCoordinator(navigationController: UINavigationController) -> OnboardingCoordinator {
-        
         OnboardingCoordinator(navigationController: navigationController, disContainer: self)
     }
 }

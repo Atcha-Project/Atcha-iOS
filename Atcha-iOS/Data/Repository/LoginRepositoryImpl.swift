@@ -24,5 +24,17 @@ final class LoginRepositoryImpl: LoginRepository {
         )
     }
 
-    // 나머지 로그인/회원가입/로그아웃 등도 여기에 구현
+    func login(_ request: LoginRequest) async throws -> LoginResponse {
+        return try await apiService.request(
+            Endpoint(
+                path: "https://atcha.p-e.kr/api/auth/login",
+                method: .get,
+                parameters: [
+                    "provider": "\(request.provider)",
+                    "fcmToken": AppDIContainer.shared.tokenStorage.fcmToken ?? ""
+                ],
+                headers: ["Authorization": "Bearer \(request.accessToken)"]
+            )
+        )
+    }
 }

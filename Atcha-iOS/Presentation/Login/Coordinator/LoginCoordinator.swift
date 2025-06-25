@@ -22,6 +22,9 @@ final class LoginCoordinator {
     
     func start() {
         let viewModel = diContainer.makeLoginViewModel()
+        viewModel.onLoginSuccess = { [weak self] in
+            self?.onFinish?()
+        }
         let viewController = LoginViewController(viewModel: viewModel)
         navigationController.pushViewController(viewController, animated: true)
     }

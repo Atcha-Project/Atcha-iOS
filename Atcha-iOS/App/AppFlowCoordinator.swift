@@ -51,6 +51,20 @@ class AppFlowCoordinator {
         window.rootViewController = navigationController
         
         let loginCoordinator = container.makeLoginCoordinator(navigationController: navigationController)
+        loginCoordinator.onFinish = { [weak self] in
+            DispatchQueue.main.async {
+                self?.showOnboardingFlow()
+            }
+        }
         loginCoordinator.start()
+        self.loginCoordinator = loginCoordinator
+    }
+    
+    private func showOnboardingFlow() {
+        let navigationController = UINavigationController()
+        window.rootViewController = navigationController
+        
+        let onboardingCoordinator = container.makeOnboardingCoordinator(navigationController: navigationController)
+        onboardingCoordinator.start()
     }
 }

@@ -15,12 +15,14 @@ final class LoginViewModel: BaseViewModel {
         self.loginUseCase = loginUseCase
     }
     
+    var onLoginSuccess: (() -> Void)?
+    
     func kakaoLoginTapped() {
         Task {
             do {
                 let token = try await loginUseCase.signUpWithKakao()
                 print("카카오 로그인 성공. token: \(token)")
-                checkRegistration(provider: 0, token: token)
+                login(token: token, type: .kakao)
             } catch {
                 print("카카오 로그인 실패: \(error.localizedDescription)")
             }
@@ -34,21 +36,30 @@ final class LoginViewModel: BaseViewModel {
         Task {
             do {
                 let (token, delegate) = try await loginUseCase.signUpWithApple(presentationContextProvider: presentationContextProvider)
-                
-                // ✅ 반드시 ViewController 에 먼저 delegate 저장!
                 delegateHolder(delegate)
-
                 print("애플 로그인 성공. token: \(token)")
-                checkRegistration(provider: 1, token: token)
-
-                // ⭐️ 해제는 ViewController 의 화면 전환(completion) 시점에서 해주는게 더 안전
-
+                login(token: token, type: .apple)
             } catch {
                 print("애플 로그인 실패: \(error.localizedDescription)")
                 delegateHolder(nil) // 실패 시 해제
             }
         }
     }
+}
+
+// MARK: - Login
+extension LoginViewModel {
+    private func login(token: String,
+                       type: LoginType) {
+        let request: LoginRequest = LoginRequest(accessToken: token,
+                                                 provider: type.rawValue)
+        Task {
+            let _ = try? await loginUseCase.login(request)
+            // TODO: - 서버 통신 정상적으로 되면 로직 변경
+            onLoginSuccess?()
+        }
+    }
+    
     
     func checkRegistration(provider: Int, token: String) {
         Task {

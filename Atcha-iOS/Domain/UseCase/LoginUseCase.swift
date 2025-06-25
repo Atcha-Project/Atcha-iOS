@@ -16,7 +16,8 @@ protocol LoginUseCase {
     
     @MainActor func signUpWithKakao() async throws -> String
     @MainActor func signUpWithApple(presentationContextProvider: ASAuthorizationControllerPresentationContextProviding) async throws -> (String, AppleLoginDelegateWrapper)
-//    func login(_ request: LoginRequest) async throws -> LoginResult
+    
+    func login(_ request: LoginRequest) async throws -> LoginResponse
 //    func logout() async throws -> LoginResult
 //    func signUp(_ request: SignUpRequest) async throws -> LoginResult
 //    func withdraw() async throws -> LoginResult
@@ -89,5 +90,10 @@ final class LoginUseCaseImpl: LoginUseCase {
             controller.presentationContextProvider = presentationContextProvider
             controller.performRequests()
         }
+    }
+    
+    func login(_ request: LoginRequest) async throws -> LoginResponse {
+        let result = try await repository.login(request)
+        return result
     }
 }

@@ -105,6 +105,8 @@
 		B68309622E005A3600E2D029 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B68309502E005A3600E2D029 /* Main.storyboard */; };
 		B68309672E005B5300E2D029 /* UIView+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B68309662E005B5300E2D029 /* UIView+Ext.swift */; };
 		B6ADE18E2E0AE8CF008C4E23 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B6ADE18D2E0AE8CF008C4E23 /* GoogleService-Info.plist */; };
+		B6ADE1922E0C0BF9008C4E23 /* Secrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = B6ADE1912E0C0BF9008C4E23 /* Secrets.xcconfig */; };
+		B6ADE1942E0C0DE6008C4E23 /* LoginType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6ADE1932E0C0DE6008C4E23 /* LoginType.swift */; };
 		B6CF46F12E095FF700304A85 /* LoginDIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6CF46F02E095FF700304A85 /* LoginDIContainer.swift */; };
 		B6CF46F22E09605C00304A85 /* LoginRepositoryImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DC3BF692E0722A500831470 /* LoginRepositoryImpl.swift */; };
 		B6CF46F52E09620100304A85 /* LoginCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6CF46F42E09620100304A85 /* LoginCoordinator.swift */; };
@@ -209,6 +211,8 @@
 		B68309632E005ADE00E2D029 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		B68309662E005B5300E2D029 /* UIView+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Ext.swift"; sourceTree = "<group>"; };
 		B6ADE18D2E0AE8CF008C4E23 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		B6ADE1912E0C0BF9008C4E23 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
+		B6ADE1932E0C0DE6008C4E23 /* LoginType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginType.swift; sourceTree = "<group>"; };
 		B6CF46F02E095FF700304A85 /* LoginDIContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginDIContainer.swift; sourceTree = "<group>"; };
 		B6CF46F42E09620100304A85 /* LoginCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginCoordinator.swift; sourceTree = "<group>"; };
 		B6CF46F72E096CB100304A85 /* LoginResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginResult.swift; sourceTree = "<group>"; };
@@ -657,6 +661,7 @@
 			isa = PBXGroup;
 			children = (
 				6D1EE2FA2E0AF24B00F7BBF1 /* Secrets.xcconfig */,
+				B6ADE1912E0C0BF9008C4E23 /* Secrets.xcconfig */,
 				B67E3E592E09811E0056EEB3 /* Atcha-iOS.entitlements */,
 				B65C12D52E0429970016D2F0 /* App */,
 				B65C12D22E0429450016D2F0 /* Data */,
@@ -714,6 +719,7 @@
 			isa = PBXGroup;
 			children = (
 				B6CF46F72E096CB100304A85 /* LoginResult.swift */,
+				B6ADE1932E0C0DE6008C4E23 /* LoginType.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -813,6 +819,7 @@
 			files = (
 				B68309582E005A3600E2D029 /* Colors.xcassets in Resources */,
 				B68309592E005A3600E2D029 /* Pretendard-Bold.otf in Resources */,
+				B6ADE1922E0C0BF9008C4E23 /* Secrets.xcconfig in Resources */,
 				B683095A2E005A3600E2D029 /* Pretendard-ExtraBold.otf in Resources */,
 				B683095B2E005A3600E2D029 /* Pretendard-Medium.otf in Resources */,
 				B683095C2E005A3600E2D029 /* Pretendard-Regular.otf in Resources */,
@@ -868,6 +875,7 @@
 				B65C13082E057C590016D2F0 /* APIService.swift in Sources */,
 				B65C13342E06925B0016D2F0 /* MyPageItem.swift in Sources */,
 				6DC3BEF12E04FE1600831470 /* KeychainWrapper.swift in Sources */,
+				B6ADE1942E0C0DE6008C4E23 /* LoginType.swift in Sources */,
 				B68309672E005B5300E2D029 /* UIView+Ext.swift in Sources */,
 				6D1EE2F72E0A933000F7BBF1 /* OnboardingCoordinator.swift in Sources */,
 				B67E3E582E0980880056EEB3 /* AppleLoginDelegateWrapper.swift in Sources */,
@@ -951,7 +959,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Atcha-iOS/Atcha-iOS.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 23SCTLK482;
+				DEVELOPMENT_TEAM = FWGZZW9F5T;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Atcha-iOS/Info.plist";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
@@ -986,7 +994,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Atcha-iOS/Atcha-iOS.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 23SCTLK482;
+				DEVELOPMENT_TEAM = FWGZZW9F5T;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Atcha-iOS/Info.plist";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";

@@ -24,3 +24,19 @@ struct TokenResponse: Decodable {
     let accessToken: String
     let refreshToken: String
 }
+
+struct LoginResponse: Decodable {
+    let id: Int?
+    let accessToken: String?
+    let refreshToken: String?
+    let latitude: Double?
+    let longitude: Double?
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case accessToken
+        case refreshToken
+        case latitude = "lat"
+        case longitude = "lon"
+    }
+}
