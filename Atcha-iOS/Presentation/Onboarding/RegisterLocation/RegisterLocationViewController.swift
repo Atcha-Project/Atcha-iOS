@@ -23,11 +23,17 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
     private let initialCoordinate: CLLocationCoordinate2D
     private let placeName: String
     private let address: String
+    private var currentSelectedPlaceName: String
+    private var currentSelectedAddress: String
+    
+    private var debounceTask: Task<Void, Never>?
     
     init(viewModel: RegisterLocationViewModel, coordinate: CLLocationCoordinate2D, placeName: String, address: String) {
         self.initialCoordinate = coordinate
         self.placeName = placeName
         self.address = address
+        self.currentSelectedPlaceName = placeName
+        self.currentSelectedAddress = address
         super.init(viewModel: viewModel)
     }
     
@@ -47,7 +53,7 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
             self?.navigationController?.popViewController(animated: true)
         }
     }
-
+    
     private func setupUI() {
         view.addSubview(backOnlyNavigationBar)
         
@@ -77,8 +83,8 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
             guard let self = self else { return }
             
             let userInfo: [String: String] = [
-                "name": self.placeName,
-                "address": self.address
+                "name": self.currentSelectedPlaceName,
+                "address": self.currentSelectedAddress
             ]
             NotificationCenter.default.post(name: .didSelectHomeLocation, object: nil, userInfo: userInfo)
             
@@ -161,6 +167,8 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
                         self.mapView.setCenter(coordinate)
                         self.nameLabel.attributedText = AtchaFont.H5_SB_17(placeName, color: AtchaColor.white)
                         self.addressLabel.attributedText = AtchaFont.Body_R_14(address, color: AtchaColor.gray200)
+                        self.currentSelectedPlaceName = placeName
+                        self.currentSelectedAddress = address
                     }
                 } catch {
                     print("❌ 장소 변환 실패: \(error)")
