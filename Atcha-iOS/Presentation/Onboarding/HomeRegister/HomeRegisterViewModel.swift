@@ -17,4 +17,13 @@ final class HomeRegisterViewModel: BaseViewModel {
     func makeSearchLocationViewModel() -> SearchLocationViewModel {
         return SearchLocationViewModel(onboardingUseCase: onboardingUseCase)
     }
+    
+    func makeRegisterLocationViewModel() -> RegisterLocationViewModel {
+        return RegisterLocationViewModel(onboardingUseCase: onboardingUseCase)
+    }
+    
+    func reverseGeocodeLocation(lat: Double, lon: Double) async throws -> ReverseGeocodeLocationResponse {
+        let request = ReverseGeocodeLocationRequest(lat: lat, lon: lon)
+        return try await onboardingUseCase.reverseGeocodeLocation(request)
+    }
 }

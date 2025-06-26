@@ -1,0 +1,21 @@
+module ObjC{
+    header "VSMSDK.framework/Headers/VSMSDK.h"
+    export *
+}
+
+framework module TMapSDK {
+  umbrella header "TMapSDK.h"
+  export *
+
+  module * { export * }
+  
+  explicit module VSMModule {
+      private header "TrafficLine.h"
+         export *
+  }
+}
+
+module TMapSDK.Swift {
+  header "TMapSDK-Swift.h"
+  requires objc
+}

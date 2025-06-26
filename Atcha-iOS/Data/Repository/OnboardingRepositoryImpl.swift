@@ -36,4 +36,16 @@ final class OnboardingRepositoryImpl: OnboardingRepository {
                     "lon": "\(request.lon)" ]
             ))
     }
+    
+    func reverseGeocodeLocation(_ request: ReverseGeocodeLocationRequest) async throws -> ReverseGeocodeLocationResponse {
+        
+        return try await apiService.request(
+            Endpoint(
+                path: "https://atcha.p-e.kr/api/locations/rgeo",
+                method: .get,
+                parameters: [
+                    "lat": "\(request.lat)",
+                    "lon": "\(request.lon)" ]
+            ))
+    }
 }

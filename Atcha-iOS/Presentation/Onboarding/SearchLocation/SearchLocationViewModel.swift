@@ -8,7 +8,7 @@
 import Foundation
 
 final class SearchLocationViewModel: BaseViewModel {
-    private let onboardingUseCase: OnboardingUseCase
+    let onboardingUseCase: OnboardingUseCase
     
     var onLocationsUpdated: (([Location]) -> Void)?
     
@@ -30,5 +30,14 @@ final class SearchLocationViewModel: BaseViewModel {
                 print("장소 검색 실패")
             }
         }
+    }
+    
+    func reverseGeocodeLocation(lat: Double, lon: Double) async throws -> ReverseGeocodeLocationResponse {
+        let request = ReverseGeocodeLocationRequest(lat: lat, lon: lon)
+        return try await onboardingUseCase.reverseGeocodeLocation(request)
+    }
+    
+    func makeRegisterLocationViewModel() -> RegisterLocationViewModel {
+        return RegisterLocationViewModel(onboardingUseCase: onboardingUseCase)
     }
 }

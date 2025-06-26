@@ -7,7 +7,7 @@
 
 import UIKit
 import SnapKit
-import SwiftUI
+import CoreLocation
 
 class SearchLocationViewController: BaseViewController<SearchLocationViewModel> {
     
@@ -21,9 +21,12 @@ class SearchLocationViewController: BaseViewController<SearchLocationViewModel> 
     private let tableView = UITableView()
     private var isSubmitted = false
     
+    private var currentCoordinate: CLLocationCoordinate2D?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        requestCurrentLocation()
         setupUI()
         
         // 실시간 검색 결과 업데이트 시 UI 반영
@@ -37,8 +40,12 @@ class SearchLocationViewController: BaseViewController<SearchLocationViewModel> 
             self?.navigationController?.popViewController(animated: true)
         }
         
+        searchNavigationBar.onTapCurrentLocation = { [weak self] in
+            self?.handleCurrentLocationButtonTapped()
+        }
+        
         searchNavigationBar.onTextChange = { [weak self] text in
-            guard let self = self else { return }
+            guard let self = self, let coordinate = self.currentCoordinate else { return }
             self.headerView.isHidden = true
             
             self.tableView.snp.remakeConstraints { make in
@@ -50,12 +57,11 @@ class SearchLocationViewController: BaseViewController<SearchLocationViewModel> 
                 self.view.layoutIfNeeded()
             }
             
-            //LocationManager 만들어서 위도 경도 수정할 것
-            self.viewModel.searchLocation(keyword: text, lat: 37.556104, lon: 126.972656)
+            self.viewModel.searchLocation(keyword: text, lat: coordinate.latitude, lon: coordinate.longitude)
         }
         
         searchNavigationBar.onTextSubmit = { [weak self] text in
-            guard let self = self else { return }
+            guard let self = self, let coordinate = self.currentCoordinate else { return }
             
             self.headerView.isHidden = false
             
@@ -64,8 +70,19 @@ class SearchLocationViewController: BaseViewController<SearchLocationViewModel> 
                 make.leading.trailing.bottom.equalToSuperview()
             }
             
-            //LocationManager 만들어서 위도 경도 수정할 것
-            self.viewModel.searchLocation(keyword: text, lat: 37.556104, lon: 126.972656)
+            self.viewModel.searchLocation(keyword: text, lat: coordinate.latitude, lon: coordinate.longitude)
+        }
+    }
+    
+    // MARK: - 현재 위치 요청
+    private func requestCurrentLocation() {
+        viewModel.onboardingUseCase.requestCurrentLocation { [weak self] coordinate in
+            guard let coordinate = coordinate else {
+                print("위치 권한 거부됨 또는 위치 불가")
+                return
+            }
+            print("현재 위치 획득: \(coordinate.latitude), \(coordinate.longitude)")
+            self?.currentCoordinate = coordinate
         }
     }
     
@@ -151,9 +168,62 @@ extension SearchLocationViewController: UITableViewDataSource, UITableViewDelega
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let selected = filteredLocations[indexPath.row]
         print("선택한 장소: \(selected)")
+        
+        let coordinate = CLLocationCoordinate2D(latitude: selected.lat, longitude: selected.lon)
+        let placeName = selected.name
+        let address = selected.address
+        
+        let registerVM = viewModel.makeRegisterLocationViewModel()
+        let vc = RegisterLocationViewController(
+            viewModel: registerVM,
+            coordinate: coordinate,
+            placeName: placeName,
+            address: address
+        )
+        
+        vc.onRegisterCompleted = { [weak self] name, address in
+            if let homeVC = self?.navigationController?.viewControllers.first(where: { $0 is HomeRegisterViewController }) as? HomeRegisterViewController {
+                homeVC.updateLocation(name: name, address: address)
+            }
+        }
+        navigationController?.pushViewController(vc, animated: true)
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
         return filteredLocations.isEmpty ? 0 : 1
+    }
+    
+    @objc private func handleCurrentLocationButtonTapped() {
+        viewModel.onboardingUseCase.requestCurrentLocation { [weak self] coordinate in
+            guard let self = self, let coordinate = coordinate else {
+                print("❌ 현재 위치 가져오기 실패")
+                return
+            }
+            
+            Task {
+                do {
+                    let response = try await self.viewModel.reverseGeocodeLocation(
+                        lat: coordinate.latitude,
+                        lon: coordinate.longitude
+                    )
+                    
+                    let placeName = response.name
+                    let address = response.address
+                    
+                    let registerVM = self.viewModel.makeRegisterLocationViewModel()
+                    let vc = RegisterLocationViewController(
+                        viewModel: registerVM,
+                        coordinate: coordinate,
+                        placeName: placeName,
+                        address: address
+                    )
+                    DispatchQueue.main.async {
+                        self.navigationController?.pushViewController(vc, animated: true)
+                    }
+                } catch {
+                    print("❌ 장소 변환 실패: \(error)")
+                }
+            }
+        }
     }
 }

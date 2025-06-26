@@ -21,4 +21,11 @@ extension Bundle {
         }
         return key
     }
+    
+    var tMapKey: String {
+        guard let key = object(forInfoDictionaryKey: "TMAP_API_KEY") as? String else {
+            fatalError("TMAP_API_KEY not found")
+        }
+        return key
+    }
 }

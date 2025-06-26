@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import CoreLocation
 
 enum LocationSelectionState {
     case none
@@ -28,13 +29,11 @@ class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel> {
     
     private let currentLocationButton: UIButton = UIButton()
     
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setupUI()
         updateLocationView()
-        
     }
     
     // MARK: - Home Register UI
@@ -138,6 +137,7 @@ class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel> {
         currentLocationButton.layer.borderWidth = 1
         currentLocationButton.setAttributedTitle(AtchaFont.Body_R_14(title, color: AtchaColor.white), for: .normal)
         currentLocationButton.tintColor = AtchaColor.white
+        currentLocationButton.addTarget(self, action: #selector(handleCurrentLocationButtonTapped), for: .touchUpInside)
         
         if let icon = icon {
             let config = UIImage.SymbolConfiguration(pointSize: 16, weight: .regular)
@@ -148,9 +148,60 @@ class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel> {
         }
     }
     
+    // MARK: - Action Method
     @objc private func handleSearchLocationTapped() {
-        let searchLocationViewModel = viewModel.makeSearchLocationViewModel()
-        let vc = SearchLocationViewController(viewModel: searchLocationViewModel)
+        let searchLocationVM = viewModel.makeSearchLocationViewModel()
+        let vc = SearchLocationViewController(viewModel: searchLocationVM)
         navigationController?.pushViewController(vc, animated: true)
+    }
+    
+    @objc private func handleCurrentLocationButtonTapped() {
+        switch locationState {
+        case .none:
+            viewModel.onboardingUseCase.requestCurrentLocation { [weak self] coordinate in
+                guard let self = self, let coordinate = coordinate else {
+                    print("❌ 현재 위치 가져오기 실패")
+                    return
+                }
+
+                Task {
+                    do {
+                        let response = try await self.viewModel.reverseGeocodeLocation(
+                            lat: coordinate.latitude,
+                            lon: coordinate.longitude
+                        )
+
+                        let placeName = response.name
+                        let address = response.address
+
+                        let registerVM = self.viewModel.makeRegisterLocationViewModel()
+                        let vc = RegisterLocationViewController(
+                            viewModel: registerVM,
+                            coordinate: coordinate,
+                            placeName: placeName,
+                            address: address
+                        )
+                        
+                        vc.onRegisterCompleted = { [weak self] name, address in
+                            self?.locationState = .selected(name: name, address: address)
+                        }
+                        self.navigationController?.pushViewController(vc, animated: true)
+                        
+                    } catch {
+                        print("❌ 장소 변환 실패: \(error)")
+                    }
+                }
+            }
+            
+        case .selected:
+            // 이미 선택되어 있을 경우 → 검색 화면으로 이동
+            let searchLocationVM = viewModel.makeSearchLocationViewModel()
+            let vc = SearchLocationViewController(viewModel: searchLocationVM)
+            navigationController?.pushViewController(vc, animated: true)
+        }
+    }
+    
+    func updateLocation(name: String, address: String) {
+        self.locationState = .selected(name: name, address: address)
     }
 }
