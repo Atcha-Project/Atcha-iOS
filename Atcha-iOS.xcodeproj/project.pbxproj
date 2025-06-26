@@ -47,7 +47,6 @@
 		6DC3BF602E071F0900831470 /* LoginUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DC3BF5F2E071F0900831470 /* LoginUseCase.swift */; };
 		6DC3BF622E07219C00831470 /* LoginRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DC3BF612E07219C00831470 /* LoginRepository.swift */; };
 		6DC3BF682E0721F300831470 /* LoginDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DC3BF672E0721F300831470 /* LoginDTO.swift */; };
-		6DFF29862E0CBA170039399F /* Secrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6DFF29852E0CBA170039399F /* Secrets.xcconfig */; };
 		6DFF29912E0CBE820039399F /* RegisterLocationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFF29902E0CBE820039399F /* RegisterLocationViewController.swift */; };
 		6DFF29932E0CBE8A0039399F /* RegisterLocationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFF29922E0CBE8A0039399F /* RegisterLocationViewModel.swift */; };
 		6DFF29AB2E0CC5460039399F /* TMapSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6DFF29A72E0CC52B0039399F /* TMapSDK.framework */; };
@@ -172,7 +171,6 @@
 		6DC3BF672E0721F300831470 /* LoginDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginDTO.swift; sourceTree = "<group>"; };
 		6DC3BF692E0722A500831470 /* LoginRepositoryImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginRepositoryImpl.swift; sourceTree = "<group>"; };
 		6DE42B8D2DFDE6360041344C /* Atcha-iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Atcha-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		6DFF29852E0CBA170039399F /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 		6DFF29902E0CBE820039399F /* RegisterLocationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterLocationViewController.swift; sourceTree = "<group>"; };
 		6DFF29922E0CBE8A0039399F /* RegisterLocationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterLocationViewModel.swift; sourceTree = "<group>"; };
 		6DFF29A72E0CC52B0039399F /* TMapSDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = TMapSDK.framework; sourceTree = "<group>"; };
@@ -699,7 +697,6 @@
 		B68309522E005A3600E2D029 /* Atcha-iOS */ = {
 			isa = PBXGroup;
 			children = (
-				6DFF29852E0CBA170039399F /* Secrets.xcconfig */,
 				B67E3E592E09811E0056EEB3 /* Atcha-iOS.entitlements */,
 				B65C12D52E0429970016D2F0 /* App */,
 				B65C12D22E0429450016D2F0 /* Data */,
@@ -868,7 +865,6 @@
 				B6ADE18E2E0AE8CF008C4E23 /* GoogleService-Info.plist in Resources */,
 				B683095D2E005A3600E2D029 /* Pretendard-SemiBold.otf in Resources */,
 				B683095E2E005A3600E2D029 /* Icon.xcassets in Resources */,
-				6DFF29862E0CBA170039399F /* Secrets.xcconfig in Resources */,
 				B683095F2E005A3600E2D029 /* Assets.xcassets in Resources */,
 				B68309612E005A3600E2D029 /* LaunchScreen.storyboard in Resources */,
 				B68309622E005A3600E2D029 /* Main.storyboard in Resources */,
@@ -998,7 +994,6 @@
 /* Begin XCBuildConfiguration section */
 		6DE42BA12DFDE6370041344C /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6DFF29852E0CBA170039399F /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -1037,7 +1032,6 @@
 		};
 		6DE42BA22DFDE6370041344C /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6DFF29852E0CBA170039399F /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -1076,7 +1070,6 @@
 		};
 		6DE42BA32DFDE6370041344C /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6DFF29852E0CBA170039399F /* Secrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -1141,7 +1134,6 @@
 		};
 		6DE42BA42DFDE6370041344C /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6DFF29852E0CBA170039399F /* Secrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
