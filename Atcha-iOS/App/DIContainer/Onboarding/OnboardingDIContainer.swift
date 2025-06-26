@@ -33,6 +33,10 @@ final class OnboardingDIContainer {
         PushAlarmViewModel(onboardingUseCase: makeOnboardingUseCase())
     }
     
+    func makeRegisterLocationViewModel() -> RegisterLocationViewModel {
+        RegisterLocationViewModel(onboardingUseCase: makeOnboardingUseCase())
+    }
+    
     func makeOnboardingCoordinator(navigationController: UINavigationController) -> OnboardingCoordinator {
         OnboardingCoordinator(navigationController: navigationController, disContainer: self)
     }

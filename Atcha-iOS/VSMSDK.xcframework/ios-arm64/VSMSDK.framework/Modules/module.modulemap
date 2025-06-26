@@ -1,0 +1,6 @@
+framework module VSMSDK {
+  umbrella header "VSMSDK.h"
+  export *
+
+  module * { export * }
+}

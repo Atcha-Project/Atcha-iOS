@@ -58,6 +58,10 @@ class AppFlowCoordinator {
         }
         loginCoordinator.start()
         self.loginCoordinator = loginCoordinator
+        
+//        let viewModel = RegisterLocationViewModel()
+//        let homeRegisterVC = RegisterLocationViewController(viewModel: viewModel)
+//        navigationController.pushViewController(homeRegisterVC, animated: false)
     }
     
     private func showOnboardingFlow() {

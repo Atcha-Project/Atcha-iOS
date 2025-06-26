@@ -17,10 +17,13 @@
 	<string>$(KAKAO_API_KEY)</string>
 	<key>KAKAO_INIT_KEY</key>
 	<string>$(KAKAO_INIT_KEY)</string>
+    <key>TMAP_API_KEY</key>
+    <string>$(TMAP_API_KEY)</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>kakaokompassauth</string>
 		<string>kakaolink</string>
+        <string>tmap</string>
 	</array>
 	<key>NSAppTransportSecurity</key>
 	<dict>
@@ -58,5 +61,9 @@
 	<array>
 		<string>remote-notification</string>
 	</array>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>앗차!에서 현재 위치 기반 추천을 위해 사용합니다.</string>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>앗차!에서 위치를 활용해 주변 정보를 보여드려요.</string>
 </dict>
 </plist>

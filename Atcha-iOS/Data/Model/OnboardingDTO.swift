@@ -39,3 +39,15 @@ struct Location: Codable {
     let address: String
     let radius: String
 }
+
+struct ReverseGeocodeLocationRequest: Codable {
+    let lat: Double
+    let lon: Double
+}
+
+struct ReverseGeocodeLocationResponse: Codable {
+    let name: String
+    let address: String
+    let lat: Double
+    let lon: Double
+}
