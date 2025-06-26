@@ -10,7 +10,7 @@ import SnapKit
 import TMapSDK
 import CoreLocation
 
-class RegisterLocationViewController: BaseViewController<RegisterLocationViewModel>, TMapViewDelegate {
+class RegisterLocationViewController: BaseViewController<RegisterLocationViewModel> {
     
     private let backOnlyNavigationBar: BackOnlyNavigationBar = AtchaNavigationBar.backOnly()
     private var mapView: TMapView = TMapView()
@@ -54,6 +54,7 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
         }
     }
     
+    // MARK: - RegisterLocation Base UI
     private func setupUI() {
         view.addSubview(backOnlyNavigationBar)
         
@@ -63,6 +64,7 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
         }
     }
     
+    // MARK: - TMap Seting
     private func setupMapView() {
         mapView.setApiKey(Bundle.main.tMapKey)
         mapView.delegate = self
@@ -77,6 +79,7 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
         }
     }
     
+    // MARK: - Bottom UI
     private func setupBottomUI() {
         
         registerButton.addAction(UIAction { [weak self] _ in
@@ -140,11 +143,13 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
         }
     }
     
+    // MARK: - currentLocation Tapped
     private func setupTapGesture() {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleCurrentLocationTapped))
         currentImage.isUserInteractionEnabled = true
         currentImage.addGestureRecognizer(tapGesture)
     }
+    
     
     @objc private func handleCurrentLocationTapped() {
         LocationService.shared.requestLocation { [weak self] coordinate in
@@ -152,17 +157,17 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
                 print("❌ 현재 위치 가져오기 실패")
                 return
             }
-
+            
             Task {
                 do {
                     let response = try await self.viewModel.reverseGeocodeLocation(
                         lat: coordinate.latitude,
                         lon: coordinate.longitude
                     )
-
+                    
                     let placeName = response.name
                     let address = response.address
-
+                    
                     DispatchQueue.main.async {
                         self.mapView.setCenter(coordinate)
                         self.nameLabel.attributedText = AtchaFont.H5_SB_17(placeName, color: AtchaColor.white)
@@ -176,10 +181,36 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
             }
         }
     }
+    
+    // MARK: - Center Location Update
+    private func updateCenterLocationInfo() {
+        guard let center = mapView.getCenter() else { return }
+        let lat = center.latitude
+        let lon = center.longitude
+        
+        Task {
+            do {
+                let response = try await viewModel.reverseGeocodeLocation(lat: lat, lon: lon)
+                let placeName = response.name
+                let address = response.address
+                
+                DispatchQueue.main.async {
+                    self.nameLabel.attributedText = AtchaFont.H5_SB_17(placeName, color: AtchaColor.white)
+                    self.addressLabel.attributedText = AtchaFont.Body_R_14(address, color: AtchaColor.gray200)
+                    self.currentSelectedPlaceName = placeName
+                    self.currentSelectedAddress = address
+                }
+            } catch {
+                print("❌ 중심 좌표 주소 변환 실패: \(error)")
+            }
+        }
+    }
 }
 
-extension RegisterLocationViewController: CLLocationManagerDelegate {
+extension RegisterLocationViewController: TMapViewDelegate {
+    
     func mapViewDidFinishLoadingMap() {
+        print("지도 로딩 완료")
         mapView.setCenter(initialCoordinate)
         mapView.setMapType(.Night)
     }
