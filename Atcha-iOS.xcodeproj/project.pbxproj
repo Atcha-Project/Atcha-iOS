@@ -119,6 +119,9 @@
 		B6D083302E02CC76003C28E1 /* AtchaToast.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6D0832F2E02CC76003C28E1 /* AtchaToast.swift */; };
 		B6D083332E02D8F5003C28E1 /* AtchaList.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6D083322E02D8F5003C28E1 /* AtchaList.swift */; };
 		B6D083352E02D928003C28E1 /* AtchaListType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6D083342E02D928003C28E1 /* AtchaListType.swift */; };
+		B6EDD7382E0D87B0006170DF /* FileStorable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6EDD7372E0D87B0006170DF /* FileStorable.swift */; };
+		B6EDD73A2E0D87D2006170DF /* FileStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6EDD7392E0D87D2006170DF /* FileStorage.swift */; };
+		B6EDD73C2E0D87F2006170DF /* FileStorageImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6EDD73B2E0D87F2006170DF /* FileStorageImpl.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -242,6 +245,9 @@
 		B6D0832F2E02CC76003C28E1 /* AtchaToast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtchaToast.swift; sourceTree = "<group>"; };
 		B6D083322E02D8F5003C28E1 /* AtchaList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtchaList.swift; sourceTree = "<group>"; };
 		B6D083342E02D928003C28E1 /* AtchaListType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtchaListType.swift; sourceTree = "<group>"; };
+		B6EDD7372E0D87B0006170DF /* FileStorable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileStorable.swift; sourceTree = "<group>"; };
+		B6EDD7392E0D87D2006170DF /* FileStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileStorage.swift; sourceTree = "<group>"; };
+		B6EDD73B2E0D87F2006170DF /* FileStorageImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileStorageImpl.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -354,6 +360,7 @@
 		6DC3BED92E04EF8500831470 /* Storages */ = {
 			isa = PBXGroup;
 			children = (
+				B6EDD7362E0D879D006170DF /* FileStroage */,
 				6DC3BEDB2E04EF9F00831470 /* Keychain */,
 				6DC3BEDA2E04EF9700831470 /* UserDefaults */,
 			);
@@ -777,6 +784,16 @@
 			path = AtchaList;
 			sourceTree = "<group>";
 		};
+		B6EDD7362E0D879D006170DF /* FileStroage */ = {
+			isa = PBXGroup;
+			children = (
+				B6EDD7372E0D87B0006170DF /* FileStorable.swift */,
+				B6EDD7392E0D87D2006170DF /* FileStorage.swift */,
+				B6EDD73B2E0D87F2006170DF /* FileStorageImpl.swift */,
+			);
+			path = FileStroage;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -886,6 +903,7 @@
 				6DC3BEDF2E04F32D00831470 /* UserDefaultsWrapper.swift in Sources */,
 				B65C130E2E057D4D0016D2F0 /* NetworkDIContainer.swift in Sources */,
 				6D1EE2DE2E090A3300F7BBF1 /* SearchLocationViewController.swift in Sources */,
+				B6EDD73A2E0D87D2006170DF /* FileStorage.swift in Sources */,
 				6D1EE2EC2E0A7BEF00F7BBF1 /* OnboardingDIContainer.swift in Sources */,
 				B65C132F2E0658470016D2F0 /* MyPageViewController.swift in Sources */,
 				6D8D8B172E02BBC0003DABB2 /* AtchaNavigationBar.swift in Sources */,
@@ -897,6 +915,7 @@
 				B65C134F2E07A6C70016D2F0 /* MainCoordinator.swift in Sources */,
 				B65C13202E058C360016D2F0 /* AppVersionRepositoryImpl.swift in Sources */,
 				B65C12E22E042D400016D2F0 /* FetchUserUseCase.swift in Sources */,
+				B6EDD73C2E0D87F2006170DF /* FileStorageImpl.swift in Sources */,
 				B6CF46F22E09605C00304A85 /* LoginRepositoryImpl.swift in Sources */,
 				B65C12FE2E057AF90016D2F0 /* NetworkConstant.swift in Sources */,
 				6D8D8B132E01B338003DABB2 /* AtchaButton.swift in Sources */,
@@ -917,6 +936,7 @@
 				B67E3E582E0980880056EEB3 /* AppleLoginDelegateWrapper.swift in Sources */,
 				B65C13462E07A0D70016D2F0 /* CoordinatorFactory.swift in Sources */,
 				B68309552E005A3600E2D029 /* AtchaColor.swift in Sources */,
+				B6EDD7382E0D87B0006170DF /* FileStorable.swift in Sources */,
 				6DC3BF482E05C77D00831470 /* LoginViewModel.swift in Sources */,
 				6D368BAA2E02F39800144EE7 /* SearchNavigationBar.swift in Sources */,
 				B65C12FC2E057AAD0016D2F0 /* APIError.swift in Sources */,
