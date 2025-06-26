@@ -170,17 +170,23 @@ extension SearchLocationViewController: UITableViewDataSource, UITableViewDelega
         print("선택한 장소: \(selected)")
         
         let coordinate = CLLocationCoordinate2D(latitude: selected.lat, longitude: selected.lon)
-            let placeName = selected.name
-            let address = selected.address
-
-            let registerVM = viewModel.makeRegisterLocationViewModel()
-            let vc = RegisterLocationViewController(
-                viewModel: registerVM,
-                coordinate: coordinate,
-                placeName: placeName,
-                address: address
-            )
-            navigationController?.pushViewController(vc, animated: true)
+        let placeName = selected.name
+        let address = selected.address
+        
+        let registerVM = viewModel.makeRegisterLocationViewModel()
+        let vc = RegisterLocationViewController(
+            viewModel: registerVM,
+            coordinate: coordinate,
+            placeName: placeName,
+            address: address
+        )
+        
+        vc.onRegisterCompleted = { [weak self] name, address in
+            if let homeVC = self?.navigationController?.viewControllers.first(where: { $0 is HomeRegisterViewController }) as? HomeRegisterViewController {
+                homeVC.updateLocation(name: name, address: address)
+            }
+        }
+        navigationController?.pushViewController(vc, animated: true)
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
@@ -193,17 +199,17 @@ extension SearchLocationViewController: UITableViewDataSource, UITableViewDelega
                 print("❌ 현재 위치 가져오기 실패")
                 return
             }
-
+            
             Task {
                 do {
                     let response = try await self.viewModel.reverseGeocodeLocation(
                         lat: coordinate.latitude,
                         lon: coordinate.longitude
                     )
-
+                    
                     let placeName = response.name
                     let address = response.address
-
+                    
                     let registerVM = self.viewModel.makeRegisterLocationViewModel()
                     let vc = RegisterLocationViewController(
                         viewModel: registerVM,

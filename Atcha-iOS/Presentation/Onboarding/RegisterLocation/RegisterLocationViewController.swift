@@ -26,7 +26,7 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
     private var currentSelectedPlaceName: String
     private var currentSelectedAddress: String
     
-    private var debounceTask: Task<Void, Never>?
+    var onRegisterCompleted: ((String, String) -> Void)?
     
     init(viewModel: RegisterLocationViewModel, coordinate: CLLocationCoordinate2D, placeName: String, address: String) {
         self.initialCoordinate = coordinate
@@ -85,11 +85,7 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
         registerButton.addAction(UIAction { [weak self] _ in
             guard let self = self else { return }
             
-            let userInfo: [String: String] = [
-                "name": self.currentSelectedPlaceName,
-                "address": self.currentSelectedAddress
-            ]
-            NotificationCenter.default.post(name: .didSelectHomeLocation, object: nil, userInfo: userInfo)
+            self.onRegisterCompleted?(self.currentSelectedPlaceName, self.currentSelectedAddress)
             
             if let homeVC = self.navigationController?.viewControllers.first(where: { $0 is HomeRegisterViewController }) {
                 self.navigationController?.popToViewController(homeVC, animated: true)
@@ -178,30 +174,6 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
                 } catch {
                     print("❌ 장소 변환 실패: \(error)")
                 }
-            }
-        }
-    }
-    
-    // MARK: - Center Location Update
-    private func updateCenterLocationInfo() {
-        guard let center = mapView.getCenter() else { return }
-        let lat = center.latitude
-        let lon = center.longitude
-        
-        Task {
-            do {
-                let response = try await viewModel.reverseGeocodeLocation(lat: lat, lon: lon)
-                let placeName = response.name
-                let address = response.address
-                
-                DispatchQueue.main.async {
-                    self.nameLabel.attributedText = AtchaFont.H5_SB_17(placeName, color: AtchaColor.white)
-                    self.addressLabel.attributedText = AtchaFont.Body_R_14(address, color: AtchaColor.gray200)
-                    self.currentSelectedPlaceName = placeName
-                    self.currentSelectedAddress = address
-                }
-            } catch {
-                print("❌ 중심 좌표 주소 변환 실패: \(error)")
             }
         }
     }

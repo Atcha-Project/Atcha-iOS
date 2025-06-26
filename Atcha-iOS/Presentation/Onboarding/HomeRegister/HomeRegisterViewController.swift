@@ -34,13 +34,6 @@ class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel> {
         
         setupUI()
         updateLocationView()
-        
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(handleLocationSelected(_:)),
-            name: .didSelectHomeLocation,
-            object: nil
-        )
     }
     
     // MARK: - Home Register UI
@@ -188,9 +181,12 @@ class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel> {
                             placeName: placeName,
                             address: address
                         )
-                        DispatchQueue.main.async {
-                            self.navigationController?.pushViewController(vc, animated: true)
+                        
+                        vc.onRegisterCompleted = { [weak self] name, address in
+                            self?.locationState = .selected(name: name, address: address)
                         }
+                        self.navigationController?.pushViewController(vc, animated: true)
+                        
                     } catch {
                         print("❌ 장소 변환 실패: \(error)")
                     }
@@ -205,15 +201,7 @@ class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel> {
         }
     }
     
-    @objc private func handleLocationSelected(_ notification: Notification) {
-        guard
-            let userInfo = notification.userInfo as? [String: String],
-            let name = userInfo["name"],
-            let address = userInfo["address"]
-        else {
-            return
-        }
-        
+    func updateLocation(name: String, address: String) {
         self.locationState = .selected(name: name, address: address)
     }
 }
