@@ -158,7 +158,7 @@ class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel> {
     @objc private func handleCurrentLocationButtonTapped() {
         switch locationState {
         case .none:
-            LocationService.shared.requestLocation { [weak self] coordinate in
+            viewModel.onboardingUseCase.requestCurrentLocation { [weak self] coordinate in
                 guard let self = self, let coordinate = coordinate else {
                     print("❌ 현재 위치 가져오기 실패")
                     return

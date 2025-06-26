@@ -76,7 +76,7 @@ class SearchLocationViewController: BaseViewController<SearchLocationViewModel> 
     
     // MARK: - 현재 위치 요청
     private func requestCurrentLocation() {
-        LocationService.shared.requestLocation { [weak self] coordinate in
+        viewModel.onboardingUseCase.requestCurrentLocation { [weak self] coordinate in
             guard let coordinate = coordinate else {
                 print("위치 권한 거부됨 또는 위치 불가")
                 return
@@ -194,7 +194,7 @@ extension SearchLocationViewController: UITableViewDataSource, UITableViewDelega
     }
     
     @objc private func handleCurrentLocationButtonTapped() {
-        LocationService.shared.requestLocation { [weak self] coordinate in
+        viewModel.onboardingUseCase.requestCurrentLocation { [weak self] coordinate in
             guard let self = self, let coordinate = coordinate else {
                 print("❌ 현재 위치 가져오기 실패")
                 return

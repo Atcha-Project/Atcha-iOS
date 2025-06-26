@@ -8,7 +8,7 @@
 import Foundation
 
 final class SearchLocationViewModel: BaseViewModel {
-    private let onboardingUseCase: OnboardingUseCase
+    let onboardingUseCase: OnboardingUseCase
     
     var onLocationsUpdated: (([Location]) -> Void)?
     

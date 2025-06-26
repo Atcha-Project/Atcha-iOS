@@ -10,15 +10,17 @@ import Foundation
 
 final class OnboardingDIContainer {
     private let apiService: APIService
+    private let locationService: LocationServiceProtocol
     
-    init(apiService: APIService) {
+    init(apiService: APIService, locationService: LocationServiceProtocol) {
         self.apiService = apiService
+        self.locationService = locationService
     }
     
     func makeOnboardingUseCase() -> OnboardingUseCase {
         let repository: OnboardingRepository = OnboardingRepositoryImpl(apiService: apiService)
         
-        return OnboardingUseCaseImpl(repository: repository)
+        return OnboardingUseCaseImpl(repository: repository, locationService: locationService)
     }
     
     func makeHomeRegisterViewModel() -> HomeRegisterViewModel {

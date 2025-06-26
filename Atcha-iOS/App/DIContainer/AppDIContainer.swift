@@ -24,10 +24,11 @@ final class AppDIContainer {
         self.networkDIContainer = NetworkDIContainer(tokenStorage: tokenStorage)
         
         let apiServce: APIService = networkDIContainer.makeAPIService()
+        let locationService: LocationServiceProtocol = LocationService()
         
         self.splashDIContainer = SplashDIContainer(apiService: apiServce)
         self.myPageDIContainer = MyPageDIContainer(apiService: apiServce)
         self.loginDIContainer = LoginDIContainer(apiService: apiServce)
-        self.onboardingDIContainer = OnboardingDIContainer(apiService: apiServce)
+        self.onboardingDIContainer = OnboardingDIContainer(apiService: apiServce, locationService: locationService)
     }
 }

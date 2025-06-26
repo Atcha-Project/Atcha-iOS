@@ -8,7 +8,7 @@
 import Foundation
 
 final class RegisterLocationViewModel: BaseViewModel {
-    private let onboardingUseCase: OnboardingUseCase
+    let onboardingUseCase: OnboardingUseCase
     
     init(onboardingUseCase: OnboardingUseCase) {
         self.onboardingUseCase = onboardingUseCase
