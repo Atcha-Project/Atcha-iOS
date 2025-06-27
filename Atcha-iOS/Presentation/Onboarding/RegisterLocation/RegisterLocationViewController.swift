@@ -30,7 +30,8 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
     private var locationTimer: Timer?
     private var currentLocationMarker: TMapMarker?
     private var isMarkerVisible = true
-
+    private let locationService = LocationService()
+    private var latestHeading: CLHeading?
     
     var onRegisterCompleted: ((String, String, Double, Double) -> Void)?
     
@@ -57,6 +58,8 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
         setupBottomUI()
         setupTapGesture()
         startUpdatingCurrentLocation()
+        
+        locationService.startHeadingUpdates(delegate: self)
         
         backOnlyNavigationBar.onTapBack = { [weak self] in
             self?.navigationController?.popViewController(animated: true)
@@ -188,40 +191,46 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
     
     // MARK: - 실시간 현위치 추적 시작
     private func startUpdatingCurrentLocation() {
-        locationTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+        locationTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
             self?.updateCurrentLocation()
         }
     }
-
+    
     // MARK: - 실시간 현위치 추적 정지
     private func stopUpdatingCurrentLocation() {
         locationTimer?.invalidate()
         locationTimer = nil
     }
-
+    
     // MARK: - 실시간 현위치 표시를 위한 마커 추가
     private func updateCurrentLocation() {
         viewModel.onboardingUseCase.requestCurrentLocation { [weak self] coordinate in
-            guard let self = self, let coordinate = coordinate else { return }
+            guard let self, let coordinate = coordinate else { return }
             
             DispatchQueue.main.async {
                 if self.currentLocationMarker == nil {
-                    // 처음 생성
                     let marker = TMapMarker(position: coordinate)
-                    marker.icon = UIImage.currentLocationMark
+                    let originalImage = UIImage.currentLocationMark
+                    if let heading = self.latestHeading?.trueHeading {
+                        marker.icon = originalImage.rotated(by: CGFloat(heading))
+                    }
                     marker.map = self.mapView
                     self.currentLocationMarker = marker
                 } else {
                     // 좌표 갱신
                     self.currentLocationMarker?.position = coordinate
                     
-                    // 깜빡임 효과 → 지도에서 제거 / 다시 추가
-                    if self.isMarkerVisible {
+                    if self.currentLocationMarker?.map != nil {
+                        // 마커 제거해서 깜빡임
                         self.currentLocationMarker?.map = nil
                     } else {
+                        // 마커 다시 추가하면서 최신 heading 각도로 아이콘 갱신
+                        if let heading = self.latestHeading?.trueHeading {
+                            let rotatedImage = UIImage.currentLocationMark.rotated(by: CGFloat(heading))
+                            self.currentLocationMarker?.icon = rotatedImage
+                        }
                         self.currentLocationMarker?.map = self.mapView
                     }
-                    self.isMarkerVisible.toggle()
                 }
             }
         }
@@ -277,5 +286,15 @@ extension RegisterLocationViewController: TMapViewDelegate {
                 print("reverseGeocode 실패: \(error)")
             }
         }
+    }
+    
+    
+}
+
+extension RegisterLocationViewController: CLLocationManagerDelegate {
+    
+    // MARK: - 바라보는 방향에 따른 마커 변화
+    func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
+        self.latestHeading = newHeading
     }
 }

@@ -10,6 +10,7 @@ import CoreLocation
 
 protocol LocationServiceProtocol {
     func requestLocation(completion: @escaping (CLLocationCoordinate2D?) -> Void)
+    func startHeadingUpdates(delegate: CLLocationManagerDelegate)
 }
 
 final class LocationService: NSObject, LocationServiceProtocol {
@@ -53,5 +54,11 @@ extension LocationService: CLLocationManagerDelegate {
         if manager.authorizationStatus == .authorizedWhenInUse || manager.authorizationStatus == .authorizedAlways {
             manager.startUpdatingLocation()
         }
+    }
+    
+    func startHeadingUpdates(delegate: CLLocationManagerDelegate) {
+        locationManager.delegate = delegate
+        locationManager.headingFilter = kCLHeadingFilterNone
+        locationManager.startUpdatingHeading()
     }
 }
