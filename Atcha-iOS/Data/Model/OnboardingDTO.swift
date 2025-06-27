@@ -18,11 +18,11 @@ struct SignUpRequest: Codable {
 }
 
 struct SignUpResponse: Codable {
-    let id: Int
-    let accessToken: String
-    let refreshToken: String
-    let lat: Double
-    let lon: Double
+    let id: Int?
+    let accessToken: String?
+    let refreshToken: String?
+    let lat: Double?
+    let lon: Double?
 }
 
 struct SearchLocationRequest: Codable {

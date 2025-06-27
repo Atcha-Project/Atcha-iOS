@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Alamofire
 
 final class OnboardingRepositoryImpl: OnboardingRepository {
     private let apiService: APIService
@@ -25,6 +26,7 @@ final class OnboardingRepositoryImpl: OnboardingRepository {
             Endpoint(
                 path: "https://atcha.p-e.kr/api/auth/sign-up",
                 method: .post,
+                encoding: JSONEncoding.default,
                 headers: ["Authorization": "Bearer \(providerToken)"]),
             body: request)
     }
