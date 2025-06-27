@@ -15,7 +15,13 @@ struct AlarmOption {
 
 class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
     
-    private let topNavigationBar: TitleNavigationBar = AtchaNavigationBar.title("")
+    private lazy var topNavigationBar: TitleNavigationBar = AtchaNavigationBar.title(
+        "",
+        onBack: { [weak self] in
+            self?.navigationController?.popViewController(animated: true)
+        }
+    )
+    
     private let titleLabel: UILabel = UILabel()
     private let subTitleLabel: UILabel = UILabel()
     private var alarmOptions: [AlarmOption] = [
