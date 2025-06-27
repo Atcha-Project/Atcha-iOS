@@ -33,7 +33,6 @@ final class OnboardingUseCaseImpl: OnboardingUseCase {
     
     
     func signUp(_ request: SignUpRequest) async throws -> SignUpResponse {
-        
         return try await repository.signUp(request)
         
     }

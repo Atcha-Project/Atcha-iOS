@@ -9,6 +9,7 @@ import UIKit
 import SnapKit
 
 class AtchaList: UIView {
+    private var optionTitle: String = ""
     private var listType: AtchaListType
     private var checkmarkIsOn: Bool = false
     private var checkmarkImageView: UIImageView?
@@ -19,6 +20,7 @@ class AtchaList: UIView {
     
     init(title: String, listType: AtchaListType) {
         self.listType = listType
+        self.optionTitle = title
         super.init(frame: .zero)
         
         setupLabel(title: title)
@@ -60,8 +62,8 @@ class AtchaList: UIView {
     
     private func configure(title: String, type: AtchaListType) {
         switch type {
-        case .checkmark:
-            addCheckmarkView()
+        case .checkmark(let isOn):
+            addCheckmarkView(isOn: isOn)
         case .text(let text):
             addTextLabelView(text: text)
         case .arrow:
@@ -70,6 +72,18 @@ class AtchaList: UIView {
             addButtonView(title: title, onTap: action)
         case .none: break
         }
+    }
+    
+    func isCheckmarkSelected() -> Bool {
+        if case .checkmark = listType {
+            return checkmarkIsOn
+        }
+        return false
+    }
+    
+    
+    func getTitle() -> String {
+        return optionTitle
     }
 }
 

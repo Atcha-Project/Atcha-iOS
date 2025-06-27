@@ -20,13 +20,13 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
     private let currentImage: UIImageView = UIImageView()
     private let registerButton: AtchaButton = AtchaButton(text: "우리집 등록", size: .h48, style: .filled(.primary))
     
-    private let initialCoordinate: CLLocationCoordinate2D
+    private var initialCoordinate: CLLocationCoordinate2D
     private let placeName: String
     private let address: String
     private var currentSelectedPlaceName: String
     private var currentSelectedAddress: String
     
-    var onRegisterCompleted: ((String, String) -> Void)?
+    var onRegisterCompleted: ((String, String, Double, Double) -> Void)?
     
     init(viewModel: RegisterLocationViewModel, coordinate: CLLocationCoordinate2D, placeName: String, address: String) {
         self.initialCoordinate = coordinate
@@ -85,7 +85,7 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
         registerButton.addAction(UIAction { [weak self] _ in
             guard let self = self else { return }
             
-            self.onRegisterCompleted?(self.currentSelectedPlaceName, self.currentSelectedAddress)
+            self.onRegisterCompleted?(self.currentSelectedPlaceName, self.currentSelectedAddress, self.initialCoordinate.latitude, self.initialCoordinate.longitude)
             
             if let homeVC = self.navigationController?.viewControllers.first(where: { $0 is HomeRegisterViewController }) {
                 self.navigationController?.popToViewController(homeVC, animated: true)
@@ -165,6 +165,7 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
                     let address = response.address
                     
                     DispatchQueue.main.async {
+                        self.initialCoordinate = coordinate
                         self.mapView.setCenter(coordinate)
                         self.nameLabel.attributedText = AtchaFont.H5_SB_17(placeName, color: AtchaColor.white)
                         self.addressLabel.attributedText = AtchaFont.Body_R_14(address, color: AtchaColor.gray200)

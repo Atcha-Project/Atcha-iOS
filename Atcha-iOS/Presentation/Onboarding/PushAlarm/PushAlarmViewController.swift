@@ -15,20 +15,48 @@ struct AlarmOption {
 
 class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
     
-    private let topNavigationBar: TitleNavigationBar = AtchaNavigationBar.title("")
+    private lazy var topNavigationBar: TitleNavigationBar = AtchaNavigationBar.title(
+        "",
+        onBack: { [weak self] in
+            self?.navigationController?.popViewController(animated: true)
+        }
+    )
+    
     private let titleLabel: UILabel = UILabel()
     private let subTitleLabel: UILabel = UILabel()
     private var alarmOptions: [AlarmOption] = [
-        .init(title: "5분 전", isSelected: true),
+        .init(title: "5분 전", isSelected: false),
         .init(title: "10분 전", isSelected: false),
-        .init(title: "20분 전", isSelected: true),
+        .init(title: "20분 전", isSelected: false),
         .init(title: "30분 전", isSelected: false),
         .init(title: "1시간 전", isSelected: false)
     ]
     private let alarmListStackView: UIStackView = UIStackView()
-    private var selectedStatusList: [Bool] = []
-    private let nextButton: AtchaButton = AtchaButton(text: "다음", size: ButtonSize.h52, style: .filled(.primary)) {
+    private var alarmCheckmarkLists: [AtchaList] = []
+    private lazy var nextButton: AtchaButton = AtchaButton(
+        text: "다음",
+        size: .h52,
+        style: .filled(.primary)
+    ) { [weak self] in
+        guard let self else { return }
         
+        let selectedAlarms = alarmCheckmarkLists
+            .filter { $0.isCheckmarkSelected() }
+            .map { $0.getTitle() }
+        
+        guard let platformRaw = UserDefaultsWrapper().integer(forKey: UserDefaultsWrapper.Key.provider.rawValue),
+              let platform = LoginType(rawValue: platformRaw) else {
+            print("❌ 플랫폼 정보 없음")
+            return
+        }
+        
+        Task {
+            do {
+                try await self.viewModel.signUp(provider: platform.rawValue, selectedAlarms: selectedAlarms)
+            } catch {
+                print("❌ 회원가입 실패")
+            }
+        }
     }
     
     override func viewDidLoad() {
@@ -96,6 +124,7 @@ class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
                 make.height.equalTo(52)
             }
             alarmListStackView.addArrangedSubview(listView)
+            alarmCheckmarkLists.append(listView)
         }
     }
     

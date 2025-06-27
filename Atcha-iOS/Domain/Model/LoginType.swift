@@ -9,5 +9,5 @@ import Foundation
 
 enum LoginType: Int {
     case kakao = 0
-    case apple
+    case apple = 1
 }

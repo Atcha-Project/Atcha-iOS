@@ -10,19 +10,19 @@ import Foundation
 struct SignUpRequest: Codable {
     let provider: Int
     let userName: String
-    let address: Int
+    let address: String
     let lat: Double
     let lon: Double
-    let alertFrequencies: Set<Int>
+    let alertFrequencies: [Int]
     let fcmToken: String
 }
 
 struct SignUpResponse: Codable {
-    let id: Int
-    let accessToken: String
-    let refreshToken: String
-    let lat: Double
-    let lon: Double
+    let id: Int?
+    let accessToken: String?
+    let refreshToken: String?
+    let lat: Double?
+    let lon: Double?
 }
 
 struct SearchLocationRequest: Codable {
@@ -46,6 +46,13 @@ struct ReverseGeocodeLocationRequest: Codable {
 }
 
 struct ReverseGeocodeLocationResponse: Codable {
+    let name: String
+    let address: String
+    let lat: Double
+    let lon: Double
+}
+
+struct SelectedLocation {
     let name: String
     let address: String
     let lat: Double

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Alamofire
 
 final class OnboardingRepositoryImpl: OnboardingRepository {
     private let apiService: APIService
@@ -16,11 +17,17 @@ final class OnboardingRepositoryImpl: OnboardingRepository {
     
     func signUp(_ request: SignUpRequest) async throws -> SignUpResponse {
         
+        guard let providerToken = UserDefaultsWrapper().string(forKey: UserDefaultsWrapper.Key.providerToken.rawValue) else {
+            print("플랫폼 토큰 없음")
+            throw NSError(domain: "SignUpError", code: -1, userInfo: [NSLocalizedDescriptionKey: "플랫폼 토큰 없음"])
+        }
+        
         return try await apiService.request(
             Endpoint(
                 path: "https://atcha.p-e.kr/api/auth/sign-up",
                 method: .post,
-                headers: ["Authorization": "Bearer "]),
+                encoding: JSONEncoding.default,
+                headers: ["Authorization": "Bearer \(providerToken)"]),
             body: request)
     }
     
