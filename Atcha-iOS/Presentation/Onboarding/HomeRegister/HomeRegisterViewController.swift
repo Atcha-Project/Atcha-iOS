@@ -26,8 +26,15 @@ class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel> {
     private let searchLocationLabel: UILabel = UILabel()
     private let locationNameLabel: UILabel = UILabel()
     private let locationAddressLabel: UILabel = UILabel()
+    var onNextTapped: ((SelectedLocation) -> Void)?
     
     private let currentLocationButton: UIButton = UIButton()
+    private lazy var nextButton: AtchaButton = {
+            return AtchaButton(text: "다음", size: .h52, style: .filled(.disabled)) { [weak self] in
+                guard let self, let location = self.viewModel.selectedLocation else { return }
+                self.onNextTapped?(location)
+            }
+        }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -53,7 +60,7 @@ class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel> {
         searchLocationContainer.addGestureRecognizer(tapGesture)
         searchLocationContainer.isUserInteractionEnabled = true
         
-        view.addSubViews(labelStack, searchLocationContainer, currentLocationButton)
+        view.addSubViews(labelStack, searchLocationContainer, currentLocationButton, nextButton)
         
         labelStack.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top).inset(72)
@@ -74,6 +81,12 @@ class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel> {
             make.trailing.equalToSuperview().inset(16)
             make.height.equalTo(40)
             make.centerX.equalToSuperview()
+        }
+        
+        nextButton.snp.makeConstraints { make in
+            make.leading.equalToSuperview().offset(16)
+            make.trailing.equalToSuperview().inset(16)
+            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).inset(20)
         }
         
     }
@@ -106,6 +119,9 @@ class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel> {
         }
         
         setupLocationButton(title: "현 위치 찾기", icon: UIImage.placeFilled)
+        
+        nextButton.isEnabled = false
+        nextButton.updateStyle(text: "다음", style: .filled(.disabled))
     }
     
     // MARK: - 위치 선택 UI
@@ -127,6 +143,9 @@ class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel> {
         }
         
         setupLocationButton(title: "수정하기", icon: nil)
+        
+        nextButton.isEnabled = true
+        nextButton.updateStyle(text: "다음", style: .filled(.primary))
     }
     
     // MARK: - 위치 선택/미선택 버튼 UI
@@ -163,7 +182,6 @@ class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel> {
                     print("❌ 현재 위치 가져오기 실패")
                     return
                 }
-
                 Task {
                     do {
                         let response = try await self.viewModel.reverseGeocodeLocation(
@@ -182,8 +200,8 @@ class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel> {
                             address: address
                         )
                         
-                        vc.onRegisterCompleted = { [weak self] name, address in
-                            self?.locationState = .selected(name: name, address: address)
+                        vc.onRegisterCompleted = { [weak self] name, address, lat, lon in
+                            self?.updateLocation(name: name, address: address, lat: lat, lon: lon)
                         }
                         self.navigationController?.pushViewController(vc, animated: true)
                         
@@ -201,7 +219,14 @@ class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel> {
         }
     }
     
-    func updateLocation(name: String, address: String) {
+    func updateLocation(name: String, address: String, lat: Double, lon: Double) {
         self.locationState = .selected(name: name, address: address)
+        
+        viewModel.selectedLocation = SelectedLocation(
+            name: name,
+            address: address,
+            lat: lat,
+            lon: lon
+        )
     }
 }

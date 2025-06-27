@@ -9,6 +9,10 @@ import Foundation
 
 final class HomeRegisterViewModel: BaseViewModel {
     let onboardingUseCase: OnboardingUseCase
+    var onFinish: ((Bool) -> Void)?
+    
+    // MARK: - 장소 선택 정보 저장용 프로퍼티
+    var selectedLocation: SelectedLocation?
     
     init(onboardingUseCase: OnboardingUseCase) {
         self.onboardingUseCase = onboardingUseCase

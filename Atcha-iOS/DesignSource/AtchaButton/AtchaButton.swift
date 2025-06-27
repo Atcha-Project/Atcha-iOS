@@ -144,6 +144,24 @@ final class AtchaButton: UIButton {
     }
 }
 
+extension AtchaButton {
+    func updateStyle(text: String, style: Style) {
+        switch style {
+        case .filled(let filledStyle):
+            setAttributedTitle(ButtonSize.h52.attributedTitle(text, color: filledStyle.textColor), for: .normal)
+            backgroundColor = filledStyle.backgroundColor
+            layer.borderWidth = 0
+            layer.borderColor = nil
+
+        case .line(let lineStyle):
+            setAttributedTitle(ButtonSize.h52.attributedTitle(text, color: lineStyle.textColor), for: .normal)
+            backgroundColor = .clear
+            layer.borderWidth = 1
+            layer.borderColor = lineStyle.borderColor.cgColor
+        }
+    }
+}
+
 // MARK: - 사용예시
 //
 //let button1 = AtchaButton(

@@ -49,11 +49,12 @@
 		6DC3BF682E0721F300831470 /* LoginDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DC3BF672E0721F300831470 /* LoginDTO.swift */; };
 		6DFF29912E0CBE820039399F /* RegisterLocationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFF29902E0CBE820039399F /* RegisterLocationViewController.swift */; };
 		6DFF29932E0CBE8A0039399F /* RegisterLocationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFF29922E0CBE8A0039399F /* RegisterLocationViewModel.swift */; };
-		6DFF29AB2E0CC5460039399F /* TMapSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6DFF29A72E0CC52B0039399F /* TMapSDK.framework */; };
-		6DFF29AC2E0CC5460039399F /* TMapSDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 6DFF29A72E0CC52B0039399F /* TMapSDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		6DFF29B12E0CC5D70039399F /* VSMSDK.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6DFF29AF2E0CC5B30039399F /* VSMSDK.xcframework */; };
-		6DFF29B22E0CC5D70039399F /* VSMSDK.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 6DFF29AF2E0CC5B30039399F /* VSMSDK.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		6DFF29B42E0CDA0E0039399F /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFF29B32E0CDA0E0039399F /* LocationService.swift */; };
+		6DFF29CB2E0D69330039399F /* Secrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6DFF29CA2E0D69330039399F /* Secrets.xcconfig */; };
+		6DFF29E02E0E6D120039399F /* TMapSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6DFF29DC2E0E6D100039399F /* TMapSDK.framework */; };
+		6DFF29E12E0E6D120039399F /* TMapSDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 6DFF29DC2E0E6D100039399F /* TMapSDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		6DFF29E22E0E6D140039399F /* VSMSDK.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6DFF29DD2E0E6D100039399F /* VSMSDK.xcframework */; };
+		6DFF29E32E0E6D140039399F /* VSMSDK.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 6DFF29DD2E0E6D100039399F /* VSMSDK.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		B600CA132E07FD29008B0D87 /* MyPageCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C13472E07A10F0016D2F0 /* MyPageCoordinator.swift */; };
 		B65C12D72E0429B30016D2F0 /* AppFlowCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C12D62E0429B30016D2F0 /* AppFlowCoordinator.swift */; };
 		B65C12DA2E042A740016D2F0 /* AppDIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C12D92E042A740016D2F0 /* AppDIContainer.swift */; };
@@ -125,14 +126,14 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		6DFF29982E0CC0DA0039399F /* Embed Frameworks */ = {
+		6DFF29C72E0D690C0039399F /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				6DFF29AC2E0CC5460039399F /* TMapSDK.framework in Embed Frameworks */,
-				6DFF29B22E0CC5D70039399F /* VSMSDK.xcframework in Embed Frameworks */,
+				6DFF29E12E0E6D120039399F /* TMapSDK.framework in Embed Frameworks */,
+				6DFF29E32E0E6D140039399F /* VSMSDK.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -175,9 +176,10 @@
 		6DE42B8D2DFDE6360041344C /* Atcha-iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Atcha-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6DFF29902E0CBE820039399F /* RegisterLocationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterLocationViewController.swift; sourceTree = "<group>"; };
 		6DFF29922E0CBE8A0039399F /* RegisterLocationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterLocationViewModel.swift; sourceTree = "<group>"; };
-		6DFF29A72E0CC52B0039399F /* TMapSDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = TMapSDK.framework; sourceTree = "<group>"; };
-		6DFF29AF2E0CC5B30039399F /* VSMSDK.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = VSMSDK.xcframework; sourceTree = "<group>"; };
 		6DFF29B32E0CDA0E0039399F /* LocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationService.swift; sourceTree = "<group>"; };
+		6DFF29CA2E0D69330039399F /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
+		6DFF29DC2E0E6D100039399F /* TMapSDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = TMapSDK.framework; sourceTree = "<group>"; };
+		6DFF29DD2E0E6D100039399F /* VSMSDK.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = VSMSDK.xcframework; sourceTree = "<group>"; };
 		B65C12D62E0429B30016D2F0 /* AppFlowCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFlowCoordinator.swift; sourceTree = "<group>"; };
 		B65C12D92E042A740016D2F0 /* AppDIContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDIContainer.swift; sourceTree = "<group>"; };
 		B65C12DD2E042CF00016D2F0 /* UserInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserInfo.swift; sourceTree = "<group>"; };
@@ -259,10 +261,10 @@
 				6D8D8AE32E01386D003DABB2 /* PanModal in Frameworks */,
 				6DC3BEE92E04FD7B00831470 /* FirebaseAuth in Frameworks */,
 				6D8D8AE02E013819003DABB2 /* SnapKit in Frameworks */,
-				6DFF29B12E0CC5D70039399F /* VSMSDK.xcframework in Frameworks */,
+				6DFF29E22E0E6D140039399F /* VSMSDK.xcframework in Frameworks */,
 				6DC3BEE22E04FD0700831470 /* KakaoSDK in Frameworks */,
 				6DC3BEEB2E04FD7B00831470 /* FirebaseCore in Frameworks */,
-				6DFF29AB2E0CC5460039399F /* TMapSDK.framework in Frameworks */,
+				6DFF29E02E0E6D120039399F /* TMapSDK.framework in Frameworks */,
 				6DC3BEED2E04FD7B00831470 /* FirebaseCrashlytics in Frameworks */,
 				6DC3BEE62E04FD0700831470 /* KakaoSDKCommon in Frameworks */,
 				6DC3BEE42E04FD0700831470 /* KakaoSDKAuth in Frameworks */,
@@ -400,6 +402,7 @@
 			isa = PBXGroup;
 			children = (
 				B68309632E005ADE00E2D029 /* .gitignore */,
+				6DFF29CA2E0D69330039399F /* Secrets.xcconfig */,
 				B68309522E005A3600E2D029 /* Atcha-iOS */,
 				6DE42B8E2DFDE6360041344C /* Products */,
 			);
@@ -714,8 +717,8 @@
 				B683094E2E005A3600E2D029 /* LaunchScreen.storyboard */,
 				B68309502E005A3600E2D029 /* Main.storyboard */,
 				B68309512E005A3600E2D029 /* ViewController.swift */,
-				6DFF29A72E0CC52B0039399F /* TMapSDK.framework */,
-				6DFF29AF2E0CC5B30039399F /* VSMSDK.xcframework */,
+				6DFF29DC2E0E6D100039399F /* TMapSDK.framework */,
+				6DFF29DD2E0E6D100039399F /* VSMSDK.xcframework */,
 			);
 			path = "Atcha-iOS";
 			sourceTree = "<group>";
@@ -804,7 +807,7 @@
 				6DE42B892DFDE6360041344C /* Sources */,
 				6DE42B8A2DFDE6360041344C /* Frameworks */,
 				6DE42B8B2DFDE6360041344C /* Resources */,
-				6DFF29982E0CC0DA0039399F /* Embed Frameworks */,
+				6DFF29C72E0D690C0039399F /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -879,6 +882,7 @@
 				B6ADE18E2E0AE8CF008C4E23 /* GoogleService-Info.plist in Resources */,
 				B683095D2E005A3600E2D029 /* Pretendard-SemiBold.otf in Resources */,
 				B683095E2E005A3600E2D029 /* Icon.xcassets in Resources */,
+				6DFF29CB2E0D69330039399F /* Secrets.xcconfig in Resources */,
 				B683095F2E005A3600E2D029 /* Assets.xcassets in Resources */,
 				B68309612E005A3600E2D029 /* LaunchScreen.storyboard in Resources */,
 				B68309622E005A3600E2D029 /* Main.storyboard in Resources */,
@@ -1010,20 +1014,27 @@
 /* Begin XCBuildConfiguration section */
 		6DE42BA12DFDE6370041344C /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6DFF29CA2E0D69330039399F /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "Atcha-iOS/Atcha-iOS.entitlements";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 23SCTLK482;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 23SCTLK482;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Atcha-iOS",
+					"$(PROJECT_DIR)",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Atcha-iOS/Info.plist";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "앗차!에서 위치를 활용해 주변 정보를 보여드려요.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "앗차!에서 현재 위치 기반 추천을 위해 사용합니다.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -1034,8 +1045,10 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.atcha.team;
+				PRODUCT_BUNDLE_IDENTIFIER = com.atcha.iOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Atcha Debug";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -1048,20 +1061,27 @@
 		};
 		6DE42BA22DFDE6370041344C /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6DFF29CA2E0D69330039399F /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "Atcha-iOS/Atcha-iOS.entitlements";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 23SCTLK482;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 23SCTLK482;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Atcha-iOS",
+					"$(PROJECT_DIR)",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Atcha-iOS/Info.plist";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "앗차!에서 위치를 활용해 주변 정보를 보여드려요.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "앗차!에서 현재 위치 기반 추천을 위해 사용합니다.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -1072,8 +1092,10 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.atcha.team;
+				PRODUCT_BUNDLE_IDENTIFIER = com.atcha.iOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Atcha Release";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -1086,6 +1108,7 @@
 		};
 		6DE42BA32DFDE6370041344C /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6DFF29CA2E0D69330039399F /* Secrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -1150,6 +1173,7 @@
 		};
 		6DE42BA42DFDE6370041344C /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6DFF29CA2E0D69330039399F /* Secrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
