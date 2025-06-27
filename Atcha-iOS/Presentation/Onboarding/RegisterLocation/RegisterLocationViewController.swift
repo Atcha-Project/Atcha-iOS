@@ -13,7 +13,6 @@ import CoreLocation
 class RegisterLocationViewController: BaseViewController<RegisterLocationViewModel> {
     
     private let backOnlyNavigationBar: BackOnlyNavigationBar = AtchaNavigationBar.backOnly()
-    private var mapView: TMapView = TMapView()
     private let bottomView: UIView = UIView()
     private let nameLabel: UILabel = UILabel()
     private let addressLabel: UILabel = UILabel()
@@ -25,6 +24,13 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
     private let address: String
     private var currentSelectedPlaceName: String
     private var currentSelectedAddress: String
+    
+    private var mapView: TMapView = TMapView()
+    private let locationSettingImage: UIImageView = UIImageView()
+    private var locationTimer: Timer?
+    private var currentLocationMarker: TMapMarker?
+    private var isMarkerVisible = true
+
     
     var onRegisterCompleted: ((String, String, Double, Double) -> Void)?
     
@@ -44,10 +50,13 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        stopUpdatingCurrentLocation()
+        
         setupMapView()
         setupUI()
         setupBottomUI()
         setupTapGesture()
+        startUpdatingCurrentLocation()
         
         backOnlyNavigationBar.onTapBack = { [weak self] in
             self?.navigationController?.popViewController(animated: true)
@@ -68,10 +77,9 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
     private func setupMapView() {
         mapView.setApiKey(Bundle.main.tMapKey)
         mapView.delegate = self
-        mapView.setZoom(15)
+        locationSettingImage.image = UIImage.settingLocationMark
         
-        view.addSubview(mapView)
-        
+        view.addSubViews(mapView)
         
         mapView.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
@@ -111,7 +119,6 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
         
         view.addSubview(bottomView)
         view.addSubview(currentImage)
-        
         
         
         bottomView.snp.makeConstraints { make in
@@ -178,13 +185,97 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
             }
         }
     }
+    
+    // MARK: - 실시간 현위치 추적 시작
+    private func startUpdatingCurrentLocation() {
+        locationTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            self?.updateCurrentLocation()
+        }
+    }
+
+    // MARK: - 실시간 현위치 추적 정지
+    private func stopUpdatingCurrentLocation() {
+        locationTimer?.invalidate()
+        locationTimer = nil
+    }
+
+    // MARK: - 실시간 현위치 표시를 위한 마커 추가
+    private func updateCurrentLocation() {
+        viewModel.onboardingUseCase.requestCurrentLocation { [weak self] coordinate in
+            guard let self = self, let coordinate = coordinate else { return }
+            
+            DispatchQueue.main.async {
+                if self.currentLocationMarker == nil {
+                    // 처음 생성
+                    let marker = TMapMarker(position: coordinate)
+                    marker.icon = UIImage.currentLocationMark
+                    marker.map = self.mapView
+                    self.currentLocationMarker = marker
+                } else {
+                    // 좌표 갱신
+                    self.currentLocationMarker?.position = coordinate
+                    
+                    // 깜빡임 효과 → 지도에서 제거 / 다시 추가
+                    if self.isMarkerVisible {
+                        self.currentLocationMarker?.map = nil
+                    } else {
+                        self.currentLocationMarker?.map = self.mapView
+                    }
+                    self.isMarkerVisible.toggle()
+                }
+            }
+        }
+    }
 }
 
 extension RegisterLocationViewController: TMapViewDelegate {
     
+    // MARK: - 지도 렌더링 완료 시 설정 함수
     func mapViewDidFinishLoadingMap() {
-        print("지도 로딩 완료")
         mapView.setCenter(initialCoordinate)
         mapView.setMapType(.Night)
+        mapView.setZoom(50)
+        
+        //지도랑 같이 나타나게 설정
+        view.addSubview(locationSettingImage)
+        
+        locationSettingImage.snp.makeConstraints { make in
+            make.centerX.equalToSuperview()
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).inset(250)
+            make.height.equalTo(65)
+            make.width.equalTo(48)
+        }
+    }
+    
+    // MARK: - 지도 변화 시 이벤트 발생 함수
+    func mapViewDidChangeBounds() {
+        guard let centerCoord = mapView.getCenter() else {
+            print("center coordinate is nil")
+            return
+        }
+        
+        Task {
+            do {
+                let response = try await viewModel.reverseGeocodeLocation(
+                    lat: centerCoord.latitude,
+                    lon: centerCoord.longitude
+                )
+                
+                let placeName = response.name
+                let address = response.address
+                
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    
+                    self.initialCoordinate = centerCoord
+                    self.nameLabel.attributedText = AtchaFont.H5_SB_17(placeName, color: AtchaColor.white)
+                    self.addressLabel.attributedText = AtchaFont.Body_R_14(address, color: AtchaColor.gray200)
+                    self.currentSelectedPlaceName = placeName
+                    self.currentSelectedAddress = address
+                }
+            } catch {
+                print("reverseGeocode 실패: \(error)")
+            }
+        }
     }
 }
