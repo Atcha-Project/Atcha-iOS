@@ -61,4 +61,8 @@ extension LocationService: CLLocationManagerDelegate {
         locationManager.headingFilter = kCLHeadingFilterNone
         locationManager.startUpdatingHeading()
     }
+    
+    func stopHeadingUpdates() {
+            locationManager.stopUpdatingHeading()
+        }
 }

@@ -66,6 +66,14 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
         }
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        
+        stopUpdatingCurrentLocation()
+        locationService.stopHeadingUpdates()
+        currentLocationMarker?.map = nil
+    }
+    
     // MARK: - RegisterLocation Base UI
     private func setupUI() {
         view.addSubview(backOnlyNavigationBar)
