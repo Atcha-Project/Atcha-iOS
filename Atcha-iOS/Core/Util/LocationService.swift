@@ -16,16 +16,16 @@ protocol LocationServiceProtocol {
 final class LocationService: NSObject, LocationServiceProtocol {
     private let locationManager = CLLocationManager()
     private var completion: ((CLLocationCoordinate2D?) -> Void)?
-
+    
     override init() {
         super.init()
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
     }
-
+    
     func requestLocation(completion: @escaping (CLLocationCoordinate2D?) -> Void) {
         self.completion = completion
-
+        
         let status = locationManager.authorizationStatus
         switch status {
         case .notDetermined:
@@ -44,12 +44,12 @@ extension LocationService: CLLocationManagerDelegate {
         completion?(locations.last?.coordinate)
         completion = nil
     }
-
+    
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         completion?(nil)
         completion = nil
     }
-
+    
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         if manager.authorizationStatus == .authorizedWhenInUse || manager.authorizationStatus == .authorizedAlways {
             manager.startUpdatingLocation()
@@ -63,6 +63,6 @@ extension LocationService: CLLocationManagerDelegate {
     }
     
     func stopHeadingUpdates() {
-            locationManager.stopUpdatingHeading()
-        }
+        locationManager.stopUpdatingHeading()
+    }
 }

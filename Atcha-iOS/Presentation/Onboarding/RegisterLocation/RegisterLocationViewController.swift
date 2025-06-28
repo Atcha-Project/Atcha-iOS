@@ -18,13 +18,11 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
     private let addressLabel: UILabel = UILabel()
     private let currentImage: UIImageView = UIImageView()
     private let registerButton: AtchaButton = AtchaButton(text: "우리집 등록", size: .h48, style: .filled(.primary))
-    
     private var initialCoordinate: CLLocationCoordinate2D
     private let placeName: String
     private let address: String
     private var currentSelectedPlaceName: String
     private var currentSelectedAddress: String
-    
     private var mapView: TMapView = TMapView()
     private let locationSettingImage: UIImageView = UIImageView()
     private var locationTimer: Timer?
@@ -52,18 +50,13 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
         super.viewDidLoad()
         
         stopUpdatingCurrentLocation()
-        
-        setupMapView()
+        bind()
         setupUI()
-        setupBottomUI()
-        setupTapGesture()
+        setupTapAtction()
+        setupNavigationBarCallbacks()
         startUpdatingCurrentLocation()
         
         locationService.startHeadingUpdates(delegate: self)
-        
-        backOnlyNavigationBar.onTapBack = { [weak self] in
-            self?.navigationController?.popViewController(animated: true)
-        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -74,42 +67,40 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
         currentLocationMarker?.map = nil
     }
     
-    // MARK: - RegisterLocation Base UI
-    private func setupUI() {
-        view.addSubview(backOnlyNavigationBar)
+    // MARK: - ViewModel 바인딩
+    private func bind() {
+        viewModel.$currentCoordinate
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] coordinate in
+                guard let self, let coordinate else { return }
+                self.initialCoordinate = coordinate
+            }
+            .store(in: &cancellables)
         
-        backOnlyNavigationBar.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
-            make.leading.trailing.equalToSuperview()
-        }
+        viewModel.$placeName
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] placeName in
+                guard let placeName else { return }
+                self?.nameLabel.attributedText = AtchaFont.H5_SB_17(placeName, color: AtchaColor.white)
+                self?.currentSelectedPlaceName = placeName
+            }
+            .store(in: &cancellables)
+        
+        viewModel.$address
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] address in
+                guard let address else { return }
+                self?.addressLabel.attributedText = AtchaFont.Body_R_14(address, color: AtchaColor.gray200)
+                self?.currentSelectedAddress = address
+            }
+            .store(in: &cancellables)
     }
     
-    // MARK: - TMap Seting
-    private func setupMapView() {
+    // MARK: - 기본 UI
+    private func setupUI() {
         mapView.setApiKey(Bundle.main.tMapKey)
         mapView.delegate = self
         locationSettingImage.image = UIImage.settingLocationMark
-        
-        view.addSubViews(mapView)
-        
-        mapView.snp.makeConstraints { make in
-            make.top.leading.trailing.equalToSuperview()
-            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
-        }
-    }
-    
-    // MARK: - Bottom UI
-    private func setupBottomUI() {
-        
-        registerButton.addAction(UIAction { [weak self] _ in
-            guard let self = self else { return }
-            
-            self.onRegisterCompleted?(self.currentSelectedPlaceName, self.currentSelectedAddress, self.initialCoordinate.latitude, self.initialCoordinate.longitude)
-            
-            if let homeVC = self.navigationController?.viewControllers.first(where: { $0 is HomeRegisterViewController }) {
-                self.navigationController?.popToViewController(homeVC, animated: true)
-            }
-        }, for: .touchUpInside)
         
         currentImage.image = UIImage.mylocationFilled.withRenderingMode(.alwaysOriginal)
         
@@ -128,9 +119,20 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
         
         bottomView.addSubViews(stackLabel, registerButton)
         
+        view.addSubViews(mapView)
+        view.addSubview(backOnlyNavigationBar)
         view.addSubview(bottomView)
         view.addSubview(currentImage)
         
+        mapView.snp.makeConstraints { make in
+            make.top.leading.trailing.equalToSuperview()
+            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
+        }
+        
+        backOnlyNavigationBar.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
+            make.leading.trailing.equalToSuperview()
+        }
         
         bottomView.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
@@ -157,42 +159,42 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
         }
     }
     
-    // MARK: - currentLocation Tapped
-    private func setupTapGesture() {
+    // MARK: - 터치 액션 모음
+    private func setupTapAtction() {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleCurrentLocationTapped))
         currentImage.isUserInteractionEnabled = true
         currentImage.addGestureRecognizer(tapGesture)
+        
+        registerButton.addAction(UIAction { [weak self] _ in
+            guard let self = self else { return }
+            
+            self.onRegisterCompleted?(self.currentSelectedPlaceName, self.currentSelectedAddress, self.initialCoordinate.latitude, self.initialCoordinate.longitude)
+            
+            if let homeVC = self.navigationController?.viewControllers.first(where: { $0 is HomeRegisterViewController }) {
+                self.navigationController?.popToViewController(homeVC, animated: true)
+            }
+        }, for: .touchUpInside)
     }
     
+    // MARK: - 네비게이션 바 콜백
+    private func setupNavigationBarCallbacks() {
+        backOnlyNavigationBar.onTapBack = { [weak self] in
+            self?.navigationController?.popViewController(animated: true)
+        }
+    }
     
+    // MARK: - 현재 위치
     @objc private func handleCurrentLocationTapped() {
-        viewModel.onboardingUseCase.requestCurrentLocation { [weak self] coordinate in
-            guard let self = self, let coordinate = coordinate else {
-                print("❌ 현재 위치 가져오기 실패")
-                return
-            }
+        viewModel.handleCurrentLocation { [weak self] registerVM, coordinate, placeName, address in
+            guard let self else { return }
             
-            Task {
-                do {
-                    let response = try await self.viewModel.reverseGeocodeLocation(
-                        lat: coordinate.latitude,
-                        lon: coordinate.longitude
-                    )
-                    
-                    let placeName = response.name
-                    let address = response.address
-                    
-                    DispatchQueue.main.async {
-                        self.initialCoordinate = coordinate
-                        self.mapView.setCenter(coordinate)
-                        self.nameLabel.attributedText = AtchaFont.H5_SB_17(placeName, color: AtchaColor.white)
-                        self.addressLabel.attributedText = AtchaFont.Body_R_14(address, color: AtchaColor.gray200)
-                        self.currentSelectedPlaceName = placeName
-                        self.currentSelectedAddress = address
-                    }
-                } catch {
-                    print("❌ 장소 변환 실패: \(error)")
-                }
+            DispatchQueue.main.async {
+                self.initialCoordinate = coordinate
+                self.mapView.setCenter(coordinate)
+                self.nameLabel.attributedText = AtchaFont.H5_SB_17(placeName, color: AtchaColor.white)
+                self.addressLabel.attributedText = AtchaFont.Body_R_14(address, color: AtchaColor.gray200)
+                self.currentSelectedPlaceName = placeName
+                self.currentSelectedAddress = address
             }
         }
     }
@@ -225,18 +227,12 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
                     marker.map = self.mapView
                     self.currentLocationMarker = marker
                 } else {
-                    // 좌표 갱신
                     self.currentLocationMarker?.position = coordinate
                     
-                    if self.currentLocationMarker?.map != nil {
-                        // 마커 제거해서 깜빡임
+                    if let heading = self.latestHeading?.trueHeading {
+                        let rotatedImage = UIImage.currentLocationMark.rotated(by: CGFloat(heading))
                         self.currentLocationMarker?.map = nil
-                    } else {
-                        // 마커 다시 추가하면서 최신 heading 각도로 아이콘 갱신
-                        if let heading = self.latestHeading?.trueHeading {
-                            let rotatedImage = UIImage.currentLocationMark.rotated(by: CGFloat(heading))
-                            self.currentLocationMarker?.icon = rotatedImage
-                        }
+                        self.currentLocationMarker?.icon = rotatedImage
                         self.currentLocationMarker?.map = self.mapView
                     }
                 }
@@ -253,7 +249,6 @@ extension RegisterLocationViewController: TMapViewDelegate {
         mapView.setMapType(.Night)
         mapView.setZoom(50)
         
-        //지도랑 같이 나타나게 설정
         view.addSubview(locationSettingImage)
         
         locationSettingImage.snp.makeConstraints { make in
@@ -271,32 +266,11 @@ extension RegisterLocationViewController: TMapViewDelegate {
             return
         }
         
-        Task {
-            do {
-                let response = try await viewModel.reverseGeocodeLocation(
-                    lat: centerCoord.latitude,
-                    lon: centerCoord.longitude
-                )
-                
-                let placeName = response.name
-                let address = response.address
-                
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.initialCoordinate = centerCoord
-                    self.nameLabel.attributedText = AtchaFont.H5_SB_17(placeName, color: AtchaColor.white)
-                    self.addressLabel.attributedText = AtchaFont.Body_R_14(address, color: AtchaColor.gray200)
-                    self.currentSelectedPlaceName = placeName
-                    self.currentSelectedAddress = address
-                }
-            } catch {
-                print("reverseGeocode 실패: \(error)")
-            }
-        }
+        viewModel.updateLocationByMapMovement(
+            lat: centerCoord.latitude,
+            lon: centerCoord.longitude
+        )
     }
-    
-    
 }
 
 extension RegisterLocationViewController: CLLocationManagerDelegate {
