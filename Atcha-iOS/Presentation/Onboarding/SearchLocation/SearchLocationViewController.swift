@@ -183,7 +183,7 @@ extension SearchLocationViewController: UITableViewDataSource, UITableViewDelega
         
         vc.onRegisterCompleted = { [weak self] name, address, lat, lon in
             if let homeVC = self?.navigationController?.viewControllers.first(where: { $0 is HomeRegisterViewController }) as? HomeRegisterViewController {
-                homeVC.updateLocation(name: name, address: address, lat: lat, lon: lon)
+                homeVC.viewModel.updateLocation(name: name, address: address, lat: lat, lon: lon)
             }
         }
         navigationController?.pushViewController(vc, animated: true)

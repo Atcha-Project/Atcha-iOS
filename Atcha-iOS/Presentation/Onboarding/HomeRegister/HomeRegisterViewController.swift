@@ -9,41 +9,43 @@ import UIKit
 import SnapKit
 import CoreLocation
 
-enum LocationSelectionState {
-    case none
-    case selected(name: String, address: String)
-}
-
-class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel> {
+final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel> {
     
-    private var locationState: LocationSelectionState = .none {
-        didSet { updateLocationView() }
+    private let titleLabel = UILabel()
+    private let subTitleLabel = UILabel()
+    private let searchLocationContainer = UIView()
+    private let searchLocationLabel = UILabel()
+    private let locationNameLabel = UILabel()
+    private let locationAddressLabel = UILabel()
+    private let currentLocationButton = UIButton()
+    private lazy var nextButton = AtchaButton(
+        text: "다음",
+        size: .h52,
+        style: .filled(.disabled)
+    ) { [weak self] in
+        guard let self, let location = self.viewModel.selectedLocation else { return }
+        self.onNextTapped?(location)
     }
     
-    private let titleLabel: UILabel = UILabel()
-    private let subTitleLabel: UILabel = UILabel()
-    private let searchLocationContainer: UIView = UIView()
-    private let searchLocationLabel: UILabel = UILabel()
-    private let locationNameLabel: UILabel = UILabel()
-    private let locationAddressLabel: UILabel = UILabel()
     var onNextTapped: ((SelectedLocation) -> Void)?
-    
-    private let currentLocationButton: UIButton = UIButton()
-    private lazy var nextButton: AtchaButton = {
-            return AtchaButton(text: "다음", size: .h52, style: .filled(.disabled)) { [weak self] in
-                guard let self, let location = self.viewModel.selectedLocation else { return }
-                self.onNextTapped?(location)
-            }
-        }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         setupUI()
-        updateLocationView()
+        bind()
     }
     
-    // MARK: - Home Register UI
+    // MARK: - ViewModel 바인딩
+    private func bind() {
+        viewModel.$locationState
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] state in
+                self?.render(state)
+            }
+            .store(in: &cancellables)
+    }
+    
+    // MARK: - 기본 UI
     private func setupUI() {
         view.backgroundColor = AtchaColor.gray950
         
@@ -55,47 +57,37 @@ class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel> {
         labelStack.spacing = 12
         labelStack.alignment = .leading
         
-        
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleSearchLocationTapped))
-        searchLocationContainer.addGestureRecognizer(tapGesture)
         searchLocationContainer.isUserInteractionEnabled = true
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleSearchTapped))
+        searchLocationContainer.addGestureRecognizer(tapGesture)
         
         view.addSubViews(labelStack, searchLocationContainer, currentLocationButton, nextButton)
         
         labelStack.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).inset(72)
-            make.leading.equalTo(view.snp.leading).inset(16)
+            make.top.equalTo(view.safeAreaLayoutGuide).inset(72)
+            make.leading.equalToSuperview().inset(16)
         }
-        
         searchLocationContainer.snp.makeConstraints { make in
             make.top.equalTo(labelStack.snp.bottom).offset(48)
-            make.leading.equalToSuperview().offset(16)
-            make.trailing.equalToSuperview().inset(16)
+            make.leading.trailing.equalToSuperview().inset(16)
             make.height.equalTo(48)
-            make.centerX.equalToSuperview()
         }
-        
         currentLocationButton.snp.makeConstraints { make in
             make.top.equalTo(searchLocationContainer.snp.bottom).offset(16)
-            make.leading.equalToSuperview().offset(16)
-            make.trailing.equalToSuperview().inset(16)
+            make.leading.trailing.equalToSuperview().inset(16)
             make.height.equalTo(40)
-            make.centerX.equalToSuperview()
         }
-        
         nextButton.snp.makeConstraints { make in
-            make.leading.equalToSuperview().offset(16)
-            make.trailing.equalToSuperview().inset(16)
-            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).inset(20)
+            make.leading.trailing.equalToSuperview().inset(16)
+            make.bottom.equalTo(view.safeAreaLayoutGuide).inset(20)
         }
-        
     }
     
-    // MARK: - 위치 선택/미선택 UI
-    private func updateLocationView() {
+    // MARK: - UI 렌더링
+    private func render(_ state: LocationSelectionState) {
         searchLocationContainer.subviews.forEach { $0.removeFromSuperview() }
         
-        switch locationState {
+        switch state {
         case .none:
             setupNoneStateUI()
         case .selected(let name, let address):
@@ -103,130 +95,86 @@ class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel> {
         }
     }
     
-    // MARK: - 위치 미선택 UI
+    // MARK: - 장소 미선택 UI
     private func setupNoneStateUI() {
         searchLocationContainer.backgroundColor = AtchaColor.gray930
         searchLocationContainer.layer.cornerRadius = 10
-        
         searchLocationLabel.attributedText = AtchaFont.Body_R_17("지번, 도로명, 건물명으로 검색", color: AtchaColor.gray400)
-        searchLocationLabel.numberOfLines = 0
-        searchLocationLabel.textAlignment = .left
-        
         searchLocationContainer.addSubview(searchLocationLabel)
-        searchLocationLabel.snp.makeConstraints { make in
-            make.leading.equalToSuperview().offset(16)
-            make.centerY.equalToSuperview()
+        searchLocationLabel.snp.makeConstraints {
+            $0.leading.equalToSuperview().offset(16)
+            $0.centerY.equalToSuperview()
         }
-        
         setupLocationButton(title: "현 위치 찾기", icon: UIImage.placeFilled)
         
         nextButton.isEnabled = false
         nextButton.updateStyle(text: "다음", style: .filled(.disabled))
     }
     
-    // MARK: - 위치 선택 UI
+    // MARK: - 장소 선택 UI
     private func setupSelectedStateUI(name: String, address: String) {
         searchLocationContainer.backgroundColor = .clear
-        
         locationNameLabel.attributedText = AtchaFont.H6_SB_15(name, color: AtchaColor.white)
         locationAddressLabel.attributedText = AtchaFont.Body_R_14(address, color: AtchaColor.gray200)
         
-        let labelStack = UIStackView(arrangedSubviews: [locationNameLabel, locationAddressLabel])
-        labelStack.axis = .vertical
-        labelStack.spacing = 4
-        labelStack.alignment = .leading
-        
-        searchLocationContainer.addSubview(labelStack)
-        labelStack.snp.makeConstraints { make in
-            make.leading.equalToSuperview()
-            make.centerY.equalToSuperview()
+        let stack = UIStackView(arrangedSubviews: [locationNameLabel, locationAddressLabel])
+        stack.axis = .vertical
+        stack.spacing = 4
+        stack.alignment = .leading
+        searchLocationContainer.addSubview(stack)
+        stack.snp.makeConstraints {
+            $0.leading.equalToSuperview()
+            $0.centerY.equalToSuperview()
         }
-        
         setupLocationButton(title: "수정하기", icon: nil)
         
         nextButton.isEnabled = true
         nextButton.updateStyle(text: "다음", style: .filled(.primary))
     }
     
-    // MARK: - 위치 선택/미선택 버튼 UI
+    // MARK: - 현위치 찾기 Button
     private func setupLocationButton(title: String, icon: UIImage?) {
         currentLocationButton.backgroundColor = .clear
         currentLocationButton.layer.cornerRadius = 8
-        currentLocationButton.layer.borderColor = AtchaColor.gray800.cgColor
         currentLocationButton.layer.borderWidth = 1
-        currentLocationButton.setAttributedTitle(AtchaFont.Body_R_14(title, color: AtchaColor.white), for: .normal)
-        currentLocationButton.tintColor = AtchaColor.white
-        currentLocationButton.addTarget(self, action: #selector(handleCurrentLocationButtonTapped), for: .touchUpInside)
+        currentLocationButton.layer.borderColor = AtchaColor.gray800.cgColor
+        currentLocationButton.setAttributedTitle(AtchaFont.Body_R_14(title, color: .white), for: .normal)
+        currentLocationButton.tintColor = .white
         
-        if let icon = icon {
-            let config = UIImage.SymbolConfiguration(pointSize: 16, weight: .regular)
+        currentLocationButton.addTarget(self, action: #selector(handleCurrentLocationTapped), for: .touchUpInside)
+        
+        if let icon {
+            let config = UIImage.SymbolConfiguration(pointSize: 16)
             currentLocationButton.setImage(icon.withConfiguration(config), for: .normal)
-            currentLocationButton.imageView?.contentMode = .scaleAspectFit
         } else {
             currentLocationButton.setImage(nil, for: .normal)
         }
     }
     
-    // MARK: - Action Method
-    @objc private func handleSearchLocationTapped() {
-        let searchLocationVM = viewModel.makeSearchLocationViewModel()
-        let vc = SearchLocationViewController(viewModel: searchLocationVM)
+    // MARK: - 장소 검색
+    @objc private func handleSearchTapped() {
+        let searchVM = viewModel.makeSearchLocationViewModel()
+        let vc = SearchLocationViewController(viewModel: searchVM)
         navigationController?.pushViewController(vc, animated: true)
     }
     
-    @objc private func handleCurrentLocationButtonTapped() {
-        switch locationState {
-        case .none:
-            viewModel.onboardingUseCase.requestCurrentLocation { [weak self] coordinate in
-                guard let self = self, let coordinate = coordinate else {
-                    print("❌ 현재 위치 가져오기 실패")
-                    return
-                }
-                Task {
-                    do {
-                        let response = try await self.viewModel.reverseGeocodeLocation(
-                            lat: coordinate.latitude,
-                            lon: coordinate.longitude
-                        )
-
-                        let placeName = response.name
-                        let address = response.address
-
-                        let registerVM = self.viewModel.makeRegisterLocationViewModel()
-                        let vc = RegisterLocationViewController(
-                            viewModel: registerVM,
-                            coordinate: coordinate,
-                            placeName: placeName,
-                            address: address
-                        )
-                        
-                        vc.onRegisterCompleted = { [weak self] name, address, lat, lon in
-                            self?.updateLocation(name: name, address: address, lat: lat, lon: lon)
-                        }
-                        self.navigationController?.pushViewController(vc, animated: true)
-                        
-                    } catch {
-                        print("❌ 장소 변환 실패: \(error)")
-                    }
-                }
+    // MARK: - 현위치 찾기
+    @objc private func handleCurrentLocationTapped() {
+        viewModel.handleCurrentLocation { [weak self] registerVM, coordinate, placeName, address in
+            guard let self else { return }
+            
+            let vc = RegisterLocationViewController(
+                viewModel: registerVM,
+                coordinate: coordinate,
+                placeName: placeName,
+                address: address
+            )
+            
+            vc.onRegisterCompleted = { [weak self] name, address, lat, lon in
+                self?.viewModel.updateLocation(name: name, address: address, lat: lat, lon: lon)
             }
             
-        case .selected:
-            // 이미 선택되어 있을 경우 → 검색 화면으로 이동
-            let searchLocationVM = viewModel.makeSearchLocationViewModel()
-            let vc = SearchLocationViewController(viewModel: searchLocationVM)
-            navigationController?.pushViewController(vc, animated: true)
+            self.navigationController?.pushViewController(vc, animated: true)
         }
-    }
-    
-    func updateLocation(name: String, address: String, lat: Double, lon: Double) {
-        self.locationState = .selected(name: name, address: address)
-        
-        viewModel.selectedLocation = SelectedLocation(
-            name: name,
-            address: address,
-            lat: lat,
-            lon: lon
-        )
     }
 }
