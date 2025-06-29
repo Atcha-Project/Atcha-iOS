@@ -31,6 +31,7 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
     private let locationService = LocationService()
     private var latestHeading: CLHeading?
     
+    
     var onRegisterCompleted: ((String, String, Double, Double) -> Void)?
     
     init(viewModel: RegisterLocationViewModel, coordinate: CLLocationCoordinate2D, placeName: String, address: String) {
@@ -260,7 +261,7 @@ extension RegisterLocationViewController: TMapViewDelegate {
     }
     
     // MARK: - 지도 변화 시 이벤트 발생 함수
-    func mapViewDidChangeBounds() {
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let centerCoord = mapView.getCenter() else {
             print("center coordinate is nil")
             return
