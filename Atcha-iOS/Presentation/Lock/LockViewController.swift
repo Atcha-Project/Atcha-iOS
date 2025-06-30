@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import Lottie
 
 class LockViewController: BaseViewController<LockViewModel> {
 
@@ -20,12 +21,21 @@ class LockViewController: BaseViewController<LockViewModel> {
     private let detailRouteButton: AtchaButton = AtchaButton(text: "더 늦은 경로 확인하기", size: .h52, style: .filled(.opacity)) {
         
     }
+    private var lottieAnimationView: LottieAnimationView = LottieAnimationView()
+    private let gradientView: UIView = UIView()
+    private let gradient: CAGradientLayer = CAGradientLayer()
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
         bind()
         setupUI()
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        gradient.frame = gradientView.bounds
     }
     
     // MARK: - ViewModel 바인딩
@@ -41,6 +51,20 @@ class LockViewController: BaseViewController<LockViewModel> {
     // MARK: - Lock UI
     private func setupUI() {
         backgroundImageView.image = UIImage.lockBackground
+        lottieAnimationView = LottieAnimationView(name: "잠금화면")
+        lottieAnimationView.contentMode = .scaleAspectFit
+        lottieAnimationView.loopMode = .loop
+        lottieAnimationView.play()
+        
+        gradient.colors = [
+            UIColor.black.cgColor,
+            UIColor.clear.cgColor
+        ]
+        gradient.locations = [0.0, 1.0]
+        gradient.startPoint = CGPoint(x: 0.5, y: 0.0)
+        gradient.endPoint = CGPoint(x: 0.5, y: 1.0)
+        gradientView.layer.addSublayer(gradient)
+        
         logoImageView.image = UIImage.lockAtcha
         titleLabel.attributedText = AtchaFont.H3_B_22("지금 안 일어나면\n택시비", color: AtchaColor.white)
         titleLabel.numberOfLines = 0
@@ -50,12 +74,18 @@ class LockViewController: BaseViewController<LockViewModel> {
         bottomStack.axis = .vertical
         bottomStack.spacing = 12
         
-        view.addSubViews(backgroundImageView, logoImageView, titleLabel, taxiFareLabel, bottomStack)
+        view.addSubViews(backgroundImageView, lottieAnimationView, gradientView, logoImageView, titleLabel, taxiFareLabel, bottomStack)
         
         backgroundImageView.snp.makeConstraints { make in
-            make.centerY.equalToSuperview()
-            make.centerX.equalToSuperview()
-            make.size.equalToSuperview()
+            make.edges.equalToSuperview()
+        }
+        
+        lottieAnimationView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        
+        gradientView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
         }
         
         logoImageView.snp.makeConstraints { make in

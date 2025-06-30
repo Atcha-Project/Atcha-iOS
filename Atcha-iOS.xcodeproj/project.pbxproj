@@ -29,6 +29,8 @@
 		6D8157422E126C3A003688A6 /* LockViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D8157412E126C3A003688A6 /* LockViewModel.swift */; };
 		6D8157442E126C45003688A6 /* LockViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D8157432E126C45003688A6 /* LockViewController.swift */; };
 		6D8157462E127BDB003688A6 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 6D8157452E127BDB003688A6 /* GoogleService-Info.plist */; };
+		6D8157492E129A7C003688A6 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 6D8157482E129A7C003688A6 /* Lottie */; };
+		6D81574C2E129B52003688A6 /* 잠금화면.json in Resources */ = {isa = PBXBuildFile; fileRef = 6D81574B2E129B52003688A6 /* 잠금화면.json */; };
 		6D8D8AE02E013819003DABB2 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 6D8D8ADF2E013819003DABB2 /* SnapKit */; };
 		6D8D8AE32E01386D003DABB2 /* PanModal in Frameworks */ = {isa = PBXBuildFile; productRef = 6D8D8AE22E01386D003DABB2 /* PanModal */; };
 		6D8D8B132E01B338003DABB2 /* AtchaButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D8D8B122E01B338003DABB2 /* AtchaButton.swift */; };
@@ -166,6 +168,7 @@
 		6D8157412E126C3A003688A6 /* LockViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockViewModel.swift; sourceTree = "<group>"; };
 		6D8157432E126C45003688A6 /* LockViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockViewController.swift; sourceTree = "<group>"; };
 		6D8157452E127BDB003688A6 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		6D81574B2E129B52003688A6 /* 잠금화면.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "잠금화면.json"; sourceTree = "<group>"; };
 		6D8D8B122E01B338003DABB2 /* AtchaButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtchaButton.swift; sourceTree = "<group>"; };
 		6D8D8B162E02BBC0003DABB2 /* AtchaNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtchaNavigationBar.swift; sourceTree = "<group>"; };
 		6DC3BEDC2E04F32400831470 /* UserDefaultsKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsKey.swift; sourceTree = "<group>"; };
@@ -274,6 +277,7 @@
 				6DC3BEED2E04FD7B00831470 /* FirebaseCrashlytics in Frameworks */,
 				6DC3BEE62E04FD0700831470 /* KakaoSDKCommon in Frameworks */,
 				6DC3BEE42E04FD0700831470 /* KakaoSDKAuth in Frameworks */,
+				6D8157492E129A7C003688A6 /* Lottie in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -352,6 +356,14 @@
 				6D8157432E126C45003688A6 /* LockViewController.swift */,
 			);
 			path = Lock;
+			sourceTree = "<group>";
+		};
+		6D81574A2E129B46003688A6 /* AtchaLottie */ = {
+			isa = PBXGroup;
+			children = (
+				6D81574B2E129B52003688A6 /* 잠금화면.json */,
+			);
+			path = AtchaLottie;
 			sourceTree = "<group>";
 		};
 		6D8D8B112E01B326003DABB2 /* AtchaButton */ = {
@@ -705,6 +717,7 @@
 		B683094B2E005A3600E2D029 /* DesignSource */ = {
 			isa = PBXGroup;
 			children = (
+				6D81574A2E129B46003688A6 /* AtchaLottie */,
 				6D368BAB2E0396B100144EE7 /* AtchaTextField */,
 				6D8D8B152E02BBA3003DABB2 /* AtchaNavigationBar */,
 				B6D083312E02D8E9003C28E1 /* AtchaList */,
@@ -841,6 +854,7 @@
 				6DC3BEEA2E04FD7B00831470 /* FirebaseCore */,
 				6DC3BEEC2E04FD7B00831470 /* FirebaseCrashlytics */,
 				6DC3BEEE2E04FD7B00831470 /* FirebaseMessaging */,
+				6D8157482E129A7C003688A6 /* Lottie */,
 			);
 			productName = "Atcha-iOS";
 			productReference = 6DE42B8D2DFDE6360041344C /* Atcha-iOS.app */;
@@ -875,6 +889,7 @@
 				6D8D8AE12E01386D003DABB2 /* XCRemoteSwiftPackageReference "PanModal" */,
 				6DC3BEE02E04FD0700831470 /* XCRemoteSwiftPackageReference "kakao-ios-sdk" */,
 				6DC3BEE72E04FD7B00831470 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				6D8157472E129A7C003688A6 /* XCRemoteSwiftPackageReference "lottie-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 6DE42B8E2DFDE6360041344C /* Products */;
@@ -898,6 +913,7 @@
 				B683095C2E005A3600E2D029 /* Pretendard-Regular.otf in Resources */,
 				6D8157462E127BDB003688A6 /* GoogleService-Info.plist in Resources */,
 				B683095D2E005A3600E2D029 /* Pretendard-SemiBold.otf in Resources */,
+				6D81574C2E129B52003688A6 /* 잠금화면.json in Resources */,
 				B683095E2E005A3600E2D029 /* Icon.xcassets in Resources */,
 				6DFF29EE2E0E87440039399F /* Secrets.xcconfig in Resources */,
 				B683095F2E005A3600E2D029 /* Assets.xcassets in Resources */,
@@ -1273,6 +1289,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		6D8157472E129A7C003688A6 /* XCRemoteSwiftPackageReference "lottie-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/airbnb/lottie-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.5.2;
+			};
+		};
 		6D8D8ADE2E013819003DABB2 /* XCRemoteSwiftPackageReference "SnapKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SnapKit/SnapKit.git";
@@ -1308,6 +1332,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		6D8157482E129A7C003688A6 /* Lottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6D8157472E129A7C003688A6 /* XCRemoteSwiftPackageReference "lottie-ios" */;
+			productName = Lottie;
+		};
 		6D8D8ADF2E013819003DABB2 /* SnapKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 6D8D8ADE2E013819003DABB2 /* XCRemoteSwiftPackageReference "SnapKit" */;

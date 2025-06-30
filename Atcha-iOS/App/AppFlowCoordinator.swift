@@ -27,7 +27,7 @@ class AppFlowCoordinator {
         window.rootViewController = navigationController
         window.makeKeyAndVisible()
         
-        let lockVC = LockViewController(viewModel: LockViewModel())
+        let lockVC = LockViewController(viewModel: LockViewModel(taxiFare: 30000))
         navigationController.pushViewController(lockVC, animated: false)
         
 //        let splashCoordinator = container.makeSplashCoordinator(navigationController: navigationController)
