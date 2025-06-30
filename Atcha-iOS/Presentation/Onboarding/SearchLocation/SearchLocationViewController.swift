@@ -20,6 +20,7 @@ class SearchLocationViewController: BaseViewController<SearchLocationViewModel> 
     private let tableView = UITableView()
     private var isSubmitted = false
     private var currentCoordinate: CLLocationCoordinate2D?
+    var onCurrentTapped: ((CLLocationCoordinate2D, String, String) -> Void)?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -188,20 +189,7 @@ extension SearchLocationViewController: UITableViewDataSource, UITableViewDelega
         let placeName = selected.name
         let address = selected.address
         
-        let registerVM = viewModel.makeRegisterLocationViewModel()
-        let vc = RegisterLocationViewController(
-            viewModel: registerVM,
-            coordinate: coordinate,
-            placeName: placeName,
-            address: address
-        )
-        
-        vc.onRegisterCompleted = { [weak self] name, address, lat, lon in
-            if let homeVC = self?.navigationController?.viewControllers.first(where: { $0 is HomeRegisterViewController }) as? HomeRegisterViewController {
-                homeVC.viewModel.updateLocation(name: name, address: address, lat: lat, lon: lon)
-            }
-        }
-        navigationController?.pushViewController(vc, animated: true)
+        self.onCurrentTapped?(coordinate, placeName, address)
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
@@ -210,17 +198,9 @@ extension SearchLocationViewController: UITableViewDataSource, UITableViewDelega
     
     // MARK: - 현위치 찾기
     @objc private func handleCurrentLocationTapped() {
-        viewModel.handleCurrentLocation { [weak self] registerVM, coordinate, placeName, address in
+        viewModel.handleCurrentLocation { [weak self] coordinate, placeName, address  in
             guard let self else { return }
-            
-            let vc = RegisterLocationViewController(
-                viewModel: registerVM,
-                coordinate: coordinate,
-                placeName: placeName,
-                address: address
-            )
-            
-            self.navigationController?.pushViewController(vc, animated: true)
+            self.onCurrentTapped?(coordinate, placeName, address)
         }
     }
 }

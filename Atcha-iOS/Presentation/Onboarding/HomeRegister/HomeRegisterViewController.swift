@@ -27,6 +27,8 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
         self.onNextTapped?(location)
     }
     
+    var onSearchTapped: (() -> Void)?
+    var onCurrentTapped: ((CLLocationCoordinate2D, String, String) -> Void)?
     var onNextTapped: ((SelectedLocation) -> Void)?
     
     override func viewDidLoad() {
@@ -141,40 +143,26 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
         currentLocationButton.setAttributedTitle(AtchaFont.Body_R_14(title, color: .white), for: .normal)
         currentLocationButton.tintColor = .white
         
-        currentLocationButton.addTarget(self, action: #selector(handleCurrentLocationTapped), for: .touchUpInside)
-        
         if let icon {
             let config = UIImage.SymbolConfiguration(pointSize: 16)
             currentLocationButton.setImage(icon.withConfiguration(config), for: .normal)
+            currentLocationButton.addTarget(self, action: #selector(handleCurrentLocationTapped), for: .touchUpInside)
         } else {
             currentLocationButton.setImage(nil, for: .normal)
+            currentLocationButton.addTarget(self, action: #selector(handleSearchTapped), for: .touchUpInside)
         }
     }
     
     // MARK: - 장소 검색
     @objc private func handleSearchTapped() {
-        let searchVM = viewModel.makeSearchLocationViewModel()
-        let vc = SearchLocationViewController(viewModel: searchVM)
-        navigationController?.pushViewController(vc, animated: true)
+        onSearchTapped?()
     }
     
     // MARK: - 현위치 찾기
     @objc private func handleCurrentLocationTapped() {
-        viewModel.handleCurrentLocation { [weak self] registerVM, coordinate, placeName, address in
+        viewModel.handleCurrentLocation { [weak self] coordinate, placeName, address  in
             guard let self else { return }
-            
-            let vc = RegisterLocationViewController(
-                viewModel: registerVM,
-                coordinate: coordinate,
-                placeName: placeName,
-                address: address
-            )
-            
-            vc.onRegisterCompleted = { [weak self] name, address, lat, lon in
-                self?.viewModel.updateLocation(name: name, address: address, lat: lat, lon: lon)
-            }
-            
-            self.navigationController?.pushViewController(vc, animated: true)
+            self.onCurrentTapped?(coordinate, placeName, address)
         }
     }
 }

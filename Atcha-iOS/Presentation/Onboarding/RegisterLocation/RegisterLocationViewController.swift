@@ -169,11 +169,13 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
         registerButton.addAction(UIAction { [weak self] _ in
             guard let self = self else { return }
             
-            self.onRegisterCompleted?(self.currentSelectedPlaceName, self.currentSelectedAddress, self.initialCoordinate.latitude, self.initialCoordinate.longitude)
+            self.onRegisterCompleted?(
+                self.currentSelectedPlaceName,
+                self.currentSelectedAddress,
+                self.initialCoordinate.latitude,
+                self.initialCoordinate.longitude
+            )
             
-            if let homeVC = self.navigationController?.viewControllers.first(where: { $0 is HomeRegisterViewController }) {
-                self.navigationController?.popToViewController(homeVC, animated: true)
-            }
         }, for: .touchUpInside)
     }
     
@@ -186,7 +188,7 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
     
     // MARK: - 현재 위치
     @objc private func handleCurrentLocationTapped() {
-        viewModel.handleCurrentLocation { [weak self] registerVM, coordinate, placeName, address in
+        viewModel.handleCurrentLocation { [weak self] coordinate, placeName, address in
             guard let self else { return }
             
             DispatchQueue.main.async {
@@ -260,7 +262,7 @@ extension RegisterLocationViewController: TMapViewDelegate {
         }
     }
     
-    // MARK: - 지도 변화 시 이벤트 발생 함수
+    // MARK: - 터치 종료 시 주소 불러오기
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let centerCoord = mapView.getCenter() else {
             print("center coordinate is nil")

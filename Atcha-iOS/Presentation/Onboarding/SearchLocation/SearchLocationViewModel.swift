@@ -43,8 +43,7 @@ final class SearchLocationViewModel: BaseViewModel {
     
     // MARK: - 현재 위치 전달
     func handleCurrentLocation(
-        completion: @escaping (_ viewModel: RegisterLocationViewModel,
-                               _ coordinate: CLLocationCoordinate2D,
+        completion: @escaping (_ coordinate: CLLocationCoordinate2D,
                                _ placeName: String,
                                _ address: String) -> Void
     ) {
@@ -59,19 +58,13 @@ final class SearchLocationViewModel: BaseViewModel {
                     let placeName = response.name
                     let address = response.address
                     
-                    let registerVM = RegisterLocationViewModel(onboardingUseCase: self.onboardingUseCase)
-                    
                     DispatchQueue.main.async {
-                        completion(registerVM, coordinate, placeName, address)
+                        completion(coordinate, placeName, address)
                     }
                 } catch {
                     print("❌ 장소 변환 실패: \(error)")
                 }
             }
         }
-    }
-    
-    func makeRegisterLocationViewModel() -> RegisterLocationViewModel {
-        return RegisterLocationViewModel(onboardingUseCase: onboardingUseCase)
     }
 }
