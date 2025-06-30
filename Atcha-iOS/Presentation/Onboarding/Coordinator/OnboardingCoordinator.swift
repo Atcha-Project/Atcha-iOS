@@ -7,6 +7,7 @@
 
 import UIKit
 import Foundation
+import CoreLocation
 
 final class OnboardingCoordinator {
     private let navigationController: UINavigationController
@@ -27,14 +28,22 @@ final class OnboardingCoordinator {
         }
         
         let homeRegisterVC = HomeRegisterViewController(viewModel: viewModel)
-        homeRegisterVC.onNextTapped = { [weak self] location in
-            guard let self else {
-                print("❌ OnboardingCoordinator 가 이미 deinit 되어 사라짐")
-                return
-            }
-            self.showPushAlarm(with: location)
-            print("✅ showPushAlarm 호출 시도함, location =", location)
+        
+        // SearchLocation ViewController 이동
+        homeRegisterVC.onSearchTapped = { [weak self] in
+            self?.showSearchLocation()
         }
+        
+        // RegisterLocation ViewController 이동
+        homeRegisterVC.onCurrentTapped = { [weak self] coordinate, placeName, address in
+            self?.showRegisterLocation(coordinate, placeName, address)
+        }
+        
+        // PushAlarm ViewController 이동
+        homeRegisterVC.onNextTapped = { [weak self] location in
+            self?.showPushAlarm(with: location)
+        }
+        
         navigationController.pushViewController(homeRegisterVC, animated: true)
     }
     
@@ -48,5 +57,50 @@ final class OnboardingCoordinator {
         
         let pushAlarmVC = PushAlarmViewController(viewModel: viewModel)
         navigationController.pushViewController(pushAlarmVC, animated: true)
+    }
+    
+    private func showSearchLocation() {
+        let viewModel = diContainer.makeSearchLocationViewModel()
+        let searchVC = SearchLocationViewController(viewModel: viewModel)
+        
+        // RegisterLocation ViewController 이동
+        searchVC.onCurrentTapped = { [weak self] coordinate, placeName, address in
+            self?.showRegisterLocation(coordinate, placeName, address)
+        }
+        
+        navigationController.pushViewController(searchVC, animated: true)
+    }
+    
+    private func showRegisterLocation(
+        _ coordinate: CLLocationCoordinate2D,
+        _ placeName: String,
+        _ address: String
+    ) {
+        let viewModel = diContainer.makeRegisterLocationViewModel()
+        let locationVC = RegisterLocationViewController(
+            viewModel: viewModel,
+            coordinate: coordinate,
+            placeName: placeName,
+            address: address
+        )
+        
+        locationVC.onRegisterCompleted = { [weak self] name, address, lat, lon in
+            guard let self else { return }
+            
+            if let homeVC = self.navigationController.viewControllers.first(where: { $0 is HomeRegisterViewController }) as? HomeRegisterViewController {
+                
+                // ViewModel에 업데이트 메서드를 통해 반영 및 ViewController Pop
+                homeVC.viewModel.updateLocation(
+                    name: name,
+                    address: address,
+                    lat: lat,
+                    lon: lon
+                )
+                
+                self.navigationController.popToViewController(homeVC, animated: true)
+            }
+        }
+        
+        navigationController.pushViewController(locationVC, animated: true)
     }
 }

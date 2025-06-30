@@ -55,6 +55,7 @@
 		6DFF29E22E0E6D140039399F /* VSMSDK.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6DFF29DD2E0E6D100039399F /* VSMSDK.xcframework */; };
 		6DFF29E32E0E6D140039399F /* VSMSDK.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 6DFF29DD2E0E6D100039399F /* VSMSDK.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		6DFF29EE2E0E87440039399F /* Secrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6DFF29ED2E0E87440039399F /* Secrets.xcconfig */; };
+		6DFF29F02E0F23840039399F /* UIImage+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFF29EF2E0F23840039399F /* UIImage+Ext.swift */; };
 		B600CA132E07FD29008B0D87 /* MyPageCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C13472E07A10F0016D2F0 /* MyPageCoordinator.swift */; };
 		B65C12D72E0429B30016D2F0 /* AppFlowCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C12D62E0429B30016D2F0 /* AppFlowCoordinator.swift */; };
 		B65C12DA2E042A740016D2F0 /* AppDIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C12D92E042A740016D2F0 /* AppDIContainer.swift */; };
@@ -180,6 +181,7 @@
 		6DFF29DC2E0E6D100039399F /* TMapSDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = TMapSDK.framework; sourceTree = "<group>"; };
 		6DFF29DD2E0E6D100039399F /* VSMSDK.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = VSMSDK.xcframework; sourceTree = "<group>"; };
 		6DFF29ED2E0E87440039399F /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
+		6DFF29EF2E0F23840039399F /* UIImage+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Ext.swift"; sourceTree = "<group>"; };
 		B65C12D62E0429B30016D2F0 /* AppFlowCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFlowCoordinator.swift; sourceTree = "<group>"; };
 		B65C12D92E042A740016D2F0 /* AppDIContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDIContainer.swift; sourceTree = "<group>"; };
 		B65C12DD2E042CF00016D2F0 /* UserInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserInfo.swift; sourceTree = "<group>"; };
@@ -741,6 +743,7 @@
 				B65C13052E057BC80016D2F0 /* Encodable+Ext.swift */,
 				B67E3E542E0971B70056EEB3 /* Bundle+Ext.swift */,
 				6DFF29B32E0CDA0E0039399F /* LocationService.swift */,
+				6DFF29EF2E0F23840039399F /* UIImage+Ext.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -957,6 +960,7 @@
 				B673C48F2E0424F600EE4AD0 /* SplashViewController.swift in Sources */,
 				B6CF46F12E095FF700304A85 /* LoginDIContainer.swift in Sources */,
 				B65C13372E0693A70016D2F0 /* MyPageCell.swift in Sources */,
+				6DFF29F02E0F23840039399F /* UIImage+Ext.swift in Sources */,
 				B65C13412E06E0340016D2F0 /* SplashDIContainer.swift in Sources */,
 				B65C133B2E069B4D0016D2F0 /* RefreshTokenResponse.swift in Sources */,
 				6D1EE2E02E090A6B00F7BBF1 /* SearchLocationViewModel.swift in Sources */,

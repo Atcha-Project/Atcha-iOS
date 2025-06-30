@@ -16,62 +16,30 @@ class SearchLocationViewController: BaseViewController<SearchLocationViewModel> 
     private let separator: UIView = UIView()
     private let headerLabel: UILabel = UILabel()
     private var tableViewTopConstraint: Constraint?
-    
     private var filteredLocations: [Location] = []
     private let tableView = UITableView()
     private var isSubmitted = false
-    
     private var currentCoordinate: CLLocationCoordinate2D?
+    var onCurrentTapped: ((CLLocationCoordinate2D, String, String) -> Void)?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        bind()
         requestCurrentLocation()
         setupUI()
-        
-        // 실시간 검색 결과 업데이트 시 UI 반영
-        viewModel.onLocationsUpdated = { [weak self] locations in
-            self?.filteredLocations = locations
-            self?.tableView.reloadData()
-        }
-        
-        
-        searchNavigationBar.onTapBack = { [weak self] in
-            self?.navigationController?.popViewController(animated: true)
-        }
-        
-        searchNavigationBar.onTapCurrentLocation = { [weak self] in
-            self?.handleCurrentLocationButtonTapped()
-        }
-        
-        searchNavigationBar.onTextChange = { [weak self] text in
-            guard let self = self, let coordinate = self.currentCoordinate else { return }
-            self.headerView.isHidden = true
-            
-            self.tableView.snp.remakeConstraints { make in
-                make.top.equalTo(self.searchNavigationBar.snp.bottom)
-                make.leading.trailing.bottom.equalToSuperview()
+        setupSearchNavigationBarCallbacks()
+    }
+    
+    // MARK: - ViewModel 바인딩
+    private func bind() {
+        viewModel.$locations
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] locations in
+                self?.filteredLocations = locations
+                self?.tableView.reloadData()
             }
-            
-            UIView.animate(withDuration: 0.25) {
-                self.view.layoutIfNeeded()
-            }
-            
-            self.viewModel.searchLocation(keyword: text, lat: coordinate.latitude, lon: coordinate.longitude)
-        }
-        
-        searchNavigationBar.onTextSubmit = { [weak self] text in
-            guard let self = self, let coordinate = self.currentCoordinate else { return }
-            
-            self.headerView.isHidden = false
-            
-            self.tableView.snp.remakeConstraints { make in
-                make.top.equalTo(self.headerView.snp.bottom)
-                make.leading.trailing.bottom.equalToSuperview()
-            }
-            
-            self.viewModel.searchLocation(keyword: text, lat: coordinate.latitude, lon: coordinate.longitude)
-        }
+            .store(in: &cancellables)
     }
     
     // MARK: - 현재 위치 요청
@@ -86,7 +54,7 @@ class SearchLocationViewController: BaseViewController<SearchLocationViewModel> 
         }
     }
     
-    // MARK: - Search Location UI
+    // MARK: - 장소 검색 UI
     private func setupUI() {
         headerView.backgroundColor = .clear
         separator.backgroundColor = AtchaColor.black
@@ -130,13 +98,60 @@ class SearchLocationViewController: BaseViewController<SearchLocationViewModel> 
             make.leading.trailing.bottom.equalToSuperview()
         }
     }
+    
+    // MARK: - 검색 네비게이션 바 콜백
+    private func setupSearchNavigationBarCallbacks() {
+        searchNavigationBar.onTapBack = { [weak self] in
+            self?.navigationController?.popViewController(animated: true)
+        }
+        
+        searchNavigationBar.onTapCurrentLocation = { [weak self] in
+            self?.handleCurrentLocationTapped()
+        }
+        
+        searchNavigationBar.onTextChange = { [weak self] text in
+            guard let self = self, let coordinate = self.currentCoordinate else { return }
+            self.handleTextChange(text: text, coordinate: coordinate)
+        }
+        
+        searchNavigationBar.onTextSubmit = { [weak self] text in
+            guard let self = self, let coordinate = self.currentCoordinate else { return }
+            self.handleTextSubmit(text: text, coordinate: coordinate)
+        }
+    }
+    
+    // MARK: - 텍스트 변화
+    private func handleTextChange(text: String, coordinate: CLLocationCoordinate2D) {
+        headerView.isHidden = true
+        tableView.snp.remakeConstraints { make in
+            make.top.equalTo(searchNavigationBar.snp.bottom)
+            make.leading.trailing.bottom.equalToSuperview()
+        }
+        UIView.animate(withDuration: 0.25) {
+            self.view.layoutIfNeeded()
+        }
+        viewModel.searchLocation(keyword: text, lat: coordinate.latitude, lon: coordinate.longitude)
+    }
+
+    // MARK: - 텍스트 제출 처리
+    private func handleTextSubmit(text: String, coordinate: CLLocationCoordinate2D) {
+        headerView.isHidden = false
+        tableView.snp.remakeConstraints { make in
+            make.top.equalTo(headerView.snp.bottom)
+            make.leading.trailing.bottom.equalToSuperview()
+        }
+        viewModel.searchLocation(keyword: text, lat: coordinate.latitude, lon: coordinate.longitude)
+    }
 }
 
 extension SearchLocationViewController: UITableViewDataSource, UITableViewDelegate {
+    
+    // MARK: - Cell 갯수
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return filteredLocations.count
     }
     
+    // MARK: - Cell UI
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         let location = filteredLocations[indexPath.row]
@@ -165,6 +180,7 @@ extension SearchLocationViewController: UITableViewDataSource, UITableViewDelega
         return cell
     }
     
+    // MARK: -  Cell 선택 시 이벤트
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let selected = filteredLocations[indexPath.row]
         print("선택한 장소: \(selected)")
@@ -173,57 +189,18 @@ extension SearchLocationViewController: UITableViewDataSource, UITableViewDelega
         let placeName = selected.name
         let address = selected.address
         
-        let registerVM = viewModel.makeRegisterLocationViewModel()
-        let vc = RegisterLocationViewController(
-            viewModel: registerVM,
-            coordinate: coordinate,
-            placeName: placeName,
-            address: address
-        )
-        
-        vc.onRegisterCompleted = { [weak self] name, address, lat, lon in
-            if let homeVC = self?.navigationController?.viewControllers.first(where: { $0 is HomeRegisterViewController }) as? HomeRegisterViewController {
-                homeVC.updateLocation(name: name, address: address, lat: lat, lon: lon)
-            }
-        }
-        navigationController?.pushViewController(vc, animated: true)
+        self.onCurrentTapped?(coordinate, placeName, address)
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
         return filteredLocations.isEmpty ? 0 : 1
     }
     
-    @objc private func handleCurrentLocationButtonTapped() {
-        viewModel.onboardingUseCase.requestCurrentLocation { [weak self] coordinate in
-            guard let self = self, let coordinate = coordinate else {
-                print("❌ 현재 위치 가져오기 실패")
-                return
-            }
-            
-            Task {
-                do {
-                    let response = try await self.viewModel.reverseGeocodeLocation(
-                        lat: coordinate.latitude,
-                        lon: coordinate.longitude
-                    )
-                    
-                    let placeName = response.name
-                    let address = response.address
-                    
-                    let registerVM = self.viewModel.makeRegisterLocationViewModel()
-                    let vc = RegisterLocationViewController(
-                        viewModel: registerVM,
-                        coordinate: coordinate,
-                        placeName: placeName,
-                        address: address
-                    )
-                    DispatchQueue.main.async {
-                        self.navigationController?.pushViewController(vc, animated: true)
-                    }
-                } catch {
-                    print("❌ 장소 변환 실패: \(error)")
-                }
-            }
+    // MARK: - 현위치 찾기
+    @objc private func handleCurrentLocationTapped() {
+        viewModel.handleCurrentLocation { [weak self] coordinate, placeName, address  in
+            guard let self else { return }
+            self.onCurrentTapped?(coordinate, placeName, address)
         }
     }
 }
