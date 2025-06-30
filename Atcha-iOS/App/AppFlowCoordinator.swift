@@ -27,15 +27,18 @@ class AppFlowCoordinator {
         window.rootViewController = navigationController
         window.makeKeyAndVisible()
         
-        let splashCoordinator = container.makeSplashCoordinator(navigationController: navigationController)
-        splashCoordinator.onFinish = { [weak self] in
-            guard let self else { return }
-            // 로그인 됐으면 mainFlow 아니면 LoginFlow
-            //            showMainFlow()
-            showLoginFlow()
-        }
-        splashCoordinator.start()
-        self.splashCoordinator = splashCoordinator
+        let lockVC = LockViewController(viewModel: LockViewModel())
+        navigationController.pushViewController(lockVC, animated: false)
+        
+//        let splashCoordinator = container.makeSplashCoordinator(navigationController: navigationController)
+//        splashCoordinator.onFinish = { [weak self] in
+//            guard let self else { return }
+//            // 로그인 됐으면 mainFlow 아니면 LoginFlow
+//            //            showMainFlow()
+//            showLoginFlow()
+//        }
+//        splashCoordinator.start()
+//        self.splashCoordinator = splashCoordinator
     }
     
     private func showMainFlow() {

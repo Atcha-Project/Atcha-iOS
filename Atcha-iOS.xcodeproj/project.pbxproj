@@ -26,6 +26,9 @@
 		6D368BAD2E0396C100144EE7 /* RegisterTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D368BAC2E0396C100144EE7 /* RegisterTextField.swift */; };
 		6D368BB22E03BD2C00144EE7 /* SearchTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D368BB12E03BD2C00144EE7 /* SearchTextField.swift */; };
 		6D368BB42E03BE9A00144EE7 /* AtchaTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D368BB32E03BE9A00144EE7 /* AtchaTextField.swift */; };
+		6D8157422E126C3A003688A6 /* LockViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D8157412E126C3A003688A6 /* LockViewModel.swift */; };
+		6D8157442E126C45003688A6 /* LockViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D8157432E126C45003688A6 /* LockViewController.swift */; };
+		6D8157462E127BDB003688A6 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 6D8157452E127BDB003688A6 /* GoogleService-Info.plist */; };
 		6D8D8AE02E013819003DABB2 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 6D8D8ADF2E013819003DABB2 /* SnapKit */; };
 		6D8D8AE32E01386D003DABB2 /* PanModal in Frameworks */ = {isa = PBXBuildFile; productRef = 6D8D8AE22E01386D003DABB2 /* PanModal */; };
 		6D8D8B132E01B338003DABB2 /* AtchaButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D8D8B122E01B338003DABB2 /* AtchaButton.swift */; };
@@ -112,7 +115,6 @@
 		B68309612E005A3600E2D029 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B683094E2E005A3600E2D029 /* LaunchScreen.storyboard */; };
 		B68309622E005A3600E2D029 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B68309502E005A3600E2D029 /* Main.storyboard */; };
 		B68309672E005B5300E2D029 /* UIView+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B68309662E005B5300E2D029 /* UIView+Ext.swift */; };
-		B6ADE18E2E0AE8CF008C4E23 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B6ADE18D2E0AE8CF008C4E23 /* GoogleService-Info.plist */; };
 		B6ADE1942E0C0DE6008C4E23 /* LoginType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6ADE1932E0C0DE6008C4E23 /* LoginType.swift */; };
 		B6CF46F12E095FF700304A85 /* LoginDIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6CF46F02E095FF700304A85 /* LoginDIContainer.swift */; };
 		B6CF46F22E09605C00304A85 /* LoginRepositoryImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DC3BF692E0722A500831470 /* LoginRepositoryImpl.swift */; };
@@ -161,6 +163,9 @@
 		6D368BAC2E0396C100144EE7 /* RegisterTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterTextField.swift; sourceTree = "<group>"; };
 		6D368BB12E03BD2C00144EE7 /* SearchTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchTextField.swift; sourceTree = "<group>"; };
 		6D368BB32E03BE9A00144EE7 /* AtchaTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtchaTextField.swift; sourceTree = "<group>"; };
+		6D8157412E126C3A003688A6 /* LockViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockViewModel.swift; sourceTree = "<group>"; };
+		6D8157432E126C45003688A6 /* LockViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockViewController.swift; sourceTree = "<group>"; };
+		6D8157452E127BDB003688A6 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		6D8D8B122E01B338003DABB2 /* AtchaButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtchaButton.swift; sourceTree = "<group>"; };
 		6D8D8B162E02BBC0003DABB2 /* AtchaNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtchaNavigationBar.swift; sourceTree = "<group>"; };
 		6DC3BEDC2E04F32400831470 /* UserDefaultsKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsKey.swift; sourceTree = "<group>"; };
@@ -241,7 +246,6 @@
 		B68309512E005A3600E2D029 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		B68309632E005ADE00E2D029 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		B68309662E005B5300E2D029 /* UIView+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Ext.swift"; sourceTree = "<group>"; };
-		B6ADE18D2E0AE8CF008C4E23 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		B6ADE1932E0C0DE6008C4E23 /* LoginType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginType.swift; sourceTree = "<group>"; };
 		B6CF46F02E095FF700304A85 /* LoginDIContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginDIContainer.swift; sourceTree = "<group>"; };
 		B6CF46F42E09620100304A85 /* LoginCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginCoordinator.swift; sourceTree = "<group>"; };
@@ -339,6 +343,15 @@
 				6D368BB32E03BE9A00144EE7 /* AtchaTextField.swift */,
 			);
 			path = AtchaTextField;
+			sourceTree = "<group>";
+		};
+		6D81573E2E126C16003688A6 /* Lock */ = {
+			isa = PBXGroup;
+			children = (
+				6D8157412E126C3A003688A6 /* LockViewModel.swift */,
+				6D8157432E126C45003688A6 /* LockViewController.swift */,
+			);
+			path = Lock;
 			sourceTree = "<group>";
 		};
 		6D8D8B112E01B326003DABB2 /* AtchaButton */ = {
@@ -630,6 +643,7 @@
 		B673C48C2E0424E200EE4AD0 /* Presentation */ = {
 			isa = PBXGroup;
 			children = (
+				6D81573E2E126C16003688A6 /* Lock */,
 				6D1EE2BC2E08D85F00F7BBF1 /* Onboarding */,
 				6DC3BF462E05C76E00831470 /* Login */,
 				B65C134D2E07A6BD0016D2F0 /* Main */,
@@ -714,7 +728,7 @@
 				B673C48C2E0424E200EE4AD0 /* Presentation */,
 				B68309642E005B3C00E2D029 /* Core */,
 				B683094B2E005A3600E2D029 /* DesignSource */,
-				B6ADE18D2E0AE8CF008C4E23 /* GoogleService-Info.plist */,
+				6D8157452E127BDB003688A6 /* GoogleService-Info.plist */,
 				B683094C2E005A3600E2D029 /* Info.plist */,
 				B683094E2E005A3600E2D029 /* LaunchScreen.storyboard */,
 				B68309502E005A3600E2D029 /* Main.storyboard */,
@@ -882,7 +896,7 @@
 				B683095A2E005A3600E2D029 /* Pretendard-ExtraBold.otf in Resources */,
 				B683095B2E005A3600E2D029 /* Pretendard-Medium.otf in Resources */,
 				B683095C2E005A3600E2D029 /* Pretendard-Regular.otf in Resources */,
-				B6ADE18E2E0AE8CF008C4E23 /* GoogleService-Info.plist in Resources */,
+				6D8157462E127BDB003688A6 /* GoogleService-Info.plist in Resources */,
 				B683095D2E005A3600E2D029 /* Pretendard-SemiBold.otf in Resources */,
 				B683095E2E005A3600E2D029 /* Icon.xcassets in Resources */,
 				6DFF29EE2E0E87440039399F /* Secrets.xcconfig in Resources */,
@@ -928,6 +942,7 @@
 				6D8D8B132E01B338003DABB2 /* AtchaButton.swift in Sources */,
 				6D368BA42E02D5E200144EE7 /* IconTitleNavigationBar.swift in Sources */,
 				B6CF46F82E096CB100304A85 /* LoginResult.swift in Sources */,
+				6D8157422E126C3A003688A6 /* LockViewModel.swift in Sources */,
 				6DC3BF602E071F0900831470 /* LoginUseCase.swift in Sources */,
 				6DC3BF4A2E05C79700831470 /* LoginViewController.swift in Sources */,
 				6DC3BF5E2E07123F00831470 /* LoginIntroCell.swift in Sources */,
@@ -967,6 +982,7 @@
 				B673C4912E0424FD00EE4AD0 /* SplashViewModel.swift in Sources */,
 				6D1EE2F02E0A7F0000F7BBF1 /* OnboardingRepository.swift in Sources */,
 				6D1EE2E52E09A42F00F7BBF1 /* PushAlarmViewController.swift in Sources */,
+				6D8157442E126C45003688A6 /* LockViewController.swift in Sources */,
 				B68309572E005A3600E2D029 /* ViewController.swift in Sources */,
 				B6D083352E02D928003C28E1 /* AtchaListType.swift in Sources */,
 				B65C130A2E057C920016D2F0 /* EndPoint.swift in Sources */,
