@@ -9,7 +9,7 @@ import UIKit
 import SnapKit
 import Lottie
 
-class LockViewController: BaseViewController<LockViewModel> {
+final class LockViewController: BaseViewController<LockViewModel> {
 
     private let backgroundImageView: UIImageView = UIImageView()
     private let logoImageView: UIImageView = UIImageView()
@@ -21,6 +21,7 @@ class LockViewController: BaseViewController<LockViewModel> {
     private let detailRouteButton: AtchaButton = AtchaButton(text: "더 늦은 경로 확인하기", size: .h52, style: .filled(.opacity)) {
         
     }
+    private let bottomStack: UIStackView = UIStackView()
     private var lottieAnimationView: LottieAnimationView = LottieAnimationView()
     private let gradientView: UIView = UIView()
     private let gradient: CAGradientLayer = CAGradientLayer()
@@ -41,9 +42,9 @@ class LockViewController: BaseViewController<LockViewModel> {
     // MARK: - ViewModel 바인딩
     private func bind() {
         viewModel.$taxiFare
+            .map { $0.formattedWithComma }
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] fare in
-                let stringFare = self?.viewModel.formattedTaxiFare ?? ""
+            .sink { [weak self] stringFare in
                 self?.taxiFareLabel.attributedText = AtchaFont.H1_EB_56("-\(stringFare)", color: AtchaColor.Bus.widearea)
             }
             .store(in: &cancellables)
@@ -71,7 +72,8 @@ class LockViewController: BaseViewController<LockViewModel> {
         titleLabel.numberOfLines = 0
         titleLabel.textAlignment = .center
 
-        let bottomStack = UIStackView(arrangedSubviews: [startButton, detailRouteButton])
+        bottomStack.addArrangedSubview(startButton)
+        bottomStack.addArrangedSubview(detailRouteButton)
         bottomStack.axis = .vertical
         bottomStack.spacing = 12
         
