@@ -72,6 +72,7 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
     private func bind() {
         viewModel.$currentCoordinate
             .receive(on: DispatchQueue.main)
+            .debounce(for: .seconds(1.0), scheduler: RunLoop.main)
             .sink { [weak self] coordinate in
                 guard let self, let coordinate else { return }
                 self.initialCoordinate = coordinate

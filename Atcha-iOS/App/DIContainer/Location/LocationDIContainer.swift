@@ -24,9 +24,7 @@ final class LocationDIContainer {
     }
 
     func makeMapViewController() -> UIViewController {
-        let wrapper = TMapWrapper(frame: UIScreen.main.bounds)
-        return MapViewController(viewModel: makeLocationViewModel(),
-                                 mapWrapper: wrapper)
+        return MapViewController(viewModel: makeLocationViewModel())
     }
     
     func makeMainCoordinator(navigationController: UINavigationController) -> MainCoordinator {

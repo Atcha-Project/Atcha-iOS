@@ -38,4 +38,8 @@ final class MapViewModel: BaseViewModel {
         streamTask?.cancel()
         streamUseCase.stopUpdate()
     }
+    
+    deinit {
+        stopTracking()
+    }
 }
