@@ -17,6 +17,7 @@ final class AppDIContainer {
     let myPageDIContainer: MyPageDIContainer
     let splashDIContainer: SplashDIContainer
     let loginDIContainer: LoginDIContainer
+    let mainDIContainer: LocationDIContainer
     let onboardingDIContainer: OnboardingDIContainer
 
     private init() {
@@ -29,6 +30,7 @@ final class AppDIContainer {
         self.splashDIContainer = SplashDIContainer(apiService: apiServce)
         self.myPageDIContainer = MyPageDIContainer(apiService: apiServce)
         self.loginDIContainer = LoginDIContainer(apiService: apiServce)
+        self.mainDIContainer = LocationDIContainer(apiService: apiServce)
         self.onboardingDIContainer = OnboardingDIContainer(apiService: apiServce, locationService: locationService)
     }
 }
