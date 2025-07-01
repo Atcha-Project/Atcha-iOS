@@ -43,7 +43,8 @@ class LockViewController: BaseViewController<LockViewModel> {
         viewModel.$taxiFare
             .receive(on: DispatchQueue.main)
             .sink { [weak self] fare in
-                self?.taxiFareLabel.attributedText = AtchaFont.H1_EB_56("-\(fare)", color: AtchaColor.Bus.widearea)
+                let stringFare = self?.viewModel.formattedTaxiFare ?? ""
+                self?.taxiFareLabel.attributedText = AtchaFont.H1_EB_56("-\(stringFare)", color: AtchaColor.Bus.widearea)
             }
             .store(in: &cancellables)
     }
