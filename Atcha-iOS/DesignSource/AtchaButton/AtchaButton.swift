@@ -51,11 +51,11 @@ enum ButtonSize {
     func attributedTitle(_ text: String, color: UIColor = .black) -> NSAttributedString {
         switch self {
         case .h52:
-            return AtchaFont.H5_B_17(text, color: color)
+            return AtchaFont.H4_SB_17(text, color: color)
         case .h48:
-            return AtchaFont.H6_B_15(text, color: color)
+            return AtchaFont.B2_SB_15(text, color: color)
         case .h44, .h32:
-            return AtchaFont.Body_SB_14(text, color: color)
+            return AtchaFont.B5_SB_14(text, color: color)
         }
     }
 }

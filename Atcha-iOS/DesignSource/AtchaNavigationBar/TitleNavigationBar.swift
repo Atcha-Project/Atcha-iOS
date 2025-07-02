@@ -45,7 +45,7 @@ final class TitleNavigationBar: UIView {
         closeButton.tintColor = AtchaColor.gray300
         closeButton.addTarget(self, action: #selector(didTapClose), for: .touchUpInside)
 
-        titleLabel.attributedText = AtchaFont.H5_SB_17(title)
+        titleLabel.attributedText = AtchaFont.H4_SB_17(title)
         titleLabel.textColor = AtchaColor.white
         titleLabel.textAlignment = .center
 

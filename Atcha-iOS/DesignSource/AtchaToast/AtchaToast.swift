@@ -25,7 +25,7 @@ final class AtchaToast: UIView {
     
     private func setupLabel(message: String) {
         label.text = message
-        label.attributedText = AtchaFont.Body_R_14(message, color: .white)
+        label.attributedText = AtchaFont.B6_R_14(message, color: .white)
         label.textAlignment = .left
         label.numberOfLines = 0
         addSubview(label)

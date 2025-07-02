@@ -58,7 +58,7 @@ class SearchLocationViewController: BaseViewController<SearchLocationViewModel> 
     private func setupUI() {
         headerView.backgroundColor = .clear
         separator.backgroundColor = AtchaColor.black
-        headerLabel.attributedText = AtchaFont.Body_R_14("장소 결과", color: AtchaColor.gray400)
+        headerLabel.attributedText = AtchaFont.B6_R_14("장소 결과", color: AtchaColor.gray400)
         headerView.addSubViews(separator, headerLabel)
         headerView.isHidden = true
         
@@ -160,9 +160,9 @@ extension SearchLocationViewController: UITableViewDataSource, UITableViewDelega
         cell.contentView.subviews.forEach { $0.removeFromSuperview() }
         
         let titleLabel = UILabel()
-        titleLabel.attributedText = AtchaFont.Body_R_15(location.name, color: AtchaColor.white)
+        titleLabel.attributedText = AtchaFont.B4_R_15(location.name, color: AtchaColor.white)
         let detailLabel = UILabel()
-        detailLabel.attributedText = AtchaFont.Body_R_14(location.address, color: AtchaColor.gray200)
+        detailLabel.attributedText = AtchaFont.B6_R_14(location.address, color: AtchaColor.gray200)
         
         let labelStack = UIStackView(arrangedSubviews: [titleLabel, detailLabel])
         labelStack.axis = .vertical
