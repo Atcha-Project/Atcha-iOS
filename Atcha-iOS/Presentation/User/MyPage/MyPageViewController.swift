@@ -37,7 +37,7 @@ final class MyPageViewController: BaseViewController<MyPageViewModel> {
                          collectionView,
                          footerLabel)
         
-        footerLabel.attributedText = AtchaFont.Body_R_12("티맵 API와 공공데이터로 막차 정보를 제공합니다.",
+        footerLabel.attributedText = AtchaFont.R_12("티맵 API와 공공데이터로 막차 정보를 제공합니다.",
                                                          color: .gray300)
     }
     

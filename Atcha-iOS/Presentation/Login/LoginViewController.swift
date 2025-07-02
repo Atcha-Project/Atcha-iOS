@@ -139,7 +139,7 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
         kakaoIcon.contentMode = .scaleAspectFit
         
         let kakaoLabel = UILabel()
-        kakaoLabel.attributedText = AtchaFont.H6_B_15("카카오 계정으로 계속하기", color: AtchaColor.black)
+        kakaoLabel.attributedText = AtchaFont.B2_SB_15("카카오 계정으로 계속하기", color: AtchaColor.black)
         kakaoLabel.textAlignment = .center
         
         kakaoLoginButton.layer.backgroundColor = AtchaColor.Etc.kakao.cgColor
@@ -170,7 +170,7 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
         appleIcon.contentMode = .scaleAspectFit
         
         let appleLabel = UILabel()
-        appleLabel.attributedText = AtchaFont.H6_B_15("Apple 계정으로 계속하기", color: AtchaColor.white)
+        appleLabel.attributedText = AtchaFont.B2_SB_15("Apple 계정으로 계속하기", color: AtchaColor.white)
         appleLabel.textAlignment = .center
         
         appleLoginButton.layer.backgroundColor = AtchaColor.black.cgColor

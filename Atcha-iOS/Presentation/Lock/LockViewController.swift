@@ -45,7 +45,7 @@ final class LockViewController: BaseViewController<LockViewModel> {
             .map { $0.formattedWithComma }
             .receive(on: DispatchQueue.main)
             .sink { [weak self] stringFare in
-                self?.taxiFareLabel.attributedText = AtchaFont.H1_EB_56("-\(stringFare)", color: AtchaColor.Bus.widearea)
+                self?.taxiFareLabel.attributedText = AtchaFont.D1_EB_56("-\(stringFare)", color: AtchaColor.Bus.widearea)
             }
             .store(in: &cancellables)
     }
@@ -68,7 +68,7 @@ final class LockViewController: BaseViewController<LockViewModel> {
         gradientView.layer.addSublayer(gradient)
         
         logoImageView.image = UIImage.lockAtcha
-        titleLabel.attributedText = AtchaFont.H3_B_22("지금 안 일어나면\n택시비", color: AtchaColor.white)
+        titleLabel.attributedText = AtchaFont.H2_B_22("지금 안 일어나면\n택시비", color: AtchaColor.white)
         titleLabel.numberOfLines = 0
         titleLabel.textAlignment = .center
 

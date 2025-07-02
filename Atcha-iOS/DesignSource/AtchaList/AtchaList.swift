@@ -38,7 +38,7 @@ class AtchaList: UIView {
     
     private func setupLabel(title: String) {
         label.textColor = .white
-        label.attributedText = AtchaFont.Body_R_15(title, color: .white)
+        label.attributedText = AtchaFont.B4_R_15(title, color: .white)
         label.lineBreakMode = .byTruncatingTail
         addSubview(label)
     }
@@ -126,7 +126,7 @@ extension AtchaList {
         let label = UILabel()
         label.text = text
         label.numberOfLines = 1
-        label.attributedText = AtchaFont.Body_R_14(text, color: .gray400)
+        label.attributedText = AtchaFont.B6_R_14(text, color: .gray400)
         
         rightView.addSubview(label)
         label.snp.makeConstraints { make in

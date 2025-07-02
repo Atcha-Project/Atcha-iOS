@@ -51,7 +51,7 @@ final class IconTitleNavigationBar: UIView{
         iconImage.tintColor = AtchaColor.white
         iconImage.contentMode = .scaleAspectFit
         
-        titleLabel.attributedText = AtchaFont.H5_SB_17(title)
+        titleLabel.attributedText = AtchaFont.H4_SB_17(title)
         titleLabel.text = title
         titleLabel.textColor = AtchaColor.white
         

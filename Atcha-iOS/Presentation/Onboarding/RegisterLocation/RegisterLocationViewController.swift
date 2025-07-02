@@ -83,7 +83,7 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
             .receive(on: DispatchQueue.main)
             .sink { [weak self] placeName in
                 guard let placeName else { return }
-                self?.nameLabel.attributedText = AtchaFont.H5_SB_17(placeName, color: AtchaColor.white)
+                self?.nameLabel.attributedText = AtchaFont.H4_SB_17(placeName, color: AtchaColor.white)
                 self?.currentSelectedPlaceName = placeName
             }
             .store(in: &cancellables)
@@ -92,7 +92,7 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
             .receive(on: DispatchQueue.main)
             .sink { [weak self] address in
                 guard let address else { return }
-                self?.addressLabel.attributedText = AtchaFont.Body_R_14(address, color: AtchaColor.gray200)
+                self?.addressLabel.attributedText = AtchaFont.B6_R_14(address, color: AtchaColor.gray200)
                 self?.currentSelectedAddress = address
             }
             .store(in: &cancellables)
@@ -111,8 +111,8 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
         bottomView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         bottomView.clipsToBounds = true
         
-        nameLabel.attributedText = AtchaFont.H5_SB_17(placeName, color: AtchaColor.white)
-        addressLabel.attributedText = AtchaFont.Body_R_14(address, color: AtchaColor.gray200)
+        nameLabel.attributedText = AtchaFont.H4_SB_17(placeName, color: AtchaColor.white)
+        addressLabel.attributedText = AtchaFont.B6_R_14(address, color: AtchaColor.gray200)
         
         let stackLabel = UIStackView(arrangedSubviews: [nameLabel, addressLabel])
         stackLabel.axis = .vertical
@@ -195,8 +195,8 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
             DispatchQueue.main.async {
                 self.initialCoordinate = coordinate
                 self.mapView.setCenter(coordinate)
-                self.nameLabel.attributedText = AtchaFont.H5_SB_17(placeName, color: AtchaColor.white)
-                self.addressLabel.attributedText = AtchaFont.Body_R_14(address, color: AtchaColor.gray200)
+                self.nameLabel.attributedText = AtchaFont.H4_SB_17(placeName, color: AtchaColor.white)
+                self.addressLabel.attributedText = AtchaFont.B6_R_14(address, color: AtchaColor.gray200)
                 self.currentSelectedPlaceName = placeName
                 self.currentSelectedAddress = address
             }

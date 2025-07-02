@@ -39,138 +39,99 @@ enum AtchaFont {
         return NSAttributedString(string: text, attributes: attributes)
     }
     
+    // MARK: - Display Styles
+    // Display 1
+    static func D1_EB_56(_ text: String, color: UIColor = .label) -> NSAttributedString {
+        styled(.ExtraBold, size: 56, lineHeight: 67, text: text, color: color)
+    }
+    
+    // Display 2
+    static func D2_EB_44(_ text: String, color: UIColor = .label) -> NSAttributedString {
+        styled(.ExtraBold, size: 44, lineHeight: 54, text: text, color: color)
+    }
+    
+    // Display 3
+    static func D3_EB_40(_ text: String, color: UIColor = .label) -> NSAttributedString {
+        styled(.ExtraBold, size: 40, lineHeight: 42, text: text, color: color)
+    }
+    
+    // Display 4
+    static func D4_B_28(_ text: String, color: UIColor = .label) -> NSAttributedString {
+        styled(.Bold, size: 44, lineHeight: 34, text: text, color: color)
+    }
+    
     // MARK: - Heading Styles
-    static func H1_EB_56(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.ExtraBold, size: 56, lineHeight: 72, text: text, color: color)
-    }
-    
-    static func H1_SB_34(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.SemiBold, size: 34, lineHeight: 41, text: text, color: color)
-    }
-    
-    static func H1_B_34(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.Bold, size: 34, lineHeight: 41, text: text, color: color)
-    }
-    
-    static func H2_SB_26(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.SemiBold, size: 26, lineHeight: 34, text: text, color: color)
-    }
-    
-    static func H2_B_26(_ text: String, color: UIColor = .label) -> NSAttributedString {
+    // Heading 1
+    static func H1_B_26(_ text: String, color: UIColor = .label) -> NSAttributedString {
         styled(.Bold, size: 26, lineHeight: 34, text: text, color: color)
     }
     
-    static func H3_SB_22(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.SemiBold, size: 22, lineHeight: 28, text: text, color: color)
-    }
-    
-    static func H3_B_22(_ text: String, color: UIColor = .label) -> NSAttributedString {
+    // Heading 2
+    static func H2_B_22(_ text: String, color: UIColor = .label) -> NSAttributedString {
         styled(.Bold, size: 22, lineHeight: 28, text: text, color: color)
     }
     
-    static func H4_SB_20(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.SemiBold, size: 20, lineHeight: 25, text: text, color: color)
-    }
-    
-    static func H4_B_20(_ text: String, color: UIColor = .label) -> NSAttributedString {
+    // Heading 3
+    static func H3_B_20(_ text: String, color: UIColor = .label) -> NSAttributedString {
         styled(.Bold, size: 20, lineHeight: 25, text: text, color: color)
     }
     
-    static func H4_M_20(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.Medium, size: 20, lineHeight: 25, text: text, color: color)
-    }
-    
-    static func H5_SB_17(_ text: String, color: UIColor = .label) -> NSAttributedString {
+    // Heading 4
+    static func H4_SB_17(_ text: String, color: UIColor = .label) -> NSAttributedString {
         styled(.SemiBold, size: 17, lineHeight: 24, text: text, color: color)
     }
     
-    static func H5_B_17(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.Bold, size: 17, lineHeight: 24, text: text, color: color)
-    }
-    
-    static func H6_SB_15(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.SemiBold, size: 15, lineHeight: 20, text: text, color: color)
-    }
-    
-    static func H6_B_15(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.Bold, size: 15, lineHeight: 20, text: text, color: color)
-    }
     
     // MARK: - Body Styles
-    static func Body_M_17(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.Medium, size: 17, lineHeight: 24, text: text, color: color)
-    }
-    
-    static func Body_R_17(_ text: String, color: UIColor = .label) -> NSAttributedString {
+    // Body 1
+    static func B1_R_17(_ text: String, color: UIColor = .label) -> NSAttributedString {
         styled(.Regular, size: 17, lineHeight: 24, text: text, color: color)
     }
     
-    static func Body_M_15(_ text: String, color: UIColor = .label) -> NSAttributedString {
+    // Body 2
+    static func B2_SB_15(_ text: String, color: UIColor = .label) -> NSAttributedString {
+        styled(.SemiBold, size: 15, lineHeight: 20, text: text, color: color)
+    }
+    
+    // Body 3
+    static func B3_M_15(_ text: String, color: UIColor = .label) -> NSAttributedString {
         styled(.Medium, size: 15, lineHeight: 20, text: text, color: color)
     }
     
-    static func Body_R_15(_ text: String, color: UIColor = .label) -> NSAttributedString {
+    // Body 4
+    static func B4_R_15(_ text: String, color: UIColor = .label) -> NSAttributedString {
         styled(.Regular, size: 15, lineHeight: 20, text: text, color: color)
     }
     
-    static func Body_SB_14(_ text: String, color: UIColor = .label) -> NSAttributedString {
+    // Body 5
+    static func B5_SB_14(_ text: String, color: UIColor = .label) -> NSAttributedString {
         styled(.SemiBold, size: 14, lineHeight: 18, text: text, color: color)
     }
     
-    static func Body_M_14(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.Medium, size: 14, lineHeight: 18, text: text, color: color)
-    }
-    
-    static func Body_R_14(_ text: String, color: UIColor = .label) -> NSAttributedString {
+    // Body 6
+    static func B6_R_14(_ text: String, color: UIColor = .label) -> NSAttributedString {
         styled(.Regular, size: 14, lineHeight: 18, text: text, color: color)
     }
     
-    static func Body_SB_13(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.SemiBold, size: 13, lineHeight: 16, text: text, color: color)
-    }
-    
-    static func Body_M_13(_ text: String, color: UIColor = .label) -> NSAttributedString {
+    // Body 7
+    static func B7_M_13(_ text: String, color: UIColor = .label) -> NSAttributedString {
         styled(.Medium, size: 13, lineHeight: 16, text: text, color: color)
     }
     
-    static func Body_R_13(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.Regular, size: 13, lineHeight: 16, text: text, color: color)
-    }
-    
-    static func Body_SB_12(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.SemiBold, size: 12, lineHeight: 14, text: text, color: color)
-    }
-    
-    static func Body_M_12(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.Medium, size: 12, lineHeight: 14, text: text, color: color)
-    }
-    
-    static func Body_R_12(_ text: String, color: UIColor = .label) -> NSAttributedString {
+    // MARK: - Detail Styles
+    // Detail 1
+    static func R_12(_ text: String, color: UIColor = .label) -> NSAttributedString {
         styled(.Regular, size: 12, lineHeight: 14, text: text, color: color)
     }
     
-    static func Body_SB_11(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.SemiBold, size: 11, lineHeight: 13, text: text, color: color)
-    }
-    
-    static func Body_M_11(_ text: String, color: UIColor = .label) -> NSAttributedString {
+    // Detail 2
+    static func M_11(_ text: String, color: UIColor = .label) -> NSAttributedString {
         styled(.Medium, size: 11, lineHeight: 13, text: text, color: color)
     }
     
-    static func Body_R_11(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.Regular, size: 11, lineHeight: 13, text: text, color: color)
-    }
-    
-    static func Body_SB_10(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.SemiBold, size: 10, lineHeight: 12, text: text, color: color)
-    }
-    
-    static func Body_M_10(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.Medium, size: 10, lineHeight: 12, text: text, color: color)
-    }
-    
-    static func Body_R_10(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.Regular, size: 10, lineHeight: 12, text: text, color: color)
+    // Detail 3
+    static func M_9(_ text: String, color: UIColor = .label) -> NSAttributedString {
+        styled(.Medium, size: 9, lineHeight: 11, text: text, color: color)
     }
     
     // MARK: - 사용 예시

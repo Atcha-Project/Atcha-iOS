@@ -70,8 +70,8 @@ class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
     private func setupUI() {
         topNavigationBar.hideCloseButton()
         
-        titleLabel.attributedText = AtchaFont.H3_B_22("막차 푸시 알림을 설정해요", color: AtchaColor.white)
-        subTitleLabel.attributedText = AtchaFont.Body_R_15("출발지에서 막차 타는 곳까지\n시간 내에 걸어갈 수 있게 알람 드려요.", color: AtchaColor.gray200)
+        titleLabel.attributedText = AtchaFont.H2_B_22("막차 푸시 알림을 설정해요", color: AtchaColor.white)
+        subTitleLabel.attributedText = AtchaFont.B4_R_15("출발지에서 막차 타는 곳까지\n시간 내에 걸어갈 수 있게 알람 드려요.", color: AtchaColor.gray200)
         subTitleLabel.numberOfLines = 0
         
         let labelStack = UIStackView(arrangedSubviews: [titleLabel, subTitleLabel])

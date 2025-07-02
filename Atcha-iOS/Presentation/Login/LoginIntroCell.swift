@@ -16,8 +16,8 @@ class LoginIntroCell: UICollectionViewCell {
     private let imageView = UIImageView()
     
     func configure(title: String, subTitle: String, image: UIImage) {
-        titleLabel.attributedText = AtchaFont.H2_B_26(title, color: AtchaColor.white)
-        subtitleLabel.attributedText = AtchaFont.Body_R_14(subTitle, color: AtchaColor.gray200)
+        titleLabel.attributedText = AtchaFont.H1_B_26(title, color: AtchaColor.white)
+        subtitleLabel.attributedText = AtchaFont.B6_R_14(subTitle, color: AtchaColor.gray200)
         imageView.image = image
     }
     
