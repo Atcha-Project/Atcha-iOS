@@ -1,0 +1,13 @@
+//
+//  AddressRepository.swift
+//  Atcha-iOS
+//
+//  Created by geonhui Yu on 7/3/25.
+//
+
+import Foundation
+import CoreLocation
+
+protocol AddressRepository {
+    func fetchCurrentLocation(request: ReverseGeocodeLocationRequest) async throws -> ReverseGeocodeLocationResponse
+}

@@ -36,6 +36,7 @@ final class MapViewController: BaseViewController<MapViewModel> {
         setupAutoLayout()
         setupMapView()
         
+        viewModel.bindView()
         viewModel.requestPermissionAndStartTracking()
     }
     
@@ -86,10 +87,12 @@ extension MapViewController: TMapViewDelegate, TmapViewLocationDelegate {
         setupMarkerView()
     }
     
-    func mapView (_ mapView:TMapView,
+    func mapView(_ mapView:TMapView,
                   singleTapOnMapWithoutTMapShape position: CLLocationCoordinate2D) {
         delegate?.mapViewController(self, didSelectLocation: position)
         mapView.setCenter(position)
+        
+        viewModel.currentLocationSubject.send(position)
     }
     
     func mapView(_ mapView: TMapView,
@@ -97,15 +100,12 @@ extension MapViewController: TMapViewDelegate, TmapViewLocationDelegate {
                  to newPosition: CLLocationCoordinate2D) {
         guard let center = mapView.getCenter() else { return }
         delegate?.mapViewController(self, didUpdateLocation: center)
+        
+        viewModel.currentLocationSubject.send(newPosition)
     }
     
     func didUpdateHeading(_ heading: CLHeading) {
         userMarker?.rotation  = Float(heading.trueHeading)
-        userMarker?.map = mapView
-    }
-    
-    func didUpdateLocation(_ location: CLLocationCoordinate2D) {
-        userMarker?.position = location
         userMarker?.map = mapView
     }
 }
