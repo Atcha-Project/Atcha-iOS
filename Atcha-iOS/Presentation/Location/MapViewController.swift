@@ -11,29 +11,31 @@ import CoreLocation
 import TMapSDK
 
 protocol MapViewControllerDelegate: AnyObject {
-    /// 위치 이동 감지 시 호출
+    /// 맵 이동시 위치 좌표
     func mapViewController(_ controller: MapViewController,
                            didUpdateLocation coordinate: CLLocationCoordinate2D)
 
     /// 지도 탭으로 위치 선택 시 호출
     func mapViewController(_ controller: MapViewController,
                            didSelectLocation coordinate: CLLocationCoordinate2D)
-    
-//    func mapViewController(_ controller: MapViewController, didRequestCenterCoordinate coordinate: CLLocationCoordinate2D)
 }
 
 final class MapViewController: BaseViewController<MapViewModel> {
-    private var mapView: TMapView = TMapView(frame: UIScreen.main.bounds)
+    private var mapView: TMapView = TMapView()
+    private var userMarker: TMapMarker?
     
+    private let flagImageView: UIImageView = UIImageView()
+    private let initialCoordinate: CLLocationCoordinate2D = CLLocationCoordinate2D(latitude: 37.62965537,
+                                                                                   longitude: 127.04519683)
     weak var delegate: MapViewControllerDelegate?
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        setupUI()
+        setupAutoLayout()
         setupMapView()
-        setupMarkerView()
         
-        bindViewModel()
         viewModel.requestPermissionAndStartTracking()
     }
     
@@ -44,79 +46,66 @@ final class MapViewController: BaseViewController<MapViewModel> {
     }
     
     private func setupMapView() {
-        view.addSubview(mapView)
-        
         mapView.setApiKey(Bundle.main.tMapKey)
         mapView.delegate = self
+        mapView.locationDelgate = self
         mapView.isShowCompass = false
-        
-        
+        mapView.isTrackingLocation = true
+        mapView.trackinMode = .followWithHeading
     }
-
     
-    private func setupMarkerView(coordinate: CLLocationCoordinate2D = CLLocationCoordinate2D(latitude: 37.62965537, longitude: 127.04519683)) {
-        
-        mapView.setCenter(coordinate)
-        let marker = TMapMarker(position: coordinate)
-        marker.title = "현재 위치"
-        marker.icon = UIImage.currentLocationMark // ← 이미지 꼭 존재해야 함
-        marker.map = mapView
+    private func setupUI() {
+        view.addSubViews(mapView, flagImageView)
+        flagImageView.image = UIImage.settingLocationMark
     }
-
-    private func bindViewModel() {
-        viewModel.$currentLocation
-            .receive(on: DispatchQueue.main)
-            .compactMap { $0?.coordinate }
-            .sink { [weak self] location in
-                guard let self else { return }
-                delegate?.mapViewController(self, didUpdateLocation: location)
-            }
-            .store(in: &cancellables)
+    
+    private func setupAutoLayout() {
+        mapView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        
+        flagImageView.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+            make.height.equalTo(65)
+            make.width.equalTo(48)
+        }
+    }
+    
+    private func setupMarkerView() {
+        userMarker = TMapMarker(position: initialCoordinate)
+        userMarker?.icon = UIImage.currentLocationMark
+        mapView.setCenter(initialCoordinate)
     }
 }
 
-extension MapViewController: TMapViewDelegate {
+// MARK: - Delegate
+extension MapViewController: TMapViewDelegate, TmapViewLocationDelegate {
     func mapViewDidFinishLoadingMap() {
         mapView.setMapType(.Night)
-        mapView.setZoom(50)
-        
+        mapView.setZoom(30)
         setupMarkerView()
     }
     
-    func mapView (_ mapView:TMapView, singleTapOnMapWithoutTMapShape position: CLLocationCoordinate2D) {
+    func mapView (_ mapView:TMapView,
+                  singleTapOnMapWithoutTMapShape position: CLLocationCoordinate2D) {
         delegate?.mapViewController(self, didSelectLocation: position)
-        setupMarkerView(coordinate: position)
+        mapView.setCenter(position)
     }
-}
-
-extension MapViewController: TmapViewLocationDelegate, CLLocationManagerDelegate {
+    
+    func mapView(_ mapView: TMapView,
+                 shouldChangeFrom oldPosition: CLLocationCoordinate2D,
+                 to newPosition: CLLocationCoordinate2D) {
+        guard let center = mapView.getCenter() else { return }
+        delegate?.mapViewController(self, didUpdateLocation: center)
+    }
+    
     func didUpdateHeading(_ heading: CLHeading) {
-        
-        guard let position = viewModel.currentLocation?.coordinate else { return }
-        let marker = TMapMarker(position: position)
-        
-        marker.position = position
-        marker.map = nil
-        marker.icon = UIImage.currentLocationMark.rotated(by: CGFloat(heading.trueHeading))
-        marker.map = self.mapView
+        userMarker?.rotation  = Float(heading.trueHeading)
+        userMarker?.map = mapView
     }
     
-    func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
-        print("newHeading : \(newHeading)")
+    func didUpdateLocation(_ location: CLLocationCoordinate2D) {
+        userMarker?.position = location
+        userMarker?.map = mapView
     }
 }
-
-// TODO: - 길찾기 경로 추가 예정
-extension MapViewController {
-    
-}
-
-// 마커 추가 (가운데로 이동) 기존 마커 제거
-// 기본 디폴트 이미지들 숨기기 처리
-// 헤딩 처리하기
-// 설정 이미지 표시하기
-// 해당 ViewController 생성, 최초 값 주입해서 넣기 (UserDefaults)
-
-
-
-
