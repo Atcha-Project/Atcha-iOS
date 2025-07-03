@@ -18,9 +18,11 @@ final class LocationDIContainer {
     func makeLocationViewModel() -> MapViewModel {
         let streamUseCase = ObserLocationStreamUseCaseImpl(repository: LocationStreamRepositoryImpl())
         let requestUseCase = RequestLocationAuthorizationUseCaseImpl(repository: RequestLocationAuthorizationRepositoryImpl())
+        let searchAddressUseCase = SearchAddressUseCaseImpl(repository: AddressRepositoryImpl(apiService: apiService))
 
-        return MapViewModel(requestUseCase: requestUseCase,
-                            streamUseCase: streamUseCase)
+        return MapViewModel(authorizationUseCase: requestUseCase,
+                            streamUseCase: streamUseCase,
+                            searchAddressUseCase: searchAddressUseCase)
     }
 
     func makeMapViewController() -> UIViewController {
