@@ -32,12 +32,12 @@ struct SearchLocationRequest: Codable {
 }
 
 struct Location: Codable {
-    let name: String
-    let lat: Double
-    let lon: Double
-    let businessCategory: String
-    let address: String
-    let radius: String
+    let name: String?
+    let lat: Double?
+    let lon: Double?
+    let businessCategory: String?
+    let address: String?
+    let radius: String?
 }
 
 struct ReverseGeocodeLocationRequest: Codable {
@@ -46,10 +46,10 @@ struct ReverseGeocodeLocationRequest: Codable {
 }
 
 struct ReverseGeocodeLocationResponse: Codable {
-    let name: String
-    let address: String
-    let lat: Double
-    let lon: Double
+    let name: String?
+    let address: String?
+    let lat: Double?
+    let lon: Double?
 }
 
 struct SelectedLocation {

@@ -55,12 +55,13 @@ final class SearchLocationViewModel: BaseViewModel {
                         lat: coordinate.latitude,
                         lon: coordinate.longitude
                     )
-                    let placeName = response.name
-                    let address = response.address
                     
-                    DispatchQueue.main.async {
-                        completion(coordinate, placeName, address)
+                    if let placeName = response.name, let address = response.address {
+                        DispatchQueue.main.async {
+                            completion(coordinate, placeName, address)
+                        }
                     }
+                    
                 } catch {
                     print("❌ 장소 변환 실패: \(error)")
                 }
