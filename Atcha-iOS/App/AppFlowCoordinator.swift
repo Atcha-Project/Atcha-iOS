@@ -32,8 +32,8 @@ class AppFlowCoordinator {
         splashCoordinator.onFinish = { [weak self] in
             guard let self else { return }
             // 로그인 됐으면 mainFlow 아니면 LoginFlow
-                        showMainFlow()
-//            showLoginFlow()
+//                        showMainFlow()
+            showLoginFlow()
         }
         splashCoordinator.start()
         self.splashCoordinator = splashCoordinator

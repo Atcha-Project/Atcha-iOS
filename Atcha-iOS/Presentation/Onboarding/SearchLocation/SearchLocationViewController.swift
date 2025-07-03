@@ -132,7 +132,7 @@ class SearchLocationViewController: BaseViewController<SearchLocationViewModel> 
         }
         viewModel.searchLocation(keyword: text, lat: coordinate.latitude, lon: coordinate.longitude)
     }
-
+    
     // MARK: - 텍스트 제출 처리
     private func handleTextSubmit(text: String, coordinate: CLLocationCoordinate2D) {
         headerView.isHidden = false
@@ -160,9 +160,9 @@ extension SearchLocationViewController: UITableViewDataSource, UITableViewDelega
         cell.contentView.subviews.forEach { $0.removeFromSuperview() }
         
         let titleLabel = UILabel()
-        titleLabel.attributedText = AtchaFont.B4_R_15(location.name, color: AtchaColor.white)
+        titleLabel.attributedText = AtchaFont.B4_R_15(location.name ?? "이름 없음", color: AtchaColor.white)
         let detailLabel = UILabel()
-        detailLabel.attributedText = AtchaFont.B6_R_14(location.address, color: AtchaColor.gray200)
+        detailLabel.attributedText = AtchaFont.B6_R_14(location.address ?? "주소 없음", color: AtchaColor.gray200)
         
         let labelStack = UIStackView(arrangedSubviews: [titleLabel, detailLabel])
         labelStack.axis = .vertical
@@ -185,11 +185,14 @@ extension SearchLocationViewController: UITableViewDataSource, UITableViewDelega
         let selected = filteredLocations[indexPath.row]
         print("선택한 장소: \(selected)")
         
-        let coordinate = CLLocationCoordinate2D(latitude: selected.lat, longitude: selected.lon)
-        let placeName = selected.name
-        let address = selected.address
-        
-        self.onCurrentTapped?(coordinate, placeName, address)
+        if let lat = selected.lat,
+           let lon = selected.lon,
+           let placeName = selected.name,
+           let address = selected.address {
+            
+            let coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
+            self.onCurrentTapped?(coordinate, placeName, address)
+        }
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
