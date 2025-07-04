@@ -9,50 +9,70 @@ import UIKit
 import TMapSDK
 import CoreLocation
 
-public protocol MapRendering: AnyObject, TMapViewDelegate {
+protocol MapRendering: AnyObject, TMapViewDelegate, TmapViewLocationDelegate {
     var mapView: TMapView { get }
-
-    func setCenter(_ coordinate: CLLocationCoordinate2D, animated: Bool)
-    func addUserMarker(at coordinate: CLLocationCoordinate2D)
-    func removeAllMarkers()
 }
 
-final class TMapWrapper: NSObject, MapRendering, TMapViewDelegate {
-    public let mapView: TMapView
+protocol TMapWrapperDelegate: AnyObject {
+    func mapView(_ mapView: TMapWrapper,
+                 didUpdateLocation coordinate: CLLocationCoordinate2D)
+    
+    func mapView(_ mapView: TMapWrapper,
+                 didSelectLocation coordinate: CLLocationCoordinate2D)
+}
 
+final class TMapWrapper: NSObject, MapRendering {
+    private var userMarker: TMapMarker?
+    let mapView: TMapView
+    
+    weak var delegate: TMapWrapperDelegate?
+    
     public init(frame: CGRect) {
         self.mapView = TMapView(frame: frame)
-        super.init() // 반드시 호출
-        mapView.delegate = self // ✅ delegate 연결
+        super.init()
+        
         configureDefaultSettings()
     }
 
     private func configureDefaultSettings() {
         mapView.setApiKey(Bundle.main.tMapKey)
-        mapView.setZoom(100)
-        // setMapType 은 onDidLoadMap 에서!
+        mapView.delegate = self
+        mapView.locationDelgate = self
+        mapView.isShowCompass = false
+        mapView.isTrackingLocation = true
+        mapView.trackinMode = .followWithHeading
     }
-
-    public func onDidLoadMap() {
-        print("✅ 지도 로딩 완료 - 다크모드 적용")
-        mapView.setMapType(.Night)
-    }
-
-    public func onDidFailedLoadingMap() {
-        print("❌ 지도 로딩 실패")
+    
+    private func updateUserMarker(coordinate: CLLocationCoordinate2D) {
+        if let marker = userMarker {
+            marker.position = coordinate
+        } else {
+            userMarker = TMapMarker(position: coordinate)
+            userMarker?.icon = UIImage.currentLocationMark
+            userMarker?.map = mapView
+        }
+        mapView.setCenter(coordinate)
     }
 }
 
-extension TMapWrapper {
-    public func setCenter(_ coordinate: CLLocationCoordinate2D, animated: Bool) {
-        mapView.setCenter(coordinate)
-    }
-    
-    public func addUserMarker(at coordinate: CLLocationCoordinate2D) {
+extension TMapWrapper: TMapViewDelegate, TmapViewLocationDelegate {
+    func mapViewDidFinishLoadingMap() {
+        mapView.setMapType(.Night)
+        mapView.setZoom(20)
         
+        guard let center = mapView.getCenter() else { return }
+        updateUserMarker(coordinate: center)
     }
     
-    public func removeAllMarkers() {
-//        mapView.ma
+    func mapView(_ mapView: TMapView,
+                 singleTapOnMapWithoutTMapShape location: CLLocationCoordinate2D) {
+        delegate?.mapView(self, didSelectLocation: location)
+    }
+    
+    func mapView(_ mapView: TMapView,
+                 shouldChangeFrom oldPosition: CLLocationCoordinate2D,
+                 to newPosition: CLLocationCoordinate2D) {
+        delegate?.mapView(self, didUpdateLocation: newPosition)
+        updateUserMarker(coordinate: newPosition)
     }
 }
