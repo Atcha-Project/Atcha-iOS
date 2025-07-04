@@ -1,0 +1,210 @@
+//
+//  CourseSearchViewController.swift
+//  Atcha-iOS
+//
+//  Created by wodnd on 7/3/25.
+//
+
+import UIKit
+import SnapKit
+import Combine
+
+class CourseSearchViewController: BaseViewController<CourseSearchViewModel> {
+    
+    private let topNavigationBar: TitleNavigationBar = AtchaNavigationBar.title("") {
+        
+    } onClose: {
+        
+    }
+    private let courseView: UIView = UIView()
+    private let routeLabelStack: UIStackView = UIStackView()
+    private let departLabel: UILabel = UILabel()
+    private let arriveLabel: UILabel = UILabel()
+    private let arrowImageView: UIImageView = UIImageView()
+    private let tabItems = ["전체", "버스", "지하철"]
+    private var selectedIndex = 0
+    private lazy var tabCollectionView: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        layout.scrollDirection = .horizontal
+        layout.minimumLineSpacing = 0
+        layout.minimumInteritemSpacing = 0
+        
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.backgroundColor = AtchaColor.gray950
+        collectionView.delegate = self
+        collectionView.dataSource = self
+        collectionView.register(CourseTabCell.self, forCellWithReuseIdentifier: "CourseTabCell")
+        
+        return collectionView
+    }()
+    private lazy var courseCollectionView: UICollectionView = {
+        let layout = layout()
+        let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        cv.backgroundColor = .clear
+        cv.delegate = self
+        cv.register(CourseCell.self, forCellWithReuseIdentifier: CourseCell.reusableId)
+        return cv
+    }()
+    private typealias DataSource = UICollectionViewDiffableDataSource<Section, Course>
+    private typealias Snapshot = NSDiffableDataSourceSnapshot<Section, Course>
+    private lazy var dataSource: DataSource = setDataSource()
+    private var currentSection: [Section] {
+        dataSource.snapshot().sectionIdentifiers as [Section]
+    }
+    private enum Section {
+        case courseList
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        setupUI()
+        bind()
+        viewModel.fetchCourses(for: 0)
+    }
+    
+    // MARK: - 경로탐색 UI
+    private func setupUI() {
+        view.backgroundColor = AtchaColor.gray950
+        
+        courseView.layer.cornerRadius = 12
+        courseView.backgroundColor = AtchaColor.gray930
+        
+        departLabel.attributedText = AtchaFont.B4_R_15("마루 180", color: AtchaColor.white)
+        arriveLabel.attributedText = AtchaFont.B4_R_15("우리집", color: AtchaColor.white)
+        
+        arrowImageView.image = .arrow
+        arrowImageView.tintColor = AtchaColor.white
+        arrowImageView.contentMode = .scaleAspectFit
+        
+        routeLabelStack.addArrangedSubview(departLabel)
+        routeLabelStack.addArrangedSubview(arrowImageView)
+        routeLabelStack.addArrangedSubview(arriveLabel)
+        routeLabelStack.axis = .horizontal
+        routeLabelStack.spacing = 8
+        
+        courseView.addSubview(routeLabelStack)
+        
+        view.addSubViews(topNavigationBar, courseView, tabCollectionView, courseCollectionView)
+        
+        topNavigationBar.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
+            make.trailing.leading.equalToSuperview()
+        }
+        
+        arrowImageView.snp.makeConstraints { make in
+            make.size.equalTo(12)
+        }
+        
+        routeLabelStack.snp.makeConstraints { make in
+            make.centerY.equalToSuperview()
+            make.leading.equalTo(courseView.snp.leading).offset(16)
+        }
+        
+        courseView.snp.makeConstraints { make in
+            make.top.equalTo(topNavigationBar.snp.bottom).offset(6)
+            make.leading.equalToSuperview().offset(16)
+            make.trailing.equalToSuperview().inset(16)
+            make.height.equalTo(48)
+        }
+        
+        tabCollectionView.snp.makeConstraints { make in
+            make.top.equalTo(courseView.snp.bottom).offset(10)
+            make.trailing.leading.equalToSuperview()
+            make.height.equalTo(40)
+        }
+        
+        courseCollectionView.snp.makeConstraints { make in
+            make.top.equalTo(tabCollectionView.snp.bottom)
+            make.trailing.leading.equalToSuperview()
+            make.bottom.equalToSuperview()
+        }
+    }
+    
+    // MARK: ViewModel 바인딩
+    private func bind() {
+        viewModel.$courses
+            .receive(on: RunLoop.main)
+            .sink { [weak self] courses in
+                self?.applySnapshot(courses: courses)
+            }
+            .store(in: &cancellables)
+    }
+    
+    // MARK: - Course CollectionView DataSource & Cell 바인딩
+    private func setDataSource() -> DataSource {
+        let dataSource: DataSource = UICollectionViewDiffableDataSource(collectionView: courseCollectionView)
+        { [weak self] collectionView, indexPath, course in
+            switch self?.currentSection[indexPath.section] {
+            case .courseList:
+                return self?.courseCell(collectionView, indexPath, course)
+            case .none:
+                return .init()
+            }
+        }
+        
+        return dataSource
+    }
+    
+    // MARK: - Course CollectionView Layout
+    private func layout() -> UICollectionViewCompositionalLayout {
+        UICollectionViewCompositionalLayout{ [weak self] section, _ in
+            switch self?.currentSection[section] {
+            case .courseList:
+                return CourseCell.courseLayout()
+            case .none:
+                return nil
+            }
+        }
+    }
+    
+    // MARK: - Course CollectionView Cell 설정
+    private func courseCell(_ collectionView: UICollectionView, _ indexPath: IndexPath, _ course: Course) -> UICollectionViewCell {
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CourseCell.reusableId, for: indexPath) as? CourseCell
+        else {
+            return UICollectionViewCell()
+        }
+        
+        cell.configure(with: course)
+        return cell
+    }
+    
+    // MARK: - Course Snapshot 갱신
+    private func applySnapshot(courses: [Course]) {
+        var snapshot = Snapshot()
+        
+        snapshot.appendSections([.courseList])
+        if !courses.isEmpty {
+            snapshot.appendItems(courses, toSection: .courseList)
+        }
+        
+        dataSource.apply(snapshot, animatingDifferences: true)
+    }
+}
+
+extension CourseSearchViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return tabItems.count
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CourseTabCell", for: indexPath) as? CourseTabCell else {
+            return UICollectionViewCell()
+        }
+        let title = tabItems[indexPath.item]
+        let isSelected = (indexPath.item == selectedIndex)
+        cell.configure(title: title, selected: isSelected)
+        return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        selectedIndex = indexPath.item
+        collectionView.reloadData()
+        viewModel.fetchCourses(for: selectedIndex)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        let width = collectionView.frame.width / CGFloat(tabItems.count)
+        return CGSize(width: width, height: 40)
+    }
+}
