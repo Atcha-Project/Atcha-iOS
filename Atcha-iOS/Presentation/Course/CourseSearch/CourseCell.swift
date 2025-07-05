@@ -183,25 +183,24 @@ class CourseCell: UICollectionViewCell {
         }
         
         if let departTime = course.departureDateTime {
-            departTimeLabel.attributedText = AtchaFont.B7_M_13(departTime.toTimeString, color: AtchaColor.main)
+            departTimeLabel.attributedText = AtchaFont.B7_M_13(departTime.convertedToHourMinute, color: AtchaColor.main)
         }
         
         if let boardingLeg = course.legs.first(where: { $0.mode == "SUBWAY" || $0.mode == "BUS" }),
            let boardingTime = boardingLeg.departureDateTime {
-            boardingTimeLabel.attributedText = AtchaFont.B7_M_13(boardingTime.toTimeString, color: AtchaColor.white)
+            boardingTimeLabel.attributedText = AtchaFont.B7_M_13(boardingTime.convertedToHourMinute, color: AtchaColor.white)
         } else {
             boardingTimeLabel.attributedText = AtchaFont.B7_M_13("-", color: AtchaColor.white)
         }
         
         courseCompactStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         for (index, leg) in course.legs.enumerated() {
-            switch leg.mode {
-            case "WALK":
+            switch leg.modeEnum {
+            case .walk:
                 let walkIcon = UIImageView(image: UIImage.routeCircleWalkGray700)
                 walkIcon.snp.makeConstraints { $0.size.equalTo(26) }
                 courseCompactStack.addArrangedSubview(walkIcon)
-                
-            case "BUS":
+            case .bus:
                 if let type = leg.type,
                    let imageName = busIcon[type],
                    let image = UIImage(named: imageName) {
@@ -209,8 +208,7 @@ class CourseCell: UICollectionViewCell {
                     busIconView.snp.makeConstraints { $0.size.equalTo(26) }
                     courseCompactStack.addArrangedSubview(busIconView)
                 }
-                
-            case "SUBWAY":
+            case .subway:
                 if let type = leg.type,
                    let imageName = subwayIcon[type],
                    let image = UIImage(named: imageName) {
@@ -218,11 +216,10 @@ class CourseCell: UICollectionViewCell {
                     subwayIconView.snp.makeConstraints { $0.size.equalTo(26) }
                     courseCompactStack.addArrangedSubview(subwayIconView)
                 }
-                
-            default:
+            case .unknown:
                 break
             }
-            
+
             if index < course.legs.count - 1 {
                 let arrow = UIImageView(image: UIImage.chevronRight)
                 arrow.tintColor = AtchaColor.gray400
@@ -240,8 +237,8 @@ class CourseCell: UICollectionViewCell {
             var title: String = ""
             var icon: UIImage?
             
-            switch leg.mode {
-            case "WALK":
+            switch leg.modeEnum {
+            case .walk:
                 let isFirstWalk = index == 0
                 let isLastWalk = index == course.legs.count - 1
                 let showTopLine = !isFirstWalk
@@ -260,8 +257,7 @@ class CourseCell: UICollectionViewCell {
                 )
                 
                 courseDetailStack.addArrangedSubview(stepView)
-                
-            case "BUS", "SUBWAY":
+            case .bus, .subway:
                 let isFirstWalk = index == 0
                 let isLastWalk = index == course.legs.count - 1
                 let showTopLine = !isFirstWalk
@@ -270,10 +266,10 @@ class CourseCell: UICollectionViewCell {
                 if let startName = leg.start.name, let endName = leg.end.name {
                     let startStepView = CourseStepView()
                     startStepView.configure(
-                        icon: UIImage(named: leg.mode == "BUS"
+                        icon: UIImage(named: leg.modeEnum == .bus
                                       ? busIcon[leg.type ?? 0] ?? ""
                                       : subwayIcon[leg.type ?? 0] ?? ""),
-                        title: "\(startName) 승차",
+                        title: leg.modeEnum == .bus ? "\(startName) 승차" : "\(startName)역 승차",
                         time: 12,
                         showTopLine: showTopLine,
                         showBottomLine: showBottomLine,
@@ -284,10 +280,10 @@ class CourseCell: UICollectionViewCell {
                     
                     let endStepView = CourseStepView()
                     endStepView.configure(
-                        icon: UIImage(named: leg.mode == "BUS"
+                        icon: UIImage(named: leg.modeEnum == .bus
                                       ? busGetOffIcon[leg.type ?? 0] ?? ""
-                                      : subwayIcon[leg.type ?? 0] ?? ""),
-                        title: "\(endName) 하차",
+                                      : subwayGetOffIcon[leg.type ?? 0] ?? ""),
+                        title: leg.modeEnum == .bus ? "\(endName) 하차" : "\(endName)역 하차",
                         time: nil,
                         showTopLine: false,
                         showBottomLine: showBottomLine,
@@ -296,7 +292,7 @@ class CourseCell: UICollectionViewCell {
                     )
                     courseDetailStack.addArrangedSubview(endStepView)
                 }
-            default:
+            case .unknown:
                 title = "알 수 없음"
                 icon = UIImage.routeCircleWalkGray700
             }

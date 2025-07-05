@@ -9,7 +9,7 @@ import Foundation
 
 extension String {
     // MARK: - 문자열에서 HH:mm 으로 시간 추출
-    var toTimeString: String {
+    var convertedToHourMinute: String {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "ko_KR")
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"

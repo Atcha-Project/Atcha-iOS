@@ -53,3 +53,16 @@ struct step: Codable, Hashable{
     let description: String?
     let linestring: String?
 }
+
+enum TransportMode: String {
+    case walk = "WALK"
+    case bus = "BUS"
+    case subway = "SUBWAY"
+    case unknown
+}
+
+extension legs {
+    var modeEnum: TransportMode {
+        return TransportMode(rawValue: mode?.uppercased() ?? "모드 오류") ?? .unknown
+    }
+}

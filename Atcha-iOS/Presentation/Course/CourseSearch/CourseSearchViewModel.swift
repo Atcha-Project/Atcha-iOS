@@ -56,9 +56,9 @@ final class CourseSearchViewModel: BaseViewModel {
                         legs(
                             distance: 3951,
                             sectionTime: 572,
-                            mode: "BUS",
+                            mode: "SUBWAY",
                             departureDateTime: "2021-09-01T07:12:00",
-                            type: 11,
+                            type: 9,
                             service: 0,
                             start: addressInfo(
                                 name: "시청",
