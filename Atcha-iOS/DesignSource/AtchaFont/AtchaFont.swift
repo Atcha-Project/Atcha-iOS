@@ -26,8 +26,8 @@ enum AtchaFont {
                                letterSpacing: CGFloat = 0) -> NSAttributedString {
         let font = UIFont(name: fontName.rawValue, size: size)!
         let paragraph = NSMutableParagraphStyle()
-        paragraph.minimumLineHeight = lineHeight
-        paragraph.maximumLineHeight = lineHeight
+//        paragraph.minimumLineHeight = lineHeight
+//        paragraph.maximumLineHeight = lineHeight
         
         let attributes: [NSAttributedString.Key: Any] = [
             .font: font,

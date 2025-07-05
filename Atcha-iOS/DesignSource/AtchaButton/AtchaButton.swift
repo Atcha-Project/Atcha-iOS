@@ -12,7 +12,7 @@ import SnapKit
 // MARK: - 버튼 사이즈 Enum
 enum ButtonSize {
     case h52, h48, h44, h32
-
+    
     var height: CGFloat {
         switch self {
         case .h52: return 52
@@ -21,7 +21,7 @@ enum ButtonSize {
         case .h32: return 32
         }
     }
-
+    
     var verticalPadding: CGFloat {
         switch self {
         case .h52, .h48: return 14
@@ -29,16 +29,16 @@ enum ButtonSize {
         case .h32: return 7
         }
     }
-
+    
     var horizontalPadding: CGFloat { 28 }
-
+    
     var cornerRadius: CGFloat {
         switch self {
         case .h52, .h48, .h44: return 10
         case .h32: return 8
         }
     }
-
+    
     var contentInsets: UIEdgeInsets {
         UIEdgeInsets(
             top: verticalPadding,
@@ -47,7 +47,7 @@ enum ButtonSize {
             right: horizontalPadding
         )
     }
-
+    
     func attributedTitle(_ text: String, color: UIColor = .black) -> NSAttributedString {
         switch self {
         case .h52:
@@ -63,7 +63,7 @@ enum ButtonSize {
 // MARK: - FilledButtonStyle: 테두리 없는 버튼
 enum FilledButtonStyle {
     case primary, white, defaultGray, opacity, disabled
-
+    
     var backgroundColor: UIColor {
         switch self {
         case .primary: return AtchaColor.main
@@ -73,7 +73,7 @@ enum FilledButtonStyle {
         case .disabled: return AtchaColor.opacity200
         }
     }
-
+    
     var textColor: UIColor {
         switch self {
         case .primary, .white: return AtchaColor.black
@@ -87,14 +87,14 @@ enum FilledButtonStyle {
 // MARK: - LineButtonStyle: 테두리 있는 버튼
 enum LineButtonStyle {
     case line, disabled
-
+    
     var textColor: UIColor {
         switch self {
         case .line: return AtchaColor.white
         case .disabled: return AtchaColor.gray700
         }
     }
-
+    
     var borderColor: UIColor {
         return AtchaColor.gray800
     }
@@ -106,39 +106,64 @@ final class AtchaButton: UIButton {
         case filled(FilledButtonStyle)
         case line(LineButtonStyle)
     }
-
+    
     private var onTap: (() -> Void)?
-
-    init(text: String, size: ButtonSize, style: Style, onTap: (() -> Void)? = nil) {
+    
+    init(
+        text: String,
+        size: ButtonSize,
+        style: Style,
+        image: UIImage? = nil,
+        onTap: (() -> Void)? = nil
+    ) {
         self.onTap = onTap
         super.init(frame: .zero)
-
+        
         layer.cornerRadius = size.cornerRadius
         clipsToBounds = true
         setContentHuggingPriority(.required, for: .horizontal)
         translatesAutoresizingMaskIntoConstraints = false
         snp.makeConstraints { $0.height.equalTo(size.height) }
-
         contentEdgeInsets = size.contentInsets
+        
         addTarget(self, action: #selector(handleTap), for: .touchUpInside)
-
+        
         switch style {
         case .filled(let filledStyle):
             setAttributedTitle(size.attributedTitle(text, color: filledStyle.textColor), for: .normal)
             backgroundColor = filledStyle.backgroundColor
-
+            
         case .line(let lineStyle):
             setAttributedTitle(size.attributedTitle(text, color: lineStyle.textColor), for: .normal)
             backgroundColor = .clear
             layer.borderWidth = 1
             layer.borderColor = lineStyle.borderColor.cgColor
         }
+        
+        if let image = image {
+            setImage(image.withRenderingMode(.alwaysTemplate), for: .normal)
+            tintColor = {
+                switch style {
+                case .filled(let filledStyle):
+                    return filledStyle.textColor
+                case .line(let lineStyle):
+                    return lineStyle.textColor
+                }
+            }()
+            
+            imageView?.contentMode = .scaleAspectFit
+            
+            let spacing: CGFloat = 6
+            semanticContentAttribute = .forceLeftToRight
+            imageEdgeInsets = UIEdgeInsets(top: 0, left: -spacing/2, bottom: 0, right: spacing/2)
+            titleEdgeInsets = UIEdgeInsets(top: 0, left: spacing/2, bottom: 0, right: -spacing/2)
+        }
     }
-
+    
     @objc private func handleTap() {
         onTap?()
     }
-
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -152,7 +177,7 @@ extension AtchaButton {
             backgroundColor = filledStyle.backgroundColor
             layer.borderWidth = 0
             layer.borderColor = nil
-
+            
         case .line(let lineStyle):
             setAttributedTitle(ButtonSize.h52.attributedTitle(text, color: lineStyle.textColor), for: .normal)
             backgroundColor = .clear
