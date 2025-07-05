@@ -27,8 +27,9 @@ enum AtchaNavigationBar {
         return SearchNavigationBar(onTapBack: onBack, onTapCurrentLocation: onCurrentLocation)
     }
     
-    static func backOnly(onBack: (() -> Void)? = nil ) -> BackOnlyNavigationBar {
-        return BackOnlyNavigationBar(onTapBack: onBack)
+    static func backOnly(onBack: (() -> Void)? = nil,
+                         tintColor: UIColor = AtchaColor.white ) -> BackOnlyNavigationBar {
+        return BackOnlyNavigationBar(onTapBack: onBack, tintColor: tintColor)
     }
     
     // MARK: - 사용 예시
