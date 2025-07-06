@@ -39,7 +39,7 @@ class BaseViewController<VM: BaseViewModel>: UIViewController {
     private func setupLayout() {
         navigationController?.setNavigationBarHidden(true,
                                                      animated: false)
-//        view.backgroundColor = .gray950
+        view.backgroundColor = .gray950
         
         // Loading Indicator 추가
         view.addSubview(loadingIndicator)

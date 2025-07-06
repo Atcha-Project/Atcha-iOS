@@ -51,7 +51,7 @@ final class TMapWrapper: NSObject, MapRendering {
                 marker.position = coordinate
             } else {
                 userMarker = TMapMarker(position: coordinate)
-                userMarker?.icon = UIImage.settingLocationMark
+                userMarker?.icon = UIImage.currentLocationMark
                 userMarker?.map = mapView
             }
         }
@@ -72,7 +72,7 @@ extension TMapWrapper: TMapViewDelegate, TmapViewLocationDelegate {
     func mapView(_ mapView: TMapView,
                  singleTapOnMapWithoutTMapShape location: CLLocationCoordinate2D) {
         delegate?.mapView(self, didSelectLocation: location)
-        updateUserMarker(coordinate: location)
+//        updateUserMarker(coordinate: location)
     }
     
     func mapView(_ mapView: TMapView,
@@ -85,7 +85,7 @@ extension TMapWrapper: TMapViewDelegate, TmapViewLocationDelegate {
 //        guard distance > 2 else { return }
         
         delegate?.mapView(self, didUpdateLocation: newPosition)
-        updateUserMarker(coordinate: newPosition)
+//        updateUserMarker(coordinate: newPosition)
     }
 }
 
@@ -111,7 +111,8 @@ final class TMapContainerView: UIView {
         tMapWrapper = TMapWrapper(frame: bounds)
         tMapWrapper.delegate = delegate
         addSubview(tMapWrapper.mapView)
-        tMapWrapper.mapView.frame = bounds
-//        tMapWrapper.mapView                                .autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        tMapWrapper.mapView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+        }
     }
 }

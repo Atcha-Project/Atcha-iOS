@@ -14,6 +14,9 @@ final class MapViewController: BaseViewController<MapViewModel>, TMapWrapperDele
     private let mapContainerView = TMapContainerView()
     private let lastTrainView: LastTrainSearchBottomView = LastTrainSearchBottomView()
     private let flagImageView: UIImageView = UIImageView()
+    private let myPageButton: UIButton = UIButton()
+    private let loactionButton: UIButton = UIButton()
+    private let atchaImageView: UIImageView = UIImageView()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -25,35 +28,55 @@ final class MapViewController: BaseViewController<MapViewModel>, TMapWrapperDele
         viewModel.requestPermissionAndStartTracking()
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        
-        //        tMapWrapper.mapView.vsmMapView?.viewWillDisappear()
-    }
-    
     private func setupUI() {
+        view.addSubViews(mapContainerView,
+                         flagImageView,
+                         atchaImageView,
+                         lastTrainView,
+                         myPageButton,
+                         loactionButton)
         mapContainerView.delegate = self
-        
-        view.addSubViews(flagImageView, lastTrainView, mapContainerView)
-        
         flagImageView.image = UIImage.settingLocationMark
+        myPageButton.setImage(UIImage(named: "mypage-filled")?.withRenderingMode(.alwaysOriginal), for: .normal)
+        loactionButton.setImage(UIImage(named: "mylocation-filled")?.withRenderingMode(.alwaysOriginal), for: .normal)
+        myPageButton.contentHorizontalAlignment = .fill
+        loactionButton.contentHorizontalAlignment = .fill
+        myPageButton.contentVerticalAlignment = .fill
+        loactionButton.contentVerticalAlignment = .fill
+        atchaImageView.image = UIImage.atcha
     }
     
     private func setupAutoLayout() {
         flagImageView.snp.makeConstraints { make in
-            make.center.equalToSuperview()
+            make.centerX.equalToSuperview()
+            make.centerY.equalTo(mapContainerView.snp.centerY)
             make.height.equalTo(65)
             make.width.equalTo(48)
         }
-        mapContainerView.snp.makeConstraints { make in
-            make.horizontalEdges.equalToSuperview()
-            make.verticalEdges.equalToSuperview()
-        }
-        
         lastTrainView.snp.makeConstraints { make in
             make.horizontalEdges.equalToSuperview()
             make.bottom.equalToSuperview()
-            make.height.equalTo(256)
+            make.height.equalTo(224)
+        }
+        myPageButton.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
+            make.trailing.equalToSuperview().inset(16)
+            make.width.height.equalTo(36)
+        }
+        loactionButton.snp.makeConstraints { make in
+            make.bottom.equalTo(lastTrainView.snp.top).inset(-16)
+            make.trailing.equalToSuperview().inset(16)
+            make.width.height.equalTo(36)
+        }
+        atchaImageView.snp.makeConstraints { make in
+            make.width.height.equalTo(64)
+            make.leading.equalToSuperview().inset(8)
+            make.bottom.equalTo(lastTrainView.snp.top).inset(24)
+        }
+        mapContainerView.snp.makeConstraints { make in
+            make.horizontalEdges.equalToSuperview()
+            make.top.equalToSuperview()
+            make.bottom.equalTo(lastTrainView.snp.top).inset(30)
         }
     }
 }
