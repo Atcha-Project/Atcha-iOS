@@ -71,6 +71,7 @@
 		6DFF29E22E0E6D140039399F /* VSMSDK.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6DFF29DD2E0E6D100039399F /* VSMSDK.xcframework */; };
 		6DFF29E32E0E6D140039399F /* VSMSDK.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 6DFF29DD2E0E6D100039399F /* VSMSDK.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		6DFF29F02E0F23840039399F /* UIImage+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFF29EF2E0F23840039399F /* UIImage+Ext.swift */; };
+		B60058472E1A840300405A09 /* Secrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = B60058462E1A840300405A09 /* Secrets.xcconfig */; };
 		B600CA132E07FD29008B0D87 /* MyPageCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C13472E07A10F0016D2F0 /* MyPageCoordinator.swift */; };
 		B65C12D72E0429B30016D2F0 /* AppFlowCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C12D62E0429B30016D2F0 /* AppFlowCoordinator.swift */; };
 		B65C12DA2E042A740016D2F0 /* AppDIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C12D92E042A740016D2F0 /* AppDIContainer.swift */; };
@@ -132,6 +133,7 @@
 		B68309622E005A3600E2D029 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B68309502E005A3600E2D029 /* Main.storyboard */; };
 		B68309672E005B5300E2D029 /* UIView+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B68309662E005B5300E2D029 /* UIView+Ext.swift */; };
 		B6ADE1942E0C0DE6008C4E23 /* LoginType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6ADE1932E0C0DE6008C4E23 /* LoginType.swift */; };
+		B6B57EC22E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B57EC12E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift */; };
 		B6C507452E1295A0000AB39F /* Secrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = B6C507442E1295A0000AB39F /* Secrets.xcconfig */; };
 		B6C507482E129640000AB39F /* RequestLocationAuthorizationUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6C507472E129640000AB39F /* RequestLocationAuthorizationUseCase.swift */; };
 		B6C5074A2E129649000AB39F /* ObserveLocationStreamUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6C507492E129649000AB39F /* ObserveLocationStreamUseCase.swift */; };
@@ -225,6 +227,7 @@
 		6DFF29DC2E0E6D100039399F /* TMapSDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = TMapSDK.framework; sourceTree = "<group>"; };
 		6DFF29DD2E0E6D100039399F /* VSMSDK.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = VSMSDK.xcframework; sourceTree = "<group>"; };
 		6DFF29EF2E0F23840039399F /* UIImage+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Ext.swift"; sourceTree = "<group>"; };
+		B60058462E1A840300405A09 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 		B65C12D62E0429B30016D2F0 /* AppFlowCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFlowCoordinator.swift; sourceTree = "<group>"; };
 		B65C12D92E042A740016D2F0 /* AppDIContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDIContainer.swift; sourceTree = "<group>"; };
 		B65C12DD2E042CF00016D2F0 /* UserInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserInfo.swift; sourceTree = "<group>"; };
@@ -289,6 +292,7 @@
 		B68309632E005ADE00E2D029 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		B68309662E005B5300E2D029 /* UIView+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Ext.swift"; sourceTree = "<group>"; };
 		B6ADE1932E0C0DE6008C4E23 /* LoginType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginType.swift; sourceTree = "<group>"; };
+		B6B57EC12E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastTrainSearchBottomView.swift; sourceTree = "<group>"; };
 		B6C507442E1295A0000AB39F /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 		B6C507472E129640000AB39F /* RequestLocationAuthorizationUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestLocationAuthorizationUseCase.swift; sourceTree = "<group>"; };
 		B6C507492E129649000AB39F /* ObserveLocationStreamUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObserveLocationStreamUseCase.swift; sourceTree = "<group>"; };
@@ -516,6 +520,7 @@
 		6DE42B842DFDE6360041344C = {
 			isa = PBXGroup;
 			children = (
+				B60058462E1A840300405A09 /* Secrets.xcconfig */,
 				B6C507442E1295A0000AB39F /* Secrets.xcconfig */,
 				B68309632E005ADE00E2D029 /* .gitignore */,
 				B68309522E005A3600E2D029 /* Atcha-iOS */,
@@ -976,6 +981,7 @@
 		B6DC7C1B2E169EF2005D8E17 /* View */ = {
 			isa = PBXGroup;
 			children = (
+				B6B57EC12E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -1069,6 +1075,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B60058472E1A840300405A09 /* Secrets.xcconfig in Resources */,
 				B68309582E005A3600E2D029 /* Colors.xcassets in Resources */,
 				B68309592E005A3600E2D029 /* Pretendard-Bold.otf in Resources */,
 				B6C507452E1295A0000AB39F /* Secrets.xcconfig in Resources */,
@@ -1126,6 +1133,7 @@
 				6D8D8B132E01B338003DABB2 /* AtchaButton.swift in Sources */,
 				6D368BA42E02D5E200144EE7 /* IconTitleNavigationBar.swift in Sources */,
 				B6CF46F82E096CB100304A85 /* LoginResult.swift in Sources */,
+				B6B57EC22E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift in Sources */,
 				6D8157422E126C3A003688A6 /* LockViewModel.swift in Sources */,
 				B6DC7C1F2E16A12D005D8E17 /* SearchAddressUseCase.swift in Sources */,
 				6DC3BF602E071F0900831470 /* LoginUseCase.swift in Sources */,
