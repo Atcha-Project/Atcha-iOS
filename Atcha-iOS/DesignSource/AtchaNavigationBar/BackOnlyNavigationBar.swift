@@ -13,11 +13,15 @@ import SnapKit
 final class BackOnlyNavigationBar: UIView {
     
     var onTapBack: (() -> Void)?
-    
     private let backButton = UIButton()
+    private let backButtonTintColor: UIColor
     
-    init(onTapBack: (() -> Void)? = nil) {
+    init(
+        onTapBack: (() -> Void)? = nil,
+        tintColor: UIColor = AtchaColor.white
+    ) {
         self.onTapBack = onTapBack
+        self.backButtonTintColor = tintColor
         super.init(frame: .zero)
         setupUI()
     }
@@ -26,12 +30,11 @@ final class BackOnlyNavigationBar: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    // MARK: - BackOnly NavigationBar UI
     private func setupUI(){
         backgroundColor = .clear
         
         backButton.setImage(UIImage.chevronLeft, for: .normal)
-        backButton.tintColor = AtchaColor.white
+        backButton.tintColor = backButtonTintColor
         
         backButton.backgroundColor = AtchaColor.gray950
         backButton.layer.cornerRadius = 36 / 2
@@ -50,7 +53,6 @@ final class BackOnlyNavigationBar: UIView {
         snp.makeConstraints { $0.height.equalTo(60) }
     }
     
-    // MARK: - Action Method
     @objc private func didTapBack() {
         onTapBack?()
     }
