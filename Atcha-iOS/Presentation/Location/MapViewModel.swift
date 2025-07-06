@@ -18,7 +18,7 @@ final class MapViewModel: BaseViewModel {
     private let streamUseCase: ObserveLocationStreamUseCase
     private var streamTask: Task<Void, Never>?
     
-    var goMyPage: (() -> Void)?
+    var routeHandler: ((MainRoute) -> Void)?
     
     init(authorizationUseCase: RequestLocationAuthorizationUseCase,
          streamUseCase: ObserveLocationStreamUseCase,

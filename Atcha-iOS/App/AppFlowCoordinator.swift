@@ -42,10 +42,6 @@ class AppFlowCoordinator {
         let navigationController = UINavigationController()
         window.rootViewController = navigationController
         mainCoordinator = container.makeMainCoordinator(navigationController: navigationController)
-        mainCoordinator?.showMyPage = { [weak self] in
-            guard let self else { return }
-            showOnboardingFlow()
-        }
         mainCoordinator?.start()
     }
     

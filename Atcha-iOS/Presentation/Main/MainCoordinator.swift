@@ -12,8 +12,8 @@ import Foundation
 final class MainCoordinator {
     private let navigationController: UINavigationController
     private let diContainer: LocationDIContainer
-    
-    var showMyPage: (() -> Void)?
+
+    var routeHandler: ((MainRoute) -> Void)?
 
     init(navigationController: UINavigationController,
          diContainer: LocationDIContainer) {
@@ -23,9 +23,17 @@ final class MainCoordinator {
 
     func start() {
         let viewModel = diContainer.makeLocationViewModel()
-        viewModel.goMyPage = { [weak self] in
+        viewModel.routeHandler = { [weak self] route in
             guard let self else { return }
-            showMyPage?()
+            routeHandler?(route)
+//            switch route {
+//            case .myPage:
+//                print("마이 페이지 이동")
+//            case .courseSearch:
+//                print("검색 이동")
+//            case .changeCourse:
+//                print("경로 변경이동")
+//            }
         }
         let viewController = MapViewController(viewModel: viewModel)
         navigationController.pushViewController(viewController, animated: false)

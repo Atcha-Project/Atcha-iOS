@@ -11,7 +11,7 @@ import CoreLocation
 import TMapSDK
 
 final class MapViewController: BaseViewController<MapViewModel>,
-                                TMapWrapperDelegate {
+                               TMapWrapperDelegate {
     
     private let mapContainerView: TMapContainerView = TMapContainerView()
     private let lastTrainView: LastTrainSearchBottomView = LastTrainSearchBottomView()
@@ -22,7 +22,7 @@ final class MapViewController: BaseViewController<MapViewModel>,
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         setupUI()
         setupAutoLayout()
         bindView()
@@ -32,26 +32,28 @@ final class MapViewController: BaseViewController<MapViewModel>,
     }
     
     private func setupUI() {
-        view.addSubViews(mapContainerView,
-                         flagImageView,
-                         atchaImageView,
-                         lastTrainView,
-                         myPageButton,
-                         loactionButton)
+        view.addSubViews(
+            mapContainerView,
+            flagImageView,
+            atchaImageView,
+            lastTrainView,
+            myPageButton,
+            loactionButton
+        )
+
         mapContainerView.delegate = self
-        
-        myPageButton.setImage(UIImage(named: "mypage-filled")?.withRenderingMode(.alwaysOriginal), for: .normal)
-        loactionButton.setImage(UIImage(named: "mylocation-filled")?.withRenderingMode(.alwaysOriginal), for: .normal)
-        myPageButton.contentHorizontalAlignment = .fill
-        loactionButton.contentHorizontalAlignment = .fill
-        myPageButton.contentVerticalAlignment = .fill
-        loactionButton.contentVerticalAlignment = .fill
-        
+
+        configureButton(myPageButton, imageName: "mypage-filled", action: #selector(didTapMyPageButton))
+        configureButton(loactionButton, imageName: "mylocation-filled", action: #selector(didTapLocationButton))
         flagImageView.image = UIImage.settingLocationMark
         atchaImageView.image = UIImage.atcha
-        
-        myPageButton.addTarget(self, action: #selector(didTapMyPageButton), for: .touchUpInside)
-        loactionButton.addTarget(self, action: #selector(didTapLocationButton), for: .touchUpInside)
+    }
+    
+    private func configureButton(_ button: UIButton, imageName: String, action: Selector) {
+        button.setImage(UIImage(named: imageName)?.withRenderingMode(.alwaysOriginal), for: .normal)
+        button.contentHorizontalAlignment = .fill
+        button.contentVerticalAlignment = .fill
+        button.addTarget(self, action: action, for: .touchUpInside)
     }
     
     private func bindView() {
@@ -60,9 +62,9 @@ final class MapViewController: BaseViewController<MapViewModel>,
                 guard let self else { return }
                 switch action {
                 case .currentTapped:
-                    print("📍 현위치 탭됨")
+                    viewModel.routeHandler?(.changeCourse)
                 case .searchTapped:
-                    print("🔍 검색 버튼 탭됨")
+                    viewModel.routeHandler?(.courseSearch)
                 }
             }
             .store(in: &cancellables)
@@ -106,7 +108,7 @@ final class MapViewController: BaseViewController<MapViewModel>,
 extension MapViewController {
     @objc private func didTapMyPageButton() {
         print("마이페이지 버튼 눌림")
-        viewModel.goMyPage?()
+        viewModel.routeHandler?(.myPage)
     }
     
     @objc private func didTapLocationButton() {
