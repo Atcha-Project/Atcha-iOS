@@ -36,9 +36,19 @@ class BaseViewController<VM: BaseViewModel>: UIViewController {
         setupKeyboardDismiss()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        navigationController?.interactivePopGestureRecognizer?.isEnabled = true
+        navigationController?.interactivePopGestureRecognizer?.delegate = self as? any UIGestureRecognizerDelegate
+    }
+    
+    func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        return navigationController?.viewControllers.count ?? 0 > 1
+    }
+    
     private func setupLayout() {
-        navigationController?.setNavigationBarHidden(true,
-                                                     animated: false)
+        navigationController?.setNavigationBarHidden(true, animated: false)
         view.backgroundColor = .gray950
         
         // Loading Indicator 추가

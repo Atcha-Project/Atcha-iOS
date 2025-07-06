@@ -25,17 +25,25 @@ final class MainCoordinator {
         let viewModel = diContainer.makeLocationViewModel()
         viewModel.routeHandler = { [weak self] route in
             guard let self else { return }
-            routeHandler?(route)
-//            switch route {
-//            case .myPage:
-//                print("마이 페이지 이동")
-//            case .courseSearch:
-//                print("검색 이동")
-//            case .changeCourse:
-//                print("경로 변경이동")
-//            }
+            handle(route: route)
         }
         let viewController = MapViewController(viewModel: viewModel)
         navigationController.pushViewController(viewController, animated: false)
+    }
+    
+    private func handle(route: MainRoute) {
+        switch route {
+        case .myPage:
+            let vc = MyPageViewController(viewModel: MyPageViewModel())
+            navigationController.pushViewController(vc, animated: true)
+            print("✅ Pushed MapViewController: \(navigationController.viewControllers)")
+        case .courseSearch:
+            print("🔍 courseSearch route tapped")
+
+        case .changeCourse:
+            print("🔄 changeCourse route tapped")
+        }
+
+        routeHandler?(route)
     }
 }

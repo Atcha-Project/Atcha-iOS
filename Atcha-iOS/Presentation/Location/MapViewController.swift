@@ -63,6 +63,7 @@ final class MapViewController: BaseViewController<MapViewModel>,
                 switch action {
                 case .currentTapped:
                     viewModel.routeHandler?(.changeCourse)
+                    
                 case .searchTapped:
                     viewModel.routeHandler?(.courseSearch)
                 }
@@ -113,6 +114,8 @@ extension MapViewController {
     
     @objc private func didTapLocationButton() {
         print("내 위치 버튼 눌림")
+        let topVC = navigationController?.topViewController
+        topVC?.navigationController?.pushViewController(MyPageViewController(viewModel: MyPageViewModel()), animated: true)
     }
 }
 

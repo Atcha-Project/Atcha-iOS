@@ -91,6 +91,7 @@ extension MyPageViewController: UICollectionViewDelegate,
             print("term 화면으로 이동")
         case .version:
             print("앱 스토어 업데이트 하러가기")
+            navigationController?.popViewController(animated: true)
         }
     }
 }
