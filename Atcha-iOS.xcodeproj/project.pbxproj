@@ -923,7 +923,6 @@
 		B6C507512E12969E000AB39F /* Location */ = {
 			isa = PBXGroup;
 			children = (
-				B6DC7C1B2E169EF2005D8E17 /* View */,
 				B6C507522E1296A8000AB39F /* MapViewController.swift */,
 				B6C507542E1296AD000AB39F /* MapViewModel.swift */,
 				B6DC7C1C2E169F37005D8E17 /* MapBottomType.swift */,
@@ -971,13 +970,6 @@
 				B6D083342E02D928003C28E1 /* AtchaListType.swift */,
 			);
 			path = AtchaList;
-			sourceTree = "<group>";
-		};
-		B6DC7C1B2E169EF2005D8E17 /* View */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = View;
 			sourceTree = "<group>";
 		};
 		B6EDD7362E0D879D006170DF /* FileStroage */ = {
