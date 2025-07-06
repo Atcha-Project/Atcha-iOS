@@ -12,6 +12,8 @@ import Foundation
 final class MainCoordinator {
     private let navigationController: UINavigationController
     private let diContainer: LocationDIContainer
+    
+    var showMyPage: (() -> Void)?
 
     init(navigationController: UINavigationController,
          diContainer: LocationDIContainer) {
@@ -20,9 +22,12 @@ final class MainCoordinator {
     }
 
     func start() {
-//        let mainCoordinator = diContainer.makeMainCoordinator(navigationController: navigationController)
-//        mainCoordinator.diContainer.makeMapViewController()
-        let viewController = diContainer.makeMapViewController()
+        let viewModel = diContainer.makeLocationViewModel()
+        viewModel.goMyPage = { [weak self] in
+            guard let self else { return }
+            showMyPage?()
+        }
+        let viewController = MapViewController(viewModel: viewModel)
         navigationController.pushViewController(viewController, animated: false)
     }
 }

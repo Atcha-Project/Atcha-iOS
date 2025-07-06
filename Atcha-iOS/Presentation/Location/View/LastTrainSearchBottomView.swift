@@ -6,8 +6,17 @@
 //
 
 import UIKit
+import Combine
 
 final class LastTrainSearchBottomView: UIView {
+    
+    enum Action {
+        case currentTapped
+        case searchTapped
+    }
+    
+    let actionPublisher = PassthroughSubject<Action, Never>()
+    
     private let currentDotView: UIView = UIView()
     private let arrivalDotView: UIView = UIView()
     private let currentLocationLabel: UILabel = UILabel()
@@ -71,6 +80,12 @@ final class LastTrainSearchBottomView: UIView {
         arrivalLocationLabel.attributedText = AtchaFont.B1_R_17("도착지 : 우리집", color: .gray200)
         
         addSubViews(currentLocationView, arrivalLocationView, searchButton)
+        
+        let tap = UITapGestureRecognizer(target: self, action: #selector(handleCurrentTap))
+        currentLocationView.isUserInteractionEnabled = true
+        currentLocationView.addGestureRecognizer(tap)
+        
+        searchButton.addTarget(self, action: #selector(handleSearchTap), for: .touchUpInside)
     }
     
     private func setupConstraints() {
@@ -98,5 +113,15 @@ final class LastTrainSearchBottomView: UIView {
             make.horizontalEdges.equalToSuperview().inset(18)
             make.top.equalTo(arrivalLocationView.snp.bottom).inset(-24)
         }
+    }
+}
+
+extension LastTrainSearchBottomView {
+    @objc private func handleCurrentTap() {
+        actionPublisher.send(.currentTapped)
+    }
+
+    @objc private func handleSearchTap() {
+        actionPublisher.send(.searchTapped)
     }
 }

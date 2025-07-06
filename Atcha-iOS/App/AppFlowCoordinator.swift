@@ -17,7 +17,6 @@ class AppFlowCoordinator {
     private var loginCoordinator: LoginCoordinator?
     private var onboardingCoordinator: OnboardingCoordinator?
     
-    
     init(window: UIWindow, container: AppDIContainer) {
         self.window = window
         self.container = container
@@ -32,7 +31,7 @@ class AppFlowCoordinator {
         splashCoordinator.onFinish = { [weak self] in
             guard let self else { return }
             // 로그인 됐으면 mainFlow 아니면 LoginFlow
-                        showMainFlow()
+            showMainFlow()
 //            showLoginFlow()
         }
         splashCoordinator.start()
@@ -43,6 +42,10 @@ class AppFlowCoordinator {
         let navigationController = UINavigationController()
         window.rootViewController = navigationController
         mainCoordinator = container.makeMainCoordinator(navigationController: navigationController)
+        mainCoordinator?.showMyPage = { [weak self] in
+            guard let self else { return }
+            showOnboardingFlow()
+        }
         mainCoordinator?.start()
     }
     

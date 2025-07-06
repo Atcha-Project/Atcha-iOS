@@ -10,8 +10,10 @@ import Foundation
 import CoreLocation
 import TMapSDK
 
-final class MapViewController: BaseViewController<MapViewModel>, TMapWrapperDelegate {
-    private let mapContainerView = TMapContainerView()
+final class MapViewController: BaseViewController<MapViewModel>,
+                                TMapWrapperDelegate {
+    
+    private let mapContainerView: TMapContainerView = TMapContainerView()
     private let lastTrainView: LastTrainSearchBottomView = LastTrainSearchBottomView()
     private let flagImageView: UIImageView = UIImageView()
     private let myPageButton: UIButton = UIButton()
@@ -23,6 +25,7 @@ final class MapViewController: BaseViewController<MapViewModel>, TMapWrapperDele
 
         setupUI()
         setupAutoLayout()
+        bindView()
         
         viewModel.bindView()
         viewModel.requestPermissionAndStartTracking()
@@ -36,14 +39,33 @@ final class MapViewController: BaseViewController<MapViewModel>, TMapWrapperDele
                          myPageButton,
                          loactionButton)
         mapContainerView.delegate = self
-        flagImageView.image = UIImage.settingLocationMark
+        
         myPageButton.setImage(UIImage(named: "mypage-filled")?.withRenderingMode(.alwaysOriginal), for: .normal)
         loactionButton.setImage(UIImage(named: "mylocation-filled")?.withRenderingMode(.alwaysOriginal), for: .normal)
         myPageButton.contentHorizontalAlignment = .fill
         loactionButton.contentHorizontalAlignment = .fill
         myPageButton.contentVerticalAlignment = .fill
         loactionButton.contentVerticalAlignment = .fill
+        
+        flagImageView.image = UIImage.settingLocationMark
         atchaImageView.image = UIImage.atcha
+        
+        myPageButton.addTarget(self, action: #selector(didTapMyPageButton), for: .touchUpInside)
+        loactionButton.addTarget(self, action: #selector(didTapLocationButton), for: .touchUpInside)
+    }
+    
+    private func bindView() {
+        lastTrainView.actionPublisher
+            .sink { [weak self] action in
+                guard let self else { return }
+                switch action {
+                case .currentTapped:
+                    print("📍 현위치 탭됨")
+                case .searchTapped:
+                    print("🔍 검색 버튼 탭됨")
+                }
+            }
+            .store(in: &cancellables)
     }
     
     private func setupAutoLayout() {
@@ -78,6 +100,17 @@ final class MapViewController: BaseViewController<MapViewModel>, TMapWrapperDele
             make.top.equalToSuperview()
             make.bottom.equalTo(lastTrainView.snp.top).inset(30)
         }
+    }
+}
+
+extension MapViewController {
+    @objc private func didTapMyPageButton() {
+        print("마이페이지 버튼 눌림")
+        viewModel.goMyPage?()
+    }
+    
+    @objc private func didTapLocationButton() {
+        print("내 위치 버튼 눌림")
     }
 }
 
