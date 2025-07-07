@@ -109,3 +109,5 @@ iOSInjectionProject/
 # End of https://www.toptal.com/developers/gitignore/api/swift,xcode,cocoapods
 
 *.xcconfig
+
+Atcha-iOS/DesignSource/AtchaImage/Icon.xcassets/Onboarding/.DS_Store

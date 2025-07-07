@@ -19,9 +19,11 @@ final class LocationDIContainer {
         let streamUseCase = ObserLocationStreamUseCaseImpl(repository: LocationStreamRepositoryImpl())
         let requestUseCase = RequestLocationAuthorizationUseCaseImpl(repository: RequestLocationAuthorizationRepositoryImpl())
         let searchAddressUseCase = SearchAddressUseCaseImpl(repository: AddressRepositoryImpl(apiService: apiService))
+        let fetchTaxiFareUseCase = FetchTaxiFareUseCaseImpl(repository: FetchTaxiFareRepositoryImpl(apiService: apiService))
 
         return MapViewModel(authorizationUseCase: requestUseCase,
                             streamUseCase: streamUseCase,
+                            fetchTaxiFareUseCase: fetchTaxiFareUseCase,
                             searchAddressUseCase: searchAddressUseCase)
     }
 
