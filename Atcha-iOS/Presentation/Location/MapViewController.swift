@@ -79,6 +79,16 @@ final class MapViewController: BaseViewController<MapViewModel>,
                 lastTrainView.setupCurrentLocationTitle(address)
             }
             .store(in: &cancellables)
+        
+        viewModel.$taxiFare
+            .removeDuplicates()
+            .compactMap { $0 }
+            .receive(on: RunLoop.main)
+            .sink { [weak self] fare in
+                guard let self else { return }
+                print("fare : \(fare)")
+            }
+            .store(in: &cancellables)
     }
     
     private func setupAutoLayout() {

@@ -12,11 +12,13 @@ import Combine
 final class MapViewModel: BaseViewModel {
     @Published var currentLocation: CLLocationCoordinate2D?
     @Published var address: String?
+    @Published var taxiFare: Double?
     
     var currentLocationSubject: PassthroughSubject<CLLocationCoordinate2D?, Never> = .init()
     
     private let searchAddressUseCase: SearchAddressUseCase
     private let authorizationUseCase: RequestLocationAuthorizationUseCase
+    private let fetchTaxiFareUseCase: FetchTaxiFareUseCase
     private let streamUseCase: ObserveLocationStreamUseCase
     private var streamTask: Task<Void, Never>?
     
@@ -24,9 +26,11 @@ final class MapViewModel: BaseViewModel {
     
     init(authorizationUseCase: RequestLocationAuthorizationUseCase,
          streamUseCase: ObserveLocationStreamUseCase,
+         fetchTaxiFareUseCase: FetchTaxiFareUseCase,
          searchAddressUseCase: SearchAddressUseCase) {
         self.authorizationUseCase = authorizationUseCase
         self.streamUseCase = streamUseCase
+        self.fetchTaxiFareUseCase = fetchTaxiFareUseCase
         self.searchAddressUseCase = searchAddressUseCase
     }
     
@@ -44,6 +48,15 @@ final class MapViewModel: BaseViewModel {
                     )
                     
                     self.address = address?.name
+                    
+                    let request = FetchTaxiFareRequest(originLat: address?.lat,
+                                                       originLon: address?.lon,
+                                                       destinationLat: 37.58746906188554,
+                                                       destinationLon: 126.9855465633904)
+                    
+                    self.taxiFare = try? await self.fetchTaxiFareUseCase.fetchTaxiFare(request: request)
+                    
+                    print("taxiFare: \(self.taxiFare)")
                     print("address : \(address?.name)")
                 }
             }
