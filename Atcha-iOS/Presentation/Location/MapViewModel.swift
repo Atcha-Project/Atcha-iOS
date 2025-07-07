@@ -10,7 +10,9 @@ import CoreLocation
 import Combine
 
 final class MapViewModel: BaseViewModel {
-    @Published var currentLocation: CLLocation?
+    @Published var currentLocation: CLLocationCoordinate2D?
+    @Published var address: String?
+    
     var currentLocationSubject: PassthroughSubject<CLLocationCoordinate2D?, Never> = .init()
     
     private let searchAddressUseCase: SearchAddressUseCase
@@ -40,6 +42,9 @@ final class MapViewModel: BaseViewModel {
                         lat: coordinate.latitude,
                         lon: coordinate.longitude
                     )
+                    
+                    self.address = address?.name
+                    print("address : \(address?.name)")
                 }
             }
             .store(in: &cancellables)
@@ -50,11 +55,11 @@ final class MapViewModel: BaseViewModel {
             let status = await authorizationUseCase.askPermission()
             guard status == .authorizedAlways || status == .authorizedWhenInUse else { return }
 
-            streamTask = Task {
-                for await location in streamUseCase.startUpdate() {
-                    self.currentLocation = location
-                }
-            }
+//            streamTask = Task {
+//                for await location in streamUseCase.startUpdate() {
+//                    self.currentLocation = location
+//                }
+//            }
         }
     }
 

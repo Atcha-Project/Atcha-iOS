@@ -156,6 +156,7 @@
 		B6EDD7382E0D87B0006170DF /* FileStorable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6EDD7372E0D87B0006170DF /* FileStorable.swift */; };
 		B6EDD73A2E0D87D2006170DF /* FileStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6EDD7392E0D87D2006170DF /* FileStorage.swift */; };
 		B6EDD73C2E0D87F2006170DF /* FileStorageImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6EDD73B2E0D87F2006170DF /* FileStorageImpl.swift */; };
+		B6FB20822E1BE2870032751B /* TMapContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6FB20812E1BE2870032751B /* TMapContainerView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -315,6 +316,7 @@
 		B6EDD7372E0D87B0006170DF /* FileStorable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileStorable.swift; sourceTree = "<group>"; };
 		B6EDD7392E0D87D2006170DF /* FileStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileStorage.swift; sourceTree = "<group>"; };
 		B6EDD73B2E0D87F2006170DF /* FileStorageImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileStorageImpl.swift; sourceTree = "<group>"; };
+		B6FB20812E1BE2870032751B /* TMapContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TMapContainerView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -993,6 +995,7 @@
 			isa = PBXGroup;
 			children = (
 				B6B57EC12E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift */,
+				B6FB20812E1BE2870032751B /* TMapContainerView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -1190,6 +1193,7 @@
 				B673C48F2E0424F600EE4AD0 /* SplashViewController.swift in Sources */,
 				6D73EBD82E17AEAD00F8DF8B /* CourseStepView.swift in Sources */,
 				B6CF46F12E095FF700304A85 /* LoginDIContainer.swift in Sources */,
+				B6FB20822E1BE2870032751B /* TMapContainerView.swift in Sources */,
 				B65C13372E0693A70016D2F0 /* MyPageCell.swift in Sources */,
 				6DFF29F02E0F23840039399F /* UIImage+Ext.swift in Sources */,
 				B65C13412E06E0340016D2F0 /* SplashDIContainer.swift in Sources */,

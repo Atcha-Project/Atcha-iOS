@@ -55,8 +55,6 @@ final class TMapWrapper: NSObject, MapRendering {
                 userMarker?.map = mapView
             }
         }
-       
-//        mapView.setCenter(coordinate)
     }
 }
 
@@ -72,47 +70,17 @@ extension TMapWrapper: TMapViewDelegate, TmapViewLocationDelegate {
     func mapView(_ mapView: TMapView,
                  singleTapOnMapWithoutTMapShape location: CLLocationCoordinate2D) {
         delegate?.mapView(self, didSelectLocation: location)
-//        updateUserMarker(coordinate: location)
+        mapView.setCenter(location)
+    }
+    
+    func mapView(_ mapView: TMapView, singleTapOnMap location: CLLocationCoordinate2D) {
+        delegate?.mapView(self, didSelectLocation: location)
+        mapView.setCenter(location)
     }
     
     func mapView(_ mapView: TMapView,
                  shouldChangeFrom oldPosition: CLLocationCoordinate2D,
                  to newPosition: CLLocationCoordinate2D) {
-        
-//        let distance = CLLocation(latitude: oldPosition.latitude, longitude: oldPosition.longitude)
-//            .distance(from: CLLocation(latitude: newPosition.latitude, longitude: newPosition.longitude))
-//        
-//        guard distance > 2 else { return }
-        
         delegate?.mapView(self, didUpdateLocation: newPosition)
-//        updateUserMarker(coordinate: newPosition)
-    }
-}
-
-final class TMapContainerView: UIView {
-    private var tMapWrapper: TMapWrapper!
-    weak var delegate: TMapWrapperDelegate? {
-        didSet {
-            tMapWrapper?.delegate = delegate
-        }
-    }
-    
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        setupTMap()
-    }
-    
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-        setupTMap()
-    }
-    
-    private func setupTMap() {
-        tMapWrapper = TMapWrapper(frame: bounds)
-        tMapWrapper.delegate = delegate
-        addSubview(tMapWrapper.mapView)
-        tMapWrapper.mapView.snp.makeConstraints {
-            $0.edges.equalToSuperview()
-        }
     }
 }

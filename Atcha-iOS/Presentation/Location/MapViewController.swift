@@ -69,6 +69,16 @@ final class MapViewController: BaseViewController<MapViewModel>,
                 }
             }
             .store(in: &cancellables)
+        
+        viewModel.$address
+            .removeDuplicates()
+            .compactMap { $0 }
+            .receive(on: RunLoop.main)
+            .sink { [weak self] address in
+                guard let self else { return }
+                lastTrainView.setupCurrentLocationTitle(address)
+            }
+            .store(in: &cancellables)
     }
     
     private func setupAutoLayout() {
@@ -122,12 +132,10 @@ extension MapViewController {
 // MARK: - Delegate
 extension MapViewController {
     func mapView(_ mapView: TMapWrapper, didUpdateLocation coordinate: CLLocationCoordinate2D) {
-        print("didUpdateLocation : \(coordinate.latitude)")
-        print("didUpdateLocation : \(coordinate.longitude)")
+        viewModel.currentLocationSubject.send(coordinate)
     }
     
     func mapView(_ mapView: TMapWrapper, didSelectLocation coordinate: CLLocationCoordinate2D) {
-        print("didUpdateLocation : \(coordinate.latitude)")
-        print("didUpdateLocation : \(coordinate.longitude)")
+        viewModel.currentLocationSubject.send(coordinate)
     }
 }
