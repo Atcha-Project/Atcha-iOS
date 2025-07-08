@@ -41,17 +41,20 @@ final class TMapWrapper: NSObject, MapRendering {
         mapView.isShowCompass = false
         mapView.isTrackingLocation = true
         mapView.trackinMode = .followWithHeading
+        mapView.setZoom(20)
     }
     
     private func updateUserMarker(coordinate: CLLocationCoordinate2D) {
-        if let marker = userMarker {
-            marker.position = coordinate
-        } else {
-            userMarker = TMapMarker(position: coordinate)
-            userMarker?.icon = UIImage.currentLocationMark
-            userMarker?.map = mapView
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            if let marker = userMarker {
+                marker.position = coordinate
+            } else {
+                userMarker = TMapMarker(position: coordinate)
+                userMarker?.icon = UIImage.currentLocationMark
+                userMarker?.map = mapView
+            }
         }
-        mapView.setCenter(coordinate)
     }
 }
 
@@ -67,12 +70,17 @@ extension TMapWrapper: TMapViewDelegate, TmapViewLocationDelegate {
     func mapView(_ mapView: TMapView,
                  singleTapOnMapWithoutTMapShape location: CLLocationCoordinate2D) {
         delegate?.mapView(self, didSelectLocation: location)
+        mapView.setCenter(location)
+    }
+    
+    func mapView(_ mapView: TMapView, singleTapOnMap location: CLLocationCoordinate2D) {
+        delegate?.mapView(self, didSelectLocation: location)
+        mapView.setCenter(location)
     }
     
     func mapView(_ mapView: TMapView,
                  shouldChangeFrom oldPosition: CLLocationCoordinate2D,
                  to newPosition: CLLocationCoordinate2D) {
         delegate?.mapView(self, didUpdateLocation: newPosition)
-        updateUserMarker(coordinate: newPosition)
     }
 }

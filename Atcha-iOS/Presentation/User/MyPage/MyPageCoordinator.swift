@@ -15,7 +15,8 @@ final class MyPageCoordinator {
     private let diContainer: MyPageDIContainer
     private let router: MyPageRouter
 
-    init(navigationController: UINavigationController, diContainer: MyPageDIContainer) {
+    init(navigationController: UINavigationController,
+         diContainer: MyPageDIContainer) {
         self.navigationController = navigationController
         self.diContainer = diContainer
         self.router = DefaultMyPageRouter(navigationController: navigationController)

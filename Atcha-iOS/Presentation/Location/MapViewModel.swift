@@ -10,19 +10,27 @@ import CoreLocation
 import Combine
 
 final class MapViewModel: BaseViewModel {
-    @Published var currentLocation: CLLocation?
+    @Published var currentLocation: CLLocationCoordinate2D?
+    @Published var address: String?
+    @Published var taxiFare: Double?
+    
     var currentLocationSubject: PassthroughSubject<CLLocationCoordinate2D?, Never> = .init()
     
     private let searchAddressUseCase: SearchAddressUseCase
     private let authorizationUseCase: RequestLocationAuthorizationUseCase
+    private let fetchTaxiFareUseCase: FetchTaxiFareUseCase
     private let streamUseCase: ObserveLocationStreamUseCase
     private var streamTask: Task<Void, Never>?
     
+    var routeHandler: ((MainRoute) -> Void)?
+    
     init(authorizationUseCase: RequestLocationAuthorizationUseCase,
          streamUseCase: ObserveLocationStreamUseCase,
+         fetchTaxiFareUseCase: FetchTaxiFareUseCase,
          searchAddressUseCase: SearchAddressUseCase) {
         self.authorizationUseCase = authorizationUseCase
         self.streamUseCase = streamUseCase
+        self.fetchTaxiFareUseCase = fetchTaxiFareUseCase
         self.searchAddressUseCase = searchAddressUseCase
     }
     
@@ -38,6 +46,18 @@ final class MapViewModel: BaseViewModel {
                         lat: coordinate.latitude,
                         lon: coordinate.longitude
                     )
+                    
+                    self.address = address?.name
+                    
+                    let request = FetchTaxiFareRequest(originLat: address?.lat,
+                                                       originLon: address?.lon,
+                                                       destinationLat: 37.58746906188554,
+                                                       destinationLon: 126.9855465633904)
+                    
+                    self.taxiFare = try? await self.fetchTaxiFareUseCase.fetchTaxiFare(request: request)
+                    
+                    print("taxiFare: \(self.taxiFare)")
+                    print("address : \(address?.name)")
                 }
             }
             .store(in: &cancellables)
@@ -48,11 +68,11 @@ final class MapViewModel: BaseViewModel {
             let status = await authorizationUseCase.askPermission()
             guard status == .authorizedAlways || status == .authorizedWhenInUse else { return }
 
-            streamTask = Task {
-                for await location in streamUseCase.startUpdate() {
-                    self.currentLocation = location
-                }
-            }
+//            streamTask = Task {
+//                for await location in streamUseCase.startUpdate() {
+//                    self.currentLocation = location
+//                }
+//            }
         }
     }
 

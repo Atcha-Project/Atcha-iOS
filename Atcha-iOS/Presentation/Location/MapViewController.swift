@@ -10,102 +10,142 @@ import Foundation
 import CoreLocation
 import TMapSDK
 
-protocol MapViewControllerDelegate: AnyObject {
-    /// 맵 이동시 위치 좌표
-    func mapViewController(_ controller: MapViewController,
-                           didUpdateLocation coordinate: CLLocationCoordinate2D)
-
-    /// 지도 탭으로 위치 선택 시 호출
-    func mapViewController(_ controller: MapViewController,
-                           didSelectLocation coordinate: CLLocationCoordinate2D)
-}
-
-final class MapViewController: BaseViewController<MapViewModel> {
-    private var mapView: TMapView = TMapView()
-    private var userMarker: TMapMarker?
+final class MapViewController: BaseViewController<MapViewModel>,
+                               TMapWrapperDelegate {
     
+    private let mapContainerView: TMapContainerView = TMapContainerView()
+    private let lastTrainView: LastTrainSearchBottomView = LastTrainSearchBottomView()
     private let flagImageView: UIImageView = UIImageView()
-    private let initialCoordinate: CLLocationCoordinate2D = CLLocationCoordinate2D(latitude: 37.62965537,
-                                                                                   longitude: 127.04519683)
-    weak var delegate: MapViewControllerDelegate?
+    private let myPageButton: UIButton = UIButton()
+    private let loactionButton: UIButton = UIButton()
+    private let atchaImageView: UIImageView = UIImageView()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         setupUI()
         setupAutoLayout()
-        setupMapView()
+        bindView()
         
         viewModel.bindView()
         viewModel.requestPermissionAndStartTracking()
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        
-        mapView.vsmMapView?.viewWillDisappear()
-    }
-    
-    private func setupMapView() {
-        mapView.setApiKey(Bundle.main.tMapKey)
-        mapView.delegate = self
-        mapView.locationDelgate = self
-        mapView.isShowCompass = false
-        mapView.isTrackingLocation = true
-        mapView.trackinMode = .followWithHeading
-    }
-    
     private func setupUI() {
-        view.addSubViews(mapView, flagImageView)
+        view.addSubViews(
+            mapContainerView,
+            flagImageView,
+            atchaImageView,
+            lastTrainView,
+            myPageButton,
+            loactionButton
+        )
+
+        mapContainerView.delegate = self
+
+        configureButton(myPageButton, imageName: "mypage-filled", action: #selector(didTapMyPageButton))
+        configureButton(loactionButton, imageName: "mylocation-filled", action: #selector(didTapLocationButton))
         flagImageView.image = UIImage.settingLocationMark
+        atchaImageView.image = UIImage.atcha
+    }
+    
+    private func configureButton(_ button: UIButton, imageName: String, action: Selector) {
+        button.setImage(UIImage(named: imageName)?.withRenderingMode(.alwaysOriginal), for: .normal)
+        button.contentHorizontalAlignment = .fill
+        button.contentVerticalAlignment = .fill
+        button.addTarget(self, action: action, for: .touchUpInside)
+    }
+    
+    private func bindView() {
+        lastTrainView.actionPublisher
+            .sink { [weak self] action in
+                guard let self else { return }
+                switch action {
+                case .currentTapped:
+                    viewModel.routeHandler?(.changeCourse)
+                    
+                case .searchTapped:
+                    viewModel.routeHandler?(.courseSearch)
+                }
+            }
+            .store(in: &cancellables)
+        
+        viewModel.$address
+            .removeDuplicates()
+            .compactMap { $0 }
+            .receive(on: RunLoop.main)
+            .sink { [weak self] address in
+                guard let self else { return }
+                lastTrainView.setupCurrentLocationTitle(address)
+            }
+            .store(in: &cancellables)
+        
+        viewModel.$taxiFare
+            .removeDuplicates()
+            .compactMap { $0 }
+            .receive(on: RunLoop.main)
+            .sink { [weak self] fare in
+                guard let self else { return }
+                print("fare : \(fare)")
+            }
+            .store(in: &cancellables)
     }
     
     private func setupAutoLayout() {
-        mapView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
-        }
-        
         flagImageView.snp.makeConstraints { make in
-            make.center.equalToSuperview()
+            make.centerX.equalToSuperview()
+            make.centerY.equalTo(mapContainerView.snp.centerY)
             make.height.equalTo(65)
             make.width.equalTo(48)
         }
+        lastTrainView.snp.makeConstraints { make in
+            make.horizontalEdges.equalToSuperview()
+            make.bottom.equalToSuperview()
+            make.height.equalTo(224)
+        }
+        myPageButton.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
+            make.trailing.equalToSuperview().inset(16)
+            make.width.height.equalTo(36)
+        }
+        loactionButton.snp.makeConstraints { make in
+            make.bottom.equalTo(lastTrainView.snp.top).inset(-16)
+            make.trailing.equalToSuperview().inset(16)
+            make.width.height.equalTo(36)
+        }
+        atchaImageView.snp.makeConstraints { make in
+            make.width.height.equalTo(64)
+            make.leading.equalToSuperview().inset(8)
+            make.bottom.equalTo(lastTrainView.snp.top).inset(24)
+        }
+        mapContainerView.snp.makeConstraints { make in
+            make.horizontalEdges.equalToSuperview()
+            make.top.equalToSuperview()
+            make.bottom.equalTo(lastTrainView.snp.top).inset(30)
+        }
+    }
+}
+
+extension MapViewController {
+    @objc private func didTapMyPageButton() {
+        print("마이페이지 버튼 눌림")
+        viewModel.routeHandler?(.myPage)
     }
     
-    private func setupMarkerView() {
-        userMarker = TMapMarker(position: initialCoordinate)
-        userMarker?.icon = UIImage.currentLocationMark
-        mapView.setCenter(initialCoordinate)
+    @objc private func didTapLocationButton() {
+        print("내 위치 버튼 눌림")
+        let topVC = navigationController?.topViewController
+        topVC?.navigationController?.pushViewController(MyPageViewController(viewModel: MyPageViewModel()), animated: true)
     }
 }
 
 // MARK: - Delegate
-extension MapViewController: TMapViewDelegate, TmapViewLocationDelegate {
-    func mapViewDidFinishLoadingMap() {
-        mapView.setMapType(.Night)
-        mapView.setZoom(30)
-        setupMarkerView()
+extension MapViewController {
+    func mapView(_ mapView: TMapWrapper, didUpdateLocation coordinate: CLLocationCoordinate2D) {
+        viewModel.currentLocationSubject.send(coordinate)
     }
     
-    func mapView(_ mapView:TMapView,
-                  singleTapOnMapWithoutTMapShape position: CLLocationCoordinate2D) {
-        delegate?.mapViewController(self, didSelectLocation: position)
-        mapView.setCenter(position)
-        
-        viewModel.currentLocationSubject.send(position)
-    }
-    
-    func mapView(_ mapView: TMapView,
-                 shouldChangeFrom oldPosition: CLLocationCoordinate2D,
-                 to newPosition: CLLocationCoordinate2D) {
-        guard let center = mapView.getCenter() else { return }
-        delegate?.mapViewController(self, didUpdateLocation: center)
-        
-        viewModel.currentLocationSubject.send(newPosition)
-    }
-    
-    func didUpdateHeading(_ heading: CLHeading) {
-        userMarker?.rotation  = Float(heading.trueHeading)
-        userMarker?.map = mapView
+    func mapView(_ mapView: TMapWrapper, didSelectLocation coordinate: CLLocationCoordinate2D) {
+        viewModel.currentLocationSubject.send(coordinate)
     }
 }
