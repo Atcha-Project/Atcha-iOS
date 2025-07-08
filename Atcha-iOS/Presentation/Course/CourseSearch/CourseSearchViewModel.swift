@@ -7,114 +7,105 @@
 
 import Foundation
 
+// MARK: - 코스 셀의 UI 상태를 포함하는 모델
+/// `CourseUIModel`은 코스 데이터(Course)와 UI 상태(확장 여부)를 함께 관리하기 위한 구조체입니다.
+/// DiffableDataSource에서 셀 상태 변경 시 애니메이션이 정상적으로 작동하도록 `Hashable`을 커스터마이징하여
+/// `isExpanded` 값이 바뀔 때도 Snapshot이 셀을 인식할 수 있도록 구성했습니다.
+struct CourseUIModel: Hashable {
+    let id: String
+    let course: Course
+    var isExpanded: Bool
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+        hasher.combine(isExpanded)
+    }
+    
+    static func == (lhs: CourseUIModel, rhs: CourseUIModel) -> Bool {
+        return lhs.id == rhs.id && lhs.isExpanded == rhs.isExpanded
+    }
+}
+
 final class CourseSearchViewModel: BaseViewModel {
-    @Published var courses: [Course] = []
+    @Published var courses: [CourseUIModel] = []
+    private var allCourses: [CourseUIModel] = []
+    
+    let courseUseCase: CourseUseCase
+    private let startLat: String
+    private let startLon: String
+    public private(set) var startAddress: String
+    
+    init(
+        courseUseCase: CourseUseCase,
+        startLat: String,
+        startLon: String,
+        startAddress: String
+    ) {
+        self.courseUseCase = courseUseCase
+        self.startLat = startLat
+        self.startLon = startLon
+        self.startAddress = startAddress
+        super.init()
+    }
+    
     
     // MARK: - 탭별 코스
     func fetchCourses(for tabIndex: Int) {
         switch tabIndex {
         case 0:
-            self.courses = [
-                Course(
-                    routedId: "3aae204e-10b9-405e-b613-2ae391b6d8dc",
-                    departureDateTime: "2021-09-01T07:00:00",
-                    totalTime: 872,
-                    totalWalkTime: 300,
-                    transferCount: 0,
-                    totalDistance: 4066,
-                    totalWalkDistance: 324,
-                    pathType: 1,
-                    legs: [
-                        legs(
-                            distance: 181,
-                            sectionTime: 167,
-                            mode: "WALK",
-                            departureDateTime: nil,
-                            type: nil,
-                            service: nil,
-                            start: addressInfo(
-                                name: "출발지",
-                                lon: "126.975131",
-                                lan: "37.563936"
-                            ),
-                            end: addressInfo(
-                                name: "시청",
-                                lon: "126.975494",
-                                lan: "37.563625"
-                            ),
-                            passStopList: [],
-                            step: [
-                                step(
-                                    streetName: "보행자도로",
-                                    distance: 48,
-                                    description: "보행자도로를 따라 48m 이동",
-                                    linestring: "126.975044,37.56403 126.97498,37.564003"
-                                )
-                            ],
-                            passShape: ""
-                        ),
-                        legs(
-                            distance: 3951,
-                            sectionTime: 572,
-                            mode: "SUBWAY",
-                            departureDateTime: "2021-09-01T07:12:00",
-                            type: 9,
-                            service: 0,
-                            start: addressInfo(
-                                name: "시청",
-                                lon: "126.975494",
-                                lan: "37.563625"
-                            ),
-                            end: addressInfo(
-                                name: "신당",
-                                lon: "127.019483",
-                                lan: "37.565678"
-                            ),
-                            passStopList: [
-                                passStopList(index: 0, stationId: nil, stationName: "시청", lon: "126.975494", lan: "37.563625"),
-                                passStopList(index: 1, stationId: nil, stationName: "신당", lon: "126.982275", lan: "37.566042")
-                                
-                            ],
-                            step: [],
-                            passShape: "126.975703,37.563706 126.976047,37.563836"
-                        ),
-                        legs(
-                            distance: 143,
-                            sectionTime: 133,
-                            mode: "WALK",
-                            departureDateTime: nil,
-                            type: nil,
-                            service: nil,
-                            start: addressInfo(
-                                name: "신당",
-                                lon: "127.019483",
-                                lan: "37.565678"
-                            ),
-                            end: addressInfo(
-                                name: "도착지",
-                                lon: "127.020235",
-                                lan: "37.565698"
-                            ),
-                            passStopList: [],
-                            step: [
-                                step(
-                                    streetName: nil,
-                                    distance: 80,
-                                    description: "80m 이동",
-                                    linestring: "127.01948,37.565662 127.019516,37.565662"
-                                )
-                            ],
-                            passShape: ""
-                        )
-                    ]
-                )
-            ]
+            // BUS + SUBWAY 포함된 코스만
+            if courses != allCourses {
+                self.courses = allCourses
+            }
         case 1:
-            self.courses = []
+            // BUS만 포함된 코스
+            self.courses = allCourses.filter { uiModel in
+                let modes = uiModel.course.legs.map { $0.modeEnum }
+                return !modes.contains(.subway) && modes.contains(.bus)
+            }
+            
         case 2:
-            self.courses = []
+            // SUBWAY만 포함된 코스
+            self.courses = allCourses.filter { uiModel in
+                let modes = uiModel.course.legs.map { $0.modeEnum }
+                return !modes.contains(.bus) && modes.contains(.subway)
+            }
         default:
             self.courses = []
         }
     }
+    
+    // MARK: - 코스 검색
+    func courseSearch() {
+        Task {
+            do {
+                let userDefaults = UserDefaultsWrapper()
+                let endLat = userDefaults.string(forKey: UserDefaultsWrapper.Key.lat.rawValue) ?? "37.554722"
+                let endLon = userDefaults.string(forKey: UserDefaultsWrapper.Key.lon.rawValue) ?? "126.970833"
+                
+                let request = CourseSearchRequest(startLat: startLat, startLon: startLon, endLat: endLat, endLon: endLon, sortType: 1)
+                
+                let response = try await courseUseCase.courseSearch(request)
+                
+                let uiModels = response.map {
+                    CourseUIModel(id: $0.routedId ?? UUID().uuidString, course: $0, isExpanded: false)
+                }
+                
+                self.allCourses = uiModels
+                self.fetchCourses(for: 0)
+            } catch {
+                print("탭별 코스 가져오기 실패: \(error)")
+            }
+        }
+    }
+    
+    // MARK: UI 확장을 위한 토글 함수
+    func toggleExpanded(for model: CourseUIModel) {
+        guard let index = courses.firstIndex(of: model) else { return }
+        
+        var newModel = courses[index]
+        newModel.isExpanded.toggle()
+        courses[index] = newModel
+    }
 }
+

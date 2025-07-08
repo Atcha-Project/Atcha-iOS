@@ -123,7 +123,7 @@ final class AtchaButton: UIButton {
         clipsToBounds = true
         setContentHuggingPriority(.required, for: .horizontal)
         translatesAutoresizingMaskIntoConstraints = false
-        snp.makeConstraints { $0.height.equalTo(size.height) }
+        snp.makeConstraints { $0.height.equalTo(size.height).priority(.high) }
         contentEdgeInsets = size.contentInsets
         
         addTarget(self, action: #selector(handleTap), for: .touchUpInside)

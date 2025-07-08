@@ -4,8 +4,15 @@
 //
 //  Created by wodnd on 7/3/25.
 //
-
 import Foundation
+
+struct CourseSearchRequest: Codable {
+    let startLat: String
+    let startLon: String
+    let endLat: String
+    let endLon: String
+    let sortType: Int
+}
 
 struct Course: Codable, Hashable {
     let routedId: String?
@@ -24,24 +31,24 @@ struct legs: Codable, Hashable {
     let sectionTime: Int?
     let mode: String?
     let departureDateTime: String?
-    let type: Int?
-    let service: Int?
-    let start: addressInfo
-    let end: addressInfo
-    let passStopList: [passStopList]
-    let step: [step]
-    let passShape: String
+    let route: String?
+    let type: String?
+    let service: String?
+    let start: addressInfo?
+    let end: addressInfo?
+    let passStopList: [passStopList]?
+    let step: [step]?
+    let passShape: String?
 }
 
 struct addressInfo: Codable, Hashable{
     let name: String?
-    let lon: String?
-    let lan: String?
+    let lon: Double?
+    let lan: Double?
 }
 
 struct passStopList: Codable, Hashable {
     let index: Int?
-    let stationId: Int?
     let stationName: String?
     let lon: String?
     let lan: String?
@@ -49,7 +56,7 @@ struct passStopList: Codable, Hashable {
 
 struct step: Codable, Hashable{
     let streetName: String?
-    let distance: Int?
+    let distance: Double?
     let description: String?
     let linestring: String?
 }
@@ -63,6 +70,6 @@ enum TransportMode: String {
 
 extension legs {
     var modeEnum: TransportMode {
-        return TransportMode(rawValue: mode?.uppercased() ?? "모드 오류") ?? .unknown
+        return TransportMode(rawValue: mode?.uppercased() ?? "") ?? .unknown
     }
 }
