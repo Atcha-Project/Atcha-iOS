@@ -10,6 +10,7 @@ import SnapKit
 
 class CourseCell: UICollectionViewCell {
     static let reusableId: String = "CourseCell"
+    var onToggleExpanded: (() -> Void)?
     
     private let containerView: UIView = UIView()
     private let totalTimeLabel: UILabel = UILabel()
@@ -169,6 +170,7 @@ class CourseCell: UICollectionViewCell {
         }
         
         alarmRegisterButton.snp.makeConstraints { make in
+            make.height.equalTo(44).priority(.high)
             make.top.equalTo(courseContainer.snp.bottom).offset(22)
             make.leading.equalTo(containerView.snp.leading).offset(16)
             make.trailing.equalTo(containerView.snp.trailing).inset(16)
@@ -177,9 +179,25 @@ class CourseCell: UICollectionViewCell {
     }
     
     // MARK: - CourseCell Configure
-    func configure(with course: Course) {
+    func configure(with model: CourseUIModel) {
+        let course = model.course
+        isExpanded = model.isExpanded
+        courseDownButton.image = isExpanded ? UIImage.chevronUp : UIImage.chevronDown
+
+        if isExpanded {
+            courseStack.removeArrangedSubview(courseCompactStack)
+            courseStack.addArrangedSubview(courseDetailStack)
+            courseCompactStack.isHidden = true
+            courseDetailStack.isHidden = false
+        } else {
+            courseStack.removeArrangedSubview(courseDetailStack)
+            courseStack.addArrangedSubview(courseCompactStack)
+            courseCompactStack.isHidden = false
+            courseDetailStack.isHidden = true
+        }
+        
         if let totalTime = course.totalTime {
-            totalTimeLabel.attributedText = AtchaFont.H2_B_22("\(totalTime.toHourMinuteString)", color: AtchaColor.white)
+            totalTimeLabel.attributedText = AtchaFont.H2_B_22("\(totalTime.toHourMinuteStringFromSeconds)", color: AtchaColor.white)
         }
         
         if let departTime = course.departureDateTime {
@@ -219,7 +237,7 @@ class CourseCell: UICollectionViewCell {
             case .unknown:
                 break
             }
-
+            
             if index < course.legs.count - 1 {
                 let arrow = UIImageView(image: UIImage.chevronRight)
                 arrow.tintColor = AtchaColor.gray400
@@ -232,98 +250,113 @@ class CourseCell: UICollectionViewCell {
         courseDetailStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         
         for (index, leg) in course.legs.enumerated() {
-            let stepView = CourseStepView()
+            let prevLeg = index > 0 ? course.legs[index - 1] : nil
+            let nextLeg = index < course.legs.count - 1 ? course.legs[index + 1] : nil
             
-            var title: String = ""
-            var icon: UIImage?
+            var topLine: LineStyle = .none
+            var bottomLine: LineStyle = .none
+            
+            // --------------------------
+            // topLine 결정
+            if index == 0 {
+                topLine = .none
+            } else {
+                if prevLeg?.modeEnum == .walk || leg.modeEnum == .walk {
+                    topLine = .dotted
+                } else {
+                    topLine = .solid
+                }
+            }
+            
+            // bottomLine 결정
+            if index == course.legs.count - 1 {
+                bottomLine = .none
+            } else {
+                if nextLeg?.modeEnum == .walk || leg.modeEnum == .walk {
+                    bottomLine = .dotted
+                } else {
+                    bottomLine = .solid
+                }
+            }
+            // --------------------------
             
             switch leg.modeEnum {
             case .walk:
-                let isFirstWalk = index == 0
-                let isLastWalk = index == course.legs.count - 1
-                let showTopLine = !isFirstWalk
-                let showBottomLine = !isLastWalk
-                
-                title = "걷기"
-                icon = UIImage.routeCircleWalkGray700
+                let stepView = CourseStepView()
                 stepView.configure(
-                    icon: icon,
-                    title: title,
+                    icon: UIImage.routeCircleWalkGray700,
+                    title: "걷기",
                     time: leg.sectionTime,
-                    showTopLine: showTopLine,
-                    showBottomLine: showBottomLine,
-                    isWalk: true,
+                    topLineStyle: topLine,
+                    bottomLineStyle: bottomLine,
                     isGetOff: false
                 )
-                
                 courseDetailStack.addArrangedSubview(stepView)
-            case .bus, .subway:
-                let isFirstWalk = index == 0
-                let isLastWalk = index == course.legs.count - 1
-                let showTopLine = !isFirstWalk
-                let showBottomLine = !isLastWalk
                 
-                if let startName = leg.start.name, let endName = leg.end.name {
+            case .bus, .subway:
+                // 승차
+                if let start = leg.start,
+                   let startName = start.name,
+                   let end = leg.end,
+                   let endName = end.name {
+                    
+                    let startIcon = UIImage(named: leg.modeEnum == .bus
+                                            ? busIcon[leg.type ?? "0"] ?? ""
+                                            : subwayIcon[leg.type ?? "0"] ?? "")
+                    
                     let startStepView = CourseStepView()
                     startStepView.configure(
-                        icon: UIImage(named: leg.modeEnum == .bus
-                                      ? busIcon[leg.type ?? 0] ?? ""
-                                      : subwayIcon[leg.type ?? 0] ?? ""),
+                        icon: startIcon,
                         title: leg.modeEnum == .bus ? "\(startName) 승차" : "\(startName)역 승차",
-                        time: 12,
-                        showTopLine: showTopLine,
-                        showBottomLine: showBottomLine,
-                        isWalk: false,
+                        time: nil,
+                        topLineStyle: topLine,
+                        bottomLineStyle: .solid,
                         isGetOff: false
                     )
                     courseDetailStack.addArrangedSubview(startStepView)
                     
+                    // 하차
+                    let isLastLeg = index == course.legs.count - 1
                     let endStepView = CourseStepView()
+                    
+                    let getOffIcon = UIImage(named: leg.modeEnum == .bus
+                                             ? busGetOffIcon[leg.type ?? "0"] ?? ""
+                                             : subwayGetOffIcon[leg.type ?? "0"] ?? "")
+                    
+                    // 하차 아이콘은 걷기로 연결될 수 있으므로 bottomLine 스타일
+                    let endBottomLine: LineStyle = isLastLeg
+                        ? .none
+                        : (nextLeg?.modeEnum == .walk ? .dotted : .solid)
+                    
                     endStepView.configure(
-                        icon: UIImage(named: leg.modeEnum == .bus
-                                      ? busGetOffIcon[leg.type ?? 0] ?? ""
-                                      : subwayGetOffIcon[leg.type ?? 0] ?? ""),
+                        icon: getOffIcon,
                         title: leg.modeEnum == .bus ? "\(endName) 하차" : "\(endName)역 하차",
                         time: nil,
-                        showTopLine: false,
-                        showBottomLine: showBottomLine,
-                        isWalk: true,
+                        topLineStyle: .solid,
+                        bottomLineStyle: endBottomLine,
                         isGetOff: true
                     )
                     courseDetailStack.addArrangedSubview(endStepView)
                 }
+                
             case .unknown:
-                title = "알 수 없음"
-                icon = UIImage.routeCircleWalkGray700
+                let stepView = CourseStepView()
+                stepView.configure(
+                    icon: UIImage.routeCircleWalkGray700,
+                    title: "알 수 없음",
+                    time: nil,
+                    topLineStyle: topLine,
+                    bottomLineStyle: bottomLine,
+                    isGetOff: false
+                )
+                courseDetailStack.addArrangedSubview(stepView)
             }
         }
     }
     
     // MARK: - Course Detail Toggle Handler
     @objc private func toggleCourseDetail() {
-        isExpanded.toggle()
-        courseDownButton.image = isExpanded ? UIImage.chevronUp : UIImage.chevronDown
-        
-        if isExpanded {
-            courseStack.removeArrangedSubview(courseCompactStack)
-            courseStack.addArrangedSubview(courseDetailStack)
-            courseCompactStack.isHidden = true
-            courseDetailStack.isHidden = false
-            
-        } else {
-            courseStack.removeArrangedSubview(courseDetailStack)
-            courseStack.addArrangedSubview(courseCompactStack)
-            courseCompactStack.isHidden = false
-            courseDetailStack.isHidden = true
-            
-        }
-        
-        setNeedsLayout()
-        layoutIfNeeded()
-        
-        if let collectionView = self.superview as? UICollectionView {
-            collectionView.collectionViewLayout.invalidateLayout()
-        }
+        onToggleExpanded?()
     }
 }
 
@@ -334,7 +367,7 @@ extension CourseCell{
         let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .estimated(300))
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
         
-        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .estimated(300))
+        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .estimated(600))
         let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
         
         let section = NSCollectionLayoutSection(group: group)
@@ -342,3 +375,4 @@ extension CourseCell{
         return section
     }
 }
+

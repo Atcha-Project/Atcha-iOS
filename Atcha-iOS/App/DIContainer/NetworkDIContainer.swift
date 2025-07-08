@@ -15,18 +15,21 @@ final class NetworkDIContainer {
         self.tokenStorage = tokenStorage
     }
     
-    func makeSession() -> Session {
+    func makeSession(useInterceptor: Bool = true) -> Session {
         let configuration = URLSessionConfiguration.default
         configuration.timeoutIntervalForRequest = NetworkConstant.timeoutInterval
-        
+
+        let interceptor: RequestInterceptor? = useInterceptor ? TokenInterceptor(tokenStorage: tokenStorage) : nil
+
         return Session(
             configuration: configuration,
-            interceptor: TokenInterceptor(tokenStorage: tokenStorage),
+            interceptor: interceptor,
             eventMonitors: [NetworkLogger()]
         )
     }
     
-    func makeAPIService() -> APIService {
-        return APIServiceImpl(session: makeSession())
+    func makeAPIService(useInterceptor: Bool = true) -> APIService {
+        return APIServiceImpl(session: makeSession(useInterceptor: useInterceptor))
     }
 }
+

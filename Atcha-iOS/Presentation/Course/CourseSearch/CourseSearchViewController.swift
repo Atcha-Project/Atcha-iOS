@@ -45,8 +45,8 @@ class CourseSearchViewController: BaseViewController<CourseSearchViewModel> {
         cv.register(CourseCell.self, forCellWithReuseIdentifier: CourseCell.reusableId)
         return cv
     }()
-    private typealias DataSource = UICollectionViewDiffableDataSource<Section, Course>
-    private typealias Snapshot = NSDiffableDataSourceSnapshot<Section, Course>
+    private typealias DataSource = UICollectionViewDiffableDataSource<Section, CourseUIModel>
+    private typealias Snapshot = NSDiffableDataSourceSnapshot<Section, CourseUIModel>
     private lazy var dataSource: DataSource = setDataSource()
     private var currentSection: [Section] {
         dataSource.snapshot().sectionIdentifiers as [Section]
@@ -60,7 +60,7 @@ class CourseSearchViewController: BaseViewController<CourseSearchViewModel> {
         
         setupUI()
         bind()
-        viewModel.fetchCourses(for: 0)
+        viewModel.courseSearch()
     }
     
     // MARK: - 경로탐색 UI
@@ -70,7 +70,7 @@ class CourseSearchViewController: BaseViewController<CourseSearchViewModel> {
         courseView.layer.cornerRadius = 12
         courseView.backgroundColor = AtchaColor.gray930
         
-        departLabel.attributedText = AtchaFont.B4_R_15("마루 180", color: AtchaColor.white)
+        departLabel.attributedText = AtchaFont.B4_R_15(viewModel.startAddress, color: AtchaColor.white)
         arriveLabel.attributedText = AtchaFont.B4_R_15("우리집", color: AtchaColor.white)
         
         arrowImageView.image = .arrow
@@ -159,18 +159,23 @@ class CourseSearchViewController: BaseViewController<CourseSearchViewModel> {
     }
     
     // MARK: - Course CollectionView Cell 설정
-    private func courseCell(_ collectionView: UICollectionView, _ indexPath: IndexPath, _ course: Course) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CourseCell.reusableId, for: indexPath) as? CourseCell
-        else {
+    private func courseCell(_ collectionView: UICollectionView, _ indexPath: IndexPath, _ model: CourseUIModel) -> UICollectionViewCell {
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CourseCell.reusableId, for: indexPath) as? CourseCell else {
             return UICollectionViewCell()
         }
         
-        cell.configure(with: course)
+        cell.configure(with: model)
+        
+        // 버튼 탭 시 확장/축소 상태 변경 핸들러 연결
+        cell.onToggleExpanded = { [weak self] in
+            self?.viewModel.toggleExpanded(for: model)
+        }
+        
         return cell
     }
     
     // MARK: - Course Snapshot 갱신
-    private func applySnapshot(courses: [Course]) {
+    private func applySnapshot(courses: [CourseUIModel]) {
         var snapshot = Snapshot()
         
         snapshot.appendSections([.courseList])
@@ -198,9 +203,11 @@ extension CourseSearchViewController: UICollectionViewDelegate, UICollectionView
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        selectedIndex = indexPath.item
-        collectionView.reloadData()
-        viewModel.fetchCourses(for: selectedIndex)
+        if collectionView == tabCollectionView {
+            selectedIndex = indexPath.item
+            viewModel.fetchCourses(for: selectedIndex)
+            collectionView.reloadData()
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
@@ -208,3 +215,4 @@ extension CourseSearchViewController: UICollectionViewDelegate, UICollectionView
         return CGSize(width: width, height: 40)
     }
 }
+

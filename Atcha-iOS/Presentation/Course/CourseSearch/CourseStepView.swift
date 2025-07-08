@@ -9,6 +9,12 @@ import Foundation
 import UIKit
 import SnapKit
 
+enum LineStyle {
+    case none
+    case solid
+    case dotted
+}
+
 final class CourseStepView: UIView {
     
     private let iconImageView: UIImageView = UIImageView()
@@ -35,23 +41,24 @@ final class CourseStepView: UIView {
         addSubview(timeLabel)
         
         iconImageView.contentMode = .scaleAspectFit
-        
         topLineImageView.contentMode = .scaleAspectFit
         bottomLineImageView.contentMode = .scaleAspectFit
-        
-        topLineImageView.snp.makeConstraints { make in
-            make.bottom.equalTo(iconImageView.snp.top)
-            make.centerX.equalTo(iconImageView)
-            make.top.equalToSuperview()
-        }
         
         iconImageView.snp.makeConstraints { make in
             make.top.equalToSuperview()
         }
         
-        bottomLineImageView.snp.makeConstraints { make in
+        topLineImageView.snp.makeConstraints { make in
             make.centerX.equalTo(iconImageView)
-            make.bottom.equalToSuperview()
+            make.bottom.equalTo(iconImageView.snp.top)
+            make.top.greaterThanOrEqualToSuperview()
+        }
+        
+        bottomLineImageView.snp.makeConstraints { make in
+            make.top.equalTo(iconImageView.snp.bottom)
+            make.centerX.equalTo(iconImageView)
+            make.height.equalTo(18)
+            make.bottom.equalToSuperview().priority(.medium)
         }
     }
     
@@ -60,70 +67,77 @@ final class CourseStepView: UIView {
         icon: UIImage?,
         title: String,
         time: Int?,
-        showTopLine: Bool,
-        showBottomLine: Bool,
-        isWalk: Bool,
+        topLineStyle: LineStyle,
+        bottomLineStyle: LineStyle,
         isGetOff: Bool
     ) {
         iconImageView.image = icon
         titleLabel.attributedText = AtchaFont.B7_M_13(title, color: AtchaColor.white)
         
-        if showTopLine {
-            topLineImageView.isHidden = false
-            topLineImageView.image = isWalk ? UIImage.verticalDottedLine : UIImage.verticalLine
-        } else {
+        switch topLineStyle {
+        case .none:
             topLineImageView.isHidden = true
+        case .solid:
+            topLineImageView.isHidden = false
+            topLineImageView.image = UIImage.verticalLine
+        case .dotted:
+            topLineImageView.isHidden = false
+            topLineImageView.image = UIImage.verticalDottedLine
         }
         
-        if showBottomLine {
-            bottomLineImageView.isHidden = false
-            bottomLineImageView.image = isWalk ? UIImage.verticalDottedLine : UIImage.verticalLine
-        } else {
+        switch bottomLineStyle {
+        case .none:
             bottomLineImageView.isHidden = true
+        case .solid:
+            bottomLineImageView.isHidden = false
+            bottomLineImageView.image = UIImage.verticalLine
+        case .dotted:
+            bottomLineImageView.isHidden = false
+            bottomLineImageView.image = UIImage.verticalDottedLine
         }
         
-        if isGetOff {
-            iconImageView.snp.makeConstraints { make in
-                make.leading.equalToSuperview().offset(6)
-            }
+        iconImageView.snp.remakeConstraints { make in
+            make.top.equalToSuperview()
+            make.leading.equalToSuperview().offset(isGetOff ? 6 : 0)
+        }
+        
+        bottomLineImageView.snp.remakeConstraints { make in
+            make.top.equalTo(iconImageView.snp.bottom).offset(isGetOff ? 6 : 4)
+            make.centerX.equalTo(iconImageView)
+            make.height.equalTo(18)
+            make.bottom.equalToSuperview().priority(.medium)
+        }
+        
+        titleLabel.snp.makeConstraints { make in
+            make.top.equalTo(iconImageView).offset(isGetOff ? -2 : 3)
+            make.leading.equalTo(iconImageView.snp.trailing).offset(isGetOff ? 12 : 6)
+        }
+
+        if let t = time {
+            timeLabel.isHidden = false
             
-            bottomLineImageView.snp.makeConstraints { make in
-                make.top.equalTo(iconImageView.snp.bottom).offset(6)
-            }
-            
-            titleLabel.snp.makeConstraints { make in
-                make.top.equalTo(iconImageView).offset(-2)
-                make.leading.equalTo(iconImageView.snp.trailing).offset(12)
-            }
-            
-        } else {
-            iconImageView.snp.makeConstraints { make in
-                make.leading.equalToSuperview()
-            }
-            bottomLineImageView.snp.makeConstraints { make in
-                make.top.equalTo(iconImageView.snp.bottom).offset(4)
-            }
-            
-            titleLabel.snp.makeConstraints { make in
-                make.top.equalTo(iconImageView).offset(3)
-                make.leading.equalTo(iconImageView.snp.trailing).offset(6)
-            }
-            
-            if isWalk {
-                timeLabel.attributedText = AtchaFont.R_12(time?.toHourMinuteString ?? "", color: AtchaColor.gray200)
+            if title.contains("걷기") {
+                timeLabel.attributedText = AtchaFont.R_12(t.toHourMinuteStringFromSeconds, color: AtchaColor.gray200)
                 
-                timeLabel.snp.makeConstraints { make in
+                timeLabel.snp.remakeConstraints { make in
                     make.leading.equalTo(titleLabel.snp.trailing).offset(5)
                     make.centerY.equalTo(titleLabel)
                 }
             } else {
-                timeLabel.attributedText = AtchaFont.R_12(time?.toHourMinuteString ?? "", color: AtchaColor.gray400)
+                timeLabel.attributedText = AtchaFont.R_12(t.toHourMinuteStringFromSeconds, color: AtchaColor.gray400)
                 
-                timeLabel.snp.makeConstraints { make in
+                timeLabel.snp.remakeConstraints { make in
                     make.top.equalTo(titleLabel.snp.bottom).offset(3)
                     make.leading.equalTo(titleLabel.snp.leading)
                 }
             }
+        } else {
+            timeLabel.isHidden = true
+            timeLabel.snp.remakeConstraints { make in
+                make.height.equalTo(0) // 숨겨졌을 때의 제약
+            }
         }
     }
 }
+
+

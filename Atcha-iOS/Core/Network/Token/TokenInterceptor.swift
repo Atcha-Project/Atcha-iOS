@@ -18,10 +18,13 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
     func adapt(_ urlRequest: URLRequest,
                for session: Session,
                completion: @escaping (Result<URLRequest, Error>) -> Void) {
+        
         var request = urlRequest
+
         if let token = tokenStorage.accessToken {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
+        
         completion(.success(request))
     }
     

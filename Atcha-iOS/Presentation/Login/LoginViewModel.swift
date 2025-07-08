@@ -50,11 +50,31 @@ final class LoginViewModel: BaseViewModel {
 // MARK: - Login
 extension LoginViewModel {
     private func login(token: String,
-                       type: LoginType) {
+                       type: LoginType) async {
         let request: LoginRequest = LoginRequest(accessToken: token,
                                                  provider: type.rawValue)
         Task {
-            let _ = try? await loginUseCase.login(request)
+            do {
+                let response = try await loginUseCase.login(request)
+                
+                AppDIContainer.shared.tokenStorage.accessToken = response.accessToken
+                AppDIContainer.shared.tokenStorage.refreshToken = response.refreshToken
+                
+                if let lat = response.latitude,
+                   let lon = response.longitude {
+                    UserDefaultsWrapper().set(lat, forKey: UserDefaultsWrapper.Key.lat.rawValue)
+                    UserDefaultsWrapper().set(lon, forKey: UserDefaultsWrapper.Key.lon.rawValue)
+                }
+                
+                if let lat = response.latitude,
+                   let lon = response.longitude {
+                    UserDefaultsWrapper().set(lat, forKey: UserDefaultsWrapper.Key.lat.rawValue)
+                    UserDefaultsWrapper().set(lon, forKey: UserDefaultsWrapper.Key.lon.rawValue)
+                }
+                print("로그인 완료 ✅\(response.accessToken)")
+            } catch {
+                print("로그인 실패: \(error.localizedDescription)")
+            }
         }
     }
     
@@ -65,6 +85,7 @@ extension LoginViewModel {
             
             switch result {
             case .registered:
+                await login(token: token, type: provider)
                 isExistUser?(true)
                 print("회원 → 로그인 진행")
             case .notRegistered:

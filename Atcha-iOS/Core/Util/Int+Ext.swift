@@ -14,17 +14,18 @@ extension Int {
         return formatter.string(from: NSNumber(value: self)) ?? "\(self)"
     }
     
-    var toHourMinuteString: String {
-        if self >= 60 {
-            let hours = self / 60
-            let minutes = self % 60
+    var toHourMinuteStringFromSeconds: String {
+        let totalMinutes = self / 60
+        if totalMinutes >= 60 {
+            let hours = totalMinutes / 60
+            let minutes = totalMinutes % 60
             if minutes == 0 {
                 return "\(hours)시간"
             } else {
                 return "\(hours)시간 \(minutes)분"
             }
         } else {
-            return "\(self)분"
+            return "\(totalMinutes)분"
         }
     }
 }
