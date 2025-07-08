@@ -33,4 +33,8 @@ final class TMapContainerView: UIView {
             $0.edges.equalToSuperview()
         }
     }
+    
+    func deinitMapView() {
+        tMapWrapper.mapView.vsmMapView?.viewWillDisappear()
+    }
 }

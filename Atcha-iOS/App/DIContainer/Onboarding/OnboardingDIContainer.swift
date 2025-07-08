@@ -23,9 +23,9 @@ final class OnboardingDIContainer {
         return OnboardingUseCaseImpl(repository: repository, locationService: locationService)
     }
     
-    func makeHomeRegisterViewModel() -> HomeRegisterViewModel {
-        HomeRegisterViewModel(onboardingUseCase: makeOnboardingUseCase())
-    }
+//    func makeHomeRegisterViewModel() -> HomeRegisterViewModel {
+//        HomeRegisterViewModel(onboardingUseCase: makeOnboardingUseCase())
+//    }
     
     func makeSearchLocationViewModel() -> SearchLocationViewModel {
         SearchLocationViewModel(onboardingUseCase: makeOnboardingUseCase())
@@ -40,6 +40,6 @@ final class OnboardingDIContainer {
     }
     
     func makeOnboardingCoordinator(navigationController: UINavigationController) -> OnboardingCoordinator {
-        OnboardingCoordinator(navigationController: navigationController, disContainer: self)
+        OnboardingCoordinator(apiService: apiService, navigationController: navigationController, disContainer: self)
     }
 }

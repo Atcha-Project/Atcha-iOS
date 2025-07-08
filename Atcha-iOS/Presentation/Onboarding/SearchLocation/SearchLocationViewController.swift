@@ -9,7 +9,7 @@ import UIKit
 import SnapKit
 import CoreLocation
 
-class SearchLocationViewController: BaseViewController<SearchLocationViewModel> {
+final class SearchLocationViewController: BaseViewController<SearchLocationViewModel> {
     
     private let searchNavigationBar: SearchNavigationBar = AtchaNavigationBar.search()
     private let headerView: UIView = UIView()

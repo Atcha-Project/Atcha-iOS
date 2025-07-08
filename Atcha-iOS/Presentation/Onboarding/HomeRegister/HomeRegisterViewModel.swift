@@ -15,60 +15,25 @@ enum LocationSelectionState {
 }
 
 final class HomeRegisterViewModel: BaseViewModel {
+    var findLocationSubeject = PassthroughSubject<Void, Never>()
+    var searchAddressSubject = PassthroughSubject<Void, Never>()
     
-    // 온보딩 유즈케이스
-    let onboardingUseCase: OnboardingUseCase
-    
-    // 온보딩 콜백
-    var onFinish: ((Bool) -> Void)?
-    
+    private let searchAddressUseCase: SearchAddressUseCase
+
     // 장소 선택/미선택 상태 변수
-    @Published private(set) var locationState: LocationSelectionState = .none
+//    @Published private(set) var locationState: LocationSelectionState = .none
+//    var onFinish: ((Bool) -> Void)?
+//    var selectedLocation: SelectedLocation? = nil
     
-    // 장소 정보 저장용
-    var selectedLocation: SelectedLocation? = nil
-    
-    init(onboardingUseCase: OnboardingUseCase) {
-        self.onboardingUseCase = onboardingUseCase
+    init(searchAddressUseCase: SearchAddressUseCase) {
+        self.searchAddressUseCase = searchAddressUseCase
     }
     
-    // MARK: - 현재 위치 전달
-    func handleCurrentLocation(
-        completion: @escaping (_ coordinate: CLLocationCoordinate2D,
-                               _ placeName: String,
-                               _ address: String) -> Void
-    ) {
-        onboardingUseCase.requestCurrentLocation { [weak self] coordinate in
-            guard let self, let coordinate else { return }
-            Task {
-                do {
-                    let response = try await self.reverseGeocodeLocation(
-                        lat: coordinate.latitude,
-                        lon: coordinate.longitude
-                    )
-                    
-                    if let placeName = response.name, let address = response.address {
-                        DispatchQueue.main.async {
-                            completion(coordinate, placeName, address)
-                        }
-                    }
-                    
-                } catch {
-                    print("❌ 장소 변환 실패: \(error)")
-                }
-            }
-        }
+    func findLocationTapped() {
+        findLocationSubeject.send(())
     }
     
-    // MARK: - 장소 업데이트
-    func updateLocation(name: String, address: String, lat: Double, lon: Double) {
-        self.selectedLocation = SelectedLocation(name: name, address: address, lat: lat, lon: lon)
-        self.locationState = .selected(name: name, address: address)
-    }
-    
-    // MARK: - 좌표 -> 주소 변환
-    func reverseGeocodeLocation(lat: Double, lon: Double) async throws -> ReverseGeocodeLocationResponse {
-        let request = ReverseGeocodeLocationRequest(lat: lat, lon: lon)
-        return try await onboardingUseCase.reverseGeocodeLocation(request)
+    func searchAddressTapped() {
+        searchAddressSubject.send(())
     }
 }
