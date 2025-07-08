@@ -137,7 +137,6 @@
 		B68309622E005A3600E2D029 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B68309502E005A3600E2D029 /* Main.storyboard */; };
 		B68309672E005B5300E2D029 /* UIView+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B68309662E005B5300E2D029 /* UIView+Ext.swift */; };
 		B6ADE1942E0C0DE6008C4E23 /* LoginType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6ADE1932E0C0DE6008C4E23 /* LoginType.swift */; };
-		B6C507452E1295A0000AB39F /* Secrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = B6C507442E1295A0000AB39F /* Secrets.xcconfig */; };
 		B6C507482E129640000AB39F /* RequestLocationAuthorizationUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6C507472E129640000AB39F /* RequestLocationAuthorizationUseCase.swift */; };
 		B6C5074A2E129649000AB39F /* ObserveLocationStreamUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6C507492E129649000AB39F /* ObserveLocationStreamUseCase.swift */; };
 		B6C5074D2E12965D000AB39F /* LocationStreamRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6C5074C2E12965D000AB39F /* LocationStreamRepository.swift */; };
@@ -299,7 +298,6 @@
 		B68309632E005ADE00E2D029 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		B68309662E005B5300E2D029 /* UIView+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Ext.swift"; sourceTree = "<group>"; };
 		B6ADE1932E0C0DE6008C4E23 /* LoginType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginType.swift; sourceTree = "<group>"; };
-		B6C507442E1295A0000AB39F /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 		B6C507472E129640000AB39F /* RequestLocationAuthorizationUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestLocationAuthorizationUseCase.swift; sourceTree = "<group>"; };
 		B6C507492E129649000AB39F /* ObserveLocationStreamUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObserveLocationStreamUseCase.swift; sourceTree = "<group>"; };
 		B6C5074C2E12965D000AB39F /* LocationStreamRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationStreamRepository.swift; sourceTree = "<group>"; };
@@ -535,7 +533,6 @@
 		6DE42B842DFDE6360041344C = {
 			isa = PBXGroup;
 			children = (
-				B6C507442E1295A0000AB39F /* Secrets.xcconfig */,
 				B68309632E005ADE00E2D029 /* .gitignore */,
 				B68309522E005A3600E2D029 /* Atcha-iOS */,
 				6DE42B8E2DFDE6360041344C /* Products */,
@@ -1086,7 +1083,6 @@
 			files = (
 				B68309582E005A3600E2D029 /* Colors.xcassets in Resources */,
 				B68309592E005A3600E2D029 /* Pretendard-Bold.otf in Resources */,
-				B6C507452E1295A0000AB39F /* Secrets.xcconfig in Resources */,
 				B683095A2E005A3600E2D029 /* Pretendard-ExtraBold.otf in Resources */,
 				B683095B2E005A3600E2D029 /* Pretendard-Medium.otf in Resources */,
 				B683095C2E005A3600E2D029 /* Pretendard-Regular.otf in Resources */,
@@ -1258,7 +1254,6 @@
 /* Begin XCBuildConfiguration section */
 		6DE42BA12DFDE6370041344C /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B6C507442E1295A0000AB39F /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -1305,7 +1300,6 @@
 		};
 		6DE42BA22DFDE6370041344C /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B6C507442E1295A0000AB39F /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -1352,7 +1346,6 @@
 		};
 		6DE42BA32DFDE6370041344C /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B6C507442E1295A0000AB39F /* Secrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -1417,7 +1410,6 @@
 		};
 		6DE42BA42DFDE6370041344C /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B6C507442E1295A0000AB39F /* Secrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
