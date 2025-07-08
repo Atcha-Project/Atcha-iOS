@@ -20,6 +20,8 @@ final class AppDIContainer {
     let mainDIContainer: LocationDIContainer
     let onboardingDIContainer: OnboardingDIContainer
     let courseDIContainer: CourseDIContainer
+    
+    let homeRegisterDIContainer: HomeRegisterDIContainer
 
     private init() {
         self.tokenStorage = TokenStorageImpl()
@@ -35,5 +37,6 @@ final class AppDIContainer {
         self.mainDIContainer = LocationDIContainer(apiService: apiServce)
         self.onboardingDIContainer = OnboardingDIContainer(apiService: apiServce, locationService: locationService)
         self.courseDIContainer = CourseDIContainer(apiService: apiServce)
+        self.homeRegisterDIContainer = HomeRegisterDIContainer(apiService: apiServce)
     }
 }

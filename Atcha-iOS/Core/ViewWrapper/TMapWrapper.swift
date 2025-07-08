@@ -28,7 +28,7 @@ final class TMapWrapper: NSObject, MapRendering {
     weak var delegate: TMapWrapperDelegate?
     
     public init(frame: CGRect) {
-        self.mapView = TMapView(frame: frame)
+        self.mapView = TMapView(frame: UIScreen.main.bounds)
         super.init()
         
         configureDefaultSettings()

@@ -12,37 +12,46 @@ import CoreLocation
 final class OnboardingCoordinator {
     private let navigationController: UINavigationController
     private let diContainer: OnboardingDIContainer
+    private let apiService: APIService
     
     var onFinish: ((Bool) -> Void)?
     
-    init(navigationController: UINavigationController, disContainer: OnboardingDIContainer, onFinish: ((Bool) -> Void)? = nil) {
+    init(apiService: APIService,
+         navigationController: UINavigationController,
+         disContainer: OnboardingDIContainer,
+         onFinish: ((Bool) -> Void)? = nil) {
+        self.apiService = apiService
         self.navigationController = navigationController
         self.diContainer = disContainer
         self.onFinish = onFinish
     }
     
     func start() {
-        let viewModel = diContainer.makeHomeRegisterViewModel()
-        viewModel.onFinish = { [weak self] success in
-            self?.onFinish?(success)
-        }
+        let homeRegiVM = HomeRegisterDIContainer(apiService: apiService).makeHomeRegisterViewModel()
         
-        let homeRegisterVC = HomeRegisterViewController(viewModel: viewModel)
+        let homeRegisterVC = HomeRegisterDIContainer(apiService: apiService).makeHomeRegisterViewController()
+        
+        //        let viewModel = diContainer.makeHomeRegisterViewModel()
+        //        viewModel.onFinish = { [weak self] success in
+        //            self?.onFinish?(success)
+        //        }
+        
+        //        let homeRegisterVC = HomeRegisterViewController(viewModel: viewModel)
         
         // SearchLocation ViewController 이동
-        homeRegisterVC.onSearchTapped = { [weak self] in
-            self?.showSearchLocation()
-        }
+        //        homeRegisterVC.onSearchTapped = { [weak self] in
+        //            self?.showSearchLocation()
+        //        }
         
         // RegisterLocation ViewController 이동
-        homeRegisterVC.onCurrentTapped = { [weak self] coordinate, placeName, address in
-            self?.showRegisterLocation(coordinate, placeName, address)
-        }
+        //        homeRegisterVC.onCurrentTapped = { [weak self] coordinate, placeName, address in
+        //            self?.showRegisterLocation(coordinate, placeName, address)
+        //        }
         
         // PushAlarm ViewController 이동
-        homeRegisterVC.onNextTapped = { [weak self] location in
-            self?.showPushAlarm(with: location)
-        }
+        //        homeRegisterVC.onNextTapped = { [weak self] location in
+        //            self?.showPushAlarm(with: location)
+        //        }
         
         navigationController.pushViewController(homeRegisterVC, animated: true)
     }
@@ -90,12 +99,12 @@ final class OnboardingCoordinator {
             if let homeVC = self.navigationController.viewControllers.first(where: { $0 is HomeRegisterViewController }) as? HomeRegisterViewController {
                 
                 // ViewModel에 업데이트 메서드를 통해 반영 및 ViewController Pop
-                homeVC.viewModel.updateLocation(
-                    name: name,
-                    address: address,
-                    lat: lat,
-                    lon: lon
-                )
+                //                homeVC.viewModel.updateLocation(
+                //                    name: name,
+                //                    address: address,
+                //                    lat: lat,
+                //                    lon: lon
+                //                )
                 
                 self.navigationController.popToViewController(homeVC, animated: true)
             }
