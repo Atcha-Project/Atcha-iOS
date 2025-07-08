@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6D17A88C2E1CE5A600642D66 /* Secrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6D17A88B2E1CE5A600642D66 /* Secrets.xcconfig */; };
 		6D1EE2DA2E08E4E000F7BBF1 /* HomeRegisterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2D92E08E4E000F7BBF1 /* HomeRegisterViewController.swift */; };
 		6D1EE2DC2E08E4EA00F7BBF1 /* HomeRegisterViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2DB2E08E4EA00F7BBF1 /* HomeRegisterViewModel.swift */; };
 		6D1EE2DE2E090A3300F7BBF1 /* SearchLocationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2DD2E090A3300F7BBF1 /* SearchLocationViewController.swift */; };
@@ -76,7 +77,6 @@
 		6DFF29E22E0E6D140039399F /* VSMSDK.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6DFF29DD2E0E6D100039399F /* VSMSDK.xcframework */; };
 		6DFF29E32E0E6D140039399F /* VSMSDK.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 6DFF29DD2E0E6D100039399F /* VSMSDK.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		6DFF29F02E0F23840039399F /* UIImage+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFF29EF2E0F23840039399F /* UIImage+Ext.swift */; };
-		B60058472E1A840300405A09 /* Secrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = B60058462E1A840300405A09 /* Secrets.xcconfig */; };
 		B600CA132E07FD29008B0D87 /* MyPageCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C13472E07A10F0016D2F0 /* MyPageCoordinator.swift */; };
 		B65C12D72E0429B30016D2F0 /* AppFlowCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C12D62E0429B30016D2F0 /* AppFlowCoordinator.swift */; };
 		B65C12DA2E042A740016D2F0 /* AppDIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C12D92E042A740016D2F0 /* AppDIContainer.swift */; };
@@ -140,7 +140,6 @@
 		B6ADE1942E0C0DE6008C4E23 /* LoginType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6ADE1932E0C0DE6008C4E23 /* LoginType.swift */; };
 		B6B57EC22E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B57EC12E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift */; };
 		B6B57EC52E1AB0FE00B29EB1 /* MainRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B57EC42E1AB0FE00B29EB1 /* MainRoute.swift */; };
-		B6C507452E1295A0000AB39F /* Secrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = B6C507442E1295A0000AB39F /* Secrets.xcconfig */; };
 		B6C507482E129640000AB39F /* RequestLocationAuthorizationUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6C507472E129640000AB39F /* RequestLocationAuthorizationUseCase.swift */; };
 		B6C5074A2E129649000AB39F /* ObserveLocationStreamUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6C507492E129649000AB39F /* ObserveLocationStreamUseCase.swift */; };
 		B6C5074D2E12965D000AB39F /* LocationStreamRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6C5074C2E12965D000AB39F /* LocationStreamRepository.swift */; };
@@ -183,6 +182,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		6D17A88B2E1CE5A600642D66 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 		6D1EE2D92E08E4E000F7BBF1 /* HomeRegisterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeRegisterViewController.swift; sourceTree = "<group>"; };
 		6D1EE2DB2E08E4EA00F7BBF1 /* HomeRegisterViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeRegisterViewModel.swift; sourceTree = "<group>"; };
 		6D1EE2DD2E090A3300F7BBF1 /* SearchLocationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchLocationViewController.swift; sourceTree = "<group>"; };
@@ -242,7 +242,6 @@
 		6DFF29DC2E0E6D100039399F /* TMapSDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = TMapSDK.framework; sourceTree = "<group>"; };
 		6DFF29DD2E0E6D100039399F /* VSMSDK.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = VSMSDK.xcframework; sourceTree = "<group>"; };
 		6DFF29EF2E0F23840039399F /* UIImage+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Ext.swift"; sourceTree = "<group>"; };
-		B60058462E1A840300405A09 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 		B65C12D62E0429B30016D2F0 /* AppFlowCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFlowCoordinator.swift; sourceTree = "<group>"; };
 		B65C12D92E042A740016D2F0 /* AppDIContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDIContainer.swift; sourceTree = "<group>"; };
 		B65C12DD2E042CF00016D2F0 /* UserInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserInfo.swift; sourceTree = "<group>"; };
@@ -309,7 +308,6 @@
 		B6ADE1932E0C0DE6008C4E23 /* LoginType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginType.swift; sourceTree = "<group>"; };
 		B6B57EC12E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastTrainSearchBottomView.swift; sourceTree = "<group>"; };
 		B6B57EC42E1AB0FE00B29EB1 /* MainRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainRoute.swift; sourceTree = "<group>"; };
-		B6C507442E1295A0000AB39F /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 		B6C507472E129640000AB39F /* RequestLocationAuthorizationUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestLocationAuthorizationUseCase.swift; sourceTree = "<group>"; };
 		B6C507492E129649000AB39F /* ObserveLocationStreamUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObserveLocationStreamUseCase.swift; sourceTree = "<group>"; };
 		B6C5074C2E12965D000AB39F /* LocationStreamRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationStreamRepository.swift; sourceTree = "<group>"; };
@@ -549,8 +547,7 @@
 		6DE42B842DFDE6360041344C = {
 			isa = PBXGroup;
 			children = (
-				B60058462E1A840300405A09 /* Secrets.xcconfig */,
-				B6C507442E1295A0000AB39F /* Secrets.xcconfig */,
+				6D17A88B2E1CE5A600642D66 /* Secrets.xcconfig */,
 				B68309632E005ADE00E2D029 /* .gitignore */,
 				B68309522E005A3600E2D029 /* Atcha-iOS */,
 				6DE42B8E2DFDE6360041344C /* Products */,
@@ -1121,9 +1118,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B60058472E1A840300405A09 /* Secrets.xcconfig in Resources */,
 				B68309582E005A3600E2D029 /* Colors.xcassets in Resources */,
 				B68309592E005A3600E2D029 /* Pretendard-Bold.otf in Resources */,
+				6D17A88C2E1CE5A600642D66 /* Secrets.xcconfig in Resources */,
 				B683095A2E005A3600E2D029 /* Pretendard-ExtraBold.otf in Resources */,
 				B683095B2E005A3600E2D029 /* Pretendard-Medium.otf in Resources */,
 				B683095C2E005A3600E2D029 /* Pretendard-Regular.otf in Resources */,
@@ -1301,6 +1298,7 @@
 /* Begin XCBuildConfiguration section */
 		6DE42BA12DFDE6370041344C /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6D17A88B2E1CE5A600642D66 /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -1347,6 +1345,7 @@
 		};
 		6DE42BA22DFDE6370041344C /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6D17A88B2E1CE5A600642D66 /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -1393,6 +1392,7 @@
 		};
 		6DE42BA32DFDE6370041344C /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6D17A88B2E1CE5A600642D66 /* Secrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -1457,6 +1457,7 @@
 		};
 		6DE42BA42DFDE6370041344C /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6D17A88B2E1CE5A600642D66 /* Secrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
