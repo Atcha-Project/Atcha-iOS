@@ -12,36 +12,31 @@ import CoreLocation
 final class HomeFindViewModel: BaseViewModel {
     @Published var buildingName: String?
     @Published var address: String?
+    @Published var currentLocation: CLLocationCoordinate2D?
   
     var currentLocationSubject = PassthroughSubject<CLLocationCoordinate2D?, Never>()
     private let searchAddressUseCase: SearchAddressUseCase
-//    private let authorizationUseCase: RequestLocationAuthorizationUseCase
+    private let locationStateHolder: LocationStateHolder
     
-    init(searchAddressUseCase: SearchAddressUseCase) {
+    init(searchAddressUseCase: SearchAddressUseCase,
+         locationStateHolder: LocationStateHolder) {
         self.searchAddressUseCase = searchAddressUseCase
-        super.init()
-        
-        self.bind()
+        self.locationStateHolder = locationStateHolder
+        self.buildingName = locationStateHolder.buildingName
+        self.address = locationStateHolder.address
     }
     
-    private func bind() {
-        currentLocationSubject
-            .compactMap { $0 }
-            .removeDuplicates()
-            .debounce(for: .seconds(0.3), scheduler: DispatchQueue.main)
-            .sink { [weak self] coordinate in
-                Task {
-                    guard let self else { return }
-                    let address = try? await self.fetchCurrentAddress(
-                        lat: coordinate.latitude,
-                        lon: coordinate.longitude
-                    )
-                    
-                    self.address = address?.address
-                    self.buildingName = address?.name
-                }
-            }
-            .store(in: &cancellables)
+    func finishLoadingMap() {
+        currentLocation = locationStateHolder.currentLocation
+    }
+    
+    func findCurrentLocation() {
+        currentLocation = locationStateHolder.currentLocation
+//        locationStateHolder.currentLocationSubject
+//            .sink { [weak self] location in
+//                self?.currentLocation = location
+//            }
+//            .store(in: &cancellables)
     }
 }
 

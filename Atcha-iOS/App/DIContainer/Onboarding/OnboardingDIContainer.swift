@@ -11,10 +11,14 @@ import Foundation
 final class OnboardingDIContainer {
     private let apiService: APIService
     private let locationService: LocationServiceProtocol
+    private let locationStateHolder: LocationStateHolder
     
-    init(apiService: APIService, locationService: LocationServiceProtocol) {
+    init(apiService: APIService,
+         locationService: LocationServiceProtocol,
+         locationStateHolder: LocationStateHolder) {
         self.apiService = apiService
         self.locationService = locationService
+        self.locationStateHolder = locationStateHolder
     }
     
     func makeOnboardingUseCase() -> OnboardingUseCase {
@@ -40,6 +44,6 @@ final class OnboardingDIContainer {
     }
     
     func makeOnboardingCoordinator(navigationController: UINavigationController) -> OnboardingCoordinator {
-        OnboardingCoordinator(apiService: apiService, navigationController: navigationController, disContainer: self)
+        OnboardingCoordinator(apiService: apiService, navigationController: navigationController, disContainer: self, locationHolder: locationStateHolder)
     }
 }

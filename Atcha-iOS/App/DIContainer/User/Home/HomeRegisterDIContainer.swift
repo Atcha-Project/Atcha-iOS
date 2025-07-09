@@ -8,17 +8,23 @@
 import Foundation
 
 final class HomeRegisterDIContainer {
+    private let locationStateHolder: LocationStateHolder
     private let apiService: APIService
     
-    init(apiService: APIService) {
+    init(apiService: APIService,
+         locationStateHolder: LocationStateHolder) {
         self.apiService = apiService
+        self.locationStateHolder = locationStateHolder
     }
     
     private lazy var addressRepository: AddressRepository = AddressRepositoryImpl(apiService: apiService)
     private lazy var searchAddressUseCase: SearchAddressUseCase = SearchAddressUseCaseImpl(repository: addressRepository)
+    private lazy var streamUseCase: ObserveLocationStreamUseCase = ObserLocationStreamUseCaseImpl(repository: LocationStreamRepositoryImpl())
     
     func makeHomeRegisterViewModel() -> HomeRegisterViewModel {
-        return HomeRegisterViewModel(searchAddressUseCase: searchAddressUseCase)
+        return HomeRegisterViewModel(searchAddressUseCase: searchAddressUseCase,
+                                     streamUseCase: streamUseCase,
+                                     locationStateHolder: locationStateHolder)
     }
     
     func makeHomeRegisterViewController() -> HomeRegisterViewController {
@@ -26,7 +32,8 @@ final class HomeRegisterDIContainer {
     }
     
     func makeHomeFindViewModel() -> HomeFindViewModel {
-        return HomeFindViewModel(searchAddressUseCase: searchAddressUseCase)
+        return HomeFindViewModel(searchAddressUseCase: searchAddressUseCase,
+                                 locationStateHolder: locationStateHolder)
     }
     
     func makeHomeFindViewController() -> HomeFindViewController {

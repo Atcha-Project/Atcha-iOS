@@ -15,6 +15,7 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
     private let mapContainerView: TMapContainerView = TMapContainerView()
     private let bottomView: HomeRegisterBottomView = HomeRegisterBottomView()
     private let flagImageView: UIImageView = UIImageView()
+    private let backButton: UIButton = UIButton()
     private let loactionButton: UIButton = UIButton()
     private let exitButton: UIButton = UIButton()
     
@@ -23,6 +24,7 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
         
         setupUI()
         setupAutoLayout()
+        setupBackButton()
         bindViewModel()
     }
     
@@ -36,9 +38,17 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
         view.addSubViews(mapContainerView,
                          flagImageView,
                          bottomView,
-                         loactionButton)
+                         loactionButton,
+                         backButton)
+        
         mapContainerView.delegate = self
         flagImageView.image = UIImage.settingLocationMark
+        backButton.setImage(UIImage.chevronLeft, for: .normal)
+        backButton.tintColor = .gray300
+        
+        configureButton(loactionButton,
+                        imageName: "mylocation-filled",
+                        action: #selector(didTapLocationButton))
     }
     
     private func bindViewModel() {
@@ -48,6 +58,14 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
             .sink { [weak self] _ in
                 guard let self else { return }
                 navigationController?.popViewController(animated: true)
+            }
+            .store(in: &cancellables)
+        
+        viewModel.$currentLocation
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] location in
+                guard let self, let location else { return }
+                mapContainerView.setupCenter(location: location)
             }
             .store(in: &cancellables)
         
@@ -83,11 +101,23 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
             make.verticalEdges.equalToSuperview()
         }
         
+        backButton.snp.makeConstraints { make in
+            make.leading.equalToSuperview().inset(16)
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).inset(18)
+            make.size.equalTo(24)
+        }
+        
         flagImageView.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
             make.centerY.equalTo(mapContainerView.snp.centerY)
             make.height.equalTo(65)
             make.width.equalTo(48)
+        }
+        
+        loactionButton.snp.makeConstraints { make in
+            make.bottom.equalTo(bottomView.snp.top).inset(-16)
+            make.trailing.equalToSuperview().inset(16)
+            make.width.height.equalTo(36)
         }
         
         bottomView.snp.makeConstraints { make in
@@ -98,8 +128,29 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
     }
 }
 
+// MARK: - Action
+extension HomeFindViewController {
+    private func setupBackButton() {
+        backButton.addTarget(self,
+                             action: #selector(backButtonTapped),
+                             for: .touchUpInside)
+    }
+    
+    @objc private func backButtonTapped() {
+        navigationController?.popViewController(animated: true)
+    }
+    
+    @objc private func didTapLocationButton() {
+        viewModel.findCurrentLocation()
+    }
+}
+
 // MARK: - Delegate
 extension HomeFindViewController {
+    func didFinishLoadingMap(_ mapView: TMapWrapper) {
+        viewModel.finishLoadingMap()
+    }
+    
     func mapView(_ mapView: TMapWrapper, didUpdateLocation coordinate: CLLocationCoordinate2D) {
         viewModel.currentLocationSubject.send(coordinate)
     }

@@ -55,6 +55,7 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
         //                self?.render(state)
         //            }
         //            .store(in: &cancellables)
+        
         viewModel.findLocationSubeject
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
@@ -98,7 +99,9 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
         currentLocationButton.tintColor = .white
         
         nextButton.isEnabled = false
-        //        nextButton.updateStyle(text: "다음", style: .filled(.disabled))
+        nextButton.updateStyle(text: "다음", style: .filled(.disabled))
+        
+        setupLocationButton(title: "현 위치 찾기", icon: UIImage.placeFilled)
     }
     
     private func setupAutoLayout() {

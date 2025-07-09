@@ -19,6 +19,8 @@ protocol TMapWrapperDelegate: AnyObject {
     
     func mapView(_ mapView: TMapWrapper,
                  didSelectLocation coordinate: CLLocationCoordinate2D)
+    
+    func didFinishLoadingMap(_ mapView: TMapWrapper)
 }
 
 final class TMapWrapper: NSObject, MapRendering {
@@ -31,7 +33,7 @@ final class TMapWrapper: NSObject, MapRendering {
         self.mapView = TMapView(frame: UIScreen.main.bounds)
         super.init()
         
-        configureDefaultSettings()
+        self.configureDefaultSettings()
     }
 
     private func configureDefaultSettings() {
@@ -39,12 +41,12 @@ final class TMapWrapper: NSObject, MapRendering {
         mapView.delegate = self
         mapView.locationDelgate = self
         mapView.isShowCompass = false
-        mapView.isTrackingLocation = true
-        mapView.trackinMode = .followWithHeading
+//        mapView.trackinMode = .followWithCourse
+//        mapView.isTrackingLocation = true
         mapView.setZoom(20)
     }
     
-    private func updateUserMarker(coordinate: CLLocationCoordinate2D) {
+    func updateUserMarker(coordinate: CLLocationCoordinate2D) {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
             if let marker = userMarker {
@@ -54,6 +56,8 @@ final class TMapWrapper: NSObject, MapRendering {
                 userMarker?.icon = UIImage.currentLocationMark
                 userMarker?.map = mapView
             }
+            
+//            mapView.setCenter(coordinate)
         }
     }
 }
@@ -61,10 +65,11 @@ final class TMapWrapper: NSObject, MapRendering {
 extension TMapWrapper: TMapViewDelegate, TmapViewLocationDelegate {
     func mapViewDidFinishLoadingMap() {
         mapView.setMapType(.Night)
-        mapView.setZoom(20)
+        mapView.setZoom(15)
         
-        guard let center = mapView.getCenter() else { return }
-        updateUserMarker(coordinate: center)
+        delegate?.didFinishLoadingMap(self)
+//        guard let center = mapView.getCenter() else { return }
+//        updateUserMarker(coordinate: center)
     }
     
     func mapView(_ mapView: TMapView,

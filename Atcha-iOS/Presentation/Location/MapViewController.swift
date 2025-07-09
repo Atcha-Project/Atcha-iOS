@@ -127,6 +127,10 @@ final class MapViewController: BaseViewController<MapViewModel>,
 }
 
 extension MapViewController {
+    func didFinishLoadingMap(_ mapView: TMapWrapper) {
+        
+    }
+    
     @objc private func didTapMyPageButton() {
         print("마이페이지 버튼 눌림")
         viewModel.routeHandler?(.myPage)
