@@ -219,20 +219,22 @@ class CourseCell: UICollectionViewCell {
                 walkIcon.snp.makeConstraints { $0.size.equalTo(26) }
                 courseCompactStack.addArrangedSubview(walkIcon)
             case .bus:
-                if let type = leg.type,
-                   let imageName = busIcon[type],
-                   let image = UIImage(named: imageName) {
-                    let busIconView = UIImageView(image: image)
-                    busIconView.snp.makeConstraints { $0.size.equalTo(26) }
-                    courseCompactStack.addArrangedSubview(busIconView)
+                if let type = leg.type {
+                    let imageName = busIcon[type] ?? busDefaultIcon
+                    if let image = UIImage(named: imageName) {
+                        let busIconView = UIImageView(image: image)
+                        busIconView.snp.makeConstraints { $0.size.equalTo(26) }
+                        courseCompactStack.addArrangedSubview(busIconView)
+                    }
                 }
             case .subway:
-                if let type = leg.type,
-                   let imageName = subwayIcon[type],
-                   let image = UIImage(named: imageName) {
-                    let subwayIconView = UIImageView(image: image)
-                    subwayIconView.snp.makeConstraints { $0.size.equalTo(26) }
-                    courseCompactStack.addArrangedSubview(subwayIconView)
+                if let type = leg.type {
+                    let imageName = subwayIcon[type] ?? subwayDefaultIcon
+                    if let image = UIImage(named: imageName) {
+                        let subwayIconView = UIImageView(image: image)
+                        subwayIconView.snp.makeConstraints { $0.size.equalTo(26) }
+                        courseCompactStack.addArrangedSubview(subwayIconView)
+                    }
                 }
             case .unknown:
                 break
@@ -301,8 +303,8 @@ class CourseCell: UICollectionViewCell {
                    let endName = end.name {
                     
                     let startIcon = UIImage(named: leg.modeEnum == .bus
-                                            ? busIcon[leg.type ?? "0"] ?? ""
-                                            : subwayIcon[leg.type ?? "0"] ?? "")
+                                            ? busIcon[leg.type ?? "0"] ?? busDefaultIcon
+                                            : subwayIcon[leg.type ?? "0"] ?? subwayDefaultIcon)
                     
                     let startStepView = CourseStepView()
                     startStepView.configure(
@@ -320,8 +322,8 @@ class CourseCell: UICollectionViewCell {
                     let endStepView = CourseStepView()
                     
                     let getOffIcon = UIImage(named: leg.modeEnum == .bus
-                                             ? busGetOffIcon[leg.type ?? "0"] ?? ""
-                                             : subwayGetOffIcon[leg.type ?? "0"] ?? "")
+                                             ? busGetOffIcon[leg.type ?? "0"] ?? defaultGetOffIcon
+                                             : subwayGetOffIcon[leg.type ?? "0"] ?? defaultGetOffIcon)
                     
                     // 하차 아이콘은 걷기로 연결될 수 있으므로 bottomLine 스타일
                     let endBottomLine: LineStyle = isLastLeg
