@@ -167,6 +167,7 @@
 		B6FB20992E1D334A0032751B /* HomeFindViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6FB20982E1D334A0032751B /* HomeFindViewController.swift */; };
 		B6FB209B2E1D33550032751B /* HomeFindViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6FB209A2E1D33550032751B /* HomeFindViewModel.swift */; };
 		B6FB209D2E1D492F0032751B /* HomeRegisterBottomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6FB209C2E1D492F0032751B /* HomeRegisterBottomView.swift */; };
+		B6FB20A12E1E8EF60032751B /* LocationStateHolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6FB20A02E1E8EF60032751B /* LocationStateHolder.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -337,6 +338,7 @@
 		B6FB20982E1D334A0032751B /* HomeFindViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeFindViewController.swift; sourceTree = "<group>"; };
 		B6FB209A2E1D33550032751B /* HomeFindViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeFindViewModel.swift; sourceTree = "<group>"; };
 		B6FB209C2E1D492F0032751B /* HomeRegisterBottomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeRegisterBottomView.swift; sourceTree = "<group>"; };
+		B6FB20A02E1E8EF60032751B /* LocationStateHolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationStateHolder.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -893,6 +895,7 @@
 		B68309642E005B3C00E2D029 /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				B6FB209F2E1E8EE80032751B /* Share */,
 				B6713CC32E129CD000AF8486 /* ViewWrapper */,
 				B67E3E562E0980810056EEB3 /* Wrapper */,
 				B65C12FA2E057A9F0016D2F0 /* Network */,
@@ -1046,6 +1049,14 @@
 				B6FB209A2E1D33550032751B /* HomeFindViewModel.swift */,
 			);
 			path = Home;
+			sourceTree = "<group>";
+		};
+		B6FB209F2E1E8EE80032751B /* Share */ = {
+			isa = PBXGroup;
+			children = (
+				B6FB20A02E1E8EF60032751B /* LocationStateHolder.swift */,
+			);
+			path = Share;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1273,6 +1284,7 @@
 				B67E3E552E0971B70056EEB3 /* Bundle+Ext.swift in Sources */,
 				6D1EE2EE2E0A7D7300F7BBF1 /* OnboardingUseCase.swift in Sources */,
 				6DFF29912E0CBE820039399F /* RegisterLocationViewController.swift in Sources */,
+				B6FB20A12E1E8EF60032751B /* LocationStateHolder.swift in Sources */,
 				6DC3BEDD2E04F32400831470 /* UserDefaultsKey.swift in Sources */,
 				B65C13442E06E0BC0016D2F0 /* SplashCoordinator.swift in Sources */,
 				B65C13262E058CC30016D2F0 /* BaseViewModel.swift in Sources */,

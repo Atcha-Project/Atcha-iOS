@@ -12,6 +12,7 @@ import CoreLocation
 final class OnboardingCoordinator {
     private let navigationController: UINavigationController
     private let diContainer: OnboardingDIContainer
+    private let locationHolder: LocationStateHolder
     private let apiService: APIService
     
     var onFinish: ((Bool) -> Void)?
@@ -19,17 +20,21 @@ final class OnboardingCoordinator {
     init(apiService: APIService,
          navigationController: UINavigationController,
          disContainer: OnboardingDIContainer,
+         locationHolder: LocationStateHolder,
          onFinish: ((Bool) -> Void)? = nil) {
         self.apiService = apiService
         self.navigationController = navigationController
         self.diContainer = disContainer
+        self.locationHolder = locationHolder
         self.onFinish = onFinish
     }
     
     func start() {
-        let homeRegiVM = HomeRegisterDIContainer(apiService: apiService).makeHomeRegisterViewModel()
+//        let homeRegiVM = HomeRegisterDIContainer(apiService: apiService,
+//                                                 locationStateHolder: locationHolder).makeHomeRegisterViewModel()
         
-        let homeRegisterVC = HomeRegisterDIContainer(apiService: apiService).makeHomeRegisterViewController()
+        let homeRegisterVC = HomeRegisterDIContainer(apiService: apiService,
+                                                     locationStateHolder: locationHolder).makeHomeRegisterViewController()
         
         //        let viewModel = diContainer.makeHomeRegisterViewModel()
         //        viewModel.onFinish = { [weak self] success in
