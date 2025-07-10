@@ -57,6 +57,7 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
                 guard let self else { return }
+                viewModel.saveCurrentLoaction()
                 navigationController?.popViewController(animated: true)
             }
             .store(in: &cancellables)
@@ -141,14 +142,14 @@ extension HomeFindViewController {
     }
     
     @objc private func didTapLocationButton() {
-        viewModel.findCurrentLocation()
+        viewModel.setupLocation()
     }
 }
 
 // MARK: - Delegate
 extension HomeFindViewController {
     func didFinishLoadingMap(_ mapView: TMapWrapper) {
-        viewModel.finishLoadingMap()
+        viewModel.setupLocation()
     }
     
     func mapView(_ mapView: TMapWrapper, didUpdateLocation coordinate: CLLocationCoordinate2D) {
