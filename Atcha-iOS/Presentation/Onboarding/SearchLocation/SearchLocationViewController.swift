@@ -44,14 +44,14 @@ final class SearchLocationViewController: BaseViewController<SearchLocationViewM
     
     // MARK: - 현재 위치 요청
     private func requestCurrentLocation() {
-        viewModel.onboardingUseCase.requestCurrentLocation { [weak self] coordinate in
-            guard let coordinate = coordinate else {
-                print("위치 권한 거부됨 또는 위치 불가")
-                return
-            }
-            print("현재 위치 획득: \(coordinate.latitude), \(coordinate.longitude)")
-            self?.currentCoordinate = coordinate
-        }
+//        viewModel.onboardingUseCase.requestCurrentLocation { [weak self] coordinate in
+//            guard let coordinate = coordinate else {
+//                print("위치 권한 거부됨 또는 위치 불가")
+//                return
+//            }
+//            print("현재 위치 획득: \(coordinate.latitude), \(coordinate.longitude)")
+//            self?.currentCoordinate = coordinate
+//        }
     }
     
     // MARK: - 장소 검색 UI
@@ -130,7 +130,7 @@ final class SearchLocationViewController: BaseViewController<SearchLocationViewM
         UIView.animate(withDuration: 0.25) {
             self.view.layoutIfNeeded()
         }
-        viewModel.searchLocation(keyword: text, lat: coordinate.latitude, lon: coordinate.longitude)
+//        viewModel.searchLocation(keyword: text, lat: coordinate.latitude, lon: coordinate.longitude)
     }
     
     // MARK: - 텍스트 제출 처리
@@ -140,7 +140,7 @@ final class SearchLocationViewController: BaseViewController<SearchLocationViewM
             make.top.equalTo(headerView.snp.bottom)
             make.leading.trailing.bottom.equalToSuperview()
         }
-        viewModel.searchLocation(keyword: text, lat: coordinate.latitude, lon: coordinate.longitude)
+//        viewModel.searchLocation(keyword: text, lat: coordinate.latitude, lon: coordinate.longitude)
     }
 }
 
@@ -201,9 +201,9 @@ extension SearchLocationViewController: UITableViewDataSource, UITableViewDelega
     
     // MARK: - 현위치 찾기
     @objc private func handleCurrentLocationTapped() {
-        viewModel.handleCurrentLocation { [weak self] coordinate, placeName, address  in
-            guard let self else { return }
-            self.onCurrentTapped?(coordinate, placeName, address)
-        }
+//        viewModel.handleCurrentLocation { [weak self] coordinate, placeName, address  in
+//            guard let self else { return }
+//            self.onCurrentTapped?(coordinate, placeName, address)
+//        }
     }
 }

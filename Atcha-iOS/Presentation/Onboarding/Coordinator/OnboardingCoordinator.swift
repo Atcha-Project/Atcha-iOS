@@ -74,15 +74,15 @@ final class OnboardingCoordinator {
     }
     
     private func showSearchLocation() {
-        let viewModel = diContainer.makeSearchLocationViewModel()
-        let searchVC = SearchLocationViewController(viewModel: viewModel)
+//        let viewModel = diContainer.makeSearchLocationViewModel()
+//        let searchVC = SearchLocationViewController(viewModel: viewModel)
         
         // RegisterLocation ViewController 이동
-        searchVC.onCurrentTapped = { [weak self] coordinate, placeName, address in
-            self?.showRegisterLocation(coordinate, placeName, address)
-        }
-        
-        navigationController.pushViewController(searchVC, animated: true)
+//        searchVC.onCurrentTapped = { [weak self] coordinate, placeName, address in
+//            self?.showRegisterLocation(coordinate, placeName, address)
+//        }
+//        
+//        navigationController.pushViewController(searchVC, animated: true)
     }
     
     private func showRegisterLocation(

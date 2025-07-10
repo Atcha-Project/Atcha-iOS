@@ -43,7 +43,6 @@ final class TMapWrapper: NSObject, MapRendering {
         mapView.isShowCompass = false
 //        mapView.trackinMode = .followWithCourse
 //        mapView.isTrackingLocation = true
-        mapView.setZoom(20)
     }
     
     func updateUserMarker(coordinate: CLLocationCoordinate2D) {
