@@ -32,11 +32,20 @@ final class HomeRegisterDIContainer {
     }
     
     func makeHomeFindViewModel() -> HomeFindViewModel {
-        return HomeFindViewModel(searchAddressUseCase: searchAddressUseCase,
-                                 locationStateHolder: locationStateHolder)
+        let viewModel = HomeFindViewModel(searchAddressUseCase: searchAddressUseCase,
+                                          locationStateHolder: locationStateHolder)
+        return viewModel
     }
     
     func makeHomeFindViewController() -> HomeFindViewController {
         return HomeFindViewController(viewModel: makeHomeFindViewModel())
+    }
+    
+    func makeHomeSearchViewModel() -> SearchLocationViewModel {
+        return SearchLocationViewModel(searchAddressUseCase: searchAddressUseCase)
+    }
+    
+    func makeHomeSearchViewController() -> SearchLocationViewController {
+        return SearchLocationViewController(viewModel: makeHomeSearchViewModel())
     }
 }

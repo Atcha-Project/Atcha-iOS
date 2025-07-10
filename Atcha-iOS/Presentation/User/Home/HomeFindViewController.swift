@@ -63,9 +63,11 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
             .store(in: &cancellables)
         
         viewModel.$currentLocation
+            .removeDuplicates()
+            .compactMap { $0 }
             .receive(on: DispatchQueue.main)
             .sink { [weak self] location in
-                guard let self, let location else { return }
+                guard let self else { return }
                 mapContainerView.setupCenter(location: location)
             }
             .store(in: &cancellables)

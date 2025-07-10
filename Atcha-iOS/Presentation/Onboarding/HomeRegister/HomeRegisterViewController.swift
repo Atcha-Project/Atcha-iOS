@@ -69,7 +69,8 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
                 guard let self else { return }
-                
+                let vc = AppDIContainer.shared.homeRegisterDIContainer.makeHomeSearchViewController()
+                navigationController?.pushViewController(vc, animated: true)
             }
             .store(in: &cancellables)
     }
