@@ -13,7 +13,7 @@ final class HomeFindViewModel: BaseViewModel {
     @Published var buildingName: String?
     @Published var address: String?
     @Published var currentLocation: CLLocationCoordinate2D?
-  
+    
     var currentLocationSubject = PassthroughSubject<CLLocationCoordinate2D?, Never>()
     private let searchAddressUseCase: SearchAddressUseCase
     private let locationStateHolder: LocationStateHolder
@@ -24,19 +24,35 @@ final class HomeFindViewModel: BaseViewModel {
         self.locationStateHolder = locationStateHolder
         self.buildingName = locationStateHolder.buildingName
         self.address = locationStateHolder.address
+        
+        super.init()
+        self.bind()
     }
     
-    func finishLoadingMap() {
-        currentLocation = locationStateHolder.currentLocation
+    private func bind() {
+        currentLocationSubject
+            .removeDuplicates()
+            .sink { [weak self] location in
+                guard let self, let location else { return }
+                Task {
+                    let address = try? await self.fetchCurrentAddress(lat: location.latitude,
+                                                                      lon: location.longitude)
+                    
+                    self.address = address?.address
+                    self.buildingName = address?.name
+                }
+            }
+            .store(in: &cancellables)
     }
     
-    func findCurrentLocation() {
+    func saveCurrentLoaction() {
+        locationStateHolder.currentLocation = currentLocation
+        locationStateHolder.buildingName = buildingName
+        locationStateHolder.address = address
+    }
+    
+    func setupLocation() {
         currentLocation = locationStateHolder.currentLocation
-//        locationStateHolder.currentLocationSubject
-//            .sink { [weak self] location in
-//                self?.currentLocation = location
-//            }
-//            .store(in: &cancellables)
     }
 }
 
