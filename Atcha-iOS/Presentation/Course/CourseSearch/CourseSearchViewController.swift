@@ -55,11 +55,16 @@ class CourseSearchViewController: BaseViewController<CourseSearchViewModel> {
     private enum Section {
         case courseList
     }
+    private let noSearchStack: UIStackView = UIStackView()
+    private let noSearchImageView: UIImageView = UIImageView()
+    private let noSearchLabel: UILabel = UILabel()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setupUI()
+        NoSearchCourseUI()
+        noSearchStack.isHidden = true
         bind()
         viewModel.courseSearch()
     }
@@ -128,6 +133,13 @@ class CourseSearchViewController: BaseViewController<CourseSearchViewModel> {
             .receive(on: RunLoop.main)
             .sink { [weak self] courses in
                 self?.applySnapshot(courses: courses)
+                
+                if courses.isEmpty {
+                    self?.noSearchStack.isHidden = false
+                } else {
+                    self?.noSearchStack.isHidden = true
+                }
+                
             }
             .store(in: &cancellables)
     }
@@ -185,6 +197,24 @@ class CourseSearchViewController: BaseViewController<CourseSearchViewModel> {
         }
         
         dataSource.apply(snapshot, animatingDifferences: true)
+    }
+    
+    // MARK: - 검색 결과 없을 경우 UI
+    private func NoSearchCourseUI() {
+        noSearchImageView.image = UIImage.atchaGray
+        noSearchImageView.contentMode = .scaleAspectFit
+        noSearchLabel.attributedText = AtchaFont.B4_R_15("검색 가능한 막차 정보가 없습니다.", color: AtchaColor.gray400)
+        
+        noSearchStack.addArrangedSubview(noSearchImageView)
+        noSearchStack.addArrangedSubview(noSearchLabel)
+        noSearchStack.axis = .vertical
+        noSearchStack.spacing = 16
+        
+        view.addSubview(noSearchStack)
+        
+        noSearchStack.snp.makeConstraints { make in
+            make.center.equalTo(courseCollectionView)
+        }
     }
 }
 
