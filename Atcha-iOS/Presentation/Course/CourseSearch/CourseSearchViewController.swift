@@ -11,10 +11,11 @@ import Combine
 
 class CourseSearchViewController: BaseViewController<CourseSearchViewModel> {
     
-    private let topNavigationBar: TitleNavigationBar = AtchaNavigationBar.title("") {
-        
+    private lazy var topNavigationBar: TitleNavigationBar = AtchaNavigationBar.title("") { [weak self] in
+        self?.navigationController?.popViewController(animated: true)
     } onClose: {
-        
+        [weak self] in
+        self?.navigationController?.popToRootViewController(animated: true)
     }
     private let courseView: UIView = UIView()
     private let routeLabelStack: UIStackView = UIStackView()

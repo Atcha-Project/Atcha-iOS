@@ -65,7 +65,16 @@ final class MapViewController: BaseViewController<MapViewModel>,
                     viewModel.routeHandler?(.changeCourse)
                     
                 case .searchTapped:
-                    viewModel.routeHandler?(.courseSearch)
+//                    guard let coordinate = viewModel.currentLocation,
+//                          let address = viewModel.address else {
+//                        print("위치 정보 또는 주소 없음")
+//                        return
+//                    }
+//
+//                    let lat = String(coordinate.latitude)
+//                    let lon = String(coordinate.longitude)
+                    
+                    viewModel.routeHandler?(.courseSearch(startLat: "37.566295", startLon: "126.977945", startAddress: "서울시청"))
                 }
             }
             .store(in: &cancellables)

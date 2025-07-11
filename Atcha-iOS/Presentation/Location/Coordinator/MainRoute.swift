@@ -9,6 +9,6 @@ import Foundation
 
 enum MainRoute {
     case myPage
-    case courseSearch
+    case courseSearch(startLat: String, startLon: String, startAddress: String)
     case changeCourse
 }
