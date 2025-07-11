@@ -8,6 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		6D17A88C2E1CE5A600642D66 /* Secrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6D17A88B2E1CE5A600642D66 /* Secrets.xcconfig */; };
+		6D17A89E2E20CD4B00642D66 /* TMapSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D17A89A2E20CD4000642D66 /* TMapSDK.framework */; };
+		6D17A89F2E20CD4B00642D66 /* TMapSDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 6D17A89A2E20CD4000642D66 /* TMapSDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		6D17A8A02E20CD4C00642D66 /* VSMSDK.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D17A89B2E20CD4000642D66 /* VSMSDK.xcframework */; };
+		6D17A8A12E20CD4C00642D66 /* VSMSDK.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 6D17A89B2E20CD4000642D66 /* VSMSDK.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		6D1EE2DA2E08E4E000F7BBF1 /* HomeRegisterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2D92E08E4E000F7BBF1 /* HomeRegisterViewController.swift */; };
 		6D1EE2DC2E08E4EA00F7BBF1 /* HomeRegisterViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2DB2E08E4EA00F7BBF1 /* HomeRegisterViewModel.swift */; };
 		6D1EE2DE2E090A3300F7BBF1 /* SearchLocationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2DD2E090A3300F7BBF1 /* SearchLocationViewController.swift */; };
@@ -70,10 +74,6 @@
 		6DFF29912E0CBE820039399F /* RegisterLocationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFF29902E0CBE820039399F /* RegisterLocationViewController.swift */; };
 		6DFF29932E0CBE8A0039399F /* RegisterLocationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFF29922E0CBE8A0039399F /* RegisterLocationViewModel.swift */; };
 		6DFF29B42E0CDA0E0039399F /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFF29B32E0CDA0E0039399F /* LocationService.swift */; };
-		6DFF29E02E0E6D120039399F /* TMapSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6DFF29DC2E0E6D100039399F /* TMapSDK.framework */; };
-		6DFF29E12E0E6D120039399F /* TMapSDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 6DFF29DC2E0E6D100039399F /* TMapSDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		6DFF29E22E0E6D140039399F /* VSMSDK.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6DFF29DD2E0E6D100039399F /* VSMSDK.xcframework */; };
-		6DFF29E32E0E6D140039399F /* VSMSDK.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 6DFF29DD2E0E6D100039399F /* VSMSDK.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		6DFF29F02E0F23840039399F /* UIImage+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFF29EF2E0F23840039399F /* UIImage+Ext.swift */; };
 		B600CA132E07FD29008B0D87 /* MyPageCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C13472E07A10F0016D2F0 /* MyPageCoordinator.swift */; };
 		B65C12D72E0429B30016D2F0 /* AppFlowCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C12D62E0429B30016D2F0 /* AppFlowCoordinator.swift */; };
@@ -171,8 +171,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				6DFF29E12E0E6D120039399F /* TMapSDK.framework in Embed Frameworks */,
-				6DFF29E32E0E6D140039399F /* VSMSDK.xcframework in Embed Frameworks */,
+				6D17A89F2E20CD4B00642D66 /* TMapSDK.framework in Embed Frameworks */,
+				6D17A8A12E20CD4C00642D66 /* VSMSDK.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -181,6 +181,8 @@
 
 /* Begin PBXFileReference section */
 		6D17A88B2E1CE5A600642D66 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
+		6D17A89A2E20CD4000642D66 /* TMapSDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = TMapSDK.framework; sourceTree = "<group>"; };
+		6D17A89B2E20CD4000642D66 /* VSMSDK.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = VSMSDK.xcframework; sourceTree = "<group>"; };
 		6D1EE2D92E08E4E000F7BBF1 /* HomeRegisterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeRegisterViewController.swift; sourceTree = "<group>"; };
 		6D1EE2DB2E08E4EA00F7BBF1 /* HomeRegisterViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeRegisterViewModel.swift; sourceTree = "<group>"; };
 		6D1EE2DD2E090A3300F7BBF1 /* SearchLocationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchLocationViewController.swift; sourceTree = "<group>"; };
@@ -235,8 +237,6 @@
 		6DFF29902E0CBE820039399F /* RegisterLocationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterLocationViewController.swift; sourceTree = "<group>"; };
 		6DFF29922E0CBE8A0039399F /* RegisterLocationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterLocationViewModel.swift; sourceTree = "<group>"; };
 		6DFF29B32E0CDA0E0039399F /* LocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationService.swift; sourceTree = "<group>"; };
-		6DFF29DC2E0E6D100039399F /* TMapSDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = TMapSDK.framework; sourceTree = "<group>"; };
-		6DFF29DD2E0E6D100039399F /* VSMSDK.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = VSMSDK.xcframework; sourceTree = "<group>"; };
 		6DFF29EF2E0F23840039399F /* UIImage+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Ext.swift"; sourceTree = "<group>"; };
 		B65C12D62E0429B30016D2F0 /* AppFlowCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFlowCoordinator.swift; sourceTree = "<group>"; };
 		B65C12D92E042A740016D2F0 /* AppDIContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDIContainer.swift; sourceTree = "<group>"; };
@@ -338,12 +338,12 @@
 				6D8D8AE32E01386D003DABB2 /* PanModal in Frameworks */,
 				6DC3BEE92E04FD7B00831470 /* FirebaseAuth in Frameworks */,
 				6D8D8AE02E013819003DABB2 /* SnapKit in Frameworks */,
-				6DFF29E22E0E6D140039399F /* VSMSDK.xcframework in Frameworks */,
+				6D17A89E2E20CD4B00642D66 /* TMapSDK.framework in Frameworks */,
 				6DC3BEE22E04FD0700831470 /* KakaoSDK in Frameworks */,
 				6DC3BEEB2E04FD7B00831470 /* FirebaseCore in Frameworks */,
-				6DFF29E02E0E6D120039399F /* TMapSDK.framework in Frameworks */,
 				6DC3BEED2E04FD7B00831470 /* FirebaseCrashlytics in Frameworks */,
 				6DC3BEE62E04FD0700831470 /* KakaoSDKCommon in Frameworks */,
+				6D17A8A02E20CD4C00642D66 /* VSMSDK.xcframework in Frameworks */,
 				6DC3BEE42E04FD0700831470 /* KakaoSDKAuth in Frameworks */,
 				6D8157492E129A7C003688A6 /* Lottie in Frameworks */,
 			);
@@ -859,6 +859,8 @@
 		B68309522E005A3600E2D029 /* Atcha-iOS */ = {
 			isa = PBXGroup;
 			children = (
+				6D17A89A2E20CD4000642D66 /* TMapSDK.framework */,
+				6D17A89B2E20CD4000642D66 /* VSMSDK.xcframework */,
 				B67E3E592E09811E0056EEB3 /* Atcha-iOS.entitlements */,
 				B65C12D52E0429970016D2F0 /* App */,
 				B65C12D22E0429450016D2F0 /* Data */,
@@ -871,8 +873,6 @@
 				B683094E2E005A3600E2D029 /* LaunchScreen.storyboard */,
 				B68309502E005A3600E2D029 /* Main.storyboard */,
 				B68309512E005A3600E2D029 /* ViewController.swift */,
-				6DFF29DC2E0E6D100039399F /* TMapSDK.framework */,
-				6DFF29DD2E0E6D100039399F /* VSMSDK.xcframework */,
 			);
 			path = "Atcha-iOS";
 			sourceTree = "<group>";
