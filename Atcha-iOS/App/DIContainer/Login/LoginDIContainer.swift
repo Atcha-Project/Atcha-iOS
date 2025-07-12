@@ -16,7 +16,7 @@ final class LoginDIContainer {
     }
 
     func makeLoginUseCase() -> LoginUseCase {
-        let repository: LoginRepository = LoginRepositoryImpl(apiService: apiService)
+        let repository: UserRepository = UserRepositoryImpl(apiService: apiService)
         return LoginUseCaseImpl(repository: repository)
     }
 

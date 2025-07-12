@@ -22,6 +22,7 @@ final class AppDIContainer {
 //    let courseDIContainer: CourseDIContainer
     
     let homeRegisterDIContainer: HomeRegisterDIContainer
+    let pushRegisterDIContainer: PushRegisterDIContainer
     
     private let locationStateHolder: LocationStateHolder = LocationStateHolder()
     
@@ -40,5 +41,6 @@ final class AppDIContainer {
         self.onboardingDIContainer = OnboardingDIContainer(apiService: apiServce, locationService: locationService, locationStateHolder: locationStateHolder)
 //        self.courseDIContainer = CourseDIContainer(apiService: apiServce)
         self.homeRegisterDIContainer = HomeRegisterDIContainer(apiService: apiServce, locationStateHolder: locationStateHolder)
+        self.pushRegisterDIContainer = PushRegisterDIContainer(apiService: apiServce, locationStateHolder: locationStateHolder)
     }
 }

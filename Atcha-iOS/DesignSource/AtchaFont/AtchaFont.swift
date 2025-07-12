@@ -77,8 +77,8 @@ enum AtchaFont {
     }
     
     // Heading 4
-    static func H4_SB_17(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.SemiBold, size: 17, lineHeight: 24, text: text, color: color)
+    static func H4_SB_17(_ text: String?, color: UIColor = .label) -> NSAttributedString {
+        styled(.SemiBold, size: 17, lineHeight: 24, text: text ?? "", color: color)
     }
     
     

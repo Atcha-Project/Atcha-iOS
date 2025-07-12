@@ -6,31 +6,21 @@
 //
 
 import Foundation
+import Combine
 
 final class PushAlarmViewModel: BaseViewModel {
-    private let onboardingUseCase: OnboardingUseCase
+    private let signUpUseCase: SignUpUseCase
     var selectedLocation: SelectedLocation?
     var onFinish: ((Bool) -> Void)?
     
-    init(onboardingUseCase: OnboardingUseCase) {
-        self.onboardingUseCase = onboardingUseCase
+    init(signUpUseCase: SignUpUseCase) {
+        self.signUpUseCase = signUpUseCase
     }
     
-    func signUp(provider: Int, selectedAlarms: [String]) async throws {
-        let alarmTimeMapping: [String: Int] = [
-            "1분 전": 1,
-            "5분 전": 5,
-            "10분 전": 10,
-            "20분 전": 20,
-            "30분 전": 30,
-            "1시간 전": 60
-        ]
-        
-        var alertFrequencies: [Int] = [1]
-        for alarm in selectedAlarms {
-            if alarm != "1분 전", let value = alarmTimeMapping[alarm] {
-                alertFrequencies.append(value)
-            }
+    func signUp(selectedAlarms: [AlarmTimeOption]) async throws {
+        guard let provider = UserDefaultsWrapper().integer(forKey: UserDefaultsWrapper.Key.provider.rawValue) else {
+            print("❌ 플랫폼 정보 없음")
+            return
         }
         
         guard let location = selectedLocation else {
@@ -49,12 +39,12 @@ final class PushAlarmViewModel: BaseViewModel {
             address: location.address,
             lat: location.lat,
             lon: location.lon,
-            alertFrequencies: alertFrequencies,
+            alertFrequencies: selectedAlarms.map { $0.rawValue },
             fcmToken: fcmToken
         )
         
         do {
-            let response = try await onboardingUseCase.signUp(request)
+            let response = try await signUpUseCase.excute(request)
             
             AppDIContainer.shared.tokenStorage.accessToken = response.accessToken
             AppDIContainer.shared.tokenStorage.refreshToken = response.refreshToken
@@ -65,8 +55,7 @@ final class PushAlarmViewModel: BaseViewModel {
             
             onFinish?(true)
         } catch {
-            print("회원가입 실패: \(error)")
             onFinish?(false)
-        }        
+        }
     }
 }

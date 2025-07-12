@@ -35,9 +35,9 @@ final class OnboardingDIContainer {
 //        SearchLocationViewModel(onboardingUseCase: makeOnboardingUseCase())
 //    }
     
-    func makePushAlarmViewModel() -> PushAlarmViewModel {
-        PushAlarmViewModel(onboardingUseCase: makeOnboardingUseCase())
-    }
+//    func makePushAlarmViewModel() -> PushAlarmViewModel {
+//        PushAlarmViewModel(onboardingUseCase: makeOnboardingUseCase())
+//    }
     
     func makeRegisterLocationViewModel() -> RegisterLocationViewModel {
         RegisterLocationViewModel(onboardingUseCase: makeOnboardingUseCase())

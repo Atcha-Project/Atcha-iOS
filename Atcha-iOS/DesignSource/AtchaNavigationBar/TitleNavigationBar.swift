@@ -19,7 +19,7 @@ final class TitleNavigationBar: UIView {
     private let titleLabel = UILabel()
     private let closeButton = UIButton()
     
-    init(title: String,
+    init(title: String? = nil,
          onTapBack: (() -> Void)? = nil,
          onTapClose: (() -> Void)? = nil) {
         self.onTapBack = onTapBack
@@ -34,7 +34,7 @@ final class TitleNavigationBar: UIView {
     }
     
     // MARK: - Title NavigationBar UI
-    private func setupUI(title: String) {
+    private func setupUI(title: String?) {
         backgroundColor = AtchaColor.gray950
         
         backButton.setImage(UIImage.chevronLeft, for: .normal)

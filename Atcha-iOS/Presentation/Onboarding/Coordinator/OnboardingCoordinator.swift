@@ -33,8 +33,11 @@ final class OnboardingCoordinator {
 //        let homeRegiVM = HomeRegisterDIContainer(apiService: apiService,
 //                                                 locationStateHolder: locationHolder).makeHomeRegisterViewModel()
         
-        let homeRegisterVC = HomeRegisterDIContainer(apiService: apiService,
-                                                     locationStateHolder: locationHolder).makeHomeRegisterViewController()
+//        let homeRegisterVC = HomeRegisterDIContainer(apiService: apiService,
+//                                                     locationStateHolder: locationHolder).makeHomeRegisterViewController()
+        
+        let vc = PushRegisterDIContainer(apiService: apiService,
+                                         locationStateHolder: locationHolder).makePushRegisterViewController()
         
         //        let viewModel = diContainer.makeHomeRegisterViewModel()
         //        viewModel.onFinish = { [weak self] success in
@@ -58,19 +61,19 @@ final class OnboardingCoordinator {
         //            self?.showPushAlarm(with: location)
         //        }
         
-        navigationController.pushViewController(homeRegisterVC, animated: true)
+        navigationController.pushViewController(vc, animated: true)
     }
     
     private func showPushAlarm(with location: SelectedLocation) {
-        let viewModel = diContainer.makePushAlarmViewModel()
-        viewModel.selectedLocation = location
-        
-        viewModel.onFinish = { [weak self] success in
-            self?.onFinish?(success)
-        }
-        
-        let pushAlarmVC = PushAlarmViewController(viewModel: viewModel)
-        navigationController.pushViewController(pushAlarmVC, animated: true)
+//        let viewModel = diContainer.makePushAlarmViewModel()
+//        viewModel.selectedLocation = location
+//        
+//        viewModel.onFinish = { [weak self] success in
+//            self?.onFinish?(success)
+//        }
+//        
+//        let pushAlarmVC = PushAlarmViewController(viewModel: viewModel)
+//        navigationController.pushViewController(pushAlarmVC, animated: true)
     }
     
     private func showSearchLocation() {
