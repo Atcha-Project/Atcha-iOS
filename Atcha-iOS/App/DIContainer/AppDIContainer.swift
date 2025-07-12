@@ -19,8 +19,6 @@ final class AppDIContainer {
     let loginDIContainer: LoginDIContainer
     let mainDIContainer: LocationDIContainer
     let onboardingDIContainer: OnboardingDIContainer
-//    let courseDIContainer: CourseDIContainer
-    
     let homeRegisterDIContainer: HomeRegisterDIContainer
     let pushRegisterDIContainer: PushRegisterDIContainer
     

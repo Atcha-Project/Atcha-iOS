@@ -21,29 +21,13 @@ final class OnboardingDIContainer {
         self.locationStateHolder = locationStateHolder
     }
     
-    func makeOnboardingUseCase() -> OnboardingUseCase {
-        let repository: OnboardingRepository = OnboardingRepositoryImpl(apiService: apiService)
-        
-        return OnboardingUseCaseImpl(repository: repository, locationService: locationService)
-    }
-    
-//    func makeHomeRegisterViewModel() -> HomeRegisterViewModel {
-//        HomeRegisterViewModel(onboardingUseCase: makeOnboardingUseCase())
-//    }
-    
-//    func makeSearchLocationViewModel() -> SearchLocationViewModel {
-//        SearchLocationViewModel(onboardingUseCase: makeOnboardingUseCase())
-//    }
-    
-//    func makePushAlarmViewModel() -> PushAlarmViewModel {
-//        PushAlarmViewModel(onboardingUseCase: makeOnboardingUseCase())
-//    }
-    
-    func makeRegisterLocationViewModel() -> RegisterLocationViewModel {
-        RegisterLocationViewModel(onboardingUseCase: makeOnboardingUseCase())
-    }
-    
     func makeOnboardingCoordinator(navigationController: UINavigationController) -> OnboardingCoordinator {
-        OnboardingCoordinator(apiService: apiService, navigationController: navigationController, disContainer: self, locationHolder: locationStateHolder)
+        let homeRegiDIContainer = HomeRegisterDIContainer(apiService: apiService, locationStateHolder: locationStateHolder)
+        let pushRegiDIContainer = PushRegisterDIContainer(apiService: apiService, locationStateHolder: locationStateHolder)
+        return OnboardingCoordinator(apiService: apiService,
+                                     navigationController: navigationController,
+                                     locationHolder: locationStateHolder,
+                                     homeDIConatiner: homeRegiDIContainer,
+                                     pushRegisterDIContainer: pushRegiDIContainer)
     }
 }
