@@ -28,12 +28,16 @@ class AppFlowCoordinator {
         window.makeKeyAndVisible()
         
         let splashCoordinator = container.makeSplashCoordinator(navigationController: navigationController)
-        splashCoordinator.onFinish = { [weak self] in
+        splashCoordinator.routerHandler = { [weak self] router in
             guard let self else { return }
-            // 로그인 됐으면 mainFlow 아니면 LoginFlow
-//            showMainFlow()
-            showOnboardingFlow()
-//            showLoginFlow()
+            switch router {
+            case .login:
+                showLoginFlow()
+            case .main:
+                showMainFlow()
+            case .onboarding:
+                showOnboardingFlow()
+            }
         }
         splashCoordinator.start()
         self.splashCoordinator = splashCoordinator

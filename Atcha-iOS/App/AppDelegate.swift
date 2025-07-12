@@ -46,11 +46,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 }
 
 extension AppDelegate: MessagingDelegate {
-    func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
+    func messaging(_ messaging: Messaging,
+                   didReceiveRegistrationToken fcmToken: String?) {
         AppDIContainer.shared.tokenStorage.fcmToken = fcmToken
     }
     
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
-        
+        print("erorr : \(error.localizedDescription)")
     }
 }

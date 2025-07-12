@@ -52,6 +52,7 @@ final class OnboardingCoordinator {
     
     private func showSearchAddress() {
         let vm = homeDIConatiner.makeHomeSearchViewModel()
+        vm.routeHandler = { [weak self] route in self?.handle(route: route) }
         let vc = homeDIConatiner.makeHomeSearchViewController(viewModel: vm)
         navigationController.pushViewController(vc, animated: true)
     }
@@ -59,6 +60,7 @@ final class OnboardingCoordinator {
     private func showPushRegister() {
         let vm = pushRegisterDIContainer.makePushRegisterViewModel()
         vm.routeHandler = { [weak self] route in self?.handle(route: route) }
+        vm.onFinish = { [weak self] isSuccess in self?.onFinish?(isSuccess) }
         let vc = pushRegisterDIContainer.makePushRegisterViewController(viewModel: vm)
         navigationController.pushViewController(vc, animated: true)
     }

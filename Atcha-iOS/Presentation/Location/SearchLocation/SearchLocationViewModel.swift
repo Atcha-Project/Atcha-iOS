@@ -13,6 +13,8 @@ final class SearchLocationViewModel: BaseViewModel {
     @Published private(set) var locations: [Location] = []
     private(set) var currentLocation: CLLocationCoordinate2D?
     
+    var routeHandler: ((OnboardingRoute) -> Void)?
+    
     private let searchAddressUseCase: SearchAddressUseCase
     private let authorizationUseCase: RequestLocationAuthorizationUseCase
     private let locationStateHolder: LocationStateHolder

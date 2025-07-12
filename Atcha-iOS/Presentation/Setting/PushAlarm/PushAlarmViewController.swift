@@ -39,6 +39,10 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
                 let (option, isSelected) = pair
                 return index == 0 || isSelected ? option : nil
             }
+        
+        Task {
+            try? await self.viewModel.signUp(selectedAlarms: selectedOptions)
+        }
     }
     
     override func viewDidLoad() {

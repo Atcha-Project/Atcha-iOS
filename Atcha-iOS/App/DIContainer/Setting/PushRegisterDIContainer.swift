@@ -19,7 +19,8 @@ final class PushRegisterDIContainer {
     
     func makePushRegisterViewModel() -> PushAlarmViewModel {
         let useCase: SignUpUseCase = SignUpUseCaseImpl(repository: UserRepositoryImpl(apiService: apiService))
-        return PushAlarmViewModel(signUpUseCase: useCase)
+        return PushAlarmViewModel(signUpUseCase: useCase,
+                                  locationStateHolder: locationStateHolder)
     }
     
     func makePushRegisterViewController(viewModel: PushAlarmViewModel) -> PushAlarmViewController {

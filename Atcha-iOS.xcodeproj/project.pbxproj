@@ -117,6 +117,7 @@
 		B664018B2E2277A900A397AE /* AlarmTimeOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = B664018A2E2277A900A397AE /* AlarmTimeOption.swift */; };
 		B66401942E22790300A397AE /* SignUpUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B66401932E22790300A397AE /* SignUpUseCase.swift */; };
 		B66401972E227E5E00A397AE /* OnboardingRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = B66401962E227E5E00A397AE /* OnboardingRoute.swift */; };
+		B66401992E229EB000A397AE /* SplashRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B66401982E229EB000A397AE /* SplashRouter.swift */; };
 		B6713CBE2E12998600AF8486 /* LocationDIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6713CBD2E12998600AF8486 /* LocationDIContainer.swift */; };
 		B6713CC02E129ABC00AF8486 /* RequestLocationAuthorizationRepositoryImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6713CBF2E129ABC00AF8486 /* RequestLocationAuthorizationRepositoryImpl.swift */; };
 		B6713CC22E129AEC00AF8486 /* RequestLocationAuthorizationRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6713CC12E129AEC00AF8486 /* RequestLocationAuthorizationRepository.swift */; };
@@ -290,6 +291,7 @@
 		B664018A2E2277A900A397AE /* AlarmTimeOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmTimeOption.swift; sourceTree = "<group>"; };
 		B66401932E22790300A397AE /* SignUpUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpUseCase.swift; sourceTree = "<group>"; };
 		B66401962E227E5E00A397AE /* OnboardingRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingRoute.swift; sourceTree = "<group>"; };
+		B66401982E229EB000A397AE /* SplashRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashRouter.swift; sourceTree = "<group>"; };
 		B6713CBD2E12998600AF8486 /* LocationDIContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationDIContainer.swift; sourceTree = "<group>"; };
 		B6713CBF2E129ABC00AF8486 /* RequestLocationAuthorizationRepositoryImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestLocationAuthorizationRepositoryImpl.swift; sourceTree = "<group>"; };
 		B6713CC12E129AEC00AF8486 /* RequestLocationAuthorizationRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestLocationAuthorizationRepository.swift; sourceTree = "<group>"; };
@@ -772,6 +774,7 @@
 		B65C13422E06E0B30016D2F0 /* Coordinator */ = {
 			isa = PBXGroup;
 			children = (
+				B66401982E229EB000A397AE /* SplashRouter.swift */,
 				B65C13432E06E0BC0016D2F0 /* SplashCoordinator.swift */,
 			);
 			path = Coordinator;
@@ -1326,6 +1329,7 @@
 				B66401972E227E5E00A397AE /* OnboardingRoute.swift in Sources */,
 				B6DC7C232E16B5C1005D8E17 /* AddressRepositoryImpl.swift in Sources */,
 				B65C130C2E057CAB0016D2F0 /* APIServiceImpl.swift in Sources */,
+				B66401992E229EB000A397AE /* SplashRouter.swift in Sources */,
 				B6FB20842E1BE4B80032751B /* FetchTaxiFareUseCase.swift in Sources */,
 				B6713CBE2E12998600AF8486 /* LocationDIContainer.swift in Sources */,
 				6DC3BF682E0721F300831470 /* LoginDTO.swift in Sources */,

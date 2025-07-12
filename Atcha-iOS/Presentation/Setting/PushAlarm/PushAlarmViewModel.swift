@@ -10,22 +10,20 @@ import Combine
 
 final class PushAlarmViewModel: BaseViewModel {
     private let signUpUseCase: SignUpUseCase
-    var selectedLocation: SelectedLocation?
+    private let locationStateHolder: LocationStateHolder
+//    var selectedLocation: SelectedLocation?
     var onFinish: ((Bool) -> Void)?
     var routeHandler: ((OnboardingRoute) -> Void)?
     
-    init(signUpUseCase: SignUpUseCase) {
+    init(signUpUseCase: SignUpUseCase,
+         locationStateHolder: LocationStateHolder) {
         self.signUpUseCase = signUpUseCase
+        self.locationStateHolder = locationStateHolder
     }
     
     func signUp(selectedAlarms: [AlarmTimeOption]) async throws {
         guard let provider = UserDefaultsWrapper().integer(forKey: UserDefaultsWrapper.Key.provider.rawValue) else {
             print("❌ 플랫폼 정보 없음")
-            return
-        }
-        
-        guard let location = selectedLocation else {
-            print("⚠️ 선택된 위치가 없습니다.")
             return
         }
         
@@ -37,9 +35,9 @@ final class PushAlarmViewModel: BaseViewModel {
         let request = SignUpRequest(
             provider: provider,
             userName: "",
-            address: location.address,
-            lat: location.lat,
-            lon: location.lon,
+            address: locationStateHolder.address ?? "",
+            lat: locationStateHolder.currentLocation?.latitude ?? 0.0,
+            lon: locationStateHolder.currentLocation?.longitude ?? 0.0,
             alertFrequencies: selectedAlarms.map { $0.rawValue },
             fcmToken: fcmToken
         )

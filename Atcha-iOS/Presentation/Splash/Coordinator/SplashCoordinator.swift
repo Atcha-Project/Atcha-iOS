@@ -12,7 +12,7 @@ final class SplashCoordinator {
     private let navigationController: UINavigationController
     private let diContainer: SplashDIContainer
     
-    var onFinish: (() -> Void)?
+    var routerHandler: ((SplashRouter) -> Void)?
     
     init(navigationController: UINavigationController, diContainer: SplashDIContainer) {
         self.navigationController = navigationController
@@ -21,10 +21,9 @@ final class SplashCoordinator {
 
     func start() {
         let viewModel = diContainer.makeSplashViewModel()
-        let viewController = SplashViewController(viewModel: viewModel)
-        viewModel.onSignUpCompleted = { [weak self] in
-            guard let self else { return }
-            onFinish?()
+        let viewController = diContainer.makeSplashViewController(viewModel: viewModel)
+        viewModel.routerHandler = { [weak self] router in
+            self?.routerHandler?(router)
         }
         navigationController.pushViewController(viewController, animated: false)
     }

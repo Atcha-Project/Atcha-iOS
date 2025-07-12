@@ -17,10 +17,7 @@ final class SplashViewController: BaseViewController<SplashViewModel> {
         
         setupUI()
         viewModel.checkAppVersion()
-        
-        DispatchQueue.main.asyncAfter(deadline: .now()) {
-            self.viewModel.signUpFinished()
-        }
+        viewModel.checkUserStatus()
     }
     
     private func setupUI() {
