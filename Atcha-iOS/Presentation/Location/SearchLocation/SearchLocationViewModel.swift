@@ -10,36 +10,40 @@ import Combine
 import CoreLocation
 
 final class SearchLocationViewModel: BaseViewModel {
-    private let searchAddressUseCase: SearchAddressUseCase
+    @Published private(set) var searchResult: [Location] = []
     
-    // 검색된 장소 목록
-    @Published private(set) var locations: [Location] = []
+    private let searchAddressUseCase: SearchAddressUseCase
     
     init(searchAddressUseCase: SearchAddressUseCase) {
         self.searchAddressUseCase = searchAddressUseCase
     }
     
     // MARK: - 장소 검색
-//    @MainActor
-//    func searchLocation(keyword: String, lat: Double, lon: Double) {
-//        Task {
-//            do {
-//                let request = SearchLocationRequest(keyword: keyword, lat: lat, lon: lon)
-//                let response = try await onboardingUseCase.searchLocation(request)
-//                self.locations = response
-//            } catch {
-//                print("장소 검색 실패")
-//            }
-//        }
-//    }
-    
-    // MARK: - 좌표 -> 주소 변환
+    @MainActor
+    func searchLocation(keyword: String, lat: Double, lon: Double) {
+        Task {
+            do {
+                let request = SearchLocationRequest(keyword: keyword, lat: lat, lon: lon)
+                let response = try await searchAddressUseCase.searchLocation(request)
+                
+//                self.searchResult = response
+            } catch {
+                print("장소 검색 실패")
+            }
+        }
+    }
+}
+
+
+
+
+// MARK: - 좌표 -> 주소 변환
 //    func reverseGeocodeLocation(lat: Double, lon: Double) async throws -> ReverseGeocodeLocationResponse {
 //        let request = ReverseGeocodeLocationRequest(lat: lat, lon: lon)
 //        return try await onboardingUseCase.reverseGeocodeLocation(request)
 //    }
-    
-    // MARK: - 현재 위치 전달
+
+// MARK: - 현재 위치 전달
 //    func handleCurrentLocation(
 //        completion: @escaping (_ coordinate: CLLocationCoordinate2D,
 //                               _ placeName: String,
@@ -53,17 +57,16 @@ final class SearchLocationViewModel: BaseViewModel {
 //                        lat: coordinate.latitude,
 //                        lon: coordinate.longitude
 //                    )
-//                    
+//
 //                    if let placeName = response.name, let address = response.address {
 //                        DispatchQueue.main.async {
 //                            completion(coordinate, placeName, address)
 //                        }
 //                    }
-//                    
+//
 //                } catch {
 //                    print("❌ 장소 변환 실패: \(error)")
 //                }
 //            }
 //        }
 //    }
-}

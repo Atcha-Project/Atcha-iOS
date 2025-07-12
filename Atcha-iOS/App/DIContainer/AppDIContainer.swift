@@ -19,7 +19,7 @@ final class AppDIContainer {
     let loginDIContainer: LoginDIContainer
     let mainDIContainer: LocationDIContainer
     let onboardingDIContainer: OnboardingDIContainer
-    let courseDIContainer: CourseDIContainer
+//    let courseDIContainer: CourseDIContainer
     
     let homeRegisterDIContainer: HomeRegisterDIContainer
     
@@ -38,7 +38,7 @@ final class AppDIContainer {
         self.loginDIContainer = LoginDIContainer(apiService: noHeaderApiService)
         self.mainDIContainer = LocationDIContainer(apiService: apiServce)
         self.onboardingDIContainer = OnboardingDIContainer(apiService: apiServce, locationService: locationService, locationStateHolder: locationStateHolder)
-        self.courseDIContainer = CourseDIContainer(apiService: apiServce)
+//        self.courseDIContainer = CourseDIContainer(apiService: apiServce)
         self.homeRegisterDIContainer = HomeRegisterDIContainer(apiService: apiServce, locationStateHolder: locationStateHolder)
     }
 }
