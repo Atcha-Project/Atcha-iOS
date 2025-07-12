@@ -33,42 +33,44 @@ final class OnboardingCoordinator {
     }
     
     func start() {
+        showHomeRegister()
+    }
+
+    private func showHomeRegister() {
         let vm = homeDIConatiner.makeHomeRegisterViewModel()
-        vm.routeHandler = { [weak self] route in
-            guard let self else { return }
-            handle(route: route)
-        }
+        vm.routeHandler = { [weak self] route in self?.handle(route: route) }
         let vc = homeDIConatiner.makeHomeRegisterViewController(viewModel: vm)
         navigationController.pushViewController(vc, animated: true)
     }
     
+    private func showHomeFind() {
+        let vm = homeDIConatiner.makeHomeFindViewModel()
+        vm.routeHandler = { [weak self] route in self?.handle(route: route) }
+        let vc = homeDIConatiner.makeHomeFindViewController(viewModel: vm)
+        navigationController.pushViewController(vc, animated: true)
+    }
+    
+    private func showSearchAddress() {
+        let vm = homeDIConatiner.makeHomeSearchViewModel()
+        let vc = homeDIConatiner.makeHomeSearchViewController(viewModel: vm)
+        navigationController.pushViewController(vc, animated: true)
+    }
+    
+    private func showPushRegister() {
+        let vm = pushRegisterDIContainer.makePushRegisterViewModel()
+        vm.routeHandler = { [weak self] route in self?.handle(route: route) }
+        let vc = pushRegisterDIContainer.makePushRegisterViewController(viewModel: vm)
+        navigationController.pushViewController(vc, animated: true)
+    }
+    
     private func handle(route: OnboardingRoute) {
-        let homeVM = homeDIConatiner.makeHomeFindViewModel()
-        let searchVM = homeDIConatiner.makeHomeSearchViewModel()
-        let pushVM = pushRegisterDIContainer.makePushRegisterViewModel()
-        
         switch route {
         case .homeRegister:
-            let vc = homeDIConatiner.makeHomeFindViewController(viewModel: homeVM)
-            homeVM.routeHandler = { [weak self] route in
-                guard let self else { return }
-                handle(route: route)
-            }
-            navigationController.pushViewController(vc, animated: true)
-        case .pushRegister:
-            let vc = pushRegisterDIContainer.makePushRegisterViewController(viewModel: pushVM)
-            pushVM.routeHandler = { [weak self] route in
-                guard let self else { return }
-                handle(route: route)
-            }
-            navigationController.pushViewController(vc, animated: true)
+            showHomeFind()
         case .searchAdress:
-            let vc = homeDIConatiner.makeHomeSearchViewController(viewModel: searchVM)
-//            searchVM.routeHandler = { [weak self] route in
-//                guard let self else { return }
-//                handle(route: route)
-//            }
-            navigationController.pushViewController(vc, animated: true)
+            showSearchAddress()
+        case .pushRegister:
+            showPushRegister()
         }
         
         routeHandler?(route)
@@ -92,7 +94,7 @@ final class OnboardingCoordinator {
 //private func showSearchLocation() {
 //    //        let viewModel = diContainer.makeSearchLocationViewModel()
 //    //        let searchVC = SearchLocationViewController(viewModel: viewModel)
-//    
+//
 //    // RegisterLocation ViewController 이동
 //    //        searchVC.onCurrentTapped = { [weak self] coordinate, placeName, address in
 //    //            self?.showRegisterLocation(coordinate, placeName, address)
