@@ -36,9 +36,16 @@ final class AppDIContainer {
         self.myPageDIContainer = MyPageDIContainer(apiService: apiServce)
         self.loginDIContainer = LoginDIContainer(apiService: noHeaderApiService)
         self.mainDIContainer = LocationDIContainer(apiService: apiServce)
-        self.onboardingDIContainer = OnboardingDIContainer(apiService: apiServce, locationService: locationService, locationStateHolder: locationStateHolder)
+        
 //        self.courseDIContainer = CourseDIContainer(apiService: apiServce)
         self.homeRegisterDIContainer = HomeRegisterDIContainer(apiService: apiServce, locationStateHolder: locationStateHolder)
         self.pushRegisterDIContainer = PushRegisterDIContainer(apiService: apiServce, locationStateHolder: locationStateHolder)
+        
+        
+        self.onboardingDIContainer = OnboardingDIContainer(apiService: apiServce,
+                                                           locationService: locationService,
+                                                           locationStateHolder: locationStateHolder,
+                                                           homeRegisterDIConatiner: homeRegisterDIContainer,
+                                                           pushRegisterDIContainer: pushRegisterDIContainer)
     }
 }

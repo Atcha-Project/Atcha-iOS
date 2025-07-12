@@ -56,23 +56,21 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
         //            }
         //            .store(in: &cancellables)
         
-        viewModel.findLocationSubeject
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                guard let self else { return }
-                let vc = AppDIContainer.shared.homeRegisterDIContainer.makeHomeFindViewController()
-                navigationController?.pushViewController(vc, animated: true)
-            }
-            .store(in: &cancellables)
-        
-        viewModel.searchAddressSubject
-            .receive(on: RunLoop.main)
-            .sink { [weak self] _ in
-                guard let self else { return }
-                let vc = AppDIContainer.shared.homeRegisterDIContainer.makeHomeSearchViewController()
-                navigationController?.pushViewController(vc, animated: true)
-            }
-            .store(in: &cancellables)
+//        viewModel.findLocationSubeject
+//            .receive(on: DispatchQueue.main)
+//            .sink { [weak self] _ in
+//                guard let self else { return }
+//                viewModel.routeHandler?(.homeRegister)
+//            }
+//            .store(in: &cancellables)
+//        
+//        viewModel.searchAddressSubject
+//            .receive(on: RunLoop.main)
+//            .sink { [weak self] _ in
+//                guard let self else { return }
+//                viewModel.routeHandler?(.searchAdress)
+//            }
+//            .store(in: &cancellables)
     }
     
     // MARK: - 기본 UI
@@ -178,12 +176,14 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
     
     // MARK: - 장소 검색
     @objc private func handleSearchTapped() {
-        viewModel.searchAddressTapped()
+//        viewModel.searchAddressTapped()
+        viewModel.routeHandler?(.searchAdress)
     }
     
     // MARK: - 현위치 찾기
     @objc private func handleCurrentLocationTapped() {
-        viewModel.findLocationTapped()
+        viewModel.routeHandler?(.homeRegister)
+//        viewModel.findLocationTapped()
         //        viewModel.searchAddressSubject.send(())
         //        viewModel.handleCurrentLocation { [weak self] coordinate, placeName, address  in
         //            guard let self else { return }

@@ -28,8 +28,8 @@ final class HomeRegisterDIContainer {
                                      locationStateHolder: locationStateHolder)
     }
     
-    func makeHomeRegisterViewController() -> HomeRegisterViewController {
-        return HomeRegisterViewController(viewModel: makeHomeRegisterViewModel())
+    func makeHomeRegisterViewController(viewModel: HomeRegisterViewModel) -> HomeRegisterViewController {
+        return HomeRegisterViewController(viewModel: viewModel)
     }
     
     func makeHomeFindViewModel() -> HomeFindViewModel {

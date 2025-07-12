@@ -9,14 +9,13 @@ import Combine
 import CoreLocation
 
 final class HomeRegisterViewModel: BaseViewModel {
-    var findLocationSubeject = PassthroughSubject<Void, Never>()
-    var searchAddressSubject = PassthroughSubject<Void, Never>()
-    
     private var streamTask: Task<Void, Never>?
     
     private let searchAddressUseCase: SearchAddressUseCase
     private let streamUseCase: ObserveLocationStreamUseCase
     private let locationStateHolder: LocationStateHolder
+    
+    var routeHandler: ((OnboardingRoute) -> Void)?
 
     init(searchAddressUseCase: SearchAddressUseCase,
          streamUseCase: ObserveLocationStreamUseCase,
@@ -61,14 +60,6 @@ final class HomeRegisterViewModel: BaseViewModel {
                 }
             }
         }
-    }
-    
-    func findLocationTapped() {
-        findLocationSubeject.send(())
-    }
-    
-    func searchAddressTapped() {
-        searchAddressSubject.send(())
     }
     
     private func fetchCurrentAddress(lat: Double, lon: Double) async throws -> ReverseGeocodeLocationResponse {
