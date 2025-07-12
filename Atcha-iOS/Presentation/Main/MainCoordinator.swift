@@ -27,7 +27,7 @@ final class MainCoordinator {
             guard let self else { return }
             handle(route: route)
         }
-        let viewController = MapViewController(viewModel: viewModel)
+        let viewController = MainViewController(viewModel: viewModel)
         navigationController.pushViewController(viewController, animated: false)
     }
     

@@ -1,5 +1,5 @@
 //
-//  MapViewModel.swift
+//  MainViewModel.swift
 //  Atcha-iOS
 //
 //  Created by geonhui Yu on 6/30/25.
@@ -9,7 +9,7 @@ import Foundation
 import CoreLocation
 import Combine
 
-final class MapViewModel: BaseViewModel {
+final class MainViewModel: BaseViewModel {
     @Published var currentLocation: CLLocationCoordinate2D?
     @Published var address: String?
     @Published var taxiFare: Double?
@@ -87,7 +87,7 @@ final class MapViewModel: BaseViewModel {
 }
 
 // MARK: - Search Address
-extension MapViewModel {
+extension MainViewModel {
     private func fetchCurrentAddress(lat: Double, lon: Double) async throws -> ReverseGeocodeLocationResponse {
         let request: ReverseGeocodeLocationRequest = ReverseGeocodeLocationRequest(lat: lat, lon: lon)
         return try await searchAddressUseCase.searchLocation(request)
