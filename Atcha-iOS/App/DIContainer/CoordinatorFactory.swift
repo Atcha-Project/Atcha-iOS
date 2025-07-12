@@ -50,8 +50,4 @@ extension AppDIContainer: SplashCoordinatorFactory, MyPageCoordinatorFactory, Ma
     func makeMainCoordinator(navigationController: UINavigationController) -> MainCoordinator {
         return mainDIContainer.makeMainCoordinator(navigationController: navigationController)
     }
-    
-    func makeCourseCoordinator(navigationController: UINavigationController) -> CourseCoordinator {
-        return courseDIContainer.makeCourseCoordinator(navigationController: navigationController)
-    }
 }
