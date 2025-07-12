@@ -43,15 +43,31 @@ final class OnboardingCoordinator {
     }
     
     private func handle(route: OnboardingRoute) {
+        let homeVM = homeDIConatiner.makeHomeFindViewModel()
+        let searchVM = homeDIConatiner.makeHomeSearchViewModel()
+        let pushVM = pushRegisterDIContainer.makePushRegisterViewModel()
+        
         switch route {
         case .homeRegister:
-            let vc = homeDIConatiner.makeHomeFindViewController()
+            let vc = homeDIConatiner.makeHomeFindViewController(viewModel: homeVM)
+            homeVM.routeHandler = { [weak self] route in
+                guard let self else { return }
+                handle(route: route)
+            }
             navigationController.pushViewController(vc, animated: true)
         case .pushRegister:
-            let vc = pushRegisterDIContainer.makePushRegisterViewController()
+            let vc = pushRegisterDIContainer.makePushRegisterViewController(viewModel: pushVM)
+            pushVM.routeHandler = { [weak self] route in
+                guard let self else { return }
+                handle(route: route)
+            }
             navigationController.pushViewController(vc, animated: true)
         case .searchAdress:
-            let vc = homeDIConatiner.makeHomeSearchViewController()
+            let vc = homeDIConatiner.makeHomeSearchViewController(viewModel: searchVM)
+//            searchVM.routeHandler = { [weak self] route in
+//                guard let self else { return }
+//                handle(route: route)
+//            }
             navigationController.pushViewController(vc, animated: true)
         }
         

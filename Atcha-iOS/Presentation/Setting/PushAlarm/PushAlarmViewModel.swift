@@ -12,6 +12,7 @@ final class PushAlarmViewModel: BaseViewModel {
     private let signUpUseCase: SignUpUseCase
     var selectedLocation: SelectedLocation?
     var onFinish: ((Bool) -> Void)?
+    var routeHandler: ((OnboardingRoute) -> Void)?
     
     init(signUpUseCase: SignUpUseCase) {
         self.signUpUseCase = signUpUseCase

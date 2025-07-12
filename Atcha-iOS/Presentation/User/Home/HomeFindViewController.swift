@@ -19,6 +19,8 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
     private let loactionButton: UIButton = UIButton()
     private let exitButton: UIButton = UIButton()
     
+    var routeHandler: ((OnboardingRoute) -> Void)?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -58,7 +60,8 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
             .sink { [weak self] _ in
                 guard let self else { return }
                 viewModel.saveCurrentLoaction()
-                navigationController?.popViewController(animated: true)
+                viewModel.routeHandler?(.pushRegister)
+//                navigationController?.popViewController(animated: true)
             }
             .store(in: &cancellables)
         

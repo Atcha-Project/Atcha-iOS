@@ -22,7 +22,7 @@ final class PushRegisterDIContainer {
         return PushAlarmViewModel(signUpUseCase: useCase)
     }
     
-    func makePushRegisterViewController() -> PushAlarmViewController {
-        return PushAlarmViewController(viewModel: makePushRegisterViewModel())
+    func makePushRegisterViewController(viewModel: PushAlarmViewModel) -> PushAlarmViewController {
+        return PushAlarmViewController(viewModel: viewModel)
     }
 }

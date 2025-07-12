@@ -38,8 +38,8 @@ final class HomeRegisterDIContainer {
         return viewModel
     }
     
-    func makeHomeFindViewController() -> HomeFindViewController {
-        return HomeFindViewController(viewModel: makeHomeFindViewModel())
+    func makeHomeFindViewController(viewModel: HomeFindViewModel) -> HomeFindViewController {
+        return HomeFindViewController(viewModel: viewModel)
     }
     
     func makeHomeSearchViewModel() -> SearchLocationViewModel {
@@ -48,7 +48,7 @@ final class HomeRegisterDIContainer {
                                        locationStateHolder: locationStateHolder)
     }
     
-    func makeHomeSearchViewController() -> SearchLocationViewController {
-        return SearchLocationViewController(viewModel: makeHomeSearchViewModel())
+    func makeHomeSearchViewController(viewModel: SearchLocationViewModel) -> SearchLocationViewController {
+        return SearchLocationViewController(viewModel: viewModel)
     }
 }

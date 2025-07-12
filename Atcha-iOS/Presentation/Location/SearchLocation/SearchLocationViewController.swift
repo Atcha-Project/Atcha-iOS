@@ -173,7 +173,8 @@ extension SearchLocationViewController: UITableViewDataSource, UITableViewDelega
     }
     
     @objc private func handleCurrentLocationTapped() {
-        let vc = AppDIContainer.shared.homeRegisterDIContainer.makeHomeFindViewController()
-        navigationController?.pushViewController(vc, animated: true)
+//        viewModel
+//        let vc = AppDIContainer.shared.homeRegisterDIContainer.makeHomeFindViewController()
+//        navigationController?.pushViewController(vc, animated: true)
     }
 }

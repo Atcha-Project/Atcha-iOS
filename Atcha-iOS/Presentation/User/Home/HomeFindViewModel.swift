@@ -14,6 +14,8 @@ final class HomeFindViewModel: BaseViewModel {
     @Published var address: String?
     @Published var currentLocation: CLLocationCoordinate2D?
     
+    var routeHandler: ((OnboardingRoute) -> Void)?
+    
     var currentLocationSubject = PassthroughSubject<CLLocationCoordinate2D?, Never>()
     private let searchAddressUseCase: SearchAddressUseCase
     private let locationStateHolder: LocationStateHolder
