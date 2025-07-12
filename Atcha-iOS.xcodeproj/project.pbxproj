@@ -111,6 +111,9 @@
 		B65C134A2E07A1280016D2F0 /* MyPageRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C13492E07A1280016D2F0 /* MyPageRouter.swift */; };
 		B65C134C2E07A18D0016D2F0 /* MyPageNavigationTarget.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C134B2E07A18D0016D2F0 /* MyPageNavigationTarget.swift */; };
 		B65C134F2E07A6C70016D2F0 /* MainCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C134E2E07A6C70016D2F0 /* MainCoordinator.swift */; };
+		B66401802E2243D100A397AE /* SearchLocationRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B664017F2E2243D100A397AE /* SearchLocationRequest.swift */; };
+		B66401832E22449000A397AE /* SearchLocationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = B66401822E22449000A397AE /* SearchLocationResponse.swift */; };
+		B66401852E2244CF00A397AE /* Location.swift in Sources */ = {isa = PBXBuildFile; fileRef = B66401842E2244CF00A397AE /* Location.swift */; };
 		B6713CBE2E12998600AF8486 /* LocationDIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6713CBD2E12998600AF8486 /* LocationDIContainer.swift */; };
 		B6713CC02E129ABC00AF8486 /* RequestLocationAuthorizationRepositoryImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6713CBF2E129ABC00AF8486 /* RequestLocationAuthorizationRepositoryImpl.swift */; };
 		B6713CC22E129AEC00AF8486 /* RequestLocationAuthorizationRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6713CC12E129AEC00AF8486 /* RequestLocationAuthorizationRepository.swift */; };
@@ -280,6 +283,9 @@
 		B65C13492E07A1280016D2F0 /* MyPageRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyPageRouter.swift; sourceTree = "<group>"; };
 		B65C134B2E07A18D0016D2F0 /* MyPageNavigationTarget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyPageNavigationTarget.swift; sourceTree = "<group>"; };
 		B65C134E2E07A6C70016D2F0 /* MainCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainCoordinator.swift; sourceTree = "<group>"; };
+		B664017F2E2243D100A397AE /* SearchLocationRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchLocationRequest.swift; sourceTree = "<group>"; };
+		B66401822E22449000A397AE /* SearchLocationResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchLocationResponse.swift; sourceTree = "<group>"; };
+		B66401842E2244CF00A397AE /* Location.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Location.swift; sourceTree = "<group>"; };
 		B6713CBD2E12998600AF8486 /* LocationDIContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationDIContainer.swift; sourceTree = "<group>"; };
 		B6713CBF2E129ABC00AF8486 /* RequestLocationAuthorizationRepositoryImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestLocationAuthorizationRepositoryImpl.swift; sourceTree = "<group>"; };
 		B6713CC12E129AEC00AF8486 /* RequestLocationAuthorizationRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestLocationAuthorizationRepository.swift; sourceTree = "<group>"; };
@@ -370,7 +376,6 @@
 				6D1EE2F52E0A931C00F7BBF1 /* Coordinator */,
 				6DFF298F2E0CBE650039399F /* RegisterLocation */,
 				6D1EE2D82E08E4BA00F7BBF1 /* PushAlarm */,
-				6D1EE2D72E08E4B400F7BBF1 /* SearchLocation */,
 				6D1EE2D62E08E4AB00F7BBF1 /* HomeRegister */,
 			);
 			path = Onboarding;
@@ -578,6 +583,7 @@
 			isa = PBXGroup;
 			children = (
 				B65C12DD2E042CF00016D2F0 /* UserInfo.swift */,
+				B66401842E2244CF00A397AE /* Location.swift */,
 			);
 			path = Entity;
 			sourceTree = "<group>";
@@ -691,10 +697,11 @@
 		B65C13212E058C410016D2F0 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				B664017E2E2243C800A397AE /* LocationDTO */,
 				B65C133A2E069B4D0016D2F0 /* RefreshTokenResponse.swift */,
 				B65C13222E058C480016D2F0 /* AppVersionInfo.swift */,
-				6DC3BF672E0721F300831470 /* LoginDTO.swift */,
 				6D1EE2F12E0A80AA00F7BBF1 /* OnboardingDTO.swift */,
+				6DC3BF672E0721F300831470 /* LoginDTO.swift */,
 				6D73EB662E163DDD00F8DF8B /* CourseDTO.swift */,
 			);
 			path = Model;
@@ -771,6 +778,15 @@
 				B65C134E2E07A6C70016D2F0 /* MainCoordinator.swift */,
 			);
 			path = Main;
+			sourceTree = "<group>";
+		};
+		B664017E2E2243C800A397AE /* LocationDTO */ = {
+			isa = PBXGroup;
+			children = (
+				B664017F2E2243D100A397AE /* SearchLocationRequest.swift */,
+				B66401822E22449000A397AE /* SearchLocationResponse.swift */,
+			);
+			path = LocationDTO;
 			sourceTree = "<group>";
 		};
 		B6713CBC2E12997800AF8486 /* Location */ = {
@@ -963,6 +979,7 @@
 		B6C507512E12969E000AB39F /* Location */ = {
 			isa = PBXGroup;
 			children = (
+				6D1EE2D72E08E4B400F7BBF1 /* SearchLocation */,
 				B6B57EC32E1AB0ED00B29EB1 /* Coordinator */,
 				B6DC7C1B2E169EF2005D8E17 /* View */,
 				B6C507522E1296A8000AB39F /* MapViewController.swift */,
@@ -1195,6 +1212,7 @@
 				B6CF46F22E09605C00304A85 /* LoginRepositoryImpl.swift in Sources */,
 				B65C12FE2E057AF90016D2F0 /* NetworkConstant.swift in Sources */,
 				6D8D8B132E01B338003DABB2 /* AtchaButton.swift in Sources */,
+				B66401832E22449000A397AE /* SearchLocationResponse.swift in Sources */,
 				6D368BA42E02D5E200144EE7 /* IconTitleNavigationBar.swift in Sources */,
 				B6CF46F82E096CB100304A85 /* LoginResult.swift in Sources */,
 				B6B57EC22E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift in Sources */,
@@ -1204,6 +1222,7 @@
 				6D73EB632E16121700F8DF8B /* CourseModifyViewModel.swift in Sources */,
 				6DC3BF4A2E05C79700831470 /* LoginViewController.swift in Sources */,
 				6DC3BF5E2E07123F00831470 /* LoginIntroCell.swift in Sources */,
+				B66401802E2243D100A397AE /* SearchLocationRequest.swift in Sources */,
 				6D73EBD62E1748AD00F8DF8B /* CourseCell.swift in Sources */,
 				6D73EB5D2E1611F800F8DF8B /* CourseSearchViewController.swift in Sources */,
 				6DC3BF622E07219C00831470 /* LoginRepository.swift in Sources */,
@@ -1250,6 +1269,7 @@
 				B65C13372E0693A70016D2F0 /* MyPageCell.swift in Sources */,
 				6D73EBEA2E1B551600F8DF8B /* CourseRepositoryImpl.swift in Sources */,
 				B6FB20992E1D334A0032751B /* HomeFindViewController.swift in Sources */,
+				B66401852E2244CF00A397AE /* Location.swift in Sources */,
 				6DFF29F02E0F23840039399F /* UIImage+Ext.swift in Sources */,
 				B65C13412E06E0340016D2F0 /* SplashDIContainer.swift in Sources */,
 				6D73EB612E16120B00F8DF8B /* CourseModifyViewController.swift in Sources */,

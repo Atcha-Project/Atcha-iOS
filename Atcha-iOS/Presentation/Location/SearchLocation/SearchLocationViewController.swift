@@ -10,7 +10,6 @@ import SnapKit
 import CoreLocation
 
 final class SearchLocationViewController: BaseViewController<SearchLocationViewModel> {
-    
     private let searchNavigationBar: SearchNavigationBar = AtchaNavigationBar.search()
     private let headerView: UIView = UIView()
     private let separator: UIView = UIView()
@@ -18,8 +17,8 @@ final class SearchLocationViewController: BaseViewController<SearchLocationViewM
     private var tableViewTopConstraint: Constraint?
     private var filteredLocations: [Location] = []
     private let tableView = UITableView()
-    private var isSubmitted = false
     private var currentCoordinate: CLLocationCoordinate2D?
+    
     var onCurrentTapped: ((CLLocationCoordinate2D, String, String) -> Void)?
     
     override func viewDidLoad() {
@@ -33,13 +32,13 @@ final class SearchLocationViewController: BaseViewController<SearchLocationViewM
     
     // MARK: - ViewModel 바인딩
     private func bind() {
-        viewModel.$locations
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] locations in
-                self?.filteredLocations = locations
-                self?.tableView.reloadData()
-            }
-            .store(in: &cancellables)
+//        viewModel.$locations
+//            .receive(on: DispatchQueue.main)
+//            .sink { [weak self] locations in
+//                self?.filteredLocations = locations
+//                self?.tableView.reloadData()
+//            }
+//            .store(in: &cancellables)
     }
     
     // MARK: - 현재 위치 요청
@@ -185,14 +184,14 @@ extension SearchLocationViewController: UITableViewDataSource, UITableViewDelega
         let selected = filteredLocations[indexPath.row]
         print("선택한 장소: \(selected)")
         
-        if let lat = selected.lat,
-           let lon = selected.lon,
-           let placeName = selected.name,
-           let address = selected.address {
-            
-            let coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
-            self.onCurrentTapped?(coordinate, placeName, address)
-        }
+//        if let lat = selected.lat,
+//           let lon = selected.lon,
+//           let placeName = selected.name,
+//           let address = selected.address {
+//            
+//            let coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
+//            self.onCurrentTapped?(coordinate, placeName, address)
+//        }
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {

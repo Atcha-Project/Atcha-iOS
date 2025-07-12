@@ -10,4 +10,5 @@ import CoreLocation
 
 protocol AddressRepository {
     func fetchCurrentLocation(request: ReverseGeocodeLocationRequest) async throws -> ReverseGeocodeLocationResponse
+    func searchLoaction(request: SearchLocationRequest) async throws -> [SearchLocationResponse]
 }
