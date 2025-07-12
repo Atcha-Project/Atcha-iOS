@@ -17,6 +17,7 @@ final class HomeRegisterDIContainer {
         self.locationStateHolder = locationStateHolder
     }
     
+    private lazy var authorizationRequestUseCase = RequestLocationAuthorizationUseCaseImpl(repository: RequestLocationAuthorizationRepositoryImpl())
     private lazy var addressRepository: AddressRepository = AddressRepositoryImpl(apiService: apiService)
     private lazy var searchAddressUseCase: SearchAddressUseCase = SearchAddressUseCaseImpl(repository: addressRepository)
     private lazy var streamUseCase: ObserveLocationStreamUseCase = ObserLocationStreamUseCaseImpl(repository: LocationStreamRepositoryImpl())
@@ -42,7 +43,9 @@ final class HomeRegisterDIContainer {
     }
     
     func makeHomeSearchViewModel() -> SearchLocationViewModel {
-        return SearchLocationViewModel(searchAddressUseCase: searchAddressUseCase)
+        return SearchLocationViewModel(searchAddressUseCase: searchAddressUseCase,
+                                       authorizationUseCase: authorizationRequestUseCase,
+                                       locationStateHolder: locationStateHolder)
     }
     
     func makeHomeSearchViewController() -> SearchLocationViewController {
