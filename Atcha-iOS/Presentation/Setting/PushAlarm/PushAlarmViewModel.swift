@@ -11,7 +11,7 @@ import Combine
 final class PushAlarmViewModel: BaseViewModel {
     private let signUpUseCase: SignUpUseCase
     private let locationStateHolder: LocationStateHolder
-//    var selectedLocation: SelectedLocation?
+    
     var onFinish: ((Bool) -> Void)?
     var routeHandler: ((OnboardingRoute) -> Void)?
     

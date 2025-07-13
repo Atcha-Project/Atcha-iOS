@@ -16,7 +16,6 @@ final class HomeFindViewModel: BaseViewModel {
     
     var routeHandler: ((OnboardingRoute) -> Void)?
     
-    var currentLocationSubject = PassthroughSubject<CLLocationCoordinate2D?, Never>()
     private let searchAddressUseCase: SearchAddressUseCase
     private let locationStateHolder: LocationStateHolder
     
@@ -32,8 +31,9 @@ final class HomeFindViewModel: BaseViewModel {
     }
     
     private func bind() {
-        currentLocationSubject
+        $currentLocation
             .removeDuplicates()
+            .debounce(for: .seconds(0.3), scheduler: RunLoop.main)
             .sink { [weak self] location in
                 guard let self, let location else { return }
                 Task {
@@ -51,6 +51,7 @@ final class HomeFindViewModel: BaseViewModel {
         locationStateHolder.currentLocation = currentLocation
         locationStateHolder.buildingName = buildingName
         locationStateHolder.address = address
+        locationStateHolder.currentLocationSubject.send(currentLocation)
     }
     
     func setupLocation() {
