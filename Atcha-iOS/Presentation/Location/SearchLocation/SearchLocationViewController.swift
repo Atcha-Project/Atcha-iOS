@@ -171,6 +171,8 @@ extension SearchLocationViewController: UITableViewDataSource, UITableViewDelega
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let location = viewModel.selectedLocation(at: indexPath)
         viewModel.saveNewLocation(location: location)
+        
+        navigationController?.popViewController(animated: true)
     }
     
     @objc private func handleCurrentLocationTapped() {
