@@ -37,7 +37,6 @@ final class MainViewModel: BaseViewModel {
     func bindView() {
         currentLocationSubject
             .compactMap { $0 }
-            .removeDuplicates()
             .debounce(for: .seconds(0.3), scheduler: DispatchQueue.main)
             .sink { [weak self] coordinate in
                 Task {
@@ -55,9 +54,6 @@ final class MainViewModel: BaseViewModel {
                                                        destinationLon: 126.9855465633904)
                     
                     self.taxiFare = try? await self.fetchTaxiFareUseCase.fetchTaxiFare(request: request)
-                    
-                    print("taxiFare: \(self.taxiFare)")
-                    print("address : \(address?.name)")
                 }
             }
             .store(in: &cancellables)
@@ -94,9 +90,9 @@ extension MainViewModel {
     }
 }
 
-extension CLLocationCoordinate2D: Equatable {
-    public static func == (lhs: CLLocationCoordinate2D, rhs: CLLocationCoordinate2D) -> Bool {
-        abs(lhs.latitude - rhs.latitude) < 0.0001 &&
-        abs(lhs.longitude - rhs.longitude) < 0.0001
-    }
-}
+//extension CLLocationCoordinate2D: Equatable {
+//    public static func == (lhs: CLLocationCoordinate2D, rhs: CLLocationCoordinate2D) -> Bool {
+//        abs(lhs.latitude - rhs.latitude) < 0.0001 &&
+//        abs(lhs.longitude - rhs.longitude) < 0.0001
+//    }
+//}

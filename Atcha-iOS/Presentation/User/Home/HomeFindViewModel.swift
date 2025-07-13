@@ -32,7 +32,7 @@ final class HomeFindViewModel: BaseViewModel {
     
     private func bind() {
         $currentLocation
-            .removeDuplicates()
+//            .removeDuplicates()
             .debounce(for: .seconds(0.3), scheduler: RunLoop.main)
             .sink { [weak self] location in
                 guard let self, let location else { return }
