@@ -15,20 +15,20 @@ final class LocationDIContainer {
         self.apiService = apiService
     }
     
-    func makeLocationViewModel() -> MapViewModel {
+    func makeLocationViewModel() -> MainViewModel {
         let streamUseCase = ObserLocationStreamUseCaseImpl(repository: LocationStreamRepositoryImpl())
         let requestUseCase = RequestLocationAuthorizationUseCaseImpl(repository: RequestLocationAuthorizationRepositoryImpl())
         let searchAddressUseCase = SearchAddressUseCaseImpl(repository: AddressRepositoryImpl(apiService: apiService))
         let fetchTaxiFareUseCase = FetchTaxiFareUseCaseImpl(repository: FetchTaxiFareRepositoryImpl(apiService: apiService))
         
-        return MapViewModel(authorizationUseCase: requestUseCase,
+        return MainViewModel(authorizationUseCase: requestUseCase,
                             streamUseCase: streamUseCase,
                             fetchTaxiFareUseCase: fetchTaxiFareUseCase,
                             searchAddressUseCase: searchAddressUseCase)
     }
     
     func makeMapViewController() -> UIViewController {
-        return MapViewController(viewModel: makeLocationViewModel())
+        return MainViewController(viewModel: makeLocationViewModel())
     }
     
     func makeCourseSearchViewModel(startLat: String, startLon: String, startAddress: String) -> CourseSearchViewModel {

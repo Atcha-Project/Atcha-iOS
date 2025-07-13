@@ -146,12 +146,12 @@ extension CourseModifyViewController: UITableViewDataSource, UITableViewDelegate
         let selected = filteredLocations[indexPath.row]
         print("선택한 장소: \(selected)")
         
-        if let lat = selected.lat,
-           let lon = selected.lon,
-           let placeName = selected.name,
-           let address = selected.address {
-            
-        }
+//        if let lat = selected.lat,
+//           let lon = selected.lon,
+//           let placeName = selected.name,
+//           let address = selected.address {
+//            
+//        }
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {

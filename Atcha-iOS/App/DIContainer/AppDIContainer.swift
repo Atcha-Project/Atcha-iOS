@@ -19,7 +19,11 @@ final class AppDIContainer {
     let loginDIContainer: LoginDIContainer
     let mainDIContainer: LocationDIContainer
     let onboardingDIContainer: OnboardingDIContainer
-
+    let homeRegisterDIContainer: HomeRegisterDIContainer
+    let pushRegisterDIContainer: PushRegisterDIContainer
+    
+    private let locationStateHolder: LocationStateHolder = LocationStateHolder()
+    
     private init() {
         self.tokenStorage = TokenStorageImpl()
         self.networkDIContainer = NetworkDIContainer(tokenStorage: tokenStorage)
@@ -32,6 +36,16 @@ final class AppDIContainer {
         self.myPageDIContainer = MyPageDIContainer(apiService: apiServce)
         self.loginDIContainer = LoginDIContainer(apiService: noHeaderApiService)
         self.mainDIContainer = LocationDIContainer(apiService: apiServce)
-        self.onboardingDIContainer = OnboardingDIContainer(apiService: apiServce, locationService: locationService)
+        
+//        self.courseDIContainer = CourseDIContainer(apiService: apiServce)
+        self.homeRegisterDIContainer = HomeRegisterDIContainer(apiService: apiServce, locationStateHolder: locationStateHolder)
+        self.pushRegisterDIContainer = PushRegisterDIContainer(apiService: apiServce, locationStateHolder: locationStateHolder)
+        
+        
+        self.onboardingDIContainer = OnboardingDIContainer(apiService: apiServce,
+                                                           locationService: locationService,
+                                                           locationStateHolder: locationStateHolder,
+                                                           homeRegisterDIConatiner: homeRegisterDIContainer,
+                                                           pushRegisterDIContainer: pushRegisterDIContainer)
     }
 }

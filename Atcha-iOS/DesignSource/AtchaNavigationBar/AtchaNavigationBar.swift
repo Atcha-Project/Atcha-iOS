@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 
 enum AtchaNavigationBar {
-    static func title(_ text: String,
+    static func title(_ text: String? = nil,
                       onBack: (() -> Void)? = nil,
                       onClose: (() -> Void)? = nil ) -> TitleNavigationBar {
         return TitleNavigationBar(title: text, onTapBack: onBack, onTapClose: onClose)

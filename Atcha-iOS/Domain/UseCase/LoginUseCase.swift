@@ -25,9 +25,9 @@ protocol LoginUseCase {
 
 final class LoginUseCaseImpl: LoginUseCase {
     private var delegate: AppleLoginDelegateWrapper? = nil
-    private let repository: LoginRepository
+    private let repository: UserRepository
    
-    init(repository: LoginRepository) {
+    init(repository: UserRepository) {
         self.repository = repository
     }
     

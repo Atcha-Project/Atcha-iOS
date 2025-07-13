@@ -10,36 +10,28 @@ import Foundation
 
 final class OnboardingDIContainer {
     private let apiService: APIService
+    private let homeRegisterDIConatiner: HomeRegisterDIContainer
+    private let pushRegisterDIContainer: PushRegisterDIContainer
     private let locationService: LocationServiceProtocol
+    private let locationStateHolder: LocationStateHolder
     
-    init(apiService: APIService, locationService: LocationServiceProtocol) {
+    init(apiService: APIService,
+         locationService: LocationServiceProtocol,
+         locationStateHolder: LocationStateHolder,
+         homeRegisterDIConatiner: HomeRegisterDIContainer,
+         pushRegisterDIContainer: PushRegisterDIContainer) {
         self.apiService = apiService
+        self.homeRegisterDIConatiner = homeRegisterDIConatiner
+        self.pushRegisterDIContainer = pushRegisterDIContainer
         self.locationService = locationService
-    }
-    
-    func makeOnboardingUseCase() -> OnboardingUseCase {
-        let repository: OnboardingRepository = OnboardingRepositoryImpl(apiService: apiService)
-        
-        return OnboardingUseCaseImpl(repository: repository, locationService: locationService)
-    }
-    
-    func makeHomeRegisterViewModel() -> HomeRegisterViewModel {
-        HomeRegisterViewModel(onboardingUseCase: makeOnboardingUseCase())
-    }
-    
-    func makeSearchLocationViewModel() -> SearchLocationViewModel {
-        SearchLocationViewModel(onboardingUseCase: makeOnboardingUseCase())
-    }
-    
-    func makePushAlarmViewModel() -> PushAlarmViewModel {
-        PushAlarmViewModel(onboardingUseCase: makeOnboardingUseCase())
-    }
-    
-    func makeRegisterLocationViewModel() -> RegisterLocationViewModel {
-        RegisterLocationViewModel(onboardingUseCase: makeOnboardingUseCase())
+        self.locationStateHolder = locationStateHolder
     }
     
     func makeOnboardingCoordinator(navigationController: UINavigationController) -> OnboardingCoordinator {
-        OnboardingCoordinator(navigationController: navigationController, disContainer: self)
+        return OnboardingCoordinator(apiService: apiService,
+                                     navigationController: navigationController,
+                                     locationHolder: locationStateHolder,
+                                     homeDIConatiner: homeRegisterDIConatiner,
+                                     pushRegisterDIContainer: pushRegisterDIContainer)
     }
 }

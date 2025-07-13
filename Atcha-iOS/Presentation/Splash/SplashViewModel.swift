@@ -11,8 +11,9 @@ final class SplashViewModel: BaseViewModel {
     @Published private(set) var appVersionInfo: String?
     
     private let checkAppVersionUseCase: CheckAppVersionUseCase
+//    private let loginUseCase: LoginUseCase
     
-    var onSignUpCompleted: (() -> Void)?
+    var routerHandler: ((SplashRouter) -> Void)?
     
     init(checkAppVersionUseCase: CheckAppVersionUseCase) {
         self.checkAppVersionUseCase = checkAppVersionUseCase
@@ -33,11 +34,7 @@ final class SplashViewModel: BaseViewModel {
         }
     }
     
-    func checkUserInfo() {
-        
-    }
-    
-    func signUpFinished() {
-        onSignUpCompleted?()
+    func checkUserStatus() {
+        routerHandler?(.main)
     }
 }

@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import CoreLocation
 
 final class TMapContainerView: UIView {
     private var tMapWrapper: TMapWrapper!
@@ -32,5 +33,14 @@ final class TMapContainerView: UIView {
         tMapWrapper.mapView.snp.makeConstraints {
             $0.edges.equalToSuperview()
         }
+    }
+    
+    func setupCenter(location: CLLocationCoordinate2D) {
+        tMapWrapper.updateUserMarker(coordinate: location)
+//        tMapWrapper.mapView.setCenter(location)
+    }
+    
+    func deinitMapView() {
+        tMapWrapper.mapView.vsmMapView?.viewWillDisappear()
     }
 }

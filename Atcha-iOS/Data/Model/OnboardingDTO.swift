@@ -25,21 +25,6 @@ struct SignUpResponse: Codable {
     let lon: Double?
 }
 
-struct SearchLocationRequest: Codable {
-    let keyword: String
-    let lat: Double
-    let lon: Double
-}
-
-struct Location: Codable {
-    let name: String?
-    let lat: Double?
-    let lon: Double?
-    let businessCategory: String?
-    let address: String?
-    let radius: String?
-}
-
 struct ReverseGeocodeLocationRequest: Codable {
     let lat: Double
     let lon: Double

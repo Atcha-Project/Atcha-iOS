@@ -1,0 +1,67 @@
+//
+//  HomeFindViewModel.swift
+//  Atcha-iOS
+//
+//  Created by geonhui Yu on 7/8/25.
+//
+
+import Foundation
+import Combine
+import CoreLocation
+
+final class HomeFindViewModel: BaseViewModel {
+    @Published var buildingName: String?
+    @Published var address: String?
+    @Published var currentLocation: CLLocationCoordinate2D?
+    
+    var routeHandler: ((OnboardingRoute) -> Void)?
+    
+    var currentLocationSubject = PassthroughSubject<CLLocationCoordinate2D?, Never>()
+    private let searchAddressUseCase: SearchAddressUseCase
+    private let locationStateHolder: LocationStateHolder
+    
+    init(searchAddressUseCase: SearchAddressUseCase,
+         locationStateHolder: LocationStateHolder) {
+        self.searchAddressUseCase = searchAddressUseCase
+        self.locationStateHolder = locationStateHolder
+        self.buildingName = locationStateHolder.buildingName
+        self.address = locationStateHolder.address
+        
+        super.init()
+        self.bind()
+    }
+    
+    private func bind() {
+        currentLocationSubject
+            .removeDuplicates()
+            .sink { [weak self] location in
+                guard let self, let location else { return }
+                Task {
+                    let address = try? await self.fetchCurrentAddress(lat: location.latitude,
+                                                                      lon: location.longitude)
+                    
+                    self.address = address?.address
+                    self.buildingName = address?.name
+                }
+            }
+            .store(in: &cancellables)
+    }
+    
+    func saveCurrentLoaction() {
+        locationStateHolder.currentLocation = currentLocation
+        locationStateHolder.buildingName = buildingName
+        locationStateHolder.address = address
+    }
+    
+    func setupLocation() {
+        currentLocation = locationStateHolder.currentLocation
+    }
+}
+
+// MARK: - Search Address
+extension HomeFindViewModel {
+    private func fetchCurrentAddress(lat: Double, lon: Double) async throws -> ReverseGeocodeLocationResponse {
+        let request: ReverseGeocodeLocationRequest = ReverseGeocodeLocationRequest(lat: lat, lon: lon)
+        return try await searchAddressUseCase.searchLocation(request)
+    }
+}

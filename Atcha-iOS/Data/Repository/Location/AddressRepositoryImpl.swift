@@ -24,6 +24,19 @@ final class AddressRepositoryImpl: AddressRepository {
                     "lon": "\(request.lon)" ]
             ))
     }
+    
+    func searchLoaction(request: SearchLocationRequest) async throws -> [SearchLocationResponse] {
+        return try await apiService.request(
+            Endpoint(
+                path: "https://atcha.p-e.kr/api/locations",
+                method: .get,
+                parameters: [
+                    "keyword": "\(request.keyword ?? "")",
+                    "lat": "\(request.lat ?? 0.0)",
+                    "lon": "\(request.lon ?? 0.0)"
+                ]
+            ))
+    }
 }
 
 

@@ -9,67 +9,54 @@ import UIKit
 import SnapKit
 import CoreLocation
 
-class SearchLocationViewController: BaseViewController<SearchLocationViewModel> {
-    
+final class SearchLocationViewController: BaseViewController<SearchLocationViewModel> {
     private let searchNavigationBar: SearchNavigationBar = AtchaNavigationBar.search()
     private let headerView: UIView = UIView()
     private let separator: UIView = UIView()
     private let headerLabel: UILabel = UILabel()
-    private var tableViewTopConstraint: Constraint?
-    private var filteredLocations: [Location] = []
     private let tableView = UITableView()
-    private var isSubmitted = false
-    private var currentCoordinate: CLLocationCoordinate2D?
-    var onCurrentTapped: ((CLLocationCoordinate2D, String, String) -> Void)?
+    
+    private var tableViewTopConstraint: Constraint?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        bind()
-        requestCurrentLocation()
         setupUI()
+        setupAutoLayout()
+        bindViewModel()
         setupSearchNavigationBarCallbacks()
     }
     
     // MARK: - ViewModel 바인딩
-    private func bind() {
+    private func bindViewModel() {
         viewModel.$locations
-            .receive(on: DispatchQueue.main)
+            .removeDuplicates()
+            .receive(on: RunLoop.main)
             .sink { [weak self] locations in
-                self?.filteredLocations = locations
-                self?.tableView.reloadData()
+                guard let self else { return }
+                tableView.reloadData()
             }
             .store(in: &cancellables)
     }
     
-    // MARK: - 현재 위치 요청
-    private func requestCurrentLocation() {
-        viewModel.onboardingUseCase.requestCurrentLocation { [weak self] coordinate in
-            guard let coordinate = coordinate else {
-                print("위치 권한 거부됨 또는 위치 불가")
-                return
-            }
-            print("현재 위치 획득: \(coordinate.latitude), \(coordinate.longitude)")
-            self?.currentCoordinate = coordinate
-        }
-    }
-    
     // MARK: - 장소 검색 UI
     private func setupUI() {
-        headerView.backgroundColor = .clear
-        separator.backgroundColor = AtchaColor.black
-        headerLabel.attributedText = AtchaFont.B6_R_14("장소 결과", color: AtchaColor.gray400)
+        view.addSubViews(searchNavigationBar, headerView, tableView)
         headerView.addSubViews(separator, headerLabel)
+        headerView.backgroundColor = .clear
+        headerLabel.attributedText = AtchaFont.B6_R_14("장소 결과", color: AtchaColor.gray400)
         headerView.isHidden = true
+        
+        separator.backgroundColor = AtchaColor.black
         
         tableView.separatorStyle = .none
         tableView.backgroundColor = .clear
         tableView.dataSource = self
         tableView.delegate = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
-        
-        view.addSubViews(searchNavigationBar, headerView, tableView)
-        
+    }
+    
+    private func setupAutoLayout() {
         searchNavigationBar.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
             make.leading.trailing.equalToSuperview()
@@ -110,12 +97,12 @@ class SearchLocationViewController: BaseViewController<SearchLocationViewModel> 
         }
         
         searchNavigationBar.onTextChange = { [weak self] text in
-            guard let self = self, let coordinate = self.currentCoordinate else { return }
+            guard let self = self, let coordinate = viewModel.currentLocation else { return }
             self.handleTextChange(text: text, coordinate: coordinate)
         }
         
         searchNavigationBar.onTextSubmit = { [weak self] text in
-            guard let self = self, let coordinate = self.currentCoordinate else { return }
+            guard let self = self, let coordinate = viewModel.currentLocation else { return }
             self.handleTextSubmit(text: text, coordinate: coordinate)
         }
     }
@@ -130,7 +117,10 @@ class SearchLocationViewController: BaseViewController<SearchLocationViewModel> 
         UIView.animate(withDuration: 0.25) {
             self.view.layoutIfNeeded()
         }
-        viewModel.searchLocation(keyword: text, lat: coordinate.latitude, lon: coordinate.longitude)
+        
+        viewModel.searchLocation(keyword: text,
+                                 lat: coordinate.latitude,
+                                 lon: coordinate.longitude)
     }
     
     // MARK: - 텍스트 제출 처리
@@ -145,18 +135,15 @@ class SearchLocationViewController: BaseViewController<SearchLocationViewModel> 
 }
 
 extension SearchLocationViewController: UITableViewDataSource, UITableViewDelegate {
-    
-    // MARK: - Cell 갯수
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return filteredLocations.count
+        return viewModel.numberOfSections()
     }
     
     // MARK: - Cell UI
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-        let location = filteredLocations[indexPath.row]
+        let location = viewModel.selectedLocation(at: indexPath)
         
-        // 기존 content 제거
         cell.contentView.subviews.forEach { $0.removeFromSuperview() }
         
         let titleLabel = UILabel()
@@ -180,30 +167,12 @@ extension SearchLocationViewController: UITableViewDataSource, UITableViewDelega
         return cell
     }
     
-    // MARK: -  Cell 선택 시 이벤트
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let selected = filteredLocations[indexPath.row]
-        print("선택한 장소: \(selected)")
-        
-        if let lat = selected.lat,
-           let lon = selected.lon,
-           let placeName = selected.name,
-           let address = selected.address {
-            
-            let coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
-            self.onCurrentTapped?(coordinate, placeName, address)
-        }
+        let location = viewModel.selectedLocation(at: indexPath)
+        viewModel.saveNewLocation(location: location)
     }
     
-    func numberOfSections(in tableView: UITableView) -> Int {
-        return filteredLocations.isEmpty ? 0 : 1
-    }
-    
-    // MARK: - 현위치 찾기
     @objc private func handleCurrentLocationTapped() {
-        viewModel.handleCurrentLocation { [weak self] coordinate, placeName, address  in
-            guard let self else { return }
-            self.onCurrentTapped?(coordinate, placeName, address)
-        }
+        viewModel.routeHandler?(.homeRegister)
     }
 }

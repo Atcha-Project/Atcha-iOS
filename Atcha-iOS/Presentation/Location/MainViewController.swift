@@ -1,5 +1,5 @@
 //
-//  MapViewController.swift
+//  MainViewController.swift
 //  Atcha-iOS
 //
 //  Created by geonhui Yu on 6/30/25.
@@ -10,7 +10,7 @@ import Foundation
 import CoreLocation
 import TMapSDK
 
-final class MapViewController: BaseViewController<MapViewModel>,
+final class MainViewController: BaseViewController<MainViewModel>,
                                TMapWrapperDelegate {
     
     private let mapContainerView: TMapContainerView = TMapContainerView()
@@ -135,7 +135,11 @@ final class MapViewController: BaseViewController<MapViewModel>,
     }
 }
 
-extension MapViewController {
+extension MainViewController {
+    func didFinishLoadingMap(_ mapView: TMapWrapper) {
+        
+    }
+    
     @objc private func didTapMyPageButton() {
         print("마이페이지 버튼 눌림")
         viewModel.routeHandler?(.myPage)
@@ -149,7 +153,7 @@ extension MapViewController {
 }
 
 // MARK: - Delegate
-extension MapViewController {
+extension MainViewController {
     func mapView(_ mapView: TMapWrapper, didUpdateLocation coordinate: CLLocationCoordinate2D) {
         viewModel.currentLocationSubject.send(coordinate)
     }

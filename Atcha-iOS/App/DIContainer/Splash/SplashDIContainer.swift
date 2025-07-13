@@ -23,6 +23,10 @@ final class SplashDIContainer {
     func makeSplashViewModel() -> SplashViewModel {
         SplashViewModel(checkAppVersionUseCase: makeCheckAppVersionUseCase())
     }
+    
+    func makeSplashViewController(viewModel: SplashViewModel) -> SplashViewController {
+        return SplashViewController(viewModel: viewModel)
+    }
 
     func makeSplashCoordinator(navigationController: UINavigationController) -> SplashCoordinator {
         SplashCoordinator(navigationController: navigationController,

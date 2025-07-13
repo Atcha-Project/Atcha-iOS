@@ -8,67 +8,68 @@
 import Combine
 import CoreLocation
 
-// 장소 상태 Enum
-enum LocationSelectionState {
-    case none
-    case selected(name: String, address: String)
-}
-
 final class HomeRegisterViewModel: BaseViewModel {
+    private var streamTask: Task<Void, Never>?
     
-    // 온보딩 유즈케이스
-    let onboardingUseCase: OnboardingUseCase
+    private let searchAddressUseCase: SearchAddressUseCase
+    private let streamUseCase: ObserveLocationStreamUseCase
+    private let locationStateHolder: LocationStateHolder
     
-    // 온보딩 콜백
-    var onFinish: ((Bool) -> Void)?
-    
-    // 장소 선택/미선택 상태 변수
-    @Published private(set) var locationState: LocationSelectionState = .none
-    
-    // 장소 정보 저장용
-    var selectedLocation: SelectedLocation? = nil
-    
-    init(onboardingUseCase: OnboardingUseCase) {
-        self.onboardingUseCase = onboardingUseCase
+    var routeHandler: ((OnboardingRoute) -> Void)?
+
+    init(searchAddressUseCase: SearchAddressUseCase,
+         streamUseCase: ObserveLocationStreamUseCase,
+         locationStateHolder: LocationStateHolder) {
+        self.searchAddressUseCase = searchAddressUseCase
+        self.streamUseCase = streamUseCase
+        self.locationStateHolder = locationStateHolder
+        
+        super.init()
+        self.requestMyLocation()
+        self.bind()
     }
     
-    // MARK: - 현재 위치 전달
-    func handleCurrentLocation(
-        completion: @escaping (_ coordinate: CLLocationCoordinate2D,
-                               _ placeName: String,
-                               _ address: String) -> Void
-    ) {
-        onboardingUseCase.requestCurrentLocation { [weak self] coordinate in
-            guard let self, let coordinate else { return }
-            Task {
-                do {
-                    let response = try await self.reverseGeocodeLocation(
-                        lat: coordinate.latitude,
-                        lon: coordinate.longitude
+    func bind() {
+        locationStateHolder.currentLocationSubject
+            .removeDuplicates()
+            .sink { [weak self] location in
+                guard let self else { return }
+                Task {
+                    let address = try? await self.fetchCurrentAddress(
+                        lat: location.latitude,
+                        lon: location.longitude
                     )
                     
-                    if let placeName = response.name, let address = response.address {
-                        DispatchQueue.main.async {
-                            completion(coordinate, placeName, address)
-                        }
-                    }
-                    
-                } catch {
-                    print("❌ 장소 변환 실패: \(error)")
+                    self.locationStateHolder.currentLocation = location
+                    self.locationStateHolder.buildingName = address?.name
+                    self.locationStateHolder.address = address?.address
+                }
+            }
+            .store(in: &cancellables)
+    }
+    
+    func requestMyLocation() {
+        Task {
+//            let status = await authorizationUseCase.askPermission()
+//            guard status == .authorizedAlways || status == .authorizedWhenInUse else { return }
+            streamTask = Task {
+                for await location in streamUseCase.startUpdate() {
+                    let currentLocation: CLLocationCoordinate2D = CLLocationCoordinate2D(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
+                    locationStateHolder.currentLocationSubject.send(currentLocation)
+                    break
                 }
             }
         }
     }
     
-    // MARK: - 장소 업데이트
-    func updateLocation(name: String, address: String, lat: Double, lon: Double) {
-        self.selectedLocation = SelectedLocation(name: name, address: address, lat: lat, lon: lon)
-        self.locationState = .selected(name: name, address: address)
+    private func fetchCurrentAddress(lat: Double, lon: Double) async throws -> ReverseGeocodeLocationResponse {
+        let request: ReverseGeocodeLocationRequest = ReverseGeocodeLocationRequest(lat: lat, lon: lon)
+        return try await searchAddressUseCase.searchLocation(request)
     }
-    
-    // MARK: - 좌표 -> 주소 변환
-    func reverseGeocodeLocation(lat: Double, lon: Double) async throws -> ReverseGeocodeLocationResponse {
-        let request = ReverseGeocodeLocationRequest(lat: lat, lon: lon)
-        return try await onboardingUseCase.reverseGeocodeLocation(request)
-    }
+}
+
+// 장소 상태 Enum
+enum LocationSelectionState {
+    case none
+    case selected(name: String, address: String)
 }

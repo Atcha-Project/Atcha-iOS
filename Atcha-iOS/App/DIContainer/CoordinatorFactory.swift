@@ -29,12 +29,15 @@ protocol MainCoordinatorFactory {
     MainCoordinator
 }
 
-extension AppDIContainer: SplashCoordinatorFactory, MyPageCoordinatorFactory, MainCoordinatorFactory {
+extension AppDIContainer: SplashCoordinatorFactory,
+                          MyPageCoordinatorFactory,
+                          OnboardingCoordinatorFactory,
+                          MainCoordinatorFactory{
     
     func makeSplashCoordinator(navigationController: UINavigationController) -> SplashCoordinator {
         return splashDIContainer.makeSplashCoordinator(navigationController: navigationController)
     }
-
+    
     func makeMyPageCoordinator(navigationController: UINavigationController) -> MyPageCoordinator {
         return myPageDIContainer.makeMyPageCoordinator(navigationController: navigationController)
     }
