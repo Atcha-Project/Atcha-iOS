@@ -26,9 +26,6 @@ final class MainViewController: BaseViewController<MainViewModel>,
         setupUI()
         setupAutoLayout()
         bindView()
-        
-        viewModel.bindView()
-        viewModel.requestPermissionAndStartTracking()
     }
     
     private func setupUI() {
@@ -63,19 +60,18 @@ final class MainViewController: BaseViewController<MainViewModel>,
                 switch action {
                 case .currentTapped:
                     viewModel.routeHandler?(.changeCourse)
-                    
                 case .searchTapped:
-//                    guard let coordinate = viewModel.currentLocation,
-//                          let address = viewModel.address else {
-//                        print("위치 정보 또는 주소 없음")
-//                        return
-//                    }
-//
-//                    let lat = String(coordinate.latitude)
-//                    let lon = String(coordinate.longitude)
-                    
                     viewModel.routeHandler?(.courseSearch(startLat: "37.566295", startLon: "126.977945", startAddress: "서울시청"))
                 }
+            }
+            .store(in: &cancellables)
+        
+        viewModel.$currentLocation
+            .compactMap { $0 }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] location in
+                guard let self else { return }
+                mapContainerView.setupCenter(location: location)
             }
             .store(in: &cancellables)
         
@@ -137,28 +133,25 @@ final class MainViewController: BaseViewController<MainViewModel>,
 
 extension MainViewController {
     func didFinishLoadingMap(_ mapView: TMapWrapper) {
-        
+        viewModel.setupLocation()
     }
     
     @objc private func didTapMyPageButton() {
-        print("마이페이지 버튼 눌림")
         viewModel.routeHandler?(.myPage)
     }
     
     @objc private func didTapLocationButton() {
-        print("내 위치 버튼 눌림")
-        let topVC = navigationController?.topViewController
-        topVC?.navigationController?.pushViewController(MyPageViewController(viewModel: MyPageViewModel()), animated: true)
+        viewModel.setupLocation()
     }
 }
 
 // MARK: - Delegate
 extension MainViewController {
     func mapView(_ mapView: TMapWrapper, didUpdateLocation coordinate: CLLocationCoordinate2D) {
-        viewModel.currentLocationSubject.send(coordinate)
+        viewModel.currentLocation = coordinate
     }
     
     func mapView(_ mapView: TMapWrapper, didSelectLocation coordinate: CLLocationCoordinate2D) {
-        viewModel.currentLocationSubject.send(coordinate)
+        viewModel.currentLocation = coordinate
     }
 }

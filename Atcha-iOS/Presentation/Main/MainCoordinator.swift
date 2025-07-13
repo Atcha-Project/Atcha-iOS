@@ -27,7 +27,7 @@ final class MainCoordinator {
             guard let self else { return }
             handle(route: route)
         }
-        let viewController = MainViewController(viewModel: viewModel)
+        let viewController = diContainer.makeMapViewController(viewModel: viewModel)
         navigationController.pushViewController(viewController, animated: false)
     }
     
@@ -41,7 +41,6 @@ final class MainCoordinator {
             let vc = diContainer.makeCourseSearchViewController(startLat: startLat, startLon: startLon, startAddress: startAddress)
             navigationController.pushViewController(vc, animated: true)
             print("🔍 courseSearch route tapped: \(navigationController.viewControllers)")
-            
         case .changeCourse:
             print("🔄 changeCourse route tapped")
         }
