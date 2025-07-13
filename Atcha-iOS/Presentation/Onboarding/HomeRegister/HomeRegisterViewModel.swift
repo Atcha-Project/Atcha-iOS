@@ -33,7 +33,7 @@ final class HomeRegisterViewModel: BaseViewModel {
     
     func bind() {
         locationStateHolder.currentLocationSubject
-            .removeDuplicates()
+//            .removeDuplicates()
             .compactMap { $0 }
             .handleEvents(receiveOutput: { [weak self] location in
                 guard let self else { return }

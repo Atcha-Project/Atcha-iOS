@@ -157,11 +157,15 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
     // MARK: - UI 렌더링
     private func render(_ state: LocationSelectionState) {
         searchLocationContainer.subviews.forEach { $0.removeFromSuperview() }
+        currentLocationButton.removeTarget(nil, action: nil, for: .touchUpInside)
+        
         switch state {
         case .none:
             setupNoneStateUI()
+            currentLocationButton.addTarget(self, action: #selector(handleCurrentLocationTapped), for: .touchUpInside)
         case .selected(let name, let address):
             setupSelectedStateUI(name: name, address: address)
+            currentLocationButton.addTarget(self, action: #selector(handleSearchTapped), for: .touchUpInside)
         }
     }
 }
