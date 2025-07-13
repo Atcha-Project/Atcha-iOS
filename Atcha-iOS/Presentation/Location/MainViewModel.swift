@@ -14,8 +14,6 @@ final class MainViewModel: BaseViewModel {
     @Published var address: String?
     @Published var taxiFare: Double?
     
-    var currentLocationSubject: PassthroughSubject<CLLocationCoordinate2D?, Never> = .init()
-    
     private let searchAddressUseCase: SearchAddressUseCase
     private let authorizationUseCase: RequestLocationAuthorizationUseCase
     private let fetchTaxiFareUseCase: FetchTaxiFareUseCase
@@ -32,28 +30,25 @@ final class MainViewModel: BaseViewModel {
         self.streamUseCase = streamUseCase
         self.fetchTaxiFareUseCase = fetchTaxiFareUseCase
         self.searchAddressUseCase = searchAddressUseCase
+        
+        super.init()
+        self.bindView()
     }
     
     func bindView() {
-        currentLocationSubject
-            .compactMap { $0 }
-            .debounce(for: .seconds(0.3), scheduler: DispatchQueue.main)
-            .sink { [weak self] coordinate in
+        $currentLocation
+            .debounce(for: .seconds(0.3), scheduler: RunLoop.main)
+            .sink { [weak self] location in
+                guard let self, let location else { return }
                 Task {
-                    guard let self else { return }
-                    let address = try? await self.fetchCurrentAddress(
-                        lat: coordinate.latitude,
-                        lon: coordinate.longitude
-                    )
+                    let address = try? await self.fetchCurrentAddress(lat: location.latitude,
+                                                                      lon: location.longitude)
                     
-                    self.address = address?.name
-                    
-                    let request = FetchTaxiFareRequest(originLat: address?.lat,
-                                                       originLon: address?.lon,
-                                                       destinationLat: 37.58746906188554,
-                                                       destinationLon: 126.9855465633904)
-                    
-                    self.taxiFare = try? await self.fetchTaxiFareUseCase.fetchTaxiFare(request: request)
+                    if let name = address?.name {
+                        self.address = name
+                    } else if let address = address?.address {
+                        self.address = address
+                    }
                 }
             }
             .store(in: &cancellables)
@@ -63,15 +58,21 @@ final class MainViewModel: BaseViewModel {
         Task {
             let status = await authorizationUseCase.askPermission()
             guard status == .authorizedAlways || status == .authorizedWhenInUse else { return }
-
-//            streamTask = Task {
-//                for await location in streamUseCase.startUpdate() {
-//                    self.currentLocation = location
-//                }
-//            }
+            
+            streamTask = Task {
+                for await location in streamUseCase.startUpdate() {
+                    let currentLocation: CLLocationCoordinate2D = CLLocationCoordinate2D(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
+                    self.currentLocation = currentLocation
+                    break
+                }
+            }
         }
     }
-
+    
+    func setupLocation() {
+        requestPermissionAndStartTracking()
+    }
+    
     func stopTracking() {
         streamTask?.cancel()
         streamUseCase.stopUpdate()
@@ -96,3 +97,27 @@ extension MainViewModel {
 //        abs(lhs.longitude - rhs.longitude) < 0.0001
 //    }
 //}
+
+//        $currentLocation
+//            .compactMap { $0 }
+//            .debounce(for: .seconds(0.3), scheduler: DispatchQueue.main)
+//            .sink { [weak self] coordinate in
+//                Task {
+//                    guard let self else { return }
+//                    let address = try? await self.fetchCurrentAddress(
+//                        lat: coordinate.latitude,
+//                        lon: coordinate.longitude
+//                    )
+//
+//                    self.address = address?.name
+//
+//                    let request = FetchTaxiFareRequest(originLat: address?.lat,
+//                                                       originLon: address?.lon,
+//                                                       destinationLat: 37.58746906188554,
+//                                                       destinationLon: 126.9855465633904)
+//
+//                    self.taxiFare = try? await self.fetchTaxiFareUseCase.fetchTaxiFare(request: request)
+//                }
+//            }
+//            .store(in: &cancellables)
+        

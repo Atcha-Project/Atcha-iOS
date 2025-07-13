@@ -24,13 +24,13 @@ final class LocationDIContainer {
         let fetchTaxiFareUseCase = FetchTaxiFareUseCaseImpl(repository: FetchTaxiFareRepositoryImpl(apiService: apiService))
         
         return MainViewModel(authorizationUseCase: requestUseCase,
-                            streamUseCase: streamUseCase,
-                            fetchTaxiFareUseCase: fetchTaxiFareUseCase,
-                            searchAddressUseCase: searchAddressUseCase)
+                             streamUseCase: streamUseCase,
+                             fetchTaxiFareUseCase: fetchTaxiFareUseCase,
+                             searchAddressUseCase: searchAddressUseCase)
     }
     
-    func makeMapViewController() -> UIViewController {
-        return MainViewController(viewModel: makeLocationViewModel())
+    func makeMapViewController(viewModel: MainViewModel) -> UIViewController {
+        return MainViewController(viewModel: viewModel)
     }
     
     func makeCourseSearchViewModel(startLat: String, startLon: String, startAddress: String) -> CourseSearchViewModel {
