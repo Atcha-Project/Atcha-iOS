@@ -27,17 +27,9 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
     private let locationAddressLabel = UILabel()
     
     private let currentLocationButton = UIButton()
-    private lazy var nextButton = AtchaButton(
-        text: "다음",
-        size: .h52,
-        style: .filled(.disabled)
-    ) { [weak self] in
-        //        guard let self, let location = self.viewModel.selectedLocation else { return }
-        //        self.onNextTapped?(location)
+    private lazy var nextButton = AtchaButton(text: "다음", size: .h52, style: .filled(.disabled)) { [weak self] in
+        self?.viewModel.routeHandler?(.pushRegister)
     }
-    
-    var onCurrentTapped: ((CLLocationCoordinate2D, String, String) -> Void)?
-    var onNextTapped: ((SelectedLocation) -> Void)?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -49,28 +41,13 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
     
     // MARK: - ViewModel 바인딩
     private func bindViewModel() {
-        //        viewModel.$locationState
-        //            .receive(on: DispatchQueue.main)
-        //            .sink { [weak self] state in
-        //                self?.render(state)
-        //            }
-        //            .store(in: &cancellables)
-        
-//        viewModel.findLocationSubeject
-//            .receive(on: DispatchQueue.main)
-//            .sink { [weak self] _ in
-//                guard let self else { return }
-//                viewModel.routeHandler?(.homeRegister)
-//            }
-//            .store(in: &cancellables)
-//        
-//        viewModel.searchAddressSubject
-//            .receive(on: RunLoop.main)
-//            .sink { [weak self] _ in
-//                guard let self else { return }
-//                viewModel.routeHandler?(.searchAdress)
-//            }
-//            .store(in: &cancellables)
+        viewModel.$selectedState
+            .compactMap { $0 }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] state in
+                self?.render(state)
+            }
+            .store(in: &cancellables)
     }
     
     // MARK: - 기본 UI
@@ -94,13 +71,11 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
         currentLocationButton.layer.cornerRadius = 8
         currentLocationButton.layer.borderWidth = 1
         currentLocationButton.layer.borderColor = AtchaColor.gray800.cgColor
-        currentLocationButton.setImage(UIImage.placeFilled, for: .normal)
         currentLocationButton.tintColor = .white
+        setupLocationButton(title: "현위치 찾기", icon: UIImage.mylocationOutlined)
         
         nextButton.isEnabled = false
         nextButton.updateStyle(text: "다음", style: .filled(.disabled))
-        
-        setupLocationButton(title: "현 위치 찾기", icon: UIImage.placeFilled)
     }
     
     private func setupAutoLayout() {
@@ -111,7 +86,7 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
         searchLocationContainer.snp.makeConstraints { make in
             make.top.equalTo(titleStackView.snp.bottom).offset(48)
             make.leading.trailing.equalToSuperview().inset(16)
-            make.height.equalTo(48)
+            make.height.equalTo(50)
         }
         currentLocationButton.snp.makeConstraints { make in
             make.top.equalTo(searchLocationContainer.snp.bottom).offset(16)
@@ -136,7 +111,7 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
     
     // MARK: - 장소 미선택 UI
     private func setupNoneStateUI() {
-        setupLocationButton(title: "현 위치 찾기", icon: UIImage.placeFilled)
+        setupLocationButton(title: "현위치 찾기", icon: UIImage.mylocationOutlined)
     }
     
     // MARK: - 장소 선택 UI
@@ -157,44 +132,31 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
         setupLocationButton(title: "수정하기", icon: nil)
         
         nextButton.isEnabled = true
-        //        nextButton.updateStyle(text: "다음", style: .filled(.primary))
+        nextButton.updateStyle(text: "다음", style: .filled(.primary))
     }
     
     // MARK: - 현위치 찾기 Button
-    private func setupLocationButton(title: String, icon: UIImage?) {
-        currentLocationButton.setAttributedTitle(AtchaFont.B6_R_14 (title, color: .white), for: .normal)
-        
-        //        if let icon {
-        //            let config = UIImage.SymbolConfiguration(pointSize: 16)
-        //            currentLocationButton.setImage(icon.withConfiguration(config), for: .normal)
-        //            currentLocationButton.addTarget(self, action: #selector(handleCurrentLocationTapped), for: .touchUpInside)
-        //        } else {
-        //            currentLocationButton.setImage(nil, for: .normal)
-        //            currentLocationButton.addTarget(self, action: #selector(handleSearchTapped), for: .touchUpInside)
-        //        }
+    private func setupLocationButton(title: String,
+                                     icon: UIImage?) {
+        currentLocationButton.setAttributedTitle(AtchaFont.B4_R_15(title, color: .white), for: .normal)
+        currentLocationButton.setImage(icon, for: .normal)
+        currentLocationButton.imageView?.contentMode = .scaleAspectFit
+        currentLocationButton.imageEdgeInsets = UIEdgeInsets(top: 12, left: 0, bottom: 10, right: 6)
     }
     
     // MARK: - 장소 검색
     @objc private func handleSearchTapped() {
-//        viewModel.searchAddressTapped()
         viewModel.routeHandler?(.searchAdress)
     }
     
     // MARK: - 현위치 찾기
     @objc private func handleCurrentLocationTapped() {
         viewModel.routeHandler?(.homeRegister)
-//        viewModel.findLocationTapped()
-        //        viewModel.searchAddressSubject.send(())
-        //        viewModel.handleCurrentLocation { [weak self] coordinate, placeName, address  in
-        //            guard let self else { return }
-        //            self.onCurrentTapped?(coordinate, placeName, address)
-        //        }
     }
     
     // MARK: - UI 렌더링
     private func render(_ state: LocationSelectionState) {
         searchLocationContainer.subviews.forEach { $0.removeFromSuperview() }
-        
         switch state {
         case .none:
             setupNoneStateUI()
