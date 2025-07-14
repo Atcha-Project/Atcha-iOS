@@ -30,6 +30,22 @@ class CourseModifyViewController: BaseViewController<CourseModifyViewModel> {
         super.viewDidLoad()
         
         setupUI()
+        setupAutoLayout()
+        bindViewModel()
+        setupSearchTextFieldCallbacks()
+    }
+    
+    // MARK: - ViewModel 바인딩
+    private func bindViewModel() {
+        viewModel.$locations
+            .removeDuplicates()
+            .receive(on: RunLoop.main)
+            .sink { [weak self] locations in
+                guard let self else { return }
+                filteredLocations = locations
+                tableView.reloadData()
+            }
+            .store(in: &cancellables)
     }
     
     // MARK: - 경로 수정 UI
@@ -65,7 +81,10 @@ class CourseModifyViewController: BaseViewController<CourseModifyViewModel> {
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         
         view.addSubViews(topNavigationBar, searchContainer, homeContainer, separator, tableView)
-        
+    }
+    
+    // MARK: - 경로 수정 AutoLayout
+    private func setupAutoLayout() {
         topNavigationBar.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide)
             make.leading.trailing.equalToSuperview()
@@ -103,6 +122,16 @@ class CourseModifyViewController: BaseViewController<CourseModifyViewModel> {
             make.leading.trailing.bottom.equalToSuperview()
         }
     }
+    
+    // MARK: - 검색 바 콜백
+    private func setupSearchTextFieldCallbacks() {
+        searchTextField.onTextChange = { [weak self] text in
+            guard let self = self, let coordinate = viewModel.currentLocation else { return }
+            viewModel.searchLocation(keyword: text,
+                                     lat: coordinate.latitude,
+                                     lon: coordinate.longitude)
+        }
+    }
 }
 
 extension CourseModifyViewController: UITableViewDataSource, UITableViewDelegate {
@@ -123,7 +152,8 @@ extension CourseModifyViewController: UITableViewDataSource, UITableViewDelegate
         let titleLabel = UILabel()
         titleLabel.attributedText = AtchaFont.B4_R_15(location.name ?? "이름 없음", color: AtchaColor.white)
         let detailLabel = UILabel()
-        detailLabel.attributedText = AtchaFont.B6_R_14(location.address ?? "주소 없음", color: AtchaColor.gray200)
+        let addressText = "\(location.radius ?? "" ) • \(location.address ?? "주소 없음")"
+        detailLabel.attributedText = AtchaFont.B6_R_14(addressText, color: AtchaColor.gray200)
         
         let labelStack = UIStackView(arrangedSubviews: [titleLabel, detailLabel])
         labelStack.axis = .vertical

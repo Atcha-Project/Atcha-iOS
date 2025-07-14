@@ -30,7 +30,7 @@ final class CourseSearchViewModel: BaseViewModel {
     @Published var courses: [CourseUIModel] = []
     private var allCourses: [CourseUIModel] = []
     
-    let courseUseCase: CourseUseCase
+    private let courseUseCase: CourseUseCase
     private let startLat: String
     private let startLon: String
     public private(set) var startAddress: String

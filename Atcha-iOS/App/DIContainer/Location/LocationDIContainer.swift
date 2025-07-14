@@ -10,15 +10,17 @@ import Foundation
 
 final class LocationDIContainer {
     private let apiService: APIService
+    private let locationStateHolder: LocationStateHolder
+    private lazy var searchAddressUseCase = SearchAddressUseCaseImpl(repository: AddressRepositoryImpl(apiService: apiService))
+    private lazy var requestUseCase = RequestLocationAuthorizationUseCaseImpl(repository: RequestLocationAuthorizationRepositoryImpl())
     
-    init(apiService: APIService) {
+    init(apiService: APIService, locationStateHolder: LocationStateHolder) {
         self.apiService = apiService
+        self.locationStateHolder = locationStateHolder
     }
     
     func makeLocationViewModel() -> MainViewModel {
         let streamUseCase = ObserLocationStreamUseCaseImpl(repository: LocationStreamRepositoryImpl())
-        let requestUseCase = RequestLocationAuthorizationUseCaseImpl(repository: RequestLocationAuthorizationRepositoryImpl())
-        let searchAddressUseCase = SearchAddressUseCaseImpl(repository: AddressRepositoryImpl(apiService: apiService))
         let fetchTaxiFareUseCase = FetchTaxiFareUseCaseImpl(repository: FetchTaxiFareRepositoryImpl(apiService: apiService))
         
         return MainViewModel(authorizationUseCase: requestUseCase,
@@ -39,6 +41,14 @@ final class LocationDIContainer {
     func makeCourseSearchViewController(startLat: String, startLon: String, startAddress: String) -> UIViewController {
         let viewModel = makeCourseSearchViewModel(startLat: startLat, startLon: startLon, startAddress: startAddress)
         return CourseSearchViewController(viewModel: viewModel)
+    }
+    
+    func makeCourseModifyViewModel() -> CourseModifyViewModel {
+        return CourseModifyViewModel(searchAddressUseCase: searchAddressUseCase, authorizationUseCase: requestUseCase, locationStateHolder: locationStateHolder)
+    }
+    
+    func makeCourseModifyViewController() -> UIViewController {
+        return CourseModifyViewController(viewModel: makeCourseModifyViewModel())
     }
     
     func makeMainCoordinator(navigationController: UINavigationController) -> MainCoordinator {

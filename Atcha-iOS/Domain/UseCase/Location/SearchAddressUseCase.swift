@@ -11,6 +11,12 @@ import CoreLocation
 protocol SearchAddressUseCase {
     func searchLocation(_ request: ReverseGeocodeLocationRequest) async throws -> ReverseGeocodeLocationResponse
     func searchAddress(_ request: SearchLocationRequest) async throws -> [Location]
+    
+    // 최근 검색 기록 관련
+//    func fetchRecentSearchHistories()
+//    func addRecentSearchHistory()
+//    func clearAllSearchHistories()
+//    func deleteSearchHistory()
 }
 
 final class SearchAddressUseCaseImpl: SearchAddressUseCase {

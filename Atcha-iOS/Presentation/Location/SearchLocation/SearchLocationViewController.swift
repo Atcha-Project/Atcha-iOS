@@ -149,7 +149,8 @@ extension SearchLocationViewController: UITableViewDataSource, UITableViewDelega
         let titleLabel = UILabel()
         titleLabel.attributedText = AtchaFont.B4_R_15(location.name ?? "이름 없음", color: AtchaColor.white)
         let detailLabel = UILabel()
-        detailLabel.attributedText = AtchaFont.B6_R_14(location.address ?? "주소 없음", color: AtchaColor.gray200)
+        let addressText = "\(location.radius ?? "" ) • \(location.address ?? "주소 없음")"
+        detailLabel.attributedText = AtchaFont.B6_R_14(addressText, color: AtchaColor.gray200)
         
         let labelStack = UIStackView(arrangedSubviews: [titleLabel, detailLabel])
         labelStack.axis = .vertical
