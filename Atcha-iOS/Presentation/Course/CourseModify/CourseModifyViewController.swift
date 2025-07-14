@@ -30,6 +30,22 @@ class CourseModifyViewController: BaseViewController<CourseModifyViewModel> {
         super.viewDidLoad()
         
         setupUI()
+        setupAutoLayout()
+        bindViewModel()
+        setupSearchTextFieldCallbacks()
+    }
+    
+    // MARK: - ViewModel 바인딩
+    private func bindViewModel() {
+        viewModel.$locations
+            .removeDuplicates()
+            .receive(on: RunLoop.main)
+            .sink { [weak self] locations in
+                guard let self else { return }
+                filteredLocations = locations
+                tableView.reloadData()
+            }
+            .store(in: &cancellables)
     }
     
     // MARK: - 경로 수정 UI
@@ -65,7 +81,10 @@ class CourseModifyViewController: BaseViewController<CourseModifyViewModel> {
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         
         view.addSubViews(topNavigationBar, searchContainer, homeContainer, separator, tableView)
-        
+    }
+    
+    // MARK: - 경로 수정 AutoLayout
+    private func setupAutoLayout() {
         topNavigationBar.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide)
             make.leading.trailing.equalToSuperview()
@@ -101,6 +120,16 @@ class CourseModifyViewController: BaseViewController<CourseModifyViewModel> {
         tableView.snp.makeConstraints { make in
             make.top.equalTo(separator.snp.bottom)
             make.leading.trailing.bottom.equalToSuperview()
+        }
+    }
+    
+    // MARK: - 검색 바 콜백
+    private func setupSearchTextFieldCallbacks() {
+        searchTextField.onTextChange = { [weak self] text in
+            guard let self = self, let coordinate = viewModel.currentLocation else { return }
+            viewModel.searchLocation(keyword: text,
+                                     lat: coordinate.latitude,
+                                     lon: coordinate.longitude)
         }
     }
 }

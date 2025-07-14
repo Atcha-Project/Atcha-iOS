@@ -35,7 +35,7 @@ final class AppDIContainer {
         self.splashDIContainer = SplashDIContainer(apiService: apiServce)
         self.myPageDIContainer = MyPageDIContainer(apiService: apiServce)
         self.loginDIContainer = LoginDIContainer(apiService: noHeaderApiService)
-        self.mainDIContainer = LocationDIContainer(apiService: apiServce)
+        self.mainDIContainer = LocationDIContainer(apiService: apiServce, locationStateHolder: locationStateHolder)
         
 //        self.courseDIContainer = CourseDIContainer(apiService: apiServce)
         self.homeRegisterDIContainer = HomeRegisterDIContainer(apiService: apiServce, locationStateHolder: locationStateHolder)

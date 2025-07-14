@@ -43,7 +43,9 @@ final class MainCoordinator {
             print("🔍 courseSearch route tapped: \(navigationController.viewControllers)")
             
         case .changeCourse:
-            print("🔄 changeCourse route tapped")
+            let vc = diContainer.makeCourseModifyViewController()
+            navigationController.pushViewController(vc, animated: true)
+            print("✍️ courseModify route tapped: \(navigationController.viewControllers)")
         }
         
         routeHandler?(route)
