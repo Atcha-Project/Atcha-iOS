@@ -22,7 +22,9 @@ extension SearchLocationResponse {
             let name = name,
             let lat = lat,
             let lon = lon,
-            let address = address
+            let businessCategory = businessCategory,
+            let address = address,
+            let radius = radius
         else {
             return nil
         }
@@ -31,7 +33,9 @@ extension SearchLocationResponse {
             name: name,
             lat: lat,
             lon: lon,
-            address: address
+            businessCategory: businessCategory,
+            address: address,
+            radius: radius
         )
     }
 }
