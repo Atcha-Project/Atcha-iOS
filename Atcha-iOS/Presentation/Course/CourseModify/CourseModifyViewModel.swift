@@ -21,9 +21,9 @@ final class CourseModifyViewModel: BaseViewModel {
         self.authorizationUseCase = authorizationUseCase
         self.locationStateHolder = locationStateHolder
         
-//        self.currentLocation = locationStateHolder.currentLocation
-        self.currentLocation = CLLocationCoordinate2D(latitude: 37.554722,
-                                                      longitude: 126.970833)
+        self.currentLocation = locationStateHolder.currentLocation
+//        self.currentLocation = CLLocationCoordinate2D(latitude: 37.554722,
+//                                                      longitude: 126.970833)
         
         super.init()
         self.requestPermission()
