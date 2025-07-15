@@ -66,15 +66,6 @@ final class MainViewController: BaseViewController<MainViewModel>,
             }
             .store(in: &cancellables)
         
-        viewModel.$currentLocation
-            .compactMap { $0 }
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] location in
-                guard let self else { return }
-                mapContainerView.setupCenter(location: location)
-            }
-            .store(in: &cancellables)
-        
         viewModel.$address
             .removeDuplicates()
             .compactMap { $0 }
@@ -94,6 +85,24 @@ final class MainViewController: BaseViewController<MainViewModel>,
                 print("fare : \(fare)")
             }
             .store(in: &cancellables)
+        
+        //        viewModel.$currentLocation
+        //            .compactMap { $0 }
+        //            .receive(on: DispatchQueue.main)
+        //            .sink { [weak self] location in
+        //                guard let self else { return }
+        //                mapContainerView.setupCenter(location: location)
+        //            }
+        //            .store(in: &cancellables)
+        
+//        viewModel.$myLocation
+//            .compactMap { $0 }
+//            .receive(on: RunLoop.main)
+//            .sink { [weak self] location in
+//                guard let self else { return }
+//                mapContainerView.updateUserMarker(location: location)
+//            }
+//            .store(in: &cancellables)
     }
     
     private func setupAutoLayout() {
@@ -148,10 +157,10 @@ extension MainViewController {
 // MARK: - Delegate
 extension MainViewController {
     func mapView(_ mapView: TMapWrapper, didUpdateLocation coordinate: CLLocationCoordinate2D) {
-        viewModel.currentLocation = coordinate
+//        viewModel.currentLocation = coordinate
     }
     
     func mapView(_ mapView: TMapWrapper, didSelectLocation coordinate: CLLocationCoordinate2D) {
-        viewModel.currentLocation = coordinate
+//        viewModel.currentLocation = coordinate
     }
 }

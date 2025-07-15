@@ -10,7 +10,8 @@ import CoreLocation
 import Combine
 
 final class MainViewModel: BaseViewModel {
-    @Published var currentLocation: CLLocationCoordinate2D?
+//    @Published var currentLocation: CLLocationCoordinate2D?
+//    @Published var selectedLocation: CLLocationCoordinate2D?
     @Published var address: String?
     @Published var taxiFare: Double?
     
@@ -18,6 +19,7 @@ final class MainViewModel: BaseViewModel {
     private let authorizationUseCase: RequestLocationAuthorizationUseCase
     private let fetchTaxiFareUseCase: FetchTaxiFareUseCase
     private let streamUseCase: ObserveLocationStreamUseCase
+    private let locationStateHolder: LocationStateHolder
     private var streamTask: Task<Void, Never>?
     
     var routeHandler: ((MainRoute) -> Void)?
@@ -25,18 +27,20 @@ final class MainViewModel: BaseViewModel {
     init(authorizationUseCase: RequestLocationAuthorizationUseCase,
          streamUseCase: ObserveLocationStreamUseCase,
          fetchTaxiFareUseCase: FetchTaxiFareUseCase,
-         searchAddressUseCase: SearchAddressUseCase) {
+         searchAddressUseCase: SearchAddressUseCase,
+         locationStateHolder: LocationStateHolder) {
         self.authorizationUseCase = authorizationUseCase
         self.streamUseCase = streamUseCase
         self.fetchTaxiFareUseCase = fetchTaxiFareUseCase
         self.searchAddressUseCase = searchAddressUseCase
+        self.locationStateHolder = locationStateHolder
         
         super.init()
         self.bindView()
     }
     
     func bindView() {
-        $currentLocation
+        locationStateHolder.currentLocationSubject
             .debounce(for: .seconds(0.3), scheduler: RunLoop.main)
             .sink { [weak self] location in
                 guard let self, let location else { return }
@@ -62,15 +66,38 @@ final class MainViewModel: BaseViewModel {
             streamTask = Task {
                 for await location in streamUseCase.startUpdate() {
                     let currentLocation: CLLocationCoordinate2D = CLLocationCoordinate2D(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
-                    self.currentLocation = currentLocation
+//                    self.currentLocation = currentLocation
                     break
                 }
             }
         }
     }
     
+//    func getMyLocationInfo() -> Location {
+//        let lat = locationStateHolder.currentLocation?.latitude
+//        let lon = locationStateHolder.currentLocation?.longitude
+//        let address = locationStateHolder.address
+//        
+//        return Location(lat: lat, lon: lon, address: address)
+//    }
+    
+//    func fetchLiveMyLoaction() {
+//        Task {
+//            let status = await authorizationUseCase.askPermission()
+//            guard status == .authorizedAlways || status == .authorizedWhenInUse else { return }
+//            
+//            streamTask = Task {
+//                for await location in streamUseCase.startUpdate() {
+//                    let currentLocation: CLLocationCoordinate2D = CLLocationCoordinate2D(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
+//                    self.myLocation = currentLocation
+//                }
+//            }
+//        }
+//    }
+    
     func setupLocation() {
         requestPermissionAndStartTracking()
+//        fetchLiveMyLoaction()
     }
     
     func stopTracking() {

@@ -26,7 +26,8 @@ final class LocationDIContainer {
         return MainViewModel(authorizationUseCase: requestUseCase,
                              streamUseCase: streamUseCase,
                              fetchTaxiFareUseCase: fetchTaxiFareUseCase,
-                             searchAddressUseCase: searchAddressUseCase)
+                             searchAddressUseCase: searchAddressUseCase,
+                             locationStateHolder: locationStateHolder)
     }
     
     func makeMapViewController(viewModel: MainViewModel) -> UIViewController {

@@ -9,7 +9,6 @@ import UIKit
 import Combine
 
 final class LastTrainSearchBottomView: UIView {
-    
     enum Action {
         case currentTapped
         case searchTapped
@@ -48,9 +47,7 @@ final class LastTrainSearchBottomView: UIView {
     private let searchButton: AtchaButton = AtchaButton(text: "검색하기",
                                                         size: .h52,
                                                         style: .filled(.primary),
-                                                        image: UIImage(named: "search")) {
-        print("검색 레스고")
-    }
+                                                        image: UIImage(named: "search")) {}
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -76,7 +73,7 @@ final class LastTrainSearchBottomView: UIView {
         currentDotView.layer.cornerRadius = 2
         arrivalDotView.layer.cornerRadius = 2
         
-        currentLocationLabel.attributedText = AtchaFont.B1_R_17("현위치 : 마루 180", color: .main)
+        currentLocationLabel.attributedText = AtchaFont.B1_R_17("현위치 : 조회 중..", color: .main)
         arrivalLocationLabel.attributedText = AtchaFont.B1_R_17("도착지 : 우리집", color: .gray200)
         
         addSubViews(currentLocationView, arrivalLocationView, searchButton)
