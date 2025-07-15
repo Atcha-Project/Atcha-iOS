@@ -12,4 +12,5 @@ protocol AddressRepository {
     func fetchCurrentLocation(request: ReverseGeocodeLocationRequest) async throws -> ReverseGeocodeLocationResponse
     func searchLoaction(request: SearchLocationRequest) async throws -> [SearchLocationResponse]
     func fetchRecentSearchHistories(request: FetchRecentSearchRequest) async throws -> [Location]
+    func addRecentSearchHistory(request: AddRecentSearchRequest) async throws -> EmptyResponse
 }

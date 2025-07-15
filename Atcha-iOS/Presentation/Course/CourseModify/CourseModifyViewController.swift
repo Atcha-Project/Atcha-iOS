@@ -258,6 +258,8 @@ extension CourseModifyViewController: UITableViewDataSource, UITableViewDelegate
         switch item {
         case .recent(let loc), .result(let loc):
             print("선택된 장소: \(loc.name ?? "")")
+            
+            viewModel.addRecentSearchLocation(request: AddRecentSearchRequest(name: loc.name, lat: loc.lat, lon: loc.lon, businessCategory: loc.businessCategory, address: loc.address))
         }
     }
     

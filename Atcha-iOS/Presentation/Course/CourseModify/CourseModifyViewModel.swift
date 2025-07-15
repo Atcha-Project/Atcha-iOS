@@ -67,7 +67,20 @@ final class CourseModifyViewModel: BaseViewModel {
                 self.mode = .recent
                 self.items = response.map { .recent(location: $0) }
             } catch {
-                print("장소 검색 실패")
+                print("최근 장소 검색 실패")
+            }
+        }
+    }
+    
+    // MARK: - 최근 검색 추가
+    @MainActor
+    func addRecentSearchLocation(request: AddRecentSearchRequest) {
+        Task {
+            do {
+                print(request)
+                _ = try await searchAddressUseCase.addRecentSearchHistory(request)
+            } catch {
+                print("최근 장소 추가 실패")
             }
         }
     }

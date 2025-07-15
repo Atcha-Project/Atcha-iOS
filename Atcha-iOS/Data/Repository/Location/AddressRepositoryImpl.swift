@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Alamofire
 
 final class AddressRepositoryImpl: AddressRepository {
     private let apiService: APIService
@@ -48,6 +49,17 @@ final class AddressRepositoryImpl: AddressRepository {
                     "lon": "\(request.lon ?? 0.0)"
                 ]
             )
+        )
+    }
+    
+    func addRecentSearchHistory(request: AddRecentSearchRequest) async throws -> EmptyResponse {
+        return try await apiService.request(
+            Endpoint(
+                path: "https://atcha.p-e.kr/api/locations/histories", 
+                method: .post,
+                encoding: JSONEncoding.default,
+            ),
+            body: request
         )
     }
 }
