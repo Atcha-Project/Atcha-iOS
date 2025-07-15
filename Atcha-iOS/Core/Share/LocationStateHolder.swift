@@ -10,7 +10,8 @@ import Combine
 import CoreLocation
 
 final class LocationStateHolder {
-    let currentLocationSubject = PassthroughSubject<CLLocationCoordinate2D, Never>()
+    let currentLocationSubject = PassthroughSubject<CLLocationCoordinate2D?, Never>()
+    let selectLocationSubject = PassthroughSubject<CLLocationCoordinate2D?, Never>()
     
     var currentLocation: CLLocationCoordinate2D?
     var address: String?

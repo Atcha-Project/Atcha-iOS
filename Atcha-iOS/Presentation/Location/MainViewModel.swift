@@ -11,15 +11,15 @@ import Combine
 
 final class MainViewModel: BaseViewModel {
     @Published var currentLocation: CLLocationCoordinate2D?
+    @Published var selectedLocation: CLLocationCoordinate2D?
     @Published var address: String?
     @Published var taxiFare: Double?
-    
-    var currentLocationSubject: PassthroughSubject<CLLocationCoordinate2D?, Never> = .init()
     
     private let searchAddressUseCase: SearchAddressUseCase
     private let authorizationUseCase: RequestLocationAuthorizationUseCase
     private let fetchTaxiFareUseCase: FetchTaxiFareUseCase
     private let streamUseCase: ObserveLocationStreamUseCase
+    private let locationStateHolder: LocationStateHolder
     private var streamTask: Task<Void, Never>?
     
     var routeHandler: ((MainRoute) -> Void)?
@@ -27,37 +27,33 @@ final class MainViewModel: BaseViewModel {
     init(authorizationUseCase: RequestLocationAuthorizationUseCase,
          streamUseCase: ObserveLocationStreamUseCase,
          fetchTaxiFareUseCase: FetchTaxiFareUseCase,
-         searchAddressUseCase: SearchAddressUseCase) {
+         searchAddressUseCase: SearchAddressUseCase,
+         locationStateHolder: LocationStateHolder) {
         self.authorizationUseCase = authorizationUseCase
         self.streamUseCase = streamUseCase
         self.fetchTaxiFareUseCase = fetchTaxiFareUseCase
         self.searchAddressUseCase = searchAddressUseCase
+        self.locationStateHolder = locationStateHolder
+        
+        super.init()
+        self.bindView()
     }
     
     func bindView() {
-        currentLocationSubject
-            .compactMap { $0 }
+        $currentLocation
             .removeDuplicates()
-            .debounce(for: .seconds(0.3), scheduler: DispatchQueue.main)
-            .sink { [weak self] coordinate in
+            .debounce(for: .seconds(0.3), scheduler: RunLoop.main)
+            .sink { [weak self] location in
+                guard let self, let location else { return }
+                currentLocation = location
                 Task {
-                    guard let self else { return }
-                    let address = try? await self.fetchCurrentAddress(
-                        lat: coordinate.latitude,
-                        lon: coordinate.longitude
-                    )
-                    
-                    self.address = address?.name
-                    
-                    let request = FetchTaxiFareRequest(originLat: address?.lat,
-                                                       originLon: address?.lon,
-                                                       destinationLat: 37.58746906188554,
-                                                       destinationLon: 126.9855465633904)
-                    
-                    self.taxiFare = try? await self.fetchTaxiFareUseCase.fetchTaxiFare(request: request)
-                    
-                    print("taxiFare: \(self.taxiFare)")
-                    print("address : \(address?.name)")
+                    let address = try? await self.fetchCurrentAddress(lat: location.latitude,
+                                                                      lon: location.longitude)
+//                    if let name = address?.name {
+//                        self.address = name
+//                    } else if let address = address?.address {
+//                        self.address = address
+//                    }
                 }
             }
             .store(in: &cancellables)
@@ -68,14 +64,26 @@ final class MainViewModel: BaseViewModel {
             let status = await authorizationUseCase.askPermission()
             guard status == .authorizedAlways || status == .authorizedWhenInUse else { return }
 
-//            streamTask = Task {
-//                for await location in streamUseCase.startUpdate() {
-//                    self.currentLocation = location
-//                }
-//            }
+            streamTask = Task {
+                var didSendInitialLocation = false
+                for await location in streamUseCase.startUpdate() {
+                    let currentLocation = CLLocationCoordinate2D(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
+                    
+                    if !didSendInitialLocation {
+                        self.currentLocation = currentLocation
+                        didSendInitialLocation = true
+                    }
+
+                    selectedLocation = currentLocation
+                }
+            }
         }
     }
-
+    
+    func setupLocation() {
+        requestPermissionAndStartTracking()
+    }
+    
     func stopTracking() {
         streamTask?.cancel()
         streamUseCase.stopUpdate()
@@ -91,12 +99,5 @@ extension MainViewModel {
     private func fetchCurrentAddress(lat: Double, lon: Double) async throws -> ReverseGeocodeLocationResponse {
         let request: ReverseGeocodeLocationRequest = ReverseGeocodeLocationRequest(lat: lat, lon: lon)
         return try await searchAddressUseCase.searchLocation(request)
-    }
-}
-
-extension CLLocationCoordinate2D: Equatable {
-    public static func == (lhs: CLLocationCoordinate2D, rhs: CLLocationCoordinate2D) -> Bool {
-        abs(lhs.latitude - rhs.latitude) < 0.0001 &&
-        abs(lhs.longitude - rhs.longitude) < 0.0001
     }
 }

@@ -15,8 +15,10 @@ final class HomeRegisterViewModel: BaseViewModel {
     private let streamUseCase: ObserveLocationStreamUseCase
     private let locationStateHolder: LocationStateHolder
     
+    @Published var selectedState: LocationSelectionState?
+    
     var routeHandler: ((OnboardingRoute) -> Void)?
-
+    
     init(searchAddressUseCase: SearchAddressUseCase,
          streamUseCase: ObserveLocationStreamUseCase,
          locationStateHolder: LocationStateHolder) {
@@ -31,8 +33,9 @@ final class HomeRegisterViewModel: BaseViewModel {
     
     func bind() {
         locationStateHolder.currentLocationSubject
-            .removeDuplicates()
-            .sink { [weak self] location in
+//            .removeDuplicates()
+            .compactMap { $0 }
+            .handleEvents(receiveOutput: { [weak self] location in
                 guard let self else { return }
                 Task {
                     let address = try? await self.fetchCurrentAddress(
@@ -44,14 +47,22 @@ final class HomeRegisterViewModel: BaseViewModel {
                     self.locationStateHolder.buildingName = address?.name
                     self.locationStateHolder.address = address?.address
                 }
+            })
+            .dropFirst()
+            .sink { [weak self] location in
+                guard let self else { return }
+                if let name = self.locationStateHolder.buildingName,
+                   let address = self.locationStateHolder.address {
+                    selectedState = .selected(name: name, address: address)
+                }
             }
             .store(in: &cancellables)
     }
     
     func requestMyLocation() {
         Task {
-//            let status = await authorizationUseCase.askPermission()
-//            guard status == .authorizedAlways || status == .authorizedWhenInUse else { return }
+            //            let status = await authorizationUseCase.askPermission()
+            //            guard status == .authorizedAlways || status == .authorizedWhenInUse else { return }
             streamTask = Task {
                 for await location in streamUseCase.startUpdate() {
                     let currentLocation: CLLocationCoordinate2D = CLLocationCoordinate2D(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)

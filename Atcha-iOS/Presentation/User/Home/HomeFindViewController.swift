@@ -60,13 +60,12 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
             .sink { [weak self] _ in
                 guard let self else { return }
                 viewModel.saveCurrentLoaction()
-                viewModel.routeHandler?(.pushRegister)
-//                navigationController?.popViewController(animated: true)
+                navigationController?.popToRootViewController(animated: true)
             }
             .store(in: &cancellables)
         
         viewModel.$currentLocation
-            .removeDuplicates()
+//            .removeDuplicates()
             .compactMap { $0 }
             .receive(on: DispatchQueue.main)
             .sink { [weak self] location in
@@ -77,7 +76,7 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
         
         viewModel.$address
             .removeDuplicates()
-            .receive(on: RunLoop.main)
+            .receive(on: DispatchQueue.main)
             .sink { [weak self] address in
                 guard let self else { return }
                 bottomView.setupaddressLabel(address: address)
@@ -86,7 +85,7 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
         
         viewModel.$buildingName
             .removeDuplicates()
-            .receive(on: RunLoop.main)
+            .receive(on: DispatchQueue.main)
             .sink { [weak self] name in
                 guard let self else { return }
                 bottomView.setupNameLabel(name: name)
@@ -158,11 +157,11 @@ extension HomeFindViewController {
     }
     
     func mapView(_ mapView: TMapWrapper, didUpdateLocation coordinate: CLLocationCoordinate2D) {
-        viewModel.currentLocationSubject.send(coordinate)
+        viewModel.currentLocation = coordinate
     }
     
     func mapView(_ mapView: TMapWrapper, didSelectLocation coordinate: CLLocationCoordinate2D) {
-        viewModel.currentLocationSubject.send(coordinate)
+        viewModel.currentLocation = coordinate
     }
 }
 
