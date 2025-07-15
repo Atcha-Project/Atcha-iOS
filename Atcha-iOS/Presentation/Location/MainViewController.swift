@@ -76,33 +76,36 @@ final class MainViewController: BaseViewController<MainViewModel>,
             }
             .store(in: &cancellables)
         
-        viewModel.$taxiFare
-            .removeDuplicates()
+        // 현재 내 위치 location
+        viewModel.$currentLocation
             .compactMap { $0 }
-            .receive(on: RunLoop.main)
-            .sink { [weak self] fare in
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] location in
                 guard let self else { return }
-                print("fare : \(fare)")
+                mapContainerView.setupCenter(location: location)
             }
             .store(in: &cancellables)
         
-        //        viewModel.$currentLocation
-        //            .compactMap { $0 }
-        //            .receive(on: DispatchQueue.main)
-        //            .sink { [weak self] location in
-        //                guard let self else { return }
-        //                mapContainerView.setupCenter(location: location)
-        //            }
-        //            .store(in: &cancellables)
+        // 선택한 location
+        viewModel.$selectedLocation
+            .compactMap { $0 }
+            .receive(on: RunLoop.main)
+            .sink { [weak self] location in
+                guard let self else { return }
+                mapContainerView.updateUserMarker(location: location)
+            }
+            .store(in: &cancellables)
         
-//        viewModel.$myLocation
+//        viewModel.$taxiFare
+//            .removeDuplicates()
 //            .compactMap { $0 }
 //            .receive(on: RunLoop.main)
-//            .sink { [weak self] location in
-//                guard let self else { return }
-//                mapContainerView.updateUserMarker(location: location)
+//            .sink { [weak self] fare in
+////                guard let self else { return }
+//                print("fare : \(fare)")
 //            }
 //            .store(in: &cancellables)
+        
     }
     
     private func setupAutoLayout() {
@@ -157,10 +160,10 @@ extension MainViewController {
 // MARK: - Delegate
 extension MainViewController {
     func mapView(_ mapView: TMapWrapper, didUpdateLocation coordinate: CLLocationCoordinate2D) {
-//        viewModel.currentLocation = coordinate
+        viewModel.currentLocation = coordinate
     }
     
     func mapView(_ mapView: TMapWrapper, didSelectLocation coordinate: CLLocationCoordinate2D) {
-//        viewModel.currentLocation = coordinate
+        viewModel.currentLocation = coordinate
     }
 }

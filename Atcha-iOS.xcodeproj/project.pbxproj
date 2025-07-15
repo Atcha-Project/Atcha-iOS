@@ -142,6 +142,7 @@
 		B68309612E005A3600E2D029 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B683094E2E005A3600E2D029 /* LaunchScreen.storyboard */; };
 		B68309622E005A3600E2D029 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B68309502E005A3600E2D029 /* Main.storyboard */; };
 		B68309672E005B5300E2D029 /* UIView+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B68309662E005B5300E2D029 /* UIView+Ext.swift */; };
+		B69E31A82E2681EF001040F4 /* CLLocationCoordinate2D+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B69E31A72E2681EF001040F4 /* CLLocationCoordinate2D+Ext.swift */; };
 		B6ADE1942E0C0DE6008C4E23 /* LoginType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6ADE1932E0C0DE6008C4E23 /* LoginType.swift */; };
 		B6B57EC22E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B57EC12E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift */; };
 		B6B57EC52E1AB0FE00B29EB1 /* MainRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B57EC42E1AB0FE00B29EB1 /* MainRoute.swift */; };
@@ -319,6 +320,7 @@
 		B68309512E005A3600E2D029 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		B68309632E005ADE00E2D029 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		B68309662E005B5300E2D029 /* UIView+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Ext.swift"; sourceTree = "<group>"; };
+		B69E31A72E2681EF001040F4 /* CLLocationCoordinate2D+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CLLocationCoordinate2D+Ext.swift"; sourceTree = "<group>"; };
 		B6ADE1932E0C0DE6008C4E23 /* LoginType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginType.swift; sourceTree = "<group>"; };
 		B6B57EC12E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastTrainSearchBottomView.swift; sourceTree = "<group>"; };
 		B6B57EC42E1AB0FE00B29EB1 /* MainRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainRoute.swift; sourceTree = "<group>"; };
@@ -972,6 +974,7 @@
 				6DFF29EF2E0F23840039399F /* UIImage+Ext.swift */,
 				6D81574D2E13EC0F003688A6 /* Int+Ext.swift */,
 				6D73EB6A2E16845000F8DF8B /* String+Ext.swift */,
+				B69E31A72E2681EF001040F4 /* CLLocationCoordinate2D+Ext.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -1242,6 +1245,7 @@
 				B600CA132E07FD29008B0D87 /* MyPageCoordinator.swift in Sources */,
 				B6C507482E129640000AB39F /* RequestLocationAuthorizationUseCase.swift in Sources */,
 				B6C5074A2E129649000AB39F /* ObserveLocationStreamUseCase.swift in Sources */,
+				B69E31A82E2681EF001040F4 /* CLLocationCoordinate2D+Ext.swift in Sources */,
 				6D73EB6F2E169F7700F8DF8B /* TransportationIconView.swift in Sources */,
 				B65C13312E0658580016D2F0 /* MyPageViewModel.swift in Sources */,
 				B65C133D2E06E00F0016D2F0 /* MyPageDIContainer.swift in Sources */,
