@@ -13,7 +13,7 @@ protocol SearchAddressUseCase {
     func searchAddress(_ request: SearchLocationRequest) async throws -> [Location]
     
     // 최근 검색 기록 관련
-//    func fetchRecentSearchHistories()
+    func fetchRecentSearchHistories(_ request: FetchRecentSearchRequest) async throws -> [Location]
 //    func addRecentSearchHistory()
 //    func clearAllSearchHistories()
 //    func deleteSearchHistory()
@@ -31,5 +31,9 @@ final class SearchAddressUseCaseImpl: SearchAddressUseCase {
     
     func searchAddress(_ request: SearchLocationRequest) async throws -> [Location] {
         return try await repository.searchLoaction(request: request).compactMap { $0.toEntity() }
+    }
+    
+    func fetchRecentSearchHistories(_ request: FetchRecentSearchRequest) async throws -> [Location] {
+        return try await repository.fetchRecentSearchHistories(request: request)
     }
 }

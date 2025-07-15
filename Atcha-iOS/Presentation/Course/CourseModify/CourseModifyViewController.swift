@@ -13,18 +13,20 @@ class CourseModifyViewController: BaseViewController<CourseModifyViewModel> {
         
     }, tintColor: AtchaColor.gray300)
     private let searchContainer: UIStackView = UIStackView()
-    private let searchTextField: SearchTextField = AtchaTextField.searchTextField { String in
-        
-    } onTextReset: {
-        
-    }
+    private let searchTextField: SearchTextField = AtchaTextField.searchTextField()
     private let mapImageView: UIImageView = UIImageView()
     private let homeContainer: UIStackView = UIStackView()
     private let homeDot: UIView = UIView()
     private let homeLabel: UILabel = UILabel()
     private let separator: UIView = UIView()
-    private var filteredLocations: [Location] = []
-    private let tableView = UITableView()
+    private var items: [SearchResultItem] = []
+    private let tableView: UITableView = UITableView()
+    private var tableViewTopConstraint: Constraint?
+    private let tableHeaderView: UIView = UIView()
+    private let recentLabel: UILabel = UILabel()
+    private let recentAllDeleteLabel: UILabel = UILabel()
+    private let emptyRecentLabel: UILabel = UILabel()
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -33,16 +35,33 @@ class CourseModifyViewController: BaseViewController<CourseModifyViewModel> {
         setupAutoLayout()
         bindViewModel()
         setupSearchTextFieldCallbacks()
+//        viewModel.recentSearchLocation()
     }
     
     // MARK: - ViewModel 바인딩
     private func bindViewModel() {
-        viewModel.$locations
-            .removeDuplicates()
+        viewModel.$items
             .receive(on: RunLoop.main)
-            .sink { [weak self] locations in
+            .sink { [weak self] newItems in
                 guard let self else { return }
-                filteredLocations = locations
+                self.items = newItems
+
+                switch viewModel.mode {
+                case .recent:
+                    if viewModel.items.isEmpty {
+                        tableHeaderView.isHidden = true
+                        emptyRecentLabel.isHidden = false
+                    } else {
+                        tableHeaderView.isHidden = false
+                        emptyRecentLabel.isHidden = true
+                    }
+                    tableViewTopConstraint?.update(offset: 0)
+                case .result:
+                    tableHeaderView.isHidden = true
+                    emptyRecentLabel.isHidden = true
+                    tableViewTopConstraint?.update(offset: -(tableHeaderView.frame.height))
+                }
+
                 tableView.reloadData()
             }
             .store(in: &cancellables)
@@ -80,7 +99,14 @@ class CourseModifyViewController: BaseViewController<CourseModifyViewModel> {
         tableView.delegate = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         
-        view.addSubViews(topNavigationBar, searchContainer, homeContainer, separator, tableView)
+        recentLabel.attributedText = AtchaFont.B6_R_14("최근 내역", color: AtchaColor.gray400)
+        recentAllDeleteLabel.attributedText = AtchaFont.B6_R_14("전체 삭제", color: AtchaColor.gray400)
+        
+        tableHeaderView.addSubViews(recentLabel, recentAllDeleteLabel)
+        
+        emptyRecentLabel.attributedText = AtchaFont.B4_R_15("최근 내역이 없습니다.", color: AtchaColor.gray400)
+        
+        view.addSubViews(topNavigationBar, searchContainer, homeContainer, separator, tableView, tableHeaderView, emptyRecentLabel)
     }
     
     // MARK: - 경로 수정 AutoLayout
@@ -96,7 +122,7 @@ class CourseModifyViewController: BaseViewController<CourseModifyViewModel> {
             make.trailing.equalToSuperview().inset(16)
             make.height.equalTo(48)
         }
-
+        
         mapImageView.snp.makeConstraints { make in
             make.size.equalTo(28)
         }
@@ -117,9 +143,30 @@ class CourseModifyViewController: BaseViewController<CourseModifyViewModel> {
             make.height.equalTo(10)
         }
         
-        tableView.snp.makeConstraints { make in
+        tableHeaderView.snp.makeConstraints { make in
             make.top.equalTo(separator.snp.bottom)
+            make.leading.trailing.equalToSuperview()
+            make.height.equalTo(36)
+        }
+        
+        recentLabel.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(14)
+            make.leading.equalToSuperview().offset(16)
+        }
+        
+        recentAllDeleteLabel.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(14)
+            make.trailing.equalToSuperview().inset(16)
+        }
+        
+        tableView.snp.makeConstraints { make in
+            self.tableViewTopConstraint = make.top.equalTo(tableHeaderView.snp.bottom).constraint
             make.leading.trailing.bottom.equalToSuperview()
+        }
+        
+        emptyRecentLabel.snp.makeConstraints { make in
+            make.centerX.equalToSuperview()
+            make.centerY.equalToSuperview()
         }
     }
     
@@ -127,9 +174,17 @@ class CourseModifyViewController: BaseViewController<CourseModifyViewModel> {
     private func setupSearchTextFieldCallbacks() {
         searchTextField.onTextChange = { [weak self] text in
             guard let self = self, let coordinate = viewModel.currentLocation else { return }
-            viewModel.searchLocation(keyword: text,
-                                     lat: coordinate.latitude,
-                                     lon: coordinate.longitude)
+            if text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                viewModel.recentSearchLocation()
+            } else {
+                viewModel.searchLocation(keyword: text,
+                                         lat: coordinate.latitude,
+                                         lon: coordinate.longitude)
+            }
+        }
+        
+        searchTextField.onTextReset = { [weak self] in
+            self?.viewModel.recentSearchLocation()
         }
     }
 }
@@ -138,32 +193,58 @@ extension CourseModifyViewController: UITableViewDataSource, UITableViewDelegate
     
     // MARK: - Cell 갯수
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return filteredLocations.count
+        return items.count
     }
     
     // MARK: - Cell UI
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let item = items[indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-        let location = filteredLocations[indexPath.row]
         
         // 기존 content 제거
         cell.contentView.subviews.forEach { $0.removeFromSuperview() }
         
         let titleLabel = UILabel()
-        titleLabel.attributedText = AtchaFont.B4_R_15(location.name ?? "이름 없음", color: AtchaColor.white)
         let detailLabel = UILabel()
-        let addressText = "\(location.radius ?? "" ) • \(location.address ?? "주소 없음")"
-        detailLabel.attributedText = AtchaFont.B6_R_14(addressText, color: AtchaColor.gray200)
         
         let labelStack = UIStackView(arrangedSubviews: [titleLabel, detailLabel])
         labelStack.axis = .vertical
         labelStack.spacing = 4
         labelStack.alignment = .leading
         
-        cell.contentView.addSubview(labelStack)
-        labelStack.snp.makeConstraints {
-            $0.top.bottom.equalToSuperview().inset(19)
-            $0.leading.trailing.equalToSuperview().inset(16)
+        let deleteImageViewImage = UIImageView()
+        deleteImageViewImage.image = UIImage.xGray
+        deleteImageViewImage.contentMode = .scaleAspectFit
+        
+        switch item {
+        case .recent(location: let location):
+            titleLabel.attributedText = AtchaFont.B4_R_15(location.name ?? "이름 없음", color: AtchaColor.white)
+            
+            let addressText = "\(location.radius ?? "" ) • \(location.address ?? "주소 없음")"
+            detailLabel.attributedText = AtchaFont.B6_R_14(addressText, color: AtchaColor.gray200)
+            
+            let recentStack = UIStackView(arrangedSubviews: [labelStack, deleteImageViewImage])
+            recentStack.axis = .horizontal
+            recentStack.spacing = 12
+            
+            cell.contentView.addSubview(recentStack)
+            
+            recentStack.snp.makeConstraints {
+                $0.top.bottom.equalToSuperview().inset(19)
+                $0.leading.trailing.equalToSuperview().inset(16)
+            }
+            
+        case .result(location: let location):
+            titleLabel.attributedText = AtchaFont.B4_R_15(location.name ?? "이름 없음", color: AtchaColor.white)
+            
+            let addressText = "\(location.radius ?? "" ) • \(location.address ?? "주소 없음")"
+            detailLabel.attributedText = AtchaFont.B6_R_14(addressText, color: AtchaColor.gray200)
+            
+            cell.contentView.addSubview(labelStack)
+            labelStack.snp.makeConstraints {
+                $0.top.bottom.equalToSuperview().inset(19)
+                $0.leading.trailing.equalToSuperview().inset(16)
+            }
         }
         
         cell.backgroundColor = .clear
@@ -173,18 +254,14 @@ extension CourseModifyViewController: UITableViewDataSource, UITableViewDelegate
     
     // MARK: -  Cell 선택 시 이벤트
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let selected = filteredLocations[indexPath.row]
-        print("선택한 장소: \(selected)")
-        
-//        if let lat = selected.lat,
-//           let lon = selected.lon,
-//           let placeName = selected.name,
-//           let address = selected.address {
-//            
-//        }
+        let item = items[indexPath.row]
+        switch item {
+        case .recent(let loc), .result(let loc):
+            print("선택된 장소: \(loc.name ?? "")")
+        }
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return filteredLocations.isEmpty ? 0 : 1
+        return viewModel.numberOfSections()
     }
 }
