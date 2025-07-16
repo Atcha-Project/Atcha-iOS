@@ -10,7 +10,7 @@ import UIKit
 import CoreLocation
 
 final class PermissionViewModel: BaseViewModel {
-    @Published var deniedAlert: PermissionType?
+    @Published var checkPermissionFinished: Bool = false
     private let authorizationRequestUseCase: RequestLocationAuthorizationUseCaseImpl
     
     init(authorizationRequestUseCase: RequestLocationAuthorizationUseCaseImpl) {
@@ -19,41 +19,20 @@ final class PermissionViewModel: BaseViewModel {
     
     func askLocationPermission() {
         Task {
-            let status = await authorizationRequestUseCase.askLocationPermission()
-            print("status : \(status)")
-            handleLocationStatus(status)
+            let _ = await authorizationRequestUseCase.askLocationPermission()
         }
     }
     
     func askPushPermission() {
         Task {
-            let granted = await authorizationRequestUseCase.askPushPermission()
-        }
-    }
-    
-    private func handleLocationStatus(_ status: CLAuthorizationStatus) {
-        switch status {
-        case .authorizedAlways, .authorizedWhenInUse:
-            print("✅ 성공")
-            // 이후 로직 실행
-        default:
-            print("❌ 실패")
-            // 실패 대응
-        }
-    }
-    
-    func checkPushPermission(granted: Bool) {
-        if granted {
-            print("화면닫기")
-        } else {
-            deniedAlert = .push
+            let _ = await authorizationRequestUseCase.askPushPermission()
+            checkPermissionFinished = true
         }
     }
 }
 
 
 enum AlertFactory {
-    
     static func makeSettingsAlert(
         title: String? = nil,
         message: String,

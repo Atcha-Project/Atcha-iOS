@@ -39,13 +39,10 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
         addGesture()
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        viewModel.routeHandler?(.permission)
-    }
-    
     // MARK: - ViewModel 바인딩
     private func bindViewModel() {
+        viewModel.routeHandler?(.permission)
+        
         viewModel.$selectedState
             .compactMap { $0 }
             .receive(on: DispatchQueue.main)
