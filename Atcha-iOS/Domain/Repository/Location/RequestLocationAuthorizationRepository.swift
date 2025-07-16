@@ -8,6 +8,7 @@
 import Foundation
 import CoreLocation
 
-protocol RequestLocationAuthorizationRepository {
-    func askPermission() async -> CLAuthorizationStatus
+protocol PermissionRepository {
+    func askPushPermission() async -> Bool 
+    func askLocationPermission() async -> CLAuthorizationStatus
 }

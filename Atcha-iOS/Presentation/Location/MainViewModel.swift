@@ -49,11 +49,8 @@ final class MainViewModel: BaseViewModel {
                 Task {
                     let address = try? await self.fetchCurrentAddress(lat: location.latitude,
                                                                       lon: location.longitude)
-//                    if let name = address?.name {
-//                        self.address = name
-//                    } else if let address = address?.address {
-//                        self.address = address
-//                    }
+                    
+                    self.address = address?.name
                 }
             }
             .store(in: &cancellables)
@@ -61,7 +58,7 @@ final class MainViewModel: BaseViewModel {
     
     func requestPermissionAndStartTracking() {
         Task {
-            let status = await authorizationUseCase.askPermission()
+            let status = await authorizationUseCase.askLocationPermission()
             guard status == .authorizedAlways || status == .authorizedWhenInUse else { return }
 
             streamTask = Task {

@@ -57,14 +57,14 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
         setupNavigationBarCallbacks()
         startUpdatingCurrentLocation()
         
-        locationService.startHeadingUpdates(delegate: self)
+//        locationService.startHeadingUpdates(delegate: self)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         
         stopUpdatingCurrentLocation()
-        locationService.stopHeadingUpdates()
+//        locationService.stopHeadingUpdates()
         currentLocationMarker?.map = nil
     }
     
@@ -277,10 +277,10 @@ extension RegisterLocationViewController: TMapViewDelegate {
     }
 }
 
-extension RegisterLocationViewController: CLLocationManagerDelegate {
-    
-    // MARK: - 바라보는 방향에 따른 마커 변화
-    func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
-        self.latestHeading = newHeading
-    }
-}
+//extension RegisterLocationViewController: CLLocationManagerDelegate {
+//    
+//    // MARK: - 바라보는 방향에 따른 마커 변화
+//    func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
+//        self.latestHeading = newHeading
+//    }
+//}

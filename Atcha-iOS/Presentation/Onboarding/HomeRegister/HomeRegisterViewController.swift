@@ -41,6 +41,8 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
     
     // MARK: - ViewModel 바인딩
     private func bindViewModel() {
+        viewModel.routeHandler?(.permission)
+        
         viewModel.$selectedState
             .compactMap { $0 }
             .receive(on: DispatchQueue.main)

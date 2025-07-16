@@ -9,6 +9,7 @@ import Foundation
 
 enum OnboardingRoute {
     case homeRegister
+    case permission
     case searchAdress
     case pushRegister
 }

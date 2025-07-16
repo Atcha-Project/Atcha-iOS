@@ -8,6 +8,7 @@
 import UIKit
 import Foundation
 import CoreLocation
+import PanModal
 
 final class OnboardingCoordinator {
     private let navigationController: UINavigationController
@@ -16,6 +17,7 @@ final class OnboardingCoordinator {
     
     private let homeDIConatiner: HomeRegisterDIContainer
     private let pushRegisterDIContainer: PushRegisterDIContainer
+    private let permissionDIConatiner: PermissionDIContainer
     
     var onFinish: ((Bool) -> Void)?
     var routeHandler: ((OnboardingRoute) -> Void)?
@@ -24,18 +26,20 @@ final class OnboardingCoordinator {
          navigationController: UINavigationController,
          locationHolder: LocationStateHolder,
          homeDIConatiner: HomeRegisterDIContainer,
-         pushRegisterDIContainer: PushRegisterDIContainer) {
+         pushRegisterDIContainer: PushRegisterDIContainer,
+         permissionDIConatiner: PermissionDIContainer) {
         self.apiService = apiService
         self.navigationController = navigationController
         self.homeDIConatiner = homeDIConatiner
         self.pushRegisterDIContainer = pushRegisterDIContainer
+        self.permissionDIConatiner = permissionDIConatiner
         self.locationHolder = locationHolder
     }
     
     func start() {
         showHomeRegister()
     }
-
+    
     private func showHomeRegister() {
         let vm = homeDIConatiner.makeHomeRegisterViewModel()
         vm.routeHandler = { [weak self] route in self?.handle(route: route) }
@@ -65,10 +69,17 @@ final class OnboardingCoordinator {
         navigationController.pushViewController(vc, animated: true)
     }
     
+    private func showPermission() {
+        let vc = permissionDIConatiner.makePermissionViewController()
+        navigationController.presentPanModal(vc)
+    }
+    
     private func handle(route: OnboardingRoute) {
         switch route {
         case .homeRegister:
             showHomeFind()
+        case .permission:
+            showPermission()
         case .searchAdress:
             showSearchAddress()
         case .pushRegister:

@@ -50,6 +50,6 @@ final class OnboardingUseCaseImpl: OnboardingUseCase {
     
     // 현위치 좌표 찾기
     func requestCurrentLocation(completion: @escaping (CLLocationCoordinate2D?) -> Void) {
-        locationService.requestLocation(completion: completion)
+//        locationService.requestLocation(completion: completion)
     }
 }

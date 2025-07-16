@@ -17,7 +17,7 @@ final class HomeRegisterDIContainer {
         self.locationStateHolder = locationStateHolder
     }
     
-    private lazy var authorizationRequestUseCase = RequestLocationAuthorizationUseCaseImpl(repository: RequestLocationAuthorizationRepositoryImpl())
+    private lazy var authorizationRequestUseCase = RequestLocationAuthorizationUseCaseImpl(repository: PermissionRepositoryImpl())
     private lazy var addressRepository: AddressRepository = AddressRepositoryImpl(apiService: apiService)
     private lazy var searchAddressUseCase: SearchAddressUseCase = SearchAddressUseCaseImpl(repository: addressRepository)
     private lazy var streamUseCase: ObserveLocationStreamUseCase = ObserLocationStreamUseCaseImpl(repository: LocationStreamRepositoryImpl())

@@ -35,7 +35,7 @@ final class SearchLocationViewModel: BaseViewModel {
     // MARK: - 권한 요청
     func requestPermission() {
         Task {
-            let status = await authorizationUseCase.askPermission()
+            let status = await authorizationUseCase.askLocationPermission()
             print("status: \(status.rawValue)")
         }
     }

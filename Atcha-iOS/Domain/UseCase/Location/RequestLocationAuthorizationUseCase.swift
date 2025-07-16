@@ -9,17 +9,22 @@ import Foundation
 import CoreLocation
 
 protocol RequestLocationAuthorizationUseCase {
-    func askPermission() async -> CLAuthorizationStatus
+    func askLocationPermission() async -> CLAuthorizationStatus
+    func askPushPermission() async -> Bool
 }
 
 final class RequestLocationAuthorizationUseCaseImpl: RequestLocationAuthorizationUseCase {
-    private let repository: RequestLocationAuthorizationRepository
+    private let repository: PermissionRepositoryImpl
     
-    init(repository: RequestLocationAuthorizationRepository) {
+    init(repository: PermissionRepositoryImpl) {
         self.repository = repository
     }
     
-    func askPermission() async -> CLAuthorizationStatus {
-        return await repository.askPermission()
+    func askLocationPermission() async -> CLAuthorizationStatus {
+        return await repository.askLocationPermission()
+    }
+    
+    func askPushPermission() async -> Bool {
+        return await repository.askPushPermission()
     }
 }
