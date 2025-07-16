@@ -49,11 +49,8 @@ final class MainViewModel: BaseViewModel {
                 Task {
                     let address = try? await self.fetchCurrentAddress(lat: location.latitude,
                                                                       lon: location.longitude)
-//                    if let name = address?.name {
-//                        self.address = name
-//                    } else if let address = address?.address {
-//                        self.address = address
-//                    }
+                    
+                    self.address = address?.name
                 }
             }
             .store(in: &cancellables)

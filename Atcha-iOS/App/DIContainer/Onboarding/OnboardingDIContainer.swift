@@ -12,9 +12,8 @@ final class OnboardingDIContainer {
     private let apiService: APIService
     private let homeRegisterDIConatiner: HomeRegisterDIContainer
     private let pushRegisterDIContainer: PushRegisterDIContainer
-    //    private let locationService: LocationServiceProtocol
-    private let locationStateHolder: LocationStateHolder
     private let permissionDIContainer: PermissionDIContainer
+    private let locationStateHolder: LocationStateHolder
     
     init(apiService: APIService,
          locationStateHolder: LocationStateHolder,

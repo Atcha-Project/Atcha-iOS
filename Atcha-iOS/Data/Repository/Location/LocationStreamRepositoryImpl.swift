@@ -18,11 +18,11 @@ final class LocationStreamRepositoryImpl: LocationStreamRepository {
             updateTask = Task {
                 do {
                     if #available(iOS 17.0, *) {
-//                        for try await update in CLLocationUpdate.liveUpdates() {
-//                            if let location = update.location {
-//                                continuation.yield(location)
-//                            }
-//                        }
+                        for try await update in CLLocationUpdate.liveUpdates() {
+                            if let location = update.location {
+                                continuation.yield(location)
+                            }
+                        }
                     } else {
                         // Fallback on earlier versions
                     }

@@ -19,7 +19,9 @@ final class PermissionViewModel: BaseViewModel {
     
     func askLocationPermission() {
         Task {
-            let _ = await authorizationRequestUseCase.askLocationPermission()
+            let status = await authorizationRequestUseCase.askLocationPermission()
+            print("status : \(status)")
+            askPushPermission()
         }
     }
     
@@ -28,33 +30,5 @@ final class PermissionViewModel: BaseViewModel {
             let _ = await authorizationRequestUseCase.askPushPermission()
             checkPermissionFinished = true
         }
-    }
-}
-
-
-enum AlertFactory {
-    static func makeSettingsAlert(
-        title: String? = nil,
-        message: String,
-        cancelTitle: String = "취소",
-        confirmTitle: String = "설정 하러 가기",
-        onConfirmTapped: @escaping () -> Void = {}
-    ) -> UIAlertController {
-        
-        let alert = UIAlertController(
-            title: title,
-            message: message,
-            preferredStyle: .alert
-        )
-        
-        let cancelAction = UIAlertAction(title: cancelTitle, style: .cancel)
-        let confirmAction = UIAlertAction(title: confirmTitle, style: .default) { _ in
-            onConfirmTapped()
-        }
-        
-        alert.addAction(cancelAction)
-        alert.addAction(confirmAction)
-        
-        return alert
     }
 }

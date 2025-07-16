@@ -70,7 +70,6 @@ final class OnboardingCoordinator {
     }
     
     private func showPermission() {
-        let viewModel = permissionDIConatiner.makePermissionViewModel()
         let vc = permissionDIConatiner.makePermissionViewController()
         navigationController.presentPanModal(vc)
     }

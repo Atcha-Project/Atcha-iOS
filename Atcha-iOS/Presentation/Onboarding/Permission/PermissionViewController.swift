@@ -135,7 +135,6 @@ final class PermissionViewController: BaseViewController<PermissionViewModel> {
 extension PermissionViewController {
     @objc private func handleRegiTap() {
         viewModel.askLocationPermission()
-        viewModel.askPushPermission()
     }
 }
 

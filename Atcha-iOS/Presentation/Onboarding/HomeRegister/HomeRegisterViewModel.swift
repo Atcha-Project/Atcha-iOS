@@ -8,6 +8,11 @@
 import Combine
 import CoreLocation
 
+enum LocationSelectionState {
+    case none
+    case selected(name: String, address: String)
+}
+
 final class HomeRegisterViewModel: BaseViewModel {
     private var streamTask: Task<Void, Never>?
     
@@ -27,13 +32,13 @@ final class HomeRegisterViewModel: BaseViewModel {
         self.locationStateHolder = locationStateHolder
         
         super.init()
-        self.requestMyLocation()
+//        self.requestMyLocation()
         self.bind()
     }
     
     func bind() {
         locationStateHolder.currentLocationSubject
-//            .removeDuplicates()
+            .removeDuplicates()
             .compactMap { $0 }
             .handleEvents(receiveOutput: { [weak self] location in
                 guard let self else { return }
@@ -61,8 +66,8 @@ final class HomeRegisterViewModel: BaseViewModel {
     
     func requestMyLocation() {
         Task {
-            //            let status = await authorizationUseCase.askPermission()
-            //            guard status == .authorizedAlways || status == .authorizedWhenInUse else { return }
+//            let status = await authorizationUseCase.askPermission()
+//            guard status == .authorizedAlways || status == .authorizedWhenInUse else { return }
             streamTask = Task {
                 for await location in streamUseCase.startUpdate() {
                     let currentLocation: CLLocationCoordinate2D = CLLocationCoordinate2D(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
@@ -79,8 +84,3 @@ final class HomeRegisterViewModel: BaseViewModel {
     }
 }
 
-// 장소 상태 Enum
-enum LocationSelectionState {
-    case none
-    case selected(name: String, address: String)
-}
