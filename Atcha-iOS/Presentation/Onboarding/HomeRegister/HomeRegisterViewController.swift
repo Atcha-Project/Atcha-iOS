@@ -39,6 +39,13 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
         addGesture()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        let vc = PermissionViewController(viewModel: PermissionViewModel())
+        presentPanModal(vc)
+    }
+    
     // MARK: - ViewModel 바인딩
     private func bindViewModel() {
         viewModel.$selectedState
