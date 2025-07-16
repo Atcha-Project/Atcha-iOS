@@ -32,17 +32,17 @@ final class CourseModifyViewModel: BaseViewModel {
         self.authorizationUseCase = authorizationUseCase
         self.locationStateHolder = locationStateHolder
         
-//        self.currentLocation = locationStateHolder.currentLocation
+        //        self.currentLocation = locationStateHolder.currentLocation
         self.currentLocation = CLLocationCoordinate2D(latitude: 37.554722,
                                                       longitude: 126.970833)
         
-//        //임시 더미 데이터
-//        let dummyRecents: [Location] = [
-//            Location(name: "60계치킨 강남점", lat: 37.5013, lon: 127.0396, businessCategory: "치킨", address: "서울시 강남구 테헤란로 123", radius: "1.2km"),
-//            Location(name: "스타벅스 역삼점", lat: 37.4999, lon: 127.0365, businessCategory: "카페", address: "서울시 강남구 역삼로 111", radius: "0.8km"),
-//            Location(name: "이디야 선릉역점", lat: 37.5075, lon: 127.0481, businessCategory: "카페", address: "서울시 강남구 선릉로 88", radius: "1.0km")
-//        ]
-//        self.items = dummyRecents.map { .recent(location: $0) }
+        //        //임시 더미 데이터
+        //        let dummyRecents: [Location] = [
+        //            Location(name: "60계치킨 강남점", lat: 37.5013, lon: 127.0396, businessCategory: "치킨", address: "서울시 강남구 테헤란로 123", radius: "1.2km"),
+        //            Location(name: "스타벅스 역삼점", lat: 37.4999, lon: 127.0365, businessCategory: "카페", address: "서울시 강남구 역삼로 111", radius: "0.8km"),
+        //            Location(name: "이디야 선릉역점", lat: 37.5075, lon: 127.0481, businessCategory: "카페", address: "서울시 강남구 선릉로 88", radius: "1.0km")
+        //        ]
+        //        self.items = dummyRecents.map { .recent(location: $0) }
         self.mode = .recent
         
         super.init()
@@ -74,13 +74,44 @@ final class CourseModifyViewModel: BaseViewModel {
     
     // MARK: - 최근 검색 추가
     @MainActor
-    func addRecentSearchLocation(request: AddRecentSearchRequest) {
+    func addRecentSearchLocation(request: RecentSearchRequest) {
         Task {
             do {
-                print(request)
-                _ = try await searchAddressUseCase.addRecentSearchHistory(request)
+                let response = try await searchAddressUseCase.addRecentSearchHistory(request)
+                print(response)
             } catch {
                 print("최근 장소 추가 실패")
+            }
+        }
+    }
+    
+    // MARK: - 최근 검색 전체 삭제
+    @MainActor
+    func clearAllSearchHistories() {
+        Task {
+            do {
+                _ = try await searchAddressUseCase.clearAllSearchHistories()
+                self.items = self.items.filter {
+                    switch $0 {
+                    case .result: return false
+                    case .recent: return false
+                    }
+                }
+            } catch {
+                print("최근 장소 전체 삭제 실패")
+            }
+        }
+    }
+    
+    // MARK: - 최근 검색 삭제
+    @MainActor
+    func deleteSearchHistory(request: RecentSearchRequest) {
+        Task {
+            do {
+                let response = try await searchAddressUseCase.deleteSearchHistory(request)
+                recentSearchLocation()
+            } catch {
+                print("최근 장소 삭제 실패")
             }
         }
     }

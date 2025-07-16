@@ -12,11 +12,17 @@ protocol SearchAddressUseCase {
     func searchLocation(_ request: ReverseGeocodeLocationRequest) async throws -> ReverseGeocodeLocationResponse
     func searchAddress(_ request: SearchLocationRequest) async throws -> [Location]
     
-    // 최근 검색 기록 관련
+    // 최근 검색 조회
     func fetchRecentSearchHistories(_ request: FetchRecentSearchRequest) async throws -> [Location]
-    func addRecentSearchHistory(_ request: AddRecentSearchRequest) async throws -> EmptyResponse
-//    func clearAllSearchHistories()
-//    func deleteSearchHistory()
+    
+    // 최근 검색 추가
+    func addRecentSearchHistory(_ request: RecentSearchRequest) async throws -> APIEmptyResponse
+    
+    // 최근 검색 전체 삭제
+    func clearAllSearchHistories() async throws -> APIEmptyResponse
+    
+    // 최근 검색 삭제
+    func deleteSearchHistory(_ request: RecentSearchRequest) async throws -> APIEmptyResponse
 }
 
 final class SearchAddressUseCaseImpl: SearchAddressUseCase {
@@ -37,7 +43,15 @@ final class SearchAddressUseCaseImpl: SearchAddressUseCase {
         return try await repository.fetchRecentSearchHistories(request: request)
     }
     
-    func addRecentSearchHistory(_ request: AddRecentSearchRequest) async throws -> EmptyResponse{
+    func addRecentSearchHistory(_ request: RecentSearchRequest) async throws -> APIEmptyResponse{
         return try await repository.addRecentSearchHistory(request: request)
+    }
+    
+    func clearAllSearchHistories() async throws -> APIEmptyResponse {
+        return try await repository.clearAllSearchHistories()
+    }
+    
+    func deleteSearchHistory(_ request: RecentSearchRequest) async throws -> APIEmptyResponse {
+        return try await repository.deleteSearchHistory(request: request)
     }
 }

@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct AddRecentSearchRequest: Codable {
+struct RecentSearchRequest: Codable {
     let name: String?
     let lat: Double?
     let lon: Double?

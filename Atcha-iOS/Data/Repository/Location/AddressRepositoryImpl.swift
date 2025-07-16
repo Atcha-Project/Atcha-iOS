@@ -52,7 +52,7 @@ final class AddressRepositoryImpl: AddressRepository {
         )
     }
     
-    func addRecentSearchHistory(request: AddRecentSearchRequest) async throws -> EmptyResponse {
+    func addRecentSearchHistory(request: RecentSearchRequest) async throws -> APIEmptyResponse {
         return try await apiService.request(
             Endpoint(
                 path: "https://atcha.p-e.kr/api/locations/histories", 
@@ -60,6 +60,31 @@ final class AddressRepositoryImpl: AddressRepository {
                 encoding: JSONEncoding.default,
             ),
             body: request
+        )
+    }
+    
+    func clearAllSearchHistories() async throws -> APIEmptyResponse {
+        return try await apiService.request(
+            Endpoint(
+                path: "https://atcha.p-e.kr/api/locations/histories",
+                method: .delete
+            )
+        )
+    }
+    
+    func deleteSearchHistory(request: RecentSearchRequest) async throws -> APIEmptyResponse {
+        return try await apiService.request(
+            Endpoint(
+                path: "https://atcha.p-e.kr/api/locations/history",
+                method: .delete,
+                parameters: [
+                    "name": "\(request.name ?? "")",
+                    "lat": "\(request.lat ?? 0.0)",
+                    "lon": "\(request.lon ?? 0.0)",
+                    "businessCategory": "\(request.businessCategory ?? "")",
+                    "address": "\(request.address ?? "")"
+                ]
+            )
         )
     }
 }

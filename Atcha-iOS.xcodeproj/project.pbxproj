@@ -33,7 +33,6 @@
 		6D368BB42E03BE9A00144EE7 /* AtchaTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D368BB32E03BE9A00144EE7 /* AtchaTextField.swift */; };
 		6D5E03B92E24F3A50065AFBE /* AddRecentSearchRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5E03B82E24F3A50065AFBE /* AddRecentSearchRequest.swift */; };
 		6D5E03BE2E24F70B0065AFBE /* FetchRecentSearchRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5E03BD2E24F70B0065AFBE /* FetchRecentSearchRequest.swift */; };
-		6D5E03C42E26208E0065AFBE /* EmptyResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5E03C32E26208E0065AFBE /* EmptyResponse.swift */; };
 		6D73EB5D2E1611F800F8DF8B /* CourseSearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D73EB5C2E1611F800F8DF8B /* CourseSearchViewController.swift */; };
 		6D73EB5F2E16120200F8DF8B /* CourseSearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D73EB5E2E16120200F8DF8B /* CourseSearchViewModel.swift */; };
 		6D73EB612E16120B00F8DF8B /* CourseModifyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D73EB602E16120B00F8DF8B /* CourseModifyViewController.swift */; };
@@ -220,7 +219,6 @@
 		6D368BB32E03BE9A00144EE7 /* AtchaTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtchaTextField.swift; sourceTree = "<group>"; };
 		6D5E03B82E24F3A50065AFBE /* AddRecentSearchRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddRecentSearchRequest.swift; sourceTree = "<group>"; };
 		6D5E03BD2E24F70B0065AFBE /* FetchRecentSearchRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchRecentSearchRequest.swift; sourceTree = "<group>"; };
-		6D5E03C32E26208E0065AFBE /* EmptyResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyResponse.swift; sourceTree = "<group>"; };
 		6D73EB5C2E1611F800F8DF8B /* CourseSearchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseSearchViewController.swift; sourceTree = "<group>"; };
 		6D73EB5E2E16120200F8DF8B /* CourseSearchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseSearchViewModel.swift; sourceTree = "<group>"; };
 		6D73EB602E16120B00F8DF8B /* CourseModifyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseModifyViewController.swift; sourceTree = "<group>"; };
@@ -454,7 +452,6 @@
 			children = (
 				6D5E03B82E24F3A50065AFBE /* AddRecentSearchRequest.swift */,
 				6D5E03BD2E24F70B0065AFBE /* FetchRecentSearchRequest.swift */,
-				6D5E03C32E26208E0065AFBE /* EmptyResponse.swift */,
 			);
 			path = SearchHistoryDTO;
 			sourceTree = "<group>";
@@ -1267,7 +1264,6 @@
 				B65C13312E0658580016D2F0 /* MyPageViewModel.swift in Sources */,
 				B65C133D2E06E00F0016D2F0 /* MyPageDIContainer.swift in Sources */,
 				6D73EB672E163DDD00F8DF8B /* CourseDTO.swift in Sources */,
-				6D5E03C42E26208E0065AFBE /* EmptyResponse.swift in Sources */,
 				B65C134F2E07A6C70016D2F0 /* MainCoordinator.swift in Sources */,
 				B66401892E22768000A397AE /* PushRegisterDIContainer.swift in Sources */,
 				B65C13202E058C360016D2F0 /* AppVersionRepositoryImpl.swift in Sources */,

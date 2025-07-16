@@ -35,7 +35,7 @@ class CourseModifyViewController: BaseViewController<CourseModifyViewModel> {
         setupAutoLayout()
         bindViewModel()
         setupSearchTextFieldCallbacks()
-//        viewModel.recentSearchLocation()
+        //        viewModel.recentSearchLocation()
     }
     
     // MARK: - ViewModel 바인딩
@@ -45,7 +45,7 @@ class CourseModifyViewController: BaseViewController<CourseModifyViewModel> {
             .sink { [weak self] newItems in
                 guard let self else { return }
                 self.items = newItems
-
+                
                 switch viewModel.mode {
                 case .recent:
                     if viewModel.items.isEmpty {
@@ -61,7 +61,7 @@ class CourseModifyViewController: BaseViewController<CourseModifyViewModel> {
                     emptyRecentLabel.isHidden = true
                     tableViewTopConstraint?.update(offset: -(tableHeaderView.frame.height))
                 }
-
+                
                 tableView.reloadData()
             }
             .store(in: &cancellables)
@@ -101,6 +101,9 @@ class CourseModifyViewController: BaseViewController<CourseModifyViewModel> {
         
         recentLabel.attributedText = AtchaFont.B6_R_14("최근 내역", color: AtchaColor.gray400)
         recentAllDeleteLabel.attributedText = AtchaFont.B6_R_14("전체 삭제", color: AtchaColor.gray400)
+        recentAllDeleteLabel.isUserInteractionEnabled = true
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(didTapDeleteAll))
+        recentAllDeleteLabel.addGestureRecognizer(tapGesture)
         
         tableHeaderView.addSubViews(recentLabel, recentAllDeleteLabel)
         
@@ -187,6 +190,26 @@ class CourseModifyViewController: BaseViewController<CourseModifyViewModel> {
             self?.viewModel.recentSearchLocation()
         }
     }
+    
+    // MARK: - 최근 검색 전체 삭제 메서드
+    @objc private func didTapDeleteAll() {
+        viewModel.clearAllSearchHistories()
+    }
+    
+    // MARK: - 최근 검색 삭제 메서드
+    @objc private func didTapDeleteRecent(_ sender: DeleteTapGestureRecognizer) {
+        guard let location = sender.location else { return }
+        
+        let request = RecentSearchRequest(
+            name: location.name,
+            lat: location.lat,
+            lon: location.lon,
+            businessCategory: location.businessCategory,
+            address: location.address
+        )
+        
+        viewModel.deleteSearchHistory(request: request)
+    }
 }
 
 extension CourseModifyViewController: UITableViewDataSource, UITableViewDelegate {
@@ -215,6 +238,7 @@ extension CourseModifyViewController: UITableViewDataSource, UITableViewDelegate
         let deleteImageViewImage = UIImageView()
         deleteImageViewImage.image = UIImage.xGray
         deleteImageViewImage.contentMode = .scaleAspectFit
+        deleteImageViewImage.isUserInteractionEnabled = true
         
         switch item {
         case .recent(location: let location):
@@ -233,6 +257,10 @@ extension CourseModifyViewController: UITableViewDataSource, UITableViewDelegate
                 $0.top.bottom.equalToSuperview().inset(19)
                 $0.leading.trailing.equalToSuperview().inset(16)
             }
+            
+            let tapGesture = DeleteTapGestureRecognizer(target: self, action: #selector(didTapDeleteRecent(_:)))
+            tapGesture.location = location
+            deleteImageViewImage.addGestureRecognizer(tapGesture)
             
         case .result(location: let location):
             titleLabel.attributedText = AtchaFont.B4_R_15(location.name ?? "이름 없음", color: AtchaColor.white)
@@ -259,11 +287,15 @@ extension CourseModifyViewController: UITableViewDataSource, UITableViewDelegate
         case .recent(let loc), .result(let loc):
             print("선택된 장소: \(loc.name ?? "")")
             
-            viewModel.addRecentSearchLocation(request: AddRecentSearchRequest(name: loc.name, lat: loc.lat, lon: loc.lon, businessCategory: loc.businessCategory, address: loc.address))
+            viewModel.addRecentSearchLocation(request: RecentSearchRequest(name: loc.name, lat: loc.lat, lon: loc.lon, businessCategory: loc.businessCategory, address: loc.address))
         }
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
         return viewModel.numberOfSections()
     }
+}
+
+class DeleteTapGestureRecognizer: UITapGestureRecognizer {
+    var location: Location?
 }
