@@ -11,5 +11,5 @@ struct APIEmptyResponse: Decodable {}
 
 struct APIResponse<T: Decodable>: Decodable {
     let responseCode: String
-    let result: T
+    let result: T?
 }

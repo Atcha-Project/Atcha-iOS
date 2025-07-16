@@ -24,10 +24,28 @@ final class APIServiceImpl: APIService {
             session.request(url, method: endpoint.method, parameters: endpoint.parameters, encoding: endpoint.encoding, headers: endpoint.headers)
                 .validate()
                 .responseDecodable(of: APIResponse<T>.self) { response in
+                    if let statusCode = response.response?.statusCode,
+                       (200...299).contains(statusCode),
+                       T.self == APIEmptyResponse.self {
+                        continuation.resume(returning: APIEmptyResponse() as! T)
+                        return
+                    }
+                    
                     switch response.result {
                     case .success(let apiResponse):
                         if apiResponse.responseCode == "SUCCESS" {
-                            continuation.resume(returning: apiResponse.result)
+                            /// result가 존재하면 그대로 반환
+                            if let result = apiResponse.result {
+                                continuation.resume(returning: result)
+                            
+                            /// result는 없지만 기대 타입이 APIEmptyResponse인 경우, 빈 응답 객체 반환
+                            } else if T.self == APIEmptyResponse.self {
+                                continuation.resume(returning: APIEmptyResponse() as! T)
+                                
+                            ///  result도 없고, 기대 타입이 빈 응답도 아님 → 예외 처리
+                            } else {
+                                continuation.resume(throwing: APIError.noData)
+                            }
                         } else {
                             continuation.resume(throwing: APIError.serverError(statusCode: response.response?.statusCode ?? -1))
                         }
@@ -54,19 +72,26 @@ extension APIServiceImpl {
                             parameters: body.toDictionary(),
                             encoding: endpoint.encoding,
                             headers: endpoint.headers)
-                .validate()
-                .responseDecodable(of: T.self) { response in
-                    switch response.result {
-                    case .success(let decoded):
-                        continuation.resume(returning: decoded)
-                    case .failure(let error):
-                        if let statusCode = response.response?.statusCode {
-                            continuation.resume(throwing: APIError.serverError(statusCode: statusCode))
-                        } else {
-                            continuation.resume(throwing: APIError.unknown(error: error))
-                        }
+            .validate()
+            .responseDecodable(of: T.self) { response in
+                if let statusCode = response.response?.statusCode,
+                   (200...299).contains(statusCode),
+                   T.self == APIEmptyResponse.self {
+                    continuation.resume(returning: APIEmptyResponse() as! T)
+                    return
+                }
+                
+                switch response.result {
+                case .success(let decoded):
+                    continuation.resume(returning: decoded)
+                case .failure(let error):
+                    if let statusCode = response.response?.statusCode {
+                        continuation.resume(throwing: APIError.serverError(statusCode: statusCode))
+                    } else {
+                        continuation.resume(throwing: APIError.unknown(error: error))
                     }
                 }
+            }
         }
     }
 }
