@@ -39,7 +39,7 @@ final class AppDIContainer {
         
         self.homeRegisterDIContainer = HomeRegisterDIContainer(apiService: apiServce, locationStateHolder: locationStateHolder)
         self.pushRegisterDIContainer = PushRegisterDIContainer(apiService: apiServce, locationStateHolder: locationStateHolder)
-        self.permissionDIConatiner = PermissionDIContainer()
+        self.permissionDIConatiner = PermissionDIContainer(locationStateHolder: locationStateHolder)
         
         self.onboardingDIContainer = OnboardingDIContainer(apiService: apiServce,
                                                            locationStateHolder: locationStateHolder,

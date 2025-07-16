@@ -9,10 +9,18 @@ import Foundation
 import PanModal
 
 final class PermissionDIContainer {
-    private lazy var authorizationRequestUseCase = RequestLocationAuthorizationUseCaseImpl(repository: PermissionRepositoryImpl())
+    private let authorizationRequestUseCase = RequestLocationAuthorizationUseCaseImpl(repository: PermissionRepositoryImpl())
+    private let streamUseCase = ObserLocationStreamUseCaseImpl(repository: LocationStreamRepositoryImpl())
+    private let locationStateHolder: LocationStateHolder
+    
+    init(locationStateHolder: LocationStateHolder) {
+        self.locationStateHolder = locationStateHolder
+    }
     
     func makePermissionViewModel() -> PermissionViewModel {
-        return PermissionViewModel(authorizationRequestUseCase: authorizationRequestUseCase)
+        return PermissionViewModel(authorizationRequestUseCase: authorizationRequestUseCase,
+                                   streamUseCase: streamUseCase,
+                                   locationStateHolder: locationStateHolder)
     }
     
     func makePermissionViewController() -> PermissionViewController {
