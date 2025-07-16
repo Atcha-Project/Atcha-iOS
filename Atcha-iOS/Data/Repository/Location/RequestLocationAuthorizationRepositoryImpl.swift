@@ -37,7 +37,12 @@ final class PermissionRepositoryImpl: NSObject, PermissionRepository {
     
     func askLocationPermission() async -> CLAuthorizationStatus {
         return await withCheckedContinuation { continuation in
-            self.locationContinuation = continuation
+            guard locationContinuation == nil else {
+                continuation.resume(returning: manager.authorizationStatus)
+                return
+            }
+            
+            locationContinuation = continuation
             manager.requestWhenInUseAuthorization()
         }
     }
@@ -46,7 +51,11 @@ final class PermissionRepositoryImpl: NSObject, PermissionRepository {
 extension PermissionRepositoryImpl: CLLocationManagerDelegate {
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         guard let continuation = locationContinuation else { return }
-        continuation.resume(returning: manager.authorizationStatus)
+        
+        let status = manager.authorizationStatus
+        guard status != .notDetermined else { return }
+        
+        continuation.resume(returning: status)
         locationContinuation = nil
     }
 }
