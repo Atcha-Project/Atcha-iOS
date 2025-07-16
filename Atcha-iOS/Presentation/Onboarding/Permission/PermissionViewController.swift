@@ -66,6 +66,8 @@ final class PermissionViewController: BaseViewController<PermissionViewModel> {
         
         setupUI()
         setupAutoLayout()
+        setupGesture()
+        bindViewModel()
     }
     
     private func setupUI() {
@@ -93,14 +95,6 @@ final class PermissionViewController: BaseViewController<PermissionViewModel> {
             make.leading.trailing.equalToSuperview().inset(24)
         }
         
-        alarmTitleLabel.snp.makeConstraints { make in
-            make.top.equalTo(-4)
-        }
-        
-        locationTitleLabel.snp.makeConstraints { make in
-            make.top.equalTo(-4)
-        }
-        
         locationIconImageVIew.snp.makeConstraints { make in
             make.width.height.equalTo(16)
         }
@@ -120,8 +114,37 @@ final class PermissionViewController: BaseViewController<PermissionViewModel> {
         }
     }
     
+    private func setupGesture() {
+        button.addTarget(self,
+                         action: #selector(handleRegiTap),
+                         for: .touchUpInside)
+    }
+    
     private func bindViewModel() {
-        
+//        viewModel.$deniedAlert
+//            .receive(on: DispatchQueue.main)
+//            .sink { [weak self] _ in
+//                let alert = AlertFactory.makeSettingsAlert(
+//                    title: "알림 권한 필요",
+//                    message: "알림을 허용하지 않으면 막차 알람이 울리지 못해요.",
+//                    cancelTitle: "닫기",
+//                    confirmTitle: "설정 가기"
+//                ) {
+//                    if let settingsURL = URL(string: UIApplication.openSettingsURLString),
+//                       UIApplication.shared.canOpenURL(settingsURL) {
+//                        UIApplication.shared.open(settingsURL)
+//                    }
+//                }
+//                
+//                self?.present(alert, animated: true)
+//            }
+//            .store(in: &cancellables)
+    }
+}
+
+extension PermissionViewController {
+    @objc private func handleRegiTap() {
+        viewModel.askLocationPermission()
     }
 }
 
@@ -147,3 +170,21 @@ extension PermissionViewController: PanModalPresentable {
         return .contentHeight(308)
     }
 }
+
+
+//private func observeAppDidBecomeActive() {
+//    NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)
+//        .sink { [weak self] _ in
+//            UNUserNotificationCenter.current().getNotificationSettings { settings in
+//                DispatchQueue.main.async {
+//                    print("🔔 현재 알림 권한 상태: \(settings.authorizationStatus)")
+//                    
+//                    // 예: 허용됐으면 UI 상태 갱신
+////                        if settings.authorizationStatus == .authorized {
+////                            self?.viewModel.askPushPermission()
+////                        }
+//                }
+//            }
+//        }
+//        .store(in: &cancellables)
+//}

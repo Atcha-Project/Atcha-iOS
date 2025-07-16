@@ -27,7 +27,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 //            completionHandler: {_, _ in}
 //        )
 //        
-//        application.registerForRemoteNotifications()
+        application.registerForRemoteNotifications()
         return true
     }
 

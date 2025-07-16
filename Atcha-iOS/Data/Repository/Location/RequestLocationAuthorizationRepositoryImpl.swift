@@ -7,9 +7,27 @@
 
 import Foundation
 import CoreLocation
+import UserNotifications
+import UIKit
 
-final class RequestLocationAuthorizationRepositoryImpl: RequestLocationAuthorizationRepository {
-    func askPermission() async -> CLAuthorizationStatus {
+final class PermissionRepositoryImpl: PermissionRepository {
+    func askPushPermission() async -> Bool {
+        let granted = await withCheckedContinuation { continuation in
+            UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
+                continuation.resume(returning: granted)
+            }
+        }
+
+        if granted {
+            await MainActor.run {
+                UIApplication.shared.registerForRemoteNotifications()
+            }
+        }
+
+        return granted
+    }
+    
+    func askLocationPermission() async -> CLAuthorizationStatus {
         let manager = CLLocationManager()
         return await withCheckedContinuation { continuation in
             manager.requestWhenInUseAuthorization()

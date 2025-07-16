@@ -10,7 +10,7 @@ import Foundation
 
 final class AppDIContainer {
     static let shared = AppDIContainer()
-
+    
     var tokenStorage: TokenStorage
     let networkDIContainer: NetworkDIContainer
     
@@ -21,6 +21,7 @@ final class AppDIContainer {
     let onboardingDIContainer: OnboardingDIContainer
     let homeRegisterDIContainer: HomeRegisterDIContainer
     let pushRegisterDIContainer: PushRegisterDIContainer
+    let permissionDIConatiner: PermissionDIContainer
     
     private let locationStateHolder: LocationStateHolder = LocationStateHolder()
     
@@ -30,22 +31,20 @@ final class AppDIContainer {
         
         let apiServce: APIService = networkDIContainer.makeAPIService()
         let noHeaderApiService: APIService = networkDIContainer.makeAPIService(useInterceptor: false)
-        let locationService: LocationServiceProtocol = LocationService()
-        
+      
         self.splashDIContainer = SplashDIContainer(apiService: apiServce)
         self.myPageDIContainer = MyPageDIContainer(apiService: apiServce)
         self.loginDIContainer = LoginDIContainer(apiService: noHeaderApiService)
         self.mainDIContainer = LocationDIContainer(apiService: apiServce, locationStateHolder: locationStateHolder)
         
-//        self.courseDIContainer = CourseDIContainer(apiService: apiServce)
         self.homeRegisterDIContainer = HomeRegisterDIContainer(apiService: apiServce, locationStateHolder: locationStateHolder)
         self.pushRegisterDIContainer = PushRegisterDIContainer(apiService: apiServce, locationStateHolder: locationStateHolder)
-        
+        self.permissionDIConatiner = PermissionDIContainer()
         
         self.onboardingDIContainer = OnboardingDIContainer(apiService: apiServce,
-                                                           locationService: locationService,
                                                            locationStateHolder: locationStateHolder,
                                                            homeRegisterDIConatiner: homeRegisterDIContainer,
-                                                           pushRegisterDIContainer: pushRegisterDIContainer)
+                                                           pushRegisterDIContainer: pushRegisterDIContainer,
+                                                           permissionDIContainer: permissionDIConatiner)
     }
 }

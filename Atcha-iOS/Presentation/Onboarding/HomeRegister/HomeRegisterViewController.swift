@@ -41,9 +41,7 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
-        let vc = PermissionViewController(viewModel: PermissionViewModel())
-        presentPanModal(vc)
+        viewModel.routeHandler?(.permission)
     }
     
     // MARK: - ViewModel 바인딩

@@ -12,7 +12,7 @@ final class LocationDIContainer {
     private let apiService: APIService
     private let locationStateHolder: LocationStateHolder
     private lazy var searchAddressUseCase = SearchAddressUseCaseImpl(repository: AddressRepositoryImpl(apiService: apiService))
-    private lazy var requestUseCase = RequestLocationAuthorizationUseCaseImpl(repository: RequestLocationAuthorizationRepositoryImpl())
+    private lazy var requestUseCase = RequestLocationAuthorizationUseCaseImpl(repository: PermissionRepositoryImpl())
     
     init(apiService: APIService, locationStateHolder: LocationStateHolder) {
         self.apiService = apiService

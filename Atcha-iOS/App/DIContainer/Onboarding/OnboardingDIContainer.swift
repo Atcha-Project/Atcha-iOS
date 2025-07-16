@@ -12,19 +12,20 @@ final class OnboardingDIContainer {
     private let apiService: APIService
     private let homeRegisterDIConatiner: HomeRegisterDIContainer
     private let pushRegisterDIContainer: PushRegisterDIContainer
-    private let locationService: LocationServiceProtocol
+    //    private let locationService: LocationServiceProtocol
     private let locationStateHolder: LocationStateHolder
+    private let permissionDIContainer: PermissionDIContainer
     
     init(apiService: APIService,
-         locationService: LocationServiceProtocol,
          locationStateHolder: LocationStateHolder,
          homeRegisterDIConatiner: HomeRegisterDIContainer,
-         pushRegisterDIContainer: PushRegisterDIContainer) {
+         pushRegisterDIContainer: PushRegisterDIContainer,
+         permissionDIContainer: PermissionDIContainer) {
         self.apiService = apiService
         self.homeRegisterDIConatiner = homeRegisterDIConatiner
         self.pushRegisterDIContainer = pushRegisterDIContainer
-        self.locationService = locationService
         self.locationStateHolder = locationStateHolder
+        self.permissionDIContainer = permissionDIContainer
     }
     
     func makeOnboardingCoordinator(navigationController: UINavigationController) -> OnboardingCoordinator {
@@ -32,6 +33,6 @@ final class OnboardingDIContainer {
                                      navigationController: navigationController,
                                      locationHolder: locationStateHolder,
                                      homeDIConatiner: homeRegisterDIConatiner,
-                                     pushRegisterDIContainer: pushRegisterDIContainer)
+                                     pushRegisterDIContainer: pushRegisterDIContainer, permissionDIConatiner: permissionDIContainer)
     }
 }

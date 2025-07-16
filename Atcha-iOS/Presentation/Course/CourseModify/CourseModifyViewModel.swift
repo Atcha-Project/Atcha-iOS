@@ -35,6 +35,7 @@ final class CourseModifyViewModel: BaseViewModel {
         //        self.currentLocation = locationStateHolder.currentLocation
         self.currentLocation = CLLocationCoordinate2D(latitude: 37.554722,
                                                       longitude: 126.970833)
+        self.currentLocation = locationStateHolder.currentLocation
         
         //        //임시 더미 데이터
         //        let dummyRecents: [Location] = [
@@ -52,7 +53,7 @@ final class CourseModifyViewModel: BaseViewModel {
     // MARK: - 권한 요청
     func requestPermission() {
         Task {
-            let status = await authorizationUseCase.askPermission()
+            let status = await authorizationUseCase.askLocationPermission()
             print("status: \(status.rawValue)")
         }
     }
