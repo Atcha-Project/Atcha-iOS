@@ -11,6 +11,10 @@ import SnapKit
 class CourseCell: UICollectionViewCell {
     static let reusableId: String = "CourseCell"
     var onToggleExpanded: (() -> Void)?
+    var onDetailTapped: (() -> Void)?
+
+    private let courseTapGesture = UITapGestureRecognizer()
+    private let detailTapGesture = UITapGestureRecognizer()
     
     private let containerView: UIView = UIView()
     private let totalTimeLabel: UILabel = UILabel()
@@ -40,6 +44,7 @@ class CourseCell: UICollectionViewCell {
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
+        setupGesture()
     }
     
     required init?(coder: NSCoder) {
@@ -99,9 +104,6 @@ class CourseCell: UICollectionViewCell {
         courseDownButton.image = UIImage.chevronDown
         courseDownButton.tintColor = AtchaColor.gray400
         courseDownButton.contentMode = .scaleAspectFit
-        courseDownButton.isUserInteractionEnabled = true
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(toggleCourseDetail))
-        courseDownButton.addGestureRecognizer(tapGesture)
         courseContainer.addSubViews(courseStack, courseDownButton)
         
         containerView.addSubViews(totalTimeLabel, detailStack, timeStack, courseContainer, alarmRegisterButton)
@@ -183,7 +185,7 @@ class CourseCell: UICollectionViewCell {
         let course = model.course
         isExpanded = model.isExpanded
         courseDownButton.image = isExpanded ? UIImage.chevronUp : UIImage.chevronDown
-
+        
         if isExpanded {
             courseStack.removeArrangedSubview(courseCompactStack)
             courseStack.addArrangedSubview(courseDetailStack)
@@ -327,8 +329,8 @@ class CourseCell: UICollectionViewCell {
                     
                     // 하차 아이콘은 걷기로 연결될 수 있으므로 bottomLine 스타일
                     let endBottomLine: LineStyle = isLastLeg
-                        ? .none
-                        : (nextLeg?.modeEnum == .walk ? .dotted : .solid)
+                    ? .none
+                    : (nextLeg?.modeEnum == .walk ? .dotted : .solid)
                     
                     endStepView.configure(
                         icon: getOffIcon,
@@ -354,6 +356,21 @@ class CourseCell: UICollectionViewCell {
                 courseDetailStack.addArrangedSubview(stepView)
             }
         }
+    }
+    
+    private func setupGesture() {
+        detailTapGesture.addTarget(self, action: #selector(detailTapped))
+        detailStack.isUserInteractionEnabled = true
+        detailStack.addGestureRecognizer(detailTapGesture)
+        
+        courseTapGesture.addTarget(self, action: #selector(toggleCourseDetail))
+        courseDownButton.isUserInteractionEnabled = true
+        courseDownButton.addGestureRecognizer(courseTapGesture)
+    }
+    
+    // MARK: - Course Detail View Handler
+    @objc private func detailTapped() {
+        onDetailTapped?()
     }
     
     // MARK: - Course Detail Toggle Handler

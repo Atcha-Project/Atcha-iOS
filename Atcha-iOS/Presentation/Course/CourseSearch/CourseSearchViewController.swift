@@ -98,10 +98,6 @@ class CourseSearchViewController: BaseViewController<CourseSearchViewModel> {
             make.trailing.leading.equalToSuperview()
         }
         
-        arrowImageView.snp.makeConstraints { make in
-            make.size.equalTo(12)
-        }
-        
         routeLabelStack.snp.makeConstraints { make in
             make.centerY.equalToSuperview()
             make.leading.equalTo(courseView.snp.leading).offset(16)
@@ -178,6 +174,11 @@ class CourseSearchViewController: BaseViewController<CourseSearchViewModel> {
         }
         
         cell.configure(with: model)
+        
+        // 버튼 탭 시 경로ID와 함께 상세 화면으로 이동
+        cell.onDetailTapped = { 
+            print(model.course.routeId ?? "경로 ID 없음")
+        }
         
         // 버튼 탭 시 확장/축소 상태 변경 핸들러 연결
         cell.onToggleExpanded = { [weak self] in
