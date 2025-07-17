@@ -9,8 +9,8 @@ import UIKit
 import SnapKit
 
 class CourseModifyViewController: BaseViewController<CourseModifyViewModel> {
-    private let topNavigationBar: BackOnlyNavigationBar = AtchaNavigationBar.backOnly(onBack: {
-        
+    private lazy var topNavigationBar: BackOnlyNavigationBar = AtchaNavigationBar.backOnly(onBack: { [weak self] in
+        self?.navigationController?.popViewController(animated: true)
     }, tintColor: AtchaColor.gray300)
     private let searchContainer: UIStackView = UIStackView()
     private let searchTextField: SearchTextField = AtchaTextField.searchTextField()

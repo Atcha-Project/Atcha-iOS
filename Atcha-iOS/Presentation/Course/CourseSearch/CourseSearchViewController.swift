@@ -175,6 +175,11 @@ class CourseSearchViewController: BaseViewController<CourseSearchViewModel> {
         
         cell.configure(with: model)
         
+        // 버튼 탭 시 경로ID와 함께 상세 화면으로 이동
+        cell.onDetailTapped = { 
+            print(model.course.routedId)
+        }
+        
         // 버튼 탭 시 확장/축소 상태 변경 핸들러 연결
         cell.onToggleExpanded = { [weak self] in
             self?.viewModel.toggleExpanded(for: model)
