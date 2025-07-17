@@ -19,9 +19,6 @@ final class AppDIContainer {
     let loginDIContainer: LoginDIContainer
     let mainDIContainer: MainDIContainer
     let onboardingDIContainer: OnboardingDIContainer
-    let homeRegisterDIContainer: HomeRegisterDIContainer
-    let pushRegisterDIContainer: PushRegisterDIContainer
-    let permissionDIConatiner: PermissionDIContainer
     
     private let locationStateHolder: LocationStateHolder = LocationStateHolder()
     
@@ -35,16 +32,9 @@ final class AppDIContainer {
         self.splashDIContainer = SplashDIContainer(apiService: apiServce)
         self.myPageDIContainer = MyPageDIContainer(apiService: apiServce)
         self.loginDIContainer = LoginDIContainer(apiService: noHeaderApiService)
-        self.mainDIContainer = MainDIContainer(apiService: apiServce, locationStateHolder: locationStateHolder)
-        
-        self.homeRegisterDIContainer = HomeRegisterDIContainer(apiService: apiServce, locationStateHolder: locationStateHolder)
-        self.pushRegisterDIContainer = PushRegisterDIContainer(apiService: apiServce, locationStateHolder: locationStateHolder)
-        self.permissionDIConatiner = PermissionDIContainer(locationStateHolder: locationStateHolder)
-        
         self.onboardingDIContainer = OnboardingDIContainer(apiService: apiServce,
-                                                           locationStateHolder: locationStateHolder,
-                                                           homeRegisterDIConatiner: homeRegisterDIContainer,
-                                                           pushRegisterDIContainer: pushRegisterDIContainer,
-                                                           permissionDIContainer: permissionDIConatiner)
+                                                           locationStateHolder: locationStateHolder)
+        self.mainDIContainer = MainDIContainer(apiService: apiServce,
+                                               locationStateHolder: locationStateHolder)
     }
 }
