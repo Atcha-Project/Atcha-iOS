@@ -8,7 +8,7 @@
 import Foundation
 
 struct CourseSearchResponse: Codable {
-    let routedId: String?
+    let routeId: String?
     let departureDateTime: String?
     let totalTime: Int?
     let totalWalkTime: Int?
@@ -20,7 +20,7 @@ struct CourseSearchResponse: Codable {
     
     func toEntity() -> Course {
         return Course(
-            routedId: routedId,
+            routeId: routeId,
             departureDateTime: departureDateTime,
             totalTime: totalTime,
             totalWalkTime: totalWalkTime,

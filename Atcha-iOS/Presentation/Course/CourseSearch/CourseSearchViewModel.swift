@@ -88,7 +88,7 @@ final class CourseSearchViewModel: BaseViewModel {
                 let response = try await courseUseCase.courseSearch(request)
                 
                 let uiModels = response.map {
-                    CourseUIModel(id: $0.routedId ?? UUID().uuidString, course: $0, isExpanded: false)
+                    CourseUIModel(id: $0.routeId ?? UUID().uuidString, course: $0, isExpanded: false)
                 }
                 
                 self.allCourses = uiModels

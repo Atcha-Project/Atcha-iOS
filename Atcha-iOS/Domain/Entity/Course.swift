@@ -8,7 +8,7 @@
 import Foundation
 
 struct Course: Codable, Hashable {
-    let routedId: String?
+    let routeId: String?
     let departureDateTime: String?
     let totalTime: Int?
     let totalWalkTime: Int?
