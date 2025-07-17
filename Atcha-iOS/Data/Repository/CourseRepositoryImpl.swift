@@ -27,7 +27,7 @@ final class CourseRepositoryImpl: CourseRepository {
         
         return try await apiService.request(
             Endpoint(
-                path: "https://atcha.p-e.kr/api/transits/last-routes",
+                path: "https://atcha.p-e.kr/api/routes/last-routes",
                 method: .get,
                 parameters: [
                     "startLat": request.startLat,
