@@ -11,23 +11,23 @@ import Foundation
 
 final class MainCoordinator {
     private let navigationController: UINavigationController
-    private let diContainer: LocationDIContainer
+    private let diContainer: MainDIContainer
     
     var routeHandler: ((MainRoute) -> Void)?
     
     init(navigationController: UINavigationController,
-         diContainer: LocationDIContainer) {
+         diContainer: MainDIContainer) {
         self.navigationController = navigationController
         self.diContainer = diContainer
     }
     
     func start() {
-        let viewModel = diContainer.makeLocationViewModel()
+        let viewModel = diContainer.makeMainiewModel()
         viewModel.routeHandler = { [weak self] route in
             guard let self else { return }
             handle(route: route)
         }
-        let viewController = diContainer.makeMapViewController(viewModel: viewModel)
+        let viewController = diContainer.makeMainViewController(viewModel: viewModel)
         navigationController.pushViewController(viewController, animated: false)
     }
     

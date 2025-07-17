@@ -8,7 +8,7 @@
 import UIKit
 import Foundation
 
-final class LocationDIContainer {
+final class MainDIContainer {
     private let apiService: APIService
     private let locationStateHolder: LocationStateHolder
     private lazy var searchAddressUseCase = SearchAddressUseCaseImpl(repository: AddressRepositoryImpl(apiService: apiService))
@@ -19,7 +19,7 @@ final class LocationDIContainer {
         self.locationStateHolder = locationStateHolder
     }
     
-    func makeLocationViewModel() -> MainViewModel {
+    func makeMainiewModel() -> MainViewModel {
         let streamUseCase = ObserLocationStreamUseCaseImpl(repository: LocationStreamRepositoryImpl())
         let fetchTaxiFareUseCase = FetchTaxiFareUseCaseImpl(repository: FetchTaxiFareRepositoryImpl(apiService: apiService))
         
@@ -30,7 +30,7 @@ final class LocationDIContainer {
                              locationStateHolder: locationStateHolder)
     }
     
-    func makeMapViewController(viewModel: MainViewModel) -> UIViewController {
+    func makeMainViewController(viewModel: MainViewModel) -> UIViewController {
         return MainViewController(viewModel: viewModel)
     }
     
