@@ -23,7 +23,7 @@ final class PermissionDIContainer {
                                    locationStateHolder: locationStateHolder)
     }
     
-    func makePermissionViewController() -> PermissionViewController {
-        return PermissionViewController(viewModel: makePermissionViewModel())
+    func makePermissionViewController(viewModel: PermissionViewModel) -> PermissionViewController {
+        return PermissionViewController(viewModel: viewModel)
     }
 }

@@ -82,16 +82,15 @@ extension MyPageViewController: UICollectionViewDelegate,
         let selectedItem = MyPageItem.allCases[indexPath.item]
         switch selectedItem {
         case .account:
-            print("account 화면으로 이동")
+            viewModel.navigationTarget.send(.account)
         case .home:
-            print("home 화면으로 이동")
+            viewModel.navigationTarget.send(.home)
         case .notification:
-            print("notification 화면으로 이동")
+            viewModel.navigationTarget.send(.notification)
         case .term:
-            print("term 화면으로 이동")
+            viewModel.navigationTarget.send(.term)
         case .version:
-            print("앱 스토어 업데이트 하러가기")
-            navigationController?.popViewController(animated: true)
+            viewModel.navigationTarget.send(.versionUpdate)
         }
     }
 }
