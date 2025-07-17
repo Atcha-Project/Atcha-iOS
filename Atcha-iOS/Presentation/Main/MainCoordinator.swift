@@ -12,6 +12,7 @@ import Foundation
 final class MainCoordinator {
     private let navigationController: UINavigationController
     private let diContainer: MainDIContainer
+    private var myPageCoordinator: MyPageCoordinator?
     
     var routeHandler: ((MainRoute) -> Void)?
     
@@ -34,9 +35,13 @@ final class MainCoordinator {
     private func handle(route: MainRoute) {
         switch route {
         case .myPage:
-            let vc = MyPageViewController(viewModel: MyPageViewModel())
-            navigationController.pushViewController(vc, animated: true)
-            print("✅ Pushed MapViewController: \(navigationController.viewControllers)")
+            let myPageDI = diContainer.makeMyPageDIContainer()
+            let myPageCoordinator = MyPageCoordinator(
+                navigationController: navigationController,
+                diContainer: myPageDI
+            )
+            self.myPageCoordinator = myPageCoordinator
+            myPageCoordinator.start()
         case let .courseSearch(startLat, startLon, startAddress):
             let vc = diContainer.makeCourseSearchViewController(startLat: startLat, startLon: startLon, startAddress: startAddress)
             navigationController.pushViewController(vc, animated: true)

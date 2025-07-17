@@ -14,6 +14,10 @@ final class MainDIContainer {
     private lazy var searchAddressUseCase = SearchAddressUseCaseImpl(repository: AddressRepositoryImpl(apiService: apiService))
     private lazy var requestUseCase = RequestLocationAuthorizationUseCaseImpl(repository: PermissionRepositoryImpl())
     
+    private lazy var myPageDI: MyPageDIContainer = {
+        MyPageDIContainer(apiService: apiService)
+    }()
+    
     init(apiService: APIService, locationStateHolder: LocationStateHolder) {
         self.apiService = apiService
         self.locationStateHolder = locationStateHolder
@@ -34,6 +38,25 @@ final class MainDIContainer {
         return MainViewController(viewModel: viewModel)
     }
     
+    func makeMainCoordinator(navigationController: UINavigationController) -> MainCoordinator {
+        MainCoordinator(navigationController: navigationController,
+                        diContainer: self)
+    }
+}
+
+// MARK: - MyPage
+extension MainDIContainer {
+    func makeMyPageViewModel() -> MyPageViewModel { myPageDI.makeMyPageViewModel() }
+    func makeMyPageViewController(viewModel: MyPageViewModel) -> MyPageViewController {
+        myPageDI.makeMyPageViewController(viewModel: viewModel)
+    }
+    func makeMyPageDIContainer() -> MyPageDIContainer {
+        return myPageDI
+    }
+}
+
+// MARK: - Cousre
+extension MainDIContainer {
     func makeCourseSearchViewModel(startLat: String, startLon: String, startAddress: String) -> CourseSearchViewModel {
         let courseUseCase = CourseUseCaseImpl(repository: CourseRepositoryImpl(apiService: apiService))
         return CourseSearchViewModel(courseUseCase: courseUseCase, startLat: startLat, startLon: startLon, startAddress: startAddress)
@@ -50,10 +73,5 @@ final class MainDIContainer {
     
     func makeCourseModifyViewController() -> UIViewController {
         return CourseModifyViewController(viewModel: makeCourseModifyViewModel())
-    }
-    
-    func makeMainCoordinator(navigationController: UINavigationController) -> MainCoordinator {
-        MainCoordinator(navigationController: navigationController,
-                        diContainer: self)
     }
 }

@@ -14,7 +14,6 @@ final class AppDIContainer {
     var tokenStorage: TokenStorage
     let networkDIContainer: NetworkDIContainer
     
-    let myPageDIContainer: MyPageDIContainer
     let splashDIContainer: SplashDIContainer
     let loginDIContainer: LoginDIContainer
     let mainDIContainer: MainDIContainer
@@ -30,7 +29,6 @@ final class AppDIContainer {
         let noHeaderApiService: APIService = networkDIContainer.makeAPIService(useInterceptor: false)
       
         self.splashDIContainer = SplashDIContainer(apiService: apiServce)
-        self.myPageDIContainer = MyPageDIContainer(apiService: apiServce)
         self.loginDIContainer = LoginDIContainer(apiService: noHeaderApiService)
         self.onboardingDIContainer = OnboardingDIContainer(apiService: apiServce,
                                                            locationStateHolder: locationStateHolder)

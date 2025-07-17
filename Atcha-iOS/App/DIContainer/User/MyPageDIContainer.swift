@@ -18,6 +18,10 @@ final class MyPageDIContainer {
     func makeMyPageViewModel() -> MyPageViewModel {
         MyPageViewModel()
     }
+    
+    func makeMyPageViewController(viewModel: MyPageViewModel) -> MyPageViewController {
+        return MyPageViewController(viewModel: viewModel)
+    }
 
     func makeMyPageCoordinator(navigationController: UINavigationController) -> MyPageCoordinator {
         MyPageCoordinator(navigationController: navigationController,

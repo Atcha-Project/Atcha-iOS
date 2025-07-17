@@ -24,9 +24,6 @@ final class MyPageViewModel: BaseViewModel {
             navigationTarget.send(.term)
         case .version(let version):
             navigationTarget.send(.versionUpdate)
-//            if updateAction != nil {
-//                navigationTarget.send(.versionUpdate)
-//            }
         }
     }
 }
