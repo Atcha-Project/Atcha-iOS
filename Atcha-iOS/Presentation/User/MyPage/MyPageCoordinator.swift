@@ -43,7 +43,10 @@ final class MyPageCoordinator {
         case .account:
             router.pushAccount()
         case .home:
-            router.pushHome()
+            let vm = diContainer.makeHomeRegisterViewModel()
+            let vc = diContainer.makeHomeRegisterViewController(viewModel: vm)
+            navigationController.pushViewController(vc, animated: true)
+//            router.pushHome()
         case .notification:
             router.pushNotification()
         case .term:

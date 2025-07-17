@@ -15,7 +15,8 @@ final class MainDIContainer {
     private lazy var requestUseCase = RequestLocationAuthorizationUseCaseImpl(repository: PermissionRepositoryImpl())
     
     private lazy var myPageDI: MyPageDIContainer = {
-        MyPageDIContainer(apiService: apiService)
+        MyPageDIContainer(apiService: apiService,
+                          locationStateHolder: locationStateHolder)
     }()
     
     init(apiService: APIService, locationStateHolder: LocationStateHolder) {
