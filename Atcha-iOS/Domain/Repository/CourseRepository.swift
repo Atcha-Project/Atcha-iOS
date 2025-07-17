@@ -9,5 +9,5 @@ import Foundation
 
 protocol CourseRepository {
     // 경로 탐색
-    func courseSearch(_ request: CourseSearchRequest) async throws -> [Course]
+    func courseSearch(_ request: CourseSearchRequest) async throws -> [CourseSearchResponse]
 }

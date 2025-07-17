@@ -36,14 +36,6 @@ final class CourseModifyViewModel: BaseViewModel {
         self.currentLocation = CLLocationCoordinate2D(latitude: 37.554722,
                                                       longitude: 126.970833)
         self.currentLocation = locationStateHolder.currentLocation
-        
-        //        //임시 더미 데이터
-        //        let dummyRecents: [Location] = [
-        //            Location(name: "60계치킨 강남점", lat: 37.5013, lon: 127.0396, businessCategory: "치킨", address: "서울시 강남구 테헤란로 123", radius: "1.2km"),
-        //            Location(name: "스타벅스 역삼점", lat: 37.4999, lon: 127.0365, businessCategory: "카페", address: "서울시 강남구 역삼로 111", radius: "0.8km"),
-        //            Location(name: "이디야 선릉역점", lat: 37.5075, lon: 127.0481, businessCategory: "카페", address: "서울시 강남구 선릉로 88", radius: "1.0km")
-        //        ]
-        //        self.items = dummyRecents.map { .recent(location: $0) }
         self.mode = .recent
         
         super.init()

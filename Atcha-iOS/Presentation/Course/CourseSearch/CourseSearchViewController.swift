@@ -98,10 +98,6 @@ class CourseSearchViewController: BaseViewController<CourseSearchViewModel> {
             make.trailing.leading.equalToSuperview()
         }
         
-        arrowImageView.snp.makeConstraints { make in
-            make.size.equalTo(12)
-        }
-        
         routeLabelStack.snp.makeConstraints { make in
             make.centerY.equalToSuperview()
             make.leading.equalTo(courseView.snp.leading).offset(16)

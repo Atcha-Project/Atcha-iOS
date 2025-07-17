@@ -40,7 +40,7 @@ final class SearchAddressUseCaseImpl: SearchAddressUseCase {
     }
     
     func fetchRecentSearchHistories(_ request: FetchRecentSearchRequest) async throws -> [Location] {
-        return try await repository.fetchRecentSearchHistories(request: request)
+        return try await repository.fetchRecentSearchHistories(request: request).compactMap { $0.toEntity() }
     }
     
     func addRecentSearchHistory(_ request: RecentSearchRequest) async throws -> APIEmptyResponse{

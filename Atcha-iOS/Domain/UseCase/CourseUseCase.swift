@@ -21,7 +21,6 @@ final class CourseUseCaseImpl: CourseUseCase {
     
     // 경로 탐색
     func courseSearch(_ request: CourseSearchRequest) async throws -> [Course] {
-        
-        return try await repository.courseSearch(request)
+        return try await repository.courseSearch(request).compactMap { $0.toEntity() }
     }
 }

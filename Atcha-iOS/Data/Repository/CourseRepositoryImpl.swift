@@ -15,7 +15,7 @@ final class CourseRepositoryImpl: CourseRepository {
         self.apiService = apiService
     }
     
-    func courseSearch(_ request: CourseSearchRequest) async throws -> [Course] {
+    func courseSearch(_ request: CourseSearchRequest) async throws -> [CourseSearchResponse] {
         
         guard let token = AppDIContainer.shared.tokenStorage.accessToken else {
             throw NSError(domain: "CourseRepository", code: 401, userInfo: [NSLocalizedDescriptionKey: "인증 토큰이 없습니다."])

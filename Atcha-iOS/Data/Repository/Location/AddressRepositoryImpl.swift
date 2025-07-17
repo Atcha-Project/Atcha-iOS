@@ -39,7 +39,7 @@ final class AddressRepositoryImpl: AddressRepository {
             ))
     }
     
-    func fetchRecentSearchHistories(request: FetchRecentSearchRequest) async throws -> [Location] {
+    func fetchRecentSearchHistories(request: FetchRecentSearchRequest) async throws -> [FetchRecentSearchResponse] {
         return try await apiService.request(
             Endpoint(
                 path: "https://atcha.p-e.kr/api/locations/histories",
