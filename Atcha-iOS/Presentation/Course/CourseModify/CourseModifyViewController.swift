@@ -8,7 +8,7 @@
 import UIKit
 import SnapKit
 
-class CourseModifyViewController: BaseViewController<CourseModifyViewModel> {
+final class CourseModifyViewController: BaseViewController<CourseModifyViewModel> {
     private lazy var topNavigationBar: BackOnlyNavigationBar = AtchaNavigationBar.backOnly(onBack: { [weak self] in
         self?.navigationController?.popViewController(animated: true)
     }, tintColor: AtchaColor.gray300)
@@ -286,8 +286,10 @@ extension CourseModifyViewController: UITableViewDataSource, UITableViewDelegate
         switch item {
         case .recent(let loc), .result(let loc):
             print("선택된 장소: \(loc.name ?? "")")
-            
+
             viewModel.addRecentSearchLocation(request: RecentSearchRequest(name: loc.name, lat: loc.lat, lon: loc.lon, businessCategory: loc.businessCategory, address: loc.address))
+            
+            viewModel.onLocationSelected?(loc)
         }
     }
     

@@ -13,6 +13,7 @@ final class MainCoordinator {
     private let navigationController: UINavigationController
     private let diContainer: MainDIContainer
     private var myPageCoordinator: MyPageCoordinator?
+    private var courseModifyCoordinator: CourseModifyCoordinator?
     
     var routeHandler: ((MainRoute) -> Void)?
     
@@ -43,13 +44,17 @@ final class MainCoordinator {
             self.myPageCoordinator = myPageCoordinator
             myPageCoordinator.start()
         case let .courseSearch(startLat, startLon, startAddress):
-            let vc = diContainer.makeCourseSearchViewController(startLat: startLat, startLon: startLon, startAddress: startAddress)
+            let courseDI = diContainer.makeCourseDIContainer()
+            let vc = courseDI.makeCourseSearchViewController(startLat: startLat, startLon: startLon, startAddress: startAddress)
             navigationController.pushViewController(vc, animated: true)
             print("🔍 courseSearch route tapped: \(navigationController.viewControllers)")
         case .changeCourse:
-            let vc = diContainer.makeCourseModifyViewController()
-            navigationController.pushViewController(vc, animated: true)
-            print("✍️ courseModify route tapped: \(navigationController.viewControllers)")
+            let courseDI = diContainer.makeCourseDIContainer()
+            let courseModifyCoordinator = CourseModifyCoordinator(
+                navigationController: navigationController,
+                diContainer: courseDI)
+            self.courseModifyCoordinator = courseModifyCoordinator
+            courseModifyCoordinator.start()
         }
         
         routeHandler?(route)

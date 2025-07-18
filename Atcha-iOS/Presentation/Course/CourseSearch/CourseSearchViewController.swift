@@ -9,7 +9,7 @@ import UIKit
 import SnapKit
 import Combine
 
-class CourseSearchViewController: BaseViewController<CourseSearchViewModel> {
+final class CourseSearchViewController: BaseViewController<CourseSearchViewModel> {
     
     private lazy var topNavigationBar: TitleNavigationBar = AtchaNavigationBar.title("") { [weak self] in
         self?.navigationController?.popViewController(animated: true)
