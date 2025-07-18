@@ -17,6 +17,7 @@ final class CourseSettingViewModel: BaseViewModel {
     @Published var currentLocation: CLLocationCoordinate2D?
     @Published var locationInfo: LocationInfo
     let initialLocation: Location
+    var onTapLocationButton: ((LocationInfo, CLLocationCoordinate2D) -> Void)?
     
     private let searchAddressUseCase: SearchAddressUseCase
     private let authorizationUseCase: RequestLocationAuthorizationUseCase
@@ -83,13 +84,17 @@ final class CourseSettingViewModel: BaseViewModel {
     }
     
     func setupLocation() {
-        setupInitialLocation()
         requestPermissionAndStartTracking()
     }
     
     func stopTracking() {
         streamTask?.cancel()
         streamUseCase.stopUpdate()
+    }
+    
+    func userDidTapSettingButton() {
+        guard let location = currentLocation else { return }
+        onTapLocationButton?(locationInfo, location)
     }
     
     deinit {

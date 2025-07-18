@@ -11,7 +11,7 @@ import CoreLocation
 import TMapSDK
 
 final class CourseSettingViewController: BaseViewController<CourseSettingViewModel>, TMapWrapperDelegate {
-
+    
     private let mapContainerView: TMapContainerView = TMapContainerView()
     private let settingBottomView: OriginSettingBottomView = OriginSettingBottomView()
     private let flagImageView: UIImageView = UIImageView()
@@ -19,7 +19,7 @@ final class CourseSettingViewController: BaseViewController<CourseSettingViewMod
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         setupUI()
         setupAutoLayout()
         bindView()
@@ -34,8 +34,8 @@ final class CourseSettingViewController: BaseViewController<CourseSettingViewMod
         )
         
         mapContainerView.delegate = self
-        
         flagImageView.image = UIImage.settingLocationMark
+        flagImageView.isUserInteractionEnabled = false
         configureButton(currentLoactionButton, imageName: "mylocation-filled", action: #selector(didTapLocationButton))
     }
     
@@ -52,7 +52,7 @@ final class CourseSettingViewController: BaseViewController<CourseSettingViewMod
                 guard let self else { return }
                 switch action {
                 case .settingTapped:
-                    print("출발지 설정 버튼 눌림")
+                    viewModel.userDidTapSettingButton()
                 }
             }
             .store(in: &cancellables)
@@ -106,7 +106,7 @@ final class CourseSettingViewController: BaseViewController<CourseSettingViewMod
 extension CourseSettingViewController {
     func didFinishLoadingMap(_ mapView: TMapWrapper) {
         mapView.mapView.isZoomEnable = true
-        viewModel.setupLocation()
+        viewModel.setupInitialLocation()
     }
     
     @objc private func didTapLocationButton() {
