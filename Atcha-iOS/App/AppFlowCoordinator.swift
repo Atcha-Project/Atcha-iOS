@@ -47,6 +47,9 @@ class AppFlowCoordinator {
         let navigationController = UINavigationController()
         window.rootViewController = navigationController
         mainCoordinator = container.makeMainCoordinator(navigationController: navigationController)
+        mainCoordinator?.signoutFinish = { [weak self] in
+            self?.showLoginFlow()
+        }
         mainCoordinator?.start()
     }
     

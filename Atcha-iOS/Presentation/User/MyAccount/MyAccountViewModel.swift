@@ -8,8 +8,10 @@
 import Foundation
 
 final class MyAccountViewModel: BaseViewModel {
-    private let signOutUseCase: SignOutUseCase
+    var signOutFinish: (() -> Void)?
     
+    private let signOutUseCase: SignOutUseCase
+
     init(signOutUseCase: SignOutUseCase) {
         self.signOutUseCase = signOutUseCase
     }
@@ -18,6 +20,7 @@ final class MyAccountViewModel: BaseViewModel {
         Task {
             do {
                 let _ = try await signOutUseCase.excute()
+                signOutFinish?()
             } catch {
                 print("error 발생")
             }

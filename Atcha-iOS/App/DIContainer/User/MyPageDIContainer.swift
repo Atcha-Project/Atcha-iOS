@@ -12,6 +12,8 @@ final class MyPageDIContainer {
     private let apiService: APIService
     private let locationStateHolder: LocationStateHolder
     
+    var signoutFinish: (() -> Void)?
+    
     private lazy var homeDI: HomeRegisterDIContainer = {
         HomeRegisterDIContainer(apiService: apiService, locationStateHolder: locationStateHolder)
     }()

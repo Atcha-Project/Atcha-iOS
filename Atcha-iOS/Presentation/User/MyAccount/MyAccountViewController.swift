@@ -34,11 +34,6 @@ final class MyAccountViewController: BaseViewController<MyAccountViewModel> {
         
         setupUI()
         setupAutoLayout()
-        bindViewModel()
-    }
-    
-    private func bindViewModel() {
-        
     }
     
     private func setupUI() {
@@ -86,7 +81,7 @@ extension MyAccountViewController: UICollectionViewDelegate,
         case .logout:
             print("로그아웃")
         case .withdraw:
-            print("계정탈퇴")
+            viewModel.signOutTapped()
         }
     }
 }
