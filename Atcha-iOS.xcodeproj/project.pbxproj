@@ -152,6 +152,11 @@
 		B69E31AE2E2683C9001040F4 /* PermissionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B69E31AD2E2683C9001040F4 /* PermissionViewModel.swift */; };
 		B69E31B12E276713001040F4 /* PermissionDIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B69E31B02E276713001040F4 /* PermissionDIContainer.swift */; };
 		B69E31B32E2786BF001040F4 /* PermissionType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B69E31B22E2786BF001040F4 /* PermissionType.swift */; };
+		B6AC8BD12E2A80AF00410ECD /* MyAccountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BD02E2A80AF00410ECD /* MyAccountViewController.swift */; };
+		B6AC8BD32E2A80BC00410ECD /* MyAccountViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BD22E2A80BC00410ECD /* MyAccountViewModel.swift */; };
+		B6AC8BD52E2A819200410ECD /* MyAccountItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BD42E2A819200410ECD /* MyAccountItem.swift */; };
+		B6AC8BD72E2A82C300410ECD /* MyAccountDIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BD62E2A82C300410ECD /* MyAccountDIContainer.swift */; };
+		B6AC8BD92E2A85D800410ECD /* SignOutUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BD82E2A85D800410ECD /* SignOutUseCase.swift */; };
 		B6ADE1942E0C0DE6008C4E23 /* LoginType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6ADE1932E0C0DE6008C4E23 /* LoginType.swift */; };
 		B6B57EC22E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B57EC12E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift */; };
 		B6B57EC52E1AB0FE00B29EB1 /* MainRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B57EC42E1AB0FE00B29EB1 /* MainRoute.swift */; };
@@ -339,6 +344,11 @@
 		B69E31AD2E2683C9001040F4 /* PermissionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionViewModel.swift; sourceTree = "<group>"; };
 		B69E31B02E276713001040F4 /* PermissionDIContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionDIContainer.swift; sourceTree = "<group>"; };
 		B69E31B22E2786BF001040F4 /* PermissionType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionType.swift; sourceTree = "<group>"; };
+		B6AC8BD02E2A80AF00410ECD /* MyAccountViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyAccountViewController.swift; sourceTree = "<group>"; };
+		B6AC8BD22E2A80BC00410ECD /* MyAccountViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyAccountViewModel.swift; sourceTree = "<group>"; };
+		B6AC8BD42E2A819200410ECD /* MyAccountItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyAccountItem.swift; sourceTree = "<group>"; };
+		B6AC8BD62E2A82C300410ECD /* MyAccountDIContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyAccountDIContainer.swift; sourceTree = "<group>"; };
+		B6AC8BD82E2A85D800410ECD /* SignOutUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignOutUseCase.swift; sourceTree = "<group>"; };
 		B6ADE1932E0C0DE6008C4E23 /* LoginType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginType.swift; sourceTree = "<group>"; };
 		B6B57EC12E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastTrainSearchBottomView.swift; sourceTree = "<group>"; };
 		B6B57EC42E1AB0FE00B29EB1 /* MainRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainRoute.swift; sourceTree = "<group>"; };
@@ -768,6 +778,7 @@
 		B65C132D2E06583E0016D2F0 /* User */ = {
 			isa = PBXGroup;
 			children = (
+				B6AC8BCF2E2A809400410ECD /* MyAccount */,
 				B6FB20972E1D33380032751B /* Home */,
 				B65C13322E0692500016D2F0 /* MyPage */,
 			);
@@ -852,6 +863,7 @@
 			isa = PBXGroup;
 			children = (
 				B66401882E22768000A397AE /* PushRegisterDIContainer.swift */,
+				B6AC8BD62E2A82C300410ECD /* MyAccountDIContainer.swift */,
 			);
 			path = Setting;
 			sourceTree = "<group>";
@@ -860,6 +872,7 @@
 			isa = PBXGroup;
 			children = (
 				B66401932E22790300A397AE /* SignUpUseCase.swift */,
+				B6AC8BD82E2A85D800410ECD /* SignOutUseCase.swift */,
 			);
 			path = User;
 			sourceTree = "<group>";
@@ -1036,6 +1049,16 @@
 				B69E31B22E2786BF001040F4 /* PermissionType.swift */,
 			);
 			path = Permission;
+			sourceTree = "<group>";
+		};
+		B6AC8BCF2E2A809400410ECD /* MyAccount */ = {
+			isa = PBXGroup;
+			children = (
+				B6AC8BD02E2A80AF00410ECD /* MyAccountViewController.swift */,
+				B6AC8BD22E2A80BC00410ECD /* MyAccountViewModel.swift */,
+				B6AC8BD42E2A819200410ECD /* MyAccountItem.swift */,
+			);
+			path = MyAccount;
 			sourceTree = "<group>";
 		};
 		B6B57EC32E1AB0ED00B29EB1 /* Coordinator */ = {
@@ -1314,6 +1337,7 @@
 				B65C13202E058C360016D2F0 /* AppVersionRepositoryImpl.swift in Sources */,
 				B65C12E22E042D400016D2F0 /* FetchUserUseCase.swift in Sources */,
 				B6EDD73C2E0D87F2006170DF /* FileStorageImpl.swift in Sources */,
+				B6AC8BD12E2A80AF00410ECD /* MyAccountViewController.swift in Sources */,
 				B65C12FE2E057AF90016D2F0 /* NetworkConstant.swift in Sources */,
 				6D8D8B132E01B338003DABB2 /* AtchaButton.swift in Sources */,
 				B66401832E22449000A397AE /* SearchLocationResponse.swift in Sources */,
@@ -1329,6 +1353,7 @@
 				6DC3BF5E2E07123F00831470 /* LoginIntroCell.swift in Sources */,
 				B66401802E2243D100A397AE /* SearchLocationRequest.swift in Sources */,
 				6D73EBD62E1748AD00F8DF8B /* CourseCell.swift in Sources */,
+				B6AC8BD52E2A819200410ECD /* MyAccountItem.swift in Sources */,
 				6D73EB5D2E1611F800F8DF8B /* CourseSearchViewController.swift in Sources */,
 				B65C13102E057D800016D2F0 /* TokenInterceptor.swift in Sources */,
 				6D81574E2E13EC0F003688A6 /* Int+Ext.swift in Sources */,
@@ -1389,6 +1414,7 @@
 				6D5E03D02E28853E0065AFBE /* CourseSearchResponse.swift in Sources */,
 				B673C4912E0424FD00EE4AD0 /* SplashViewModel.swift in Sources */,
 				B6C507502E129693000AB39F /* LocationStreamRepositoryImpl.swift in Sources */,
+				B6AC8BD92E2A85D800410ECD /* SignOutUseCase.swift in Sources */,
 				6D1EE2F02E0A7F0000F7BBF1 /* OnboardingRepository.swift in Sources */,
 				6D1EE2E52E09A42F00F7BBF1 /* PushAlarmViewController.swift in Sources */,
 				6D8157442E126C45003688A6 /* LockViewController.swift in Sources */,
@@ -1425,10 +1451,12 @@
 				B65C13442E06E0BC0016D2F0 /* SplashCoordinator.swift in Sources */,
 				B65C13262E058CC30016D2F0 /* BaseViewModel.swift in Sources */,
 				B65C132A2E058FD70016D2F0 /* APIResponse.swift in Sources */,
+				B6AC8BD32E2A80BC00410ECD /* MyAccountViewModel.swift in Sources */,
 				B6D083332E02D8F5003C28E1 /* AtchaList.swift in Sources */,
 				B65C12DE2E042CF00016D2F0 /* UserInfo.swift in Sources */,
 				B65C13002E057B2A0016D2F0 /* NetworkLogger.swift in Sources */,
 				6D1EE2E72E09A43700F7BBF1 /* PushAlarmViewModel.swift in Sources */,
+				B6AC8BD72E2A82C300410ECD /* MyAccountDIContainer.swift in Sources */,
 				6D1EE2DC2E08E4EA00F7BBF1 /* HomeRegisterViewModel.swift in Sources */,
 				B6B57EC52E1AB0FE00B29EB1 /* MainRoute.swift in Sources */,
 			);

@@ -18,6 +18,9 @@ final class MyPageDIContainer {
     private lazy var pushDI: PushRegisterDIContainer = {
         PushRegisterDIContainer(apiService: apiService, locationStateHolder: locationStateHolder)
     }()
+    private lazy var myAccountDI: MyAccountDIContainer = {
+        MyAccountDIContainer(apiService: apiService)
+    }()
     
     init(apiService: APIService,
          locationStateHolder: LocationStateHolder) {
@@ -53,6 +56,16 @@ extension MyPageDIContainer {
     func makeHomeSearchViewModel() -> SearchLocationViewModel { homeDI.makeHomeSearchViewModel() }
     func makeHomeSearchViewController(viewModel: SearchLocationViewModel) -> SearchLocationViewController {
         homeDI.makeHomeSearchViewController(viewModel: viewModel)
+    }
+}
+
+// MARK: - MyAccount
+extension MyPageDIContainer {
+    func makeMyAccountViewModel() -> MyAccountViewModel {
+        myAccountDI.makeMyAccountViewModel()
+    }
+    func makeMyAccountViewController(viewModel: MyAccountViewModel) -> MyAccountViewController {
+        myAccountDI.makeMyAccountViewController(viewModel: viewModel)
     }
 }
 

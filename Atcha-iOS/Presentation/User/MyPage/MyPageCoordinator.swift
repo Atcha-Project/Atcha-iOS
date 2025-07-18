@@ -41,12 +41,13 @@ final class MyPageCoordinator {
     private func navigate(to target: MyPageNavigationTarget) {
         switch target {
         case .account:
-            router.pushAccount()
+            let vm = diContainer.makeMyAccountViewModel()
+            let vc = diContainer.makeMyAccountViewController(viewModel: vm)
+            navigationController.pushViewController(vc, animated: true)
         case .home:
             let vm = diContainer.makeHomeRegisterViewModel()
             let vc = diContainer.makeHomeRegisterViewController(viewModel: vm)
             navigationController.pushViewController(vc, animated: true)
-//            router.pushHome()
         case .notification:
             router.pushNotification()
         case .term:

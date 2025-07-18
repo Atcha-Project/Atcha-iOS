@@ -19,4 +19,6 @@ protocol UserRepository {
     
     // MARK: - 가입 여부 조회
     func checkRegistration(_ request: AuthCheckRequest) async throws -> AuthCheckResponse
+    
+    func signOut() async throws -> APIEmptyResponse
 }
