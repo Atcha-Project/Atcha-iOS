@@ -8,7 +8,7 @@
 import UIKit
 import SnapKit
 
-class CourseModifyViewController: BaseViewController<CourseModifyViewModel> {
+final class CourseModifyViewController: BaseViewController<CourseModifyViewModel> {
     private lazy var topNavigationBar: BackOnlyNavigationBar = AtchaNavigationBar.backOnly(onBack: { [weak self] in
         self?.navigationController?.popViewController(animated: true)
     }, tintColor: AtchaColor.gray300)
