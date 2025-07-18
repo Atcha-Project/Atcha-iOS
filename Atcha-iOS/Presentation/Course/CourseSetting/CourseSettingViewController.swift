@@ -57,11 +57,11 @@ final class CourseSettingViewController: BaseViewController<CourseSettingViewMod
             }
             .store(in: &cancellables)
         
-        viewModel.$address
+        viewModel.$locationInfo
             .receive(on: RunLoop.main)
-            .sink { [weak self] setting in
+            .sink { [weak self] location in
                 guard let self else { return }
-                settingBottomView.setupLocationTitle(setting.name, setting.address)
+                settingBottomView.setupLocationTitle(location.name, location.address)
             }
             .store(in: &cancellables)
         
@@ -73,16 +73,6 @@ final class CourseSettingViewController: BaseViewController<CourseSettingViewMod
                 mapContainerView.setupCenter(location: location)
             }
             .store(in: &cancellables)
-        
-        viewModel.$selectedLocation
-            .compactMap { $0 }
-            .receive(on: RunLoop.main)
-            .sink { [weak self] location in
-                guard let self else { return }
-                mapContainerView.updateUserMarker(location: location)
-            }
-            .store(in: &cancellables)
-        
     }
     
     private func setupAutoLayout() {
@@ -115,6 +105,7 @@ final class CourseSettingViewController: BaseViewController<CourseSettingViewMod
 
 extension CourseSettingViewController {
     func didFinishLoadingMap(_ mapView: TMapWrapper) {
+        mapView.mapView.isZoomEnable = true
         viewModel.setupLocation()
     }
     

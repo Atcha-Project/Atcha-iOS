@@ -8,15 +8,15 @@
 import Foundation
 import CoreLocation
 
-struct SettingAddress {
+struct LocationInfo {
     var name: String?
     var address: String?
 }
 
 final class CourseSettingViewModel: BaseViewModel {
     @Published var currentLocation: CLLocationCoordinate2D?
-    @Published var selectedLocation: CLLocationCoordinate2D?
-    @Published var address: SettingAddress
+    @Published var locationInfo: LocationInfo
+    let initialLocation: Location
     
     private let searchAddressUseCase: SearchAddressUseCase
     private let authorizationUseCase: RequestLocationAuthorizationUseCase
@@ -24,17 +24,22 @@ final class CourseSettingViewModel: BaseViewModel {
     private let locationStateHolder: LocationStateHolder
     private var streamTask: Task<Void, Never>?
     
-    init(address: SettingAddress,
+    init(initialLocation: Location,
          authorizationUseCase: RequestLocationAuthorizationUseCase,
          streamUseCase: ObserveLocationStreamUseCase,
          searchAddressUseCase: SearchAddressUseCase,
          locationStateHolder: LocationStateHolder) {
-        self.address = address
+
+        self.initialLocation = initialLocation
+        self.locationInfo = LocationInfo(
+            name: initialLocation.name,
+            address: initialLocation.address
+        )
         self.authorizationUseCase = authorizationUseCase
         self.streamUseCase = streamUseCase
         self.searchAddressUseCase = searchAddressUseCase
         self.locationStateHolder = locationStateHolder
-        
+
         super.init()
         self.bindView()
     }
@@ -50,11 +55,16 @@ final class CourseSettingViewModel: BaseViewModel {
                     let address = try? await self.fetchCurrentAddress(lat: location.latitude,
                                                                       lon: location.longitude)
                     
-                    self.address.name = address?.name
-                    self.address.address = address?.address
+                    self.locationInfo.name = address?.name
+                    self.locationInfo.address = address?.address
                 }
             }
             .store(in: &cancellables)
+    }
+    
+    func setupInitialLocation() {
+        let coordinate = CLLocationCoordinate2D(latitude: initialLocation.lat, longitude: initialLocation.lon)
+        self.currentLocation = coordinate
     }
     
     func requestPermissionAndStartTracking() {
@@ -63,22 +73,17 @@ final class CourseSettingViewModel: BaseViewModel {
             guard status == .authorizedAlways || status == .authorizedWhenInUse else { return }
 
             streamTask = Task {
-                var didSendInitialLocation = false
                 for await location in streamUseCase.startUpdate() {
                     let currentLocation = CLLocationCoordinate2D(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
                     
-                    if !didSendInitialLocation {
-                        self.currentLocation = currentLocation
-                        didSendInitialLocation = true
-                    }
-
-                    selectedLocation = currentLocation
+                    self.currentLocation = currentLocation
                 }
             }
         }
     }
     
     func setupLocation() {
+        setupInitialLocation()
         requestPermissionAndStartTracking()
     }
     
