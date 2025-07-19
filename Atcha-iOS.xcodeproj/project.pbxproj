@@ -164,6 +164,10 @@
 		B6AC8BD92E2A85D800410ECD /* SignOutUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BD82E2A85D800410ECD /* SignOutUseCase.swift */; };
 		B6AC8BDB2E2B3AA200410ECD /* LogoutuseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BDA2E2B3AA200410ECD /* LogoutuseCase.swift */; };
 		B6AC8BDE2E2BAD6F00410ECD /* UserInfoResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BDD2E2BAD6F00410ECD /* UserInfoResponse.swift */; };
+		B6AC8BE12E2BC36400410ECD /* AlarmSettingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BE02E2BC36400410ECD /* AlarmSettingViewController.swift */; };
+		B6AC8BE32E2BC36A00410ECD /* AlarmSettingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BE22E2BC36A00410ECD /* AlarmSettingViewModel.swift */; };
+		B6AC8BE52E2BC39900410ECD /* AlarmSettingItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BE42E2BC39900410ECD /* AlarmSettingItem.swift */; };
+		B6AC8BE72E2BC4E300410ECD /* AlarmSettingDIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BE62E2BC4E300410ECD /* AlarmSettingDIContainer.swift */; };
 		B6ADE1942E0C0DE6008C4E23 /* LoginType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6ADE1932E0C0DE6008C4E23 /* LoginType.swift */; };
 		B6B57EC22E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B57EC12E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift */; };
 		B6B57EC52E1AB0FE00B29EB1 /* MainRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B57EC42E1AB0FE00B29EB1 /* MainRoute.swift */; };
@@ -363,6 +367,10 @@
 		B6AC8BD82E2A85D800410ECD /* SignOutUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignOutUseCase.swift; sourceTree = "<group>"; };
 		B6AC8BDA2E2B3AA200410ECD /* LogoutuseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogoutuseCase.swift; sourceTree = "<group>"; };
 		B6AC8BDD2E2BAD6F00410ECD /* UserInfoResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserInfoResponse.swift; sourceTree = "<group>"; };
+		B6AC8BE02E2BC36400410ECD /* AlarmSettingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmSettingViewController.swift; sourceTree = "<group>"; };
+		B6AC8BE22E2BC36A00410ECD /* AlarmSettingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmSettingViewModel.swift; sourceTree = "<group>"; };
+		B6AC8BE42E2BC39900410ECD /* AlarmSettingItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmSettingItem.swift; sourceTree = "<group>"; };
+		B6AC8BE62E2BC4E300410ECD /* AlarmSettingDIContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmSettingDIContainer.swift; sourceTree = "<group>"; };
 		B6ADE1932E0C0DE6008C4E23 /* LoginType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginType.swift; sourceTree = "<group>"; };
 		B6B57EC12E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastTrainSearchBottomView.swift; sourceTree = "<group>"; };
 		B6B57EC42E1AB0FE00B29EB1 /* MainRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainRoute.swift; sourceTree = "<group>"; };
@@ -822,6 +830,7 @@
 		B65C132D2E06583E0016D2F0 /* User */ = {
 			isa = PBXGroup;
 			children = (
+				B6AC8BDF2E2BC34500410ECD /* AlarmSetting */,
 				B6AC8BCF2E2A809400410ECD /* MyAccount */,
 				B6FB20972E1D33380032751B /* Home */,
 				B65C13322E0692500016D2F0 /* MyPage */,
@@ -908,6 +917,7 @@
 			children = (
 				B66401882E22768000A397AE /* PushRegisterDIContainer.swift */,
 				B6AC8BD62E2A82C300410ECD /* MyAccountDIContainer.swift */,
+				B6AC8BE62E2BC4E300410ECD /* AlarmSettingDIContainer.swift */,
 			);
 			path = Setting;
 			sourceTree = "<group>";
@@ -1112,6 +1122,16 @@
 				B6AC8BDD2E2BAD6F00410ECD /* UserInfoResponse.swift */,
 			);
 			path = UserDTO;
+			sourceTree = "<group>";
+		};
+		B6AC8BDF2E2BC34500410ECD /* AlarmSetting */ = {
+			isa = PBXGroup;
+			children = (
+				B6AC8BE02E2BC36400410ECD /* AlarmSettingViewController.swift */,
+				B6AC8BE22E2BC36A00410ECD /* AlarmSettingViewModel.swift */,
+				B6AC8BE42E2BC39900410ECD /* AlarmSettingItem.swift */,
+			);
+			path = AlarmSetting;
 			sourceTree = "<group>";
 		};
 		B6B57EC32E1AB0ED00B29EB1 /* Coordinator */ = {
@@ -1360,6 +1380,7 @@
 			files = (
 				B65C12E42E042D6B0016D2F0 /* UserRepositoryImpl.swift in Sources */,
 				6DFF29932E0CBE8A0039399F /* RegisterLocationViewModel.swift in Sources */,
+				B6AC8BE12E2BC36400410ECD /* AlarmSettingViewController.swift in Sources */,
 				6D368BAD2E0396C100144EE7 /* RegisterTextField.swift in Sources */,
 				B6CF46F52E09620100304A85 /* LoginCoordinator.swift in Sources */,
 				B6FB208A2E1BE5200032751B /* FetchTaxiFareRepositoryImpl.swift in Sources */,
@@ -1394,6 +1415,7 @@
 				B6EDD73C2E0D87F2006170DF /* FileStorageImpl.swift in Sources */,
 				B6AC8BD12E2A80AF00410ECD /* MyAccountViewController.swift in Sources */,
 				B65C12FE2E057AF90016D2F0 /* NetworkConstant.swift in Sources */,
+				B6AC8BE72E2BC4E300410ECD /* AlarmSettingDIContainer.swift in Sources */,
 				6D8D8B132E01B338003DABB2 /* AtchaButton.swift in Sources */,
 				B66401832E22449000A397AE /* SearchLocationResponse.swift in Sources */,
 				6D368BA42E02D5E200144EE7 /* IconTitleNavigationBar.swift in Sources */,
@@ -1412,6 +1434,7 @@
 				B6AC8BD52E2A819200410ECD /* MyAccountItem.swift in Sources */,
 				6D73EB5D2E1611F800F8DF8B /* CourseSearchViewController.swift in Sources */,
 				B65C13102E057D800016D2F0 /* TokenInterceptor.swift in Sources */,
+				B6AC8BE52E2BC39900410ECD /* AlarmSettingItem.swift in Sources */,
 				6D81574E2E13EC0F003688A6 /* Int+Ext.swift in Sources */,
 				B6C507532E1296A8000AB39F /* MainViewController.swift in Sources */,
 				B65C13232E058C490016D2F0 /* AppVersionInfo.swift in Sources */,
@@ -1464,6 +1487,7 @@
 				B66401852E2244CF00A397AE /* Location.swift in Sources */,
 				6DFF29F02E0F23840039399F /* UIImage+Ext.swift in Sources */,
 				B65C13412E06E0340016D2F0 /* SplashDIContainer.swift in Sources */,
+				B6AC8BE32E2BC36A00410ECD /* AlarmSettingViewModel.swift in Sources */,
 				6D73EB612E16120B00F8DF8B /* CourseModifyViewController.swift in Sources */,
 				B65C133B2E069B4D0016D2F0 /* RefreshTokenResponse.swift in Sources */,
 				B6FB20882E1BE4F40032751B /* FetchTaxiFareRepository.swift in Sources */,

@@ -57,6 +57,6 @@ final class SplashViewModel: BaseViewModel {
 //        } else {
 //            routerHandler?(.login)
 //        }
-        routerHandler?(.login)
+        routerHandler?(.main)
     }
 }
