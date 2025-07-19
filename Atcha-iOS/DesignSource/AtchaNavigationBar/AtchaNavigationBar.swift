@@ -10,9 +10,13 @@ import UIKit
 
 enum AtchaNavigationBar {
     static func title(_ text: String? = nil,
+                      shouldShowCloseButton: Bool = true,
                       onBack: (() -> Void)? = nil,
                       onClose: (() -> Void)? = nil ) -> TitleNavigationBar {
-        return TitleNavigationBar(title: text, onTapBack: onBack, onTapClose: onClose)
+        return TitleNavigationBar(title: text,
+                                  shouldShowCloseButton: shouldShowCloseButton,
+                                  onTapBack: onBack,
+                                  onTapClose: onClose)
     }
     
     static func iconTitle(_ text: String,

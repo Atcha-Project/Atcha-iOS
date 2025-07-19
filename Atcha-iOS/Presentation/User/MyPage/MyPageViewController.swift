@@ -8,7 +8,7 @@
 import UIKit
 
 final class MyPageViewController: BaseViewController<MyPageViewModel> {
-    private let navigationBar: UIView = AtchaNavigationBar.title("마이페이지")
+    private let navigationBar: UIView = AtchaNavigationBar.title("마이페이지", shouldShowCloseButton: false)
     private let footerLabel: UILabel  = UILabel()
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()

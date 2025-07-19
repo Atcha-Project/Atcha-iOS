@@ -18,12 +18,15 @@ final class TitleNavigationBar: UIView {
     private let backButton = UIButton()
     private let titleLabel = UILabel()
     private let closeButton = UIButton()
+    private let shouldShowCloseButton: Bool
     
     init(title: String? = nil,
+         shouldShowCloseButton: Bool = true,
          onTapBack: (() -> Void)? = nil,
          onTapClose: (() -> Void)? = nil) {
         self.onTapBack = onTapBack
         self.onTapClose = onTapClose
+        self.shouldShowCloseButton = shouldShowCloseButton
         super.init(frame: .zero)
         
         setupUI(title: title)
@@ -44,7 +47,8 @@ final class TitleNavigationBar: UIView {
         closeButton.setImage(UIImage.x, for: .normal)
         closeButton.tintColor = AtchaColor.gray300
         closeButton.addTarget(self, action: #selector(didTapClose), for: .touchUpInside)
-
+        closeButton.isHidden = !shouldShowCloseButton
+        
         titleLabel.attributedText = AtchaFont.H4_SB_17(title)
         titleLabel.textColor = AtchaColor.white
         titleLabel.textAlignment = .center
