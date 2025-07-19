@@ -13,13 +13,11 @@ protocol MyPageProtocol {
 }
 
 enum MyPageItem: CaseIterable, MyPageProtocol {
-    static var allCases: [MyPageItem] = [.account, home, notification, .term, version(version: "")]
-    
     case account
     case home
     case notification
     case term
-    case version(version: String)
+    case version
     
     var title: String {
         switch self {
@@ -27,14 +25,18 @@ enum MyPageItem: CaseIterable, MyPageProtocol {
         case .home: return "우리집 변경"
         case .notification: return "알림 설정"
         case .term: return "약관"
-        case .version(let version): return "현재 버전 \(version)"
+        case .version: return "현재 버전 \(AppInfoProvider.currentVersion)"
         }
     }
     
     var type: AtchaListType {
         switch self {
-        case .version(let version):
-            return .none
+        case .version:
+            if AppUpdateManager.isUpdateAvailable() {
+                return .button(title: "업데이트") { AppUpdateManager.openAppStore() }
+            } else {
+                return .none
+            }
         default:
             return .arrow
         }
