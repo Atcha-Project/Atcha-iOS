@@ -89,9 +89,9 @@ extension LoginViewModel {
                 isExistUser?(true)
                 print("회원 → 로그인 진행")
             case .notRegistered:
-                isExistUser?(false)
                 UserDefaultsWrapper().set(token, forKey: UserDefaultsWrapper.Key.providerToken.rawValue)
                 UserDefaultsWrapper().set(provider.rawValue, forKey: UserDefaultsWrapper.Key.provider.rawValue)
+                isExistUser?(false)
                 print("비회원 → 회원가입 유도")
             default:
                 break

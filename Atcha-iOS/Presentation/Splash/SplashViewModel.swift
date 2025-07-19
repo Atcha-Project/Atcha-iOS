@@ -34,6 +34,6 @@ final class SplashViewModel: BaseViewModel {
     }
     
     func checkUserStatus() {
-        routerHandler?(.main)
+        routerHandler?(.login)
     }
 }

@@ -26,7 +26,7 @@ final class MyPageCell: UICollectionViewCell {
         atchaList = nil
     }
     
-    func configure(with item: MyPageItem) {
+    func configure(with item: MyPageProtocol) {
         let list = AtchaList(title: item.title, listType: item.type)
         contentView.addSubview(list)
         list.snp.makeConstraints { make in

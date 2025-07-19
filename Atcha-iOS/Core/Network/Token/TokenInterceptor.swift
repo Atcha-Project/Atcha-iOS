@@ -20,9 +20,16 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
                completion: @escaping (Result<URLRequest, Error>) -> Void) {
         
         var request = urlRequest
-
-        if let token = tokenStorage.accessToken {
-            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        let path = request.url?.path ?? ""
+        
+        if path.contains("/auth/logout") {
+            if let refreshToken = tokenStorage.refreshToken {
+                request.setValue("Bearer \(refreshToken)", forHTTPHeaderField: "Authorization")
+            }
+        } else {
+            if let accessToken = tokenStorage.accessToken {
+                request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+            }
         }
         
         completion(.success(request))
@@ -55,15 +62,17 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
     
     private func refreshAccessToken(refreshToken: String, completion: @escaping (Result<String, Error>) -> Void) {
         let url = "\(NetworkConstant.baseURL)/auth/reissue"
-        AF.request(url, method: .post, parameters: ["refresh_token": refreshToken], encoding: JSONEncoding.default)
-            .validate()
-            .responseDecodable(of: RefreshTokenResponse.self) { response in
-                switch response.result {
-                case .success(let refreshResponse):
-                    completion(.success(refreshResponse.accessToken))
-                case .failure(let error):
-                    completion(.failure(error))
-                }
+        AF.request(url, method: .post,
+                   parameters: ["Authorization": "Bearer \(refreshToken)"],
+                   encoding: JSONEncoding.default)
+        .validate()
+        .responseDecodable(of: RefreshTokenResponse.self) { response in
+            switch response.result {
+            case .success(let refreshResponse):
+                completion(.success(refreshResponse.accessToken))
+            case .failure(let error):
+                completion(.failure(error))
             }
+        }
     }
 }

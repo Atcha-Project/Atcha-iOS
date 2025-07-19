@@ -9,7 +9,7 @@ import Foundation
 
 struct SignUpRequest: Codable {
     let provider: Int
-    let userName: String
+    let userName: String?
     let address: String
     let lat: Double
     let lon: Double

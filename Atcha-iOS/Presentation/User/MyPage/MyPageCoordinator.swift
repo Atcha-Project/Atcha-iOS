@@ -15,6 +15,8 @@ final class MyPageCoordinator {
     private let diContainer: MyPageDIContainer
     private let router: MyPageRouter
 
+    var signoutFinish: (() -> Void)?
+    
     init(navigationController: UINavigationController,
          diContainer: MyPageDIContainer) {
         self.navigationController = navigationController
@@ -41,12 +43,14 @@ final class MyPageCoordinator {
     private func navigate(to target: MyPageNavigationTarget) {
         switch target {
         case .account:
-            router.pushAccount()
+            let vm = diContainer.makeMyAccountViewModel()
+            vm.signOutFinish = { [weak self] in self?.signoutFinish?() }
+            let vc = diContainer.makeMyAccountViewController(viewModel: vm)
+            navigationController.pushViewController(vc, animated: true)
         case .home:
             let vm = diContainer.makeHomeRegisterViewModel()
             let vc = diContainer.makeHomeRegisterViewController(viewModel: vm)
             navigationController.pushViewController(vc, animated: true)
-//            router.pushHome()
         case .notification:
             router.pushNotification()
         case .term:

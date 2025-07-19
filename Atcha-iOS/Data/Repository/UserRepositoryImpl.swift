@@ -37,6 +37,16 @@ final class UserRepositoryImpl: UserRepository {
             body: request)
     }
     
+    func signOut() async throws -> APIEmptyResponse {
+        return try await apiService.request(
+            Endpoint(
+                path: "https://atcha.p-e.kr/api/members/me",
+                method: .delete,
+                
+            )
+        )
+    }
+    
     func login(_ request: LoginRequest) async throws -> LoginResponse {
         return try await apiService.request(
             Endpoint(
@@ -47,6 +57,15 @@ final class UserRepositoryImpl: UserRepository {
                     "fcmToken": AppDIContainer.shared.tokenStorage.fcmToken ?? ""
                 ],
                 headers: ["Authorization": "Bearer \(request.accessToken)"]
+            )
+        )
+    }
+    
+    func logout() async throws -> APIEmptyResponse {
+        return try await apiService.request(
+            Endpoint(
+                path: "https://atcha.p-e.kr/api/auth/logout",
+                method: .post,
             )
         )
     }

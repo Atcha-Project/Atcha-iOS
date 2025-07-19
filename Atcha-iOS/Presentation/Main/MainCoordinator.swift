@@ -15,6 +15,7 @@ final class MainCoordinator {
     private var myPageCoordinator: MyPageCoordinator?
     private var courseModifyCoordinator: CourseModifyCoordinator?
     
+    var signoutFinish: (() -> Void)?
     var routeHandler: ((MainRoute) -> Void)?
     
     init(navigationController: UINavigationController,
@@ -42,6 +43,7 @@ final class MainCoordinator {
                 diContainer: myPageDI
             )
             self.myPageCoordinator = myPageCoordinator
+            myPageCoordinator.signoutFinish = self.signoutFinish 
             myPageCoordinator.start()
         case let .courseSearch(startLat, startLon, startAddress):
             let courseDI = diContainer.makeCourseDIContainer()

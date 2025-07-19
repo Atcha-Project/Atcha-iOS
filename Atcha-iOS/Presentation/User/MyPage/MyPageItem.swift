@@ -7,7 +7,12 @@
 
 import Foundation
 
-enum MyPageItem: CaseIterable {
+protocol MyPageProtocol {
+    var title: String { get }
+    var type: AtchaListType { get }
+}
+
+enum MyPageItem: CaseIterable, MyPageProtocol {
     static var allCases: [MyPageItem] = [.account, home, notification, .term, version(version: "")]
     
     case account
