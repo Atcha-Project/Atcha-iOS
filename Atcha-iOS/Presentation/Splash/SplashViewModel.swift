@@ -10,11 +10,14 @@ import Foundation
 final class SplashViewModel: BaseViewModel {
     @Published private(set) var appVersionInfo: String?
     
+    private let fetchUserUseCase: FetchUserUseCase
     private let checkAppVersionUseCase: CheckAppVersionUseCase
     
     var routerHandler: ((SplashRouter) -> Void)?
     
-    init(checkAppVersionUseCase: CheckAppVersionUseCase) {
+    init(fetchUserUseCase: FetchUserUseCase,
+         checkAppVersionUseCase: CheckAppVersionUseCase) {
+        self.fetchUserUseCase = fetchUserUseCase
         self.checkAppVersionUseCase = checkAppVersionUseCase
         super.init()
     }
@@ -33,7 +36,27 @@ final class SplashViewModel: BaseViewModel {
         }
     }
     
-    func checkUserStatus() {
+    func fetchUserInfo() {
+        Task {
+            do {
+                let _ = try await fetchUserUseCase.excute()
+            } catch {
+                print("유저정보 패치 실패")
+            }
+        }
+    }
+    
+    func makeInitialFlow() {
+//        if let _ = UserDefaultsWrapper().string(forKey: UserDefaultsWrapper.Key.providerToken.rawValue) {
+//            if let _ = AppDIContainer.shared.tokenStorage.accessToken {
+//                fetchUserInfo()
+//                routerHandler?(.main)
+//            } else {
+//                routerHandler?(.onboarding)
+//            }
+//        } else {
+//            routerHandler?(.login)
+//        }
         routerHandler?(.login)
     }
 }

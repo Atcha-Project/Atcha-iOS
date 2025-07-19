@@ -9,7 +9,7 @@ import Foundation
 
 protocol UserRepository {
     // MARK: - 유저 정보 조회
-    func fetchUser() async throws -> UserInfo
+    func fetchUser() async throws -> UserInfoResponse
     
     // MARK: - 회원 가입
     func signUp(_ request: SignUpRequest) async throws -> SignUpResponse

@@ -8,7 +8,7 @@
 import Foundation
 
 protocol FetchUserUseCase {
-    func fetchUser() async throws -> UserInfo
+    func excute() async throws -> UserInfo?
 }
 
 final class FetchUserUseCaseImpl: FetchUserUseCase {
@@ -18,7 +18,7 @@ final class FetchUserUseCaseImpl: FetchUserUseCase {
         self.repositoy = repositoy
     }
     
-    func fetchUser() async throws -> UserInfo {
-        try await repositoy.fetchUser()
+    func excute() async throws -> UserInfo? {
+        try await repositoy.fetchUser().toEntity()
     }
 }

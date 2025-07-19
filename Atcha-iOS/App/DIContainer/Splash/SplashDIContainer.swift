@@ -14,6 +14,11 @@ final class SplashDIContainer {
     init(apiService: APIService) {
         self.apiService = apiService
     }
+    
+    func makeFetchUserUseCase() -> FetchUserUseCase {
+        let repository: UserRepository = UserRepositoryImpl(apiService: apiService)
+        return FetchUserUseCaseImpl(repositoy: repository)
+    }
 
     func makeCheckAppVersionUseCase() -> CheckAppVersionUseCase {
         let repository = AppVersionRepositoryImpl(apiService: apiService)
@@ -21,7 +26,8 @@ final class SplashDIContainer {
     }
 
     func makeSplashViewModel() -> SplashViewModel {
-        SplashViewModel(checkAppVersionUseCase: makeCheckAppVersionUseCase())
+        SplashViewModel(fetchUserUseCase: makeFetchUserUseCase(),
+                        checkAppVersionUseCase: makeCheckAppVersionUseCase())
     }
     
     func makeSplashViewController(viewModel: SplashViewModel) -> SplashViewController {

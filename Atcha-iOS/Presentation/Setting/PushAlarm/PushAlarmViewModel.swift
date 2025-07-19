@@ -21,7 +21,7 @@ final class PushAlarmViewModel: BaseViewModel {
         self.locationStateHolder = locationStateHolder
     }
     
-    func signUp(selectedAlarms: [AlarmTimeOption]) async throws {
+    func signUp(selectedAlarms: [AlarmTimeOption]) {
         guard let provider = UserDefaultsWrapper().integer(forKey: UserDefaultsWrapper.Key.provider.rawValue) else {
             print("❌ 플랫폼 정보 없음")
             return
@@ -42,19 +42,24 @@ final class PushAlarmViewModel: BaseViewModel {
             fcmToken: fcmToken
         )
         
-        do {
-            let response = try await signUpUseCase.excute(request)
-            
-            AppDIContainer.shared.tokenStorage.accessToken = response.accessToken
-            AppDIContainer.shared.tokenStorage.refreshToken = response.refreshToken
-            
-            UserDefaultsWrapper().set(response.id, forKey: UserDefaultsWrapper.Key.userId.rawValue)
-            UserDefaultsWrapper().set(response.lat, forKey: UserDefaultsWrapper.Key.lat.rawValue)
-            UserDefaultsWrapper().set(response.lon, forKey: UserDefaultsWrapper.Key.lon.rawValue)
-            
-            onFinish?(true)
-        } catch {
-            onFinish?(false)
+        Task {
+            do {
+                let response = try await signUpUseCase.excute(request)
+                print("response: \(response)")
+                
+                print("accessToken 저장 전: \(response.accessToken)")
+                AppDIContainer.shared.tokenStorage.accessToken = response.accessToken
+                print("저장된 accessToken: \(AppDIContainer.shared.tokenStorage.accessToken ?? "nil")")
+                AppDIContainer.shared.tokenStorage.refreshToken = response.refreshToken
+                
+                UserDefaultsWrapper().set(response.id, forKey: UserDefaultsWrapper.Key.userId.rawValue)
+                UserDefaultsWrapper().set(response.lat, forKey: UserDefaultsWrapper.Key.lat.rawValue)
+                UserDefaultsWrapper().set(response.lon, forKey: UserDefaultsWrapper.Key.lon.rawValue)
+                
+                onFinish?(true)
+            } catch {
+                onFinish?(false)
+            }
         }
     }
 }
