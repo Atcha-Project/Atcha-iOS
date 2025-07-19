@@ -10,17 +10,20 @@ import Combine
 import CoreLocation
 
 final class HomeFindViewModel: BaseViewModel {
+    private(set) var context: HomeRegisterContext
     @Published var buildingName: String?
     @Published var address: String?
     @Published var currentLocation: CLLocationCoordinate2D?
     
-    var routeHandler: ((OnboardingRoute) -> Void)?
+    var routeHandler: ((HomeRouter) -> Void)?
     
     private let searchAddressUseCase: SearchAddressUseCase
     private let locationStateHolder: LocationStateHolder
     
-    init(searchAddressUseCase: SearchAddressUseCase,
+    init(context: HomeRegisterContext,
+         searchAddressUseCase: SearchAddressUseCase,
          locationStateHolder: LocationStateHolder) {
+        self.context = context
         self.searchAddressUseCase = searchAddressUseCase
         self.locationStateHolder = locationStateHolder
         self.buildingName = locationStateHolder.buildingName
@@ -32,7 +35,7 @@ final class HomeFindViewModel: BaseViewModel {
     
     private func bind() {
         $currentLocation
-//            .removeDuplicates()
+        //            .removeDuplicates()
             .debounce(for: .seconds(0.3), scheduler: RunLoop.main)
             .sink { [weak self] location in
                 guard let self, let location else { return }

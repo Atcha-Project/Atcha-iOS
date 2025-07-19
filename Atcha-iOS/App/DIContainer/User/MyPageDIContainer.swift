@@ -54,7 +54,7 @@ extension MyPageDIContainer {
         homeDI.makeHomeRegisterViewController(viewModel: viewModel)
     }
     
-    func makeHomeFindViewModel() -> HomeFindViewModel { homeDI.makeHomeFindViewModel() }
+    func makeHomeFindViewModel() -> HomeFindViewModel { homeDI.makeHomeFindViewModel(context: .myPage) }
     func makeHomeFindViewController(viewModel: HomeFindViewModel) -> HomeFindViewController {
         homeDI.makeHomeFindViewController(viewModel: viewModel)
     }

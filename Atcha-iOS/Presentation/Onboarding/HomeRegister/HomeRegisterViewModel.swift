@@ -28,8 +28,7 @@ final class HomeRegisterViewModel: BaseViewModel {
     
     @Published var selectedState: LocationSelectionState?
     
-    var routeHandler: ((OnboardingRoute) -> Void)?
-    var myPageRouteHandler: ((MyPageHomeRegisterRouter) -> Void)?
+    var routeHandler: ((HomeRouter) -> Void)?
     
     init(context: HomeRegisterContext,
          searchAddressUseCase: SearchAddressUseCase,

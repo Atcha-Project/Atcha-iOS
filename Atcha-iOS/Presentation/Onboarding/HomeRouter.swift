@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum OnboardingRoute {
+enum HomeRouter {
     case homeRegister
     case permission
     case searchAdress

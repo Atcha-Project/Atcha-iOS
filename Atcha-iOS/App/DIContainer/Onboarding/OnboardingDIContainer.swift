@@ -35,7 +35,7 @@ final class OnboardingDIContainer {
         homeDI.makeHomeRegisterViewController(viewModel: viewModel)
     }
     
-    func makeHomeFindViewModel() -> HomeFindViewModel { homeDI.makeHomeFindViewModel() }
+    func makeHomeFindViewModel() -> HomeFindViewModel { homeDI.makeHomeFindViewModel(context: .onboarding) }
     func makeHomeFindViewController(viewModel: HomeFindViewModel) -> HomeFindViewController {
         homeDI.makeHomeFindViewController(viewModel: viewModel)
     }

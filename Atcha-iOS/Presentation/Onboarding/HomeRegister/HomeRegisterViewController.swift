@@ -10,6 +10,10 @@ import SnapKit
 import CoreLocation
 
 final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel> {
+    private lazy var navigationBar: TitleNavigationBar = AtchaNavigationBar.title("우리집 변경", onClose: { [weak self] in
+        guard let self else { return }
+        navigationController?.popViewController(animated: true)
+    })
     private let titleLabel = UILabel()
     private let subTitleLabel = UILabel()
     private lazy var titleStackView: UIStackView = {
@@ -63,15 +67,20 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
     private func setupUI(context: HomeRegisterContext) {
         switch context {
         case .onboarding:
-            view.backgroundColor = .red
+            setupUI()
+            navigationBar.isHidden = true
         case .myPage:
-            view.backgroundColor = .blue
+            viewModel.selectedState = .selected(name: "우리집", address: "우리집 주소")
+            nextButton.isHidden = true
+            titleLabel.isHidden = true
+            subTitleLabel.isHidden = true
         }
     }
     
     // MARK: - 기본 UI
     private func setupUI() {
-        view.addSubViews(titleStackView,
+        view.addSubViews(navigationBar,
+                         titleStackView,
                          searchLocationContainer,
                          currentLocationButton,
                          nextButton)
@@ -98,8 +107,13 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
     }
     
     private func setupAutoLayout() {
+        navigationBar.snp.makeConstraints {
+            $0.top.equalTo(view.safeAreaLayoutGuide.snp.top)
+            $0.leading.trailing.equalToSuperview()
+        }
+        
         titleStackView.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).inset(72)
+            make.top.equalTo(navigationBar.snp.bottom)
             make.leading.equalToSuperview().inset(16)
         }
         searchLocationContainer.snp.makeConstraints { make in

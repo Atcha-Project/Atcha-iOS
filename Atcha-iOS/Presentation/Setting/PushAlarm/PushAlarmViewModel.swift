@@ -13,7 +13,7 @@ final class PushAlarmViewModel: BaseViewModel {
     private let locationStateHolder: LocationStateHolder
     
     var onFinish: ((Bool) -> Void)?
-    var routeHandler: ((OnboardingRoute) -> Void)?
+    var routeHandler: ((HomeRouter) -> Void)?
     
     init(signUpUseCase: SignUpUseCase,
          locationStateHolder: LocationStateHolder) {
