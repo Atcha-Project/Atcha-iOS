@@ -52,7 +52,9 @@ final class MyPageCoordinator {
             let vc = diContainer.makeHomeRegisterViewController(viewModel: vm)
             navigationController.pushViewController(vc, animated: true)
         case .notification:
-            router.pushNotification()
+            let vm = diContainer.makeAlarmSettingViewModel()
+            let vc = diContainer.makeAlarmSettingViewController(viewModel: vm)
+            navigationController.pushViewController(vc, animated: true)
         case .term:
             router.pushTerm()
         case .versionUpdate:

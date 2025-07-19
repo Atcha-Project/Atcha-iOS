@@ -23,6 +23,9 @@ final class MyPageDIContainer {
     private lazy var myAccountDI: MyAccountDIContainer = {
         MyAccountDIContainer(apiService: apiService)
     }()
+    private lazy var alarmSettingDI: AlarmSettingDIContainer = {
+        AlarmSettingDIContainer()
+    }()
     
     init(apiService: APIService,
          locationStateHolder: LocationStateHolder) {
@@ -68,6 +71,16 @@ extension MyPageDIContainer {
     }
     func makeMyAccountViewController(viewModel: MyAccountViewModel) -> MyAccountViewController {
         myAccountDI.makeMyAccountViewController(viewModel: viewModel)
+    }
+}
+
+// MARK: - Alarm Setting
+extension MyPageDIContainer {
+    func makeAlarmSettingViewModel() -> AlarmSettingViewModel {
+        alarmSettingDI.makeAlarmSettingViewModel()
+    }
+    func makeAlarmSettingViewController(viewModel: AlarmSettingViewModel) -> AlarmSettingViewController {
+        alarmSettingDI.makeAlarmSettingViewController(viewModel: viewModel)
     }
 }
 
