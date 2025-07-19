@@ -17,7 +17,7 @@ final class OnboardingCoordinator {
     private let locationHolder: LocationStateHolder
     
     var onFinish: ((Bool) -> Void)?
-    var routeHandler: ((OnboardingRoute) -> Void)?
+    var routeHandler: ((HomeRouter) -> Void)?
     
     init(apiService: APIService,
          navigationController: UINavigationController,
@@ -68,7 +68,7 @@ final class OnboardingCoordinator {
         navigationController.presentPanModal(vc)
     }
     
-    private func handle(route: OnboardingRoute) {
+    private func handle(route: HomeRouter) {
         switch route {
         case .homeRegister:
             showHomeFind()

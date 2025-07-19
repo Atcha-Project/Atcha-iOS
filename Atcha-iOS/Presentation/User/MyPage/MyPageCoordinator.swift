@@ -49,6 +49,9 @@ final class MyPageCoordinator {
             navigationController.pushViewController(vc, animated: true)
         case .home:
             let vm = diContainer.makeHomeRegisterViewModel()
+            vm.routeHandler = { [weak self] route in
+                self?.handleHomeRegisterRoute(route)
+            }
             let vc = diContainer.makeHomeRegisterViewController(viewModel: vm)
             navigationController.pushViewController(vc, animated: true)
         case .notification:
@@ -60,6 +63,40 @@ final class MyPageCoordinator {
             navigationController.pushViewController(vc, animated: true)
         case .versionUpdate:
             router.openAppStore()
+        }
+    }
+    
+    private func handleHomeRegisterRoute(_ route: HomeRouter) {
+        switch route {
+        case .searchAdress:
+            showSearchAddress()
+        case .homeRegister:
+            showHomeFind()
+        default: do {}
+        }
+    }
+    
+    private func showSearchAddress() {
+        let vm = diContainer.makeHomeSearchViewModel()
+        vm.routeHandler = { [weak self] route in self?.handle(route: route) }
+        let vc = diContainer.makeHomeSearchViewController(viewModel: vm)
+        navigationController.pushViewController(vc, animated: true)
+    }
+    
+    private func showHomeFind() {
+        let vm = diContainer.makeHomeFindViewModel()
+        vm.routeHandler = { [weak self] route in self?.handle(route: route) }
+        let vc = diContainer.makeHomeFindViewController(viewModel: vm)
+        navigationController.pushViewController(vc, animated: true)
+    }
+    
+    private func handle(route: HomeRouter) {
+        switch route {
+        case .homeRegister:
+            showHomeFind()
+        case .searchAdress:
+            showSearchAddress()
+        default: do {}
         }
     }
 }

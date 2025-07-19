@@ -126,7 +126,7 @@
 		B66401892E22768000A397AE /* PushRegisterDIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B66401882E22768000A397AE /* PushRegisterDIContainer.swift */; };
 		B664018B2E2277A900A397AE /* AlarmTimeOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = B664018A2E2277A900A397AE /* AlarmTimeOption.swift */; };
 		B66401942E22790300A397AE /* SignUpUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B66401932E22790300A397AE /* SignUpUseCase.swift */; };
-		B66401972E227E5E00A397AE /* OnboardingRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = B66401962E227E5E00A397AE /* OnboardingRoute.swift */; };
+		B66401972E227E5E00A397AE /* HomeRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B66401962E227E5E00A397AE /* HomeRouter.swift */; };
 		B66401992E229EB000A397AE /* SplashRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B66401982E229EB000A397AE /* SplashRouter.swift */; };
 		B6713CBE2E12998600AF8486 /* MainDIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6713CBD2E12998600AF8486 /* MainDIContainer.swift */; };
 		B6713CC02E129ABC00AF8486 /* RequestLocationAuthorizationRepositoryImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6713CBF2E129ABC00AF8486 /* RequestLocationAuthorizationRepositoryImpl.swift */; };
@@ -175,6 +175,8 @@
 		B6AC8BF42E2BD3FE00410ECD /* WebViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BF32E2BD3FE00410ECD /* WebViewController.swift */; };
 		B6AC8BF62E2BD91000410ECD /* AppInfoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BF52E2BD91000410ECD /* AppInfoProvider.swift */; };
 		B6AC8BF82E2BDA2900410ECD /* AppUpdateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BF72E2BDA2900410ECD /* AppUpdateManager.swift */; };
+		B6AC8BFA2E2BE59700410ECD /* MyPageHomeRegisterRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BF92E2BE59700410ECD /* MyPageHomeRegisterRouter.swift */; };
+		B6AC8BFC2E2BF27200410ECD /* UINavigationController+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BFB2E2BF27200410ECD /* UINavigationController+Ext.swift */; };
 		B6ADE1942E0C0DE6008C4E23 /* LoginType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6ADE1932E0C0DE6008C4E23 /* LoginType.swift */; };
 		B6B57EC22E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B57EC12E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift */; };
 		B6B57EC52E1AB0FE00B29EB1 /* MainRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B57EC42E1AB0FE00B29EB1 /* MainRoute.swift */; };
@@ -333,7 +335,7 @@
 		B66401882E22768000A397AE /* PushRegisterDIContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushRegisterDIContainer.swift; sourceTree = "<group>"; };
 		B664018A2E2277A900A397AE /* AlarmTimeOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmTimeOption.swift; sourceTree = "<group>"; };
 		B66401932E22790300A397AE /* SignUpUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpUseCase.swift; sourceTree = "<group>"; };
-		B66401962E227E5E00A397AE /* OnboardingRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingRoute.swift; sourceTree = "<group>"; };
+		B66401962E227E5E00A397AE /* HomeRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeRouter.swift; sourceTree = "<group>"; };
 		B66401982E229EB000A397AE /* SplashRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashRouter.swift; sourceTree = "<group>"; };
 		B6713CBD2E12998600AF8486 /* MainDIContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainDIContainer.swift; sourceTree = "<group>"; };
 		B6713CBF2E129ABC00AF8486 /* RequestLocationAuthorizationRepositoryImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestLocationAuthorizationRepositoryImpl.swift; sourceTree = "<group>"; };
@@ -385,6 +387,8 @@
 		B6AC8BF32E2BD3FE00410ECD /* WebViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewController.swift; sourceTree = "<group>"; };
 		B6AC8BF52E2BD91000410ECD /* AppInfoProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppInfoProvider.swift; sourceTree = "<group>"; };
 		B6AC8BF72E2BDA2900410ECD /* AppUpdateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateManager.swift; sourceTree = "<group>"; };
+		B6AC8BF92E2BE59700410ECD /* MyPageHomeRegisterRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyPageHomeRegisterRouter.swift; sourceTree = "<group>"; };
+		B6AC8BFB2E2BF27200410ECD /* UINavigationController+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UINavigationController+Ext.swift"; sourceTree = "<group>"; };
 		B6ADE1932E0C0DE6008C4E23 /* LoginType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginType.swift; sourceTree = "<group>"; };
 		B6B57EC12E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastTrainSearchBottomView.swift; sourceTree = "<group>"; };
 		B6B57EC42E1AB0FE00B29EB1 /* MainRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainRoute.swift; sourceTree = "<group>"; };
@@ -449,7 +453,7 @@
 				6D1EE2F52E0A931C00F7BBF1 /* Coordinator */,
 				6DFF298F2E0CBE650039399F /* RegisterLocation */,
 				6D1EE2D62E08E4AB00F7BBF1 /* HomeRegister */,
-				B66401962E227E5E00A397AE /* OnboardingRoute.swift */,
+				B66401962E227E5E00A397AE /* HomeRouter.swift */,
 			);
 			path = Onboarding;
 			sourceTree = "<group>";
@@ -862,6 +866,7 @@
 				B65C13472E07A10F0016D2F0 /* MyPageCoordinator.swift */,
 				B65C13492E07A1280016D2F0 /* MyPageRouter.swift */,
 				B65C134B2E07A18D0016D2F0 /* MyPageNavigationTarget.swift */,
+				B6AC8BF92E2BE59700410ECD /* MyPageHomeRegisterRouter.swift */,
 			);
 			path = MyPage;
 			sourceTree = "<group>";
@@ -1099,6 +1104,7 @@
 				6D81574D2E13EC0F003688A6 /* Int+Ext.swift */,
 				6D73EB6A2E16845000F8DF8B /* String+Ext.swift */,
 				B69E31A72E2681EF001040F4 /* CLLocationCoordinate2D+Ext.swift */,
+				B6AC8BFB2E2BF27200410ECD /* UINavigationController+Ext.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -1440,6 +1446,7 @@
 				B65C130E2E057D4D0016D2F0 /* NetworkDIContainer.swift in Sources */,
 				B6AC8BDE2E2BAD6F00410ECD /* UserInfoResponse.swift in Sources */,
 				6D1EE2DE2E090A3300F7BBF1 /* SearchLocationViewController.swift in Sources */,
+				B6AC8BFA2E2BE59700410ECD /* MyPageHomeRegisterRouter.swift in Sources */,
 				B6EDD73A2E0D87D2006170DF /* FileStorage.swift in Sources */,
 				6D1EE2EC2E0A7BEF00F7BBF1 /* OnboardingDIContainer.swift in Sources */,
 				B65C132F2E0658470016D2F0 /* MyPageViewController.swift in Sources */,
@@ -1484,6 +1491,7 @@
 				B6AC8BE52E2BC39900410ECD /* AlarmSettingItem.swift in Sources */,
 				6D81574E2E13EC0F003688A6 /* Int+Ext.swift in Sources */,
 				B6C507532E1296A8000AB39F /* MainViewController.swift in Sources */,
+				B6AC8BFC2E2BF27200410ECD /* UINavigationController+Ext.swift in Sources */,
 				B65C13232E058C490016D2F0 /* AppVersionInfo.swift in Sources */,
 				B69E31AE2E2683C9001040F4 /* PermissionViewModel.swift in Sources */,
 				B6AC8BF42E2BD3FE00410ECD /* WebViewController.swift in Sources */,
@@ -1554,7 +1562,7 @@
 				B6AC8BF82E2BDA2900410ECD /* AppUpdateManager.swift in Sources */,
 				B6D083352E02D928003C28E1 /* AtchaListType.swift in Sources */,
 				B65C130A2E057C920016D2F0 /* EndPoint.swift in Sources */,
-				B66401972E227E5E00A397AE /* OnboardingRoute.swift in Sources */,
+				B66401972E227E5E00A397AE /* HomeRouter.swift in Sources */,
 				B6DC7C232E16B5C1005D8E17 /* AddressRepositoryImpl.swift in Sources */,
 				B65C130C2E057CAB0016D2F0 /* APIServiceImpl.swift in Sources */,
 				B66401992E229EB000A397AE /* SplashRouter.swift in Sources */,

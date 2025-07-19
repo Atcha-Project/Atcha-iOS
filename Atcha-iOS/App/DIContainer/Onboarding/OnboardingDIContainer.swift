@@ -30,12 +30,12 @@ final class OnboardingDIContainer {
         self.locationStateHolder = locationStateHolder
     }
     
-    func makeHomeRegisterViewModel() -> HomeRegisterViewModel { homeDI.makeHomeRegisterViewModel() }
+    func makeHomeRegisterViewModel() -> HomeRegisterViewModel { homeDI.makeHomeRegisterViewModel(context: .onboarding) }
     func makeHomeRegisterViewController(viewModel: HomeRegisterViewModel) -> HomeRegisterViewController {
         homeDI.makeHomeRegisterViewController(viewModel: viewModel)
     }
     
-    func makeHomeFindViewModel() -> HomeFindViewModel { homeDI.makeHomeFindViewModel() }
+    func makeHomeFindViewModel() -> HomeFindViewModel { homeDI.makeHomeFindViewModel(context: .onboarding) }
     func makeHomeFindViewController(viewModel: HomeFindViewModel) -> HomeFindViewController {
         homeDI.makeHomeFindViewController(viewModel: viewModel)
     }
