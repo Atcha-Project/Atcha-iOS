@@ -17,7 +17,8 @@ final class MyAccountDIContainer {
     func makeMyAccountViewModel() -> MyAccountViewModel {
         let repository: UserRepository = UserRepositoryImpl(apiService: apiService)
         let useCase: SignOutUseCase = SignOutUseCaseImpl(repository: repository)
-        return MyAccountViewModel(signOutUseCase: useCase)
+        let logoutUseCase: LogoutuseCase = LogoutuseCaseCaseImpl(repository: repository)
+        return MyAccountViewModel(signOutUseCase: useCase, logoutUseCase: logoutUseCase)
     }
     
     func makeMyAccountViewController(viewModel: MyAccountViewModel) -> MyAccountViewController {

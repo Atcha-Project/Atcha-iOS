@@ -79,7 +79,7 @@ extension MyAccountViewController: UICollectionViewDelegate,
         let selectedItem = MyAccountItem.allCases[indexPath.row]
         switch selectedItem {
         case .logout:
-            print("로그아웃")
+            viewModel.logoutTapped()
         case .withdraw:
             viewModel.signOutTapped()
         }

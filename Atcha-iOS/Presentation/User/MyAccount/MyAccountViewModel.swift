@@ -11,9 +11,12 @@ final class MyAccountViewModel: BaseViewModel {
     var signOutFinish: (() -> Void)?
     
     private let signOutUseCase: SignOutUseCase
+    private let logoutUseCase: LogoutuseCase
 
-    init(signOutUseCase: SignOutUseCase) {
+    init(signOutUseCase: SignOutUseCase,
+         logoutUseCase: LogoutuseCase) {
         self.signOutUseCase = signOutUseCase
+        self.logoutUseCase = logoutUseCase
     }
     
     func signOutTapped() {
@@ -21,6 +24,19 @@ final class MyAccountViewModel: BaseViewModel {
             do {
                 let _ = try await signOutUseCase.excute()
                 AppDIContainer.shared.tokenStorage.clearAllTokens()
+                signOutFinish?()
+            } catch {
+                print("error 발생")
+            }
+        }
+    }
+    
+    func logoutTapped() {
+        Task {
+            do {
+                let _ = try await logoutUseCase.excute()
+                AppDIContainer.shared.tokenStorage.clearAccessToken()
+                AppDIContainer.shared.tokenStorage.clearRefreshToken()
                 signOutFinish?()
             } catch {
                 print("error 발생")

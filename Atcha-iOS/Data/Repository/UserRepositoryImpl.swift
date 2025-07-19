@@ -42,6 +42,7 @@ final class UserRepositoryImpl: UserRepository {
             Endpoint(
                 path: "https://atcha.p-e.kr/api/members/me",
                 method: .delete,
+                
             )
         )
     }
@@ -56,6 +57,15 @@ final class UserRepositoryImpl: UserRepository {
                     "fcmToken": AppDIContainer.shared.tokenStorage.fcmToken ?? ""
                 ],
                 headers: ["Authorization": "Bearer \(request.accessToken)"]
+            )
+        )
+    }
+    
+    func logout() async throws -> APIEmptyResponse {
+        return try await apiService.request(
+            Endpoint(
+                path: "https://atcha.p-e.kr/api/auth/logout",
+                method: .post,
             )
         )
     }
