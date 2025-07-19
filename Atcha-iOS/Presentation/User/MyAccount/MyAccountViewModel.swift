@@ -20,6 +20,7 @@ final class MyAccountViewModel: BaseViewModel {
         Task {
             do {
                 let _ = try await signOutUseCase.excute()
+                AppDIContainer.shared.tokenStorage.clearAllTokens()
                 signOutFinish?()
             } catch {
                 print("error 발생")
