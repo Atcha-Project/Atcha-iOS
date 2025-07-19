@@ -60,11 +60,7 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
             .sink { [weak self] _ in
                 guard let self else { return }
                 viewModel.saveCurrentLoaction()
-                if viewModel.context == .myPage {
-                    navigationController?.popViewController(animated: true)
-                } else {
-                    navigationController?.popToRootViewController(animated: true)
-                }
+                navigationController?.popToViewController(ofType: HomeRegisterViewController.self)
             }
             .store(in: &cancellables)
         
