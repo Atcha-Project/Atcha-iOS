@@ -56,7 +56,8 @@ final class MyPageCoordinator {
             let vc = diContainer.makeAlarmSettingViewController(viewModel: vm)
             navigationController.pushViewController(vc, animated: true)
         case .term:
-            router.pushTerm()
+            let vc = WebViewController(viewModel: BaseViewModel())
+            navigationController.pushViewController(vc, animated: true)
         case .versionUpdate:
             router.openAppStore()
         }

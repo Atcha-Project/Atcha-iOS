@@ -172,6 +172,7 @@
 		B6AC8BEC2E2BC60600410ECD /* AlarmSoundTypeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BEB2E2BC60600410ECD /* AlarmSoundTypeViewModel.swift */; };
 		B6AC8BEE2E2BC62800410ECD /* AlarmSoundType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BED2E2BC62800410ECD /* AlarmSoundType.swift */; };
 		B6AC8BF12E2BC98100410ECD /* AlarmSoundTypeCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BF02E2BC98100410ECD /* AlarmSoundTypeCollectionViewCell.swift */; };
+		B6AC8BF42E2BD3FE00410ECD /* WebViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BF32E2BD3FE00410ECD /* WebViewController.swift */; };
 		B6ADE1942E0C0DE6008C4E23 /* LoginType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6ADE1932E0C0DE6008C4E23 /* LoginType.swift */; };
 		B6B57EC22E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B57EC12E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift */; };
 		B6B57EC52E1AB0FE00B29EB1 /* MainRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B57EC42E1AB0FE00B29EB1 /* MainRoute.swift */; };
@@ -379,6 +380,7 @@
 		B6AC8BEB2E2BC60600410ECD /* AlarmSoundTypeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmSoundTypeViewModel.swift; sourceTree = "<group>"; };
 		B6AC8BED2E2BC62800410ECD /* AlarmSoundType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmSoundType.swift; sourceTree = "<group>"; };
 		B6AC8BF02E2BC98100410ECD /* AlarmSoundTypeCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmSoundTypeCollectionViewCell.swift; sourceTree = "<group>"; };
+		B6AC8BF32E2BD3FE00410ECD /* WebViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewController.swift; sourceTree = "<group>"; };
 		B6ADE1932E0C0DE6008C4E23 /* LoginType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginType.swift; sourceTree = "<group>"; };
 		B6B57EC12E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastTrainSearchBottomView.swift; sourceTree = "<group>"; };
 		B6B57EC42E1AB0FE00B29EB1 /* MainRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainRoute.swift; sourceTree = "<group>"; };
@@ -967,6 +969,7 @@
 		B673C48C2E0424E200EE4AD0 /* Presentation */ = {
 			isa = PBXGroup;
 			children = (
+				B6AC8BF22E2BD3F500410ECD /* WebView */,
 				B66401862E22761800A397AE /* Setting */,
 				6D73EB562E16117400F8DF8B /* Course */,
 				B6C507512E12969E000AB39F /* Location */,
@@ -1160,6 +1163,14 @@
 				B6AC8BF02E2BC98100410ECD /* AlarmSoundTypeCollectionViewCell.swift */,
 			);
 			path = Cell;
+			sourceTree = "<group>";
+		};
+		B6AC8BF22E2BD3F500410ECD /* WebView */ = {
+			isa = PBXGroup;
+			children = (
+				B6AC8BF32E2BD3FE00410ECD /* WebViewController.swift */,
+			);
+			path = WebView;
 			sourceTree = "<group>";
 		};
 		B6B57EC32E1AB0ED00B29EB1 /* Coordinator */ = {
@@ -1469,6 +1480,7 @@
 				B6C507532E1296A8000AB39F /* MainViewController.swift in Sources */,
 				B65C13232E058C490016D2F0 /* AppVersionInfo.swift in Sources */,
 				B69E31AE2E2683C9001040F4 /* PermissionViewModel.swift in Sources */,
+				B6AC8BF42E2BD3FE00410ECD /* WebViewController.swift in Sources */,
 				B6713CC22E129AEC00AF8486 /* RequestLocationAuthorizationRepository.swift in Sources */,
 				B664018B2E2277A900A397AE /* AlarmTimeOption.swift in Sources */,
 				B65C13082E057C590016D2F0 /* APIService.swift in Sources */,
