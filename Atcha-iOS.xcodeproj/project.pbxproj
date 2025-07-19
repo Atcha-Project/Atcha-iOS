@@ -168,6 +168,10 @@
 		B6AC8BE32E2BC36A00410ECD /* AlarmSettingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BE22E2BC36A00410ECD /* AlarmSettingViewModel.swift */; };
 		B6AC8BE52E2BC39900410ECD /* AlarmSettingItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BE42E2BC39900410ECD /* AlarmSettingItem.swift */; };
 		B6AC8BE72E2BC4E300410ECD /* AlarmSettingDIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BE62E2BC4E300410ECD /* AlarmSettingDIContainer.swift */; };
+		B6AC8BEA2E2BC5FF00410ECD /* AlarmSoundTypeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BE92E2BC5FF00410ECD /* AlarmSoundTypeViewController.swift */; };
+		B6AC8BEC2E2BC60600410ECD /* AlarmSoundTypeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BEB2E2BC60600410ECD /* AlarmSoundTypeViewModel.swift */; };
+		B6AC8BEE2E2BC62800410ECD /* AlarmSoundType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BED2E2BC62800410ECD /* AlarmSoundType.swift */; };
+		B6AC8BF12E2BC98100410ECD /* AlarmSoundTypeCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BF02E2BC98100410ECD /* AlarmSoundTypeCollectionViewCell.swift */; };
 		B6ADE1942E0C0DE6008C4E23 /* LoginType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6ADE1932E0C0DE6008C4E23 /* LoginType.swift */; };
 		B6B57EC22E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B57EC12E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift */; };
 		B6B57EC52E1AB0FE00B29EB1 /* MainRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B57EC42E1AB0FE00B29EB1 /* MainRoute.swift */; };
@@ -371,6 +375,10 @@
 		B6AC8BE22E2BC36A00410ECD /* AlarmSettingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmSettingViewModel.swift; sourceTree = "<group>"; };
 		B6AC8BE42E2BC39900410ECD /* AlarmSettingItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmSettingItem.swift; sourceTree = "<group>"; };
 		B6AC8BE62E2BC4E300410ECD /* AlarmSettingDIContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmSettingDIContainer.swift; sourceTree = "<group>"; };
+		B6AC8BE92E2BC5FF00410ECD /* AlarmSoundTypeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmSoundTypeViewController.swift; sourceTree = "<group>"; };
+		B6AC8BEB2E2BC60600410ECD /* AlarmSoundTypeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmSoundTypeViewModel.swift; sourceTree = "<group>"; };
+		B6AC8BED2E2BC62800410ECD /* AlarmSoundType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmSoundType.swift; sourceTree = "<group>"; };
+		B6AC8BF02E2BC98100410ECD /* AlarmSoundTypeCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmSoundTypeCollectionViewCell.swift; sourceTree = "<group>"; };
 		B6ADE1932E0C0DE6008C4E23 /* LoginType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginType.swift; sourceTree = "<group>"; };
 		B6B57EC12E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastTrainSearchBottomView.swift; sourceTree = "<group>"; };
 		B6B57EC42E1AB0FE00B29EB1 /* MainRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainRoute.swift; sourceTree = "<group>"; };
@@ -1127,11 +1135,31 @@
 		B6AC8BDF2E2BC34500410ECD /* AlarmSetting */ = {
 			isa = PBXGroup;
 			children = (
+				B6AC8BE82E2BC5F000410ECD /* AlarmSoundType */,
 				B6AC8BE02E2BC36400410ECD /* AlarmSettingViewController.swift */,
 				B6AC8BE22E2BC36A00410ECD /* AlarmSettingViewModel.swift */,
 				B6AC8BE42E2BC39900410ECD /* AlarmSettingItem.swift */,
 			);
 			path = AlarmSetting;
+			sourceTree = "<group>";
+		};
+		B6AC8BE82E2BC5F000410ECD /* AlarmSoundType */ = {
+			isa = PBXGroup;
+			children = (
+				B6AC8BEF2E2BC97500410ECD /* Cell */,
+				B6AC8BE92E2BC5FF00410ECD /* AlarmSoundTypeViewController.swift */,
+				B6AC8BEB2E2BC60600410ECD /* AlarmSoundTypeViewModel.swift */,
+				B6AC8BED2E2BC62800410ECD /* AlarmSoundType.swift */,
+			);
+			path = AlarmSoundType;
+			sourceTree = "<group>";
+		};
+		B6AC8BEF2E2BC97500410ECD /* Cell */ = {
+			isa = PBXGroup;
+			children = (
+				B6AC8BF02E2BC98100410ECD /* AlarmSoundTypeCollectionViewCell.swift */,
+			);
+			path = Cell;
 			sourceTree = "<group>";
 		};
 		B6B57EC32E1AB0ED00B29EB1 /* Coordinator */ = {
@@ -1399,6 +1427,7 @@
 				6D1EE2EC2E0A7BEF00F7BBF1 /* OnboardingDIContainer.swift in Sources */,
 				B65C132F2E0658470016D2F0 /* MyPageViewController.swift in Sources */,
 				6D8D8B172E02BBC0003DABB2 /* AtchaNavigationBar.swift in Sources */,
+				B6AC8BEC2E2BC60600410ECD /* AlarmSoundTypeViewModel.swift in Sources */,
 				B65C134C2E07A18D0016D2F0 /* MyPageNavigationTarget.swift in Sources */,
 				B68309542E005A3600E2D029 /* SceneDelegate.swift in Sources */,
 				B600CA132E07FD29008B0D87 /* MyPageCoordinator.swift in Sources */,
@@ -1420,6 +1449,7 @@
 				B66401832E22449000A397AE /* SearchLocationResponse.swift in Sources */,
 				6D368BA42E02D5E200144EE7 /* IconTitleNavigationBar.swift in Sources */,
 				B69E31B12E276713001040F4 /* PermissionDIContainer.swift in Sources */,
+				B6AC8BEA2E2BC5FF00410ECD /* AlarmSoundTypeViewController.swift in Sources */,
 				B6CF46F82E096CB100304A85 /* LoginResult.swift in Sources */,
 				B6B57EC22E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift in Sources */,
 				6D8157422E126C3A003688A6 /* LockViewModel.swift in Sources */,
@@ -1489,6 +1519,7 @@
 				B65C13412E06E0340016D2F0 /* SplashDIContainer.swift in Sources */,
 				B6AC8BE32E2BC36A00410ECD /* AlarmSettingViewModel.swift in Sources */,
 				6D73EB612E16120B00F8DF8B /* CourseModifyViewController.swift in Sources */,
+				B6AC8BF12E2BC98100410ECD /* AlarmSoundTypeCollectionViewCell.swift in Sources */,
 				B65C133B2E069B4D0016D2F0 /* RefreshTokenResponse.swift in Sources */,
 				B6FB20882E1BE4F40032751B /* FetchTaxiFareRepository.swift in Sources */,
 				6D1EE2E02E090A6B00F7BBF1 /* SearchLocationViewModel.swift in Sources */,
@@ -1519,6 +1550,7 @@
 				B65C134A2E07A1280016D2F0 /* MyPageRouter.swift in Sources */,
 				B65C131C2E058C150016D2F0 /* CheckAppVersionUseCase.swift in Sources */,
 				B6C5074D2E12965D000AB39F /* LocationStreamRepository.swift in Sources */,
+				B6AC8BEE2E2BC62800410ECD /* AlarmSoundType.swift in Sources */,
 				B6D083302E02CC76003C28E1 /* AtchaToast.swift in Sources */,
 				6D1EE2DA2E08E4E000F7BBF1 /* HomeRegisterViewController.swift in Sources */,
 				6D91A8ED2E2A1A760081BAFC /* CourseDIContainer.swift in Sources */,

@@ -8,12 +8,9 @@
 import Foundation
 
 final class AlarmSettingViewModel: BaseViewModel {
+    @Published var item: AlarmSettingItem?
     
-    func frequentTapped() {
-        
-    }
-    
-    func soundTypeTapped() {
-        
+    func listTapped(_ type: AlarmSettingItem) {
+        item = type
     }
 }

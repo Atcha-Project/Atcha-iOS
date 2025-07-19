@@ -13,4 +13,6 @@ public extension UserDefaultsWrapper.Key {
     static let userId: UserDefaultsWrapper.Key = "userId"
     static let lat: UserDefaultsWrapper.Key = "lat"
     static let lon: UserDefaultsWrapper.Key = "lon"
+    
+    static let soundType: UserDefaultsWrapper.Key = "soundType"
 }

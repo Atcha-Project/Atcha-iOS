@@ -1,5 +1,5 @@
 //
-//  AlarmSettingViewController.swift
+//  AlarmSoundTypeViewController.swift
 //  Atcha-iOS
 //
 //  Created by geonhui Yu on 7/19/25.
@@ -7,8 +7,9 @@
 
 import UIKit
 
-final class AlarmSettingViewController: BaseViewController<AlarmSettingViewModel> {
-    private lazy var navigationBar: TitleNavigationBar = AtchaNavigationBar.title("알림 설정", onClose: { [weak self] in
+final class AlarmSoundTypeViewController: BaseViewController<AlarmSoundTypeViewModel> {
+    private lazy var options: [AlarmSoundOption] = []
+    private lazy var navigationBar: TitleNavigationBar = AtchaNavigationBar.title("진동/벨소리 설정", onClose: { [weak self] in
         guard let self else { return }
         navigationController?.popViewController(animated: true)
     })
@@ -16,13 +17,16 @@ final class AlarmSettingViewController: BaseViewController<AlarmSettingViewModel
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .vertical
-        layout.sectionInset = .zero
+        layout.sectionInset = UIEdgeInsets(top: 20,
+                                           left: 16,
+                                           bottom: 0,
+                                           right: 16)
         
         let collectionView = UICollectionView(frame: .zero,
                                               collectionViewLayout: layout)
         collectionView.backgroundColor = .clear
-        collectionView.register(MyPageCell.self,
-                                forCellWithReuseIdentifier: MyPageCell.identifier)
+        collectionView.register(AlarmSoundTypeCollectionViewCell.self,
+                                forCellWithReuseIdentifier: AlarmSoundTypeCollectionViewCell.identifier)
         collectionView.delegate = self
         collectionView.dataSource = self
         return collectionView
@@ -33,7 +37,7 @@ final class AlarmSettingViewController: BaseViewController<AlarmSettingViewModel
         
         setupUI()
         setupAutoLayout()
-        bindView()
+        options = makeAlarmSoundOptions()
     }
     
     private func setupUI() {
@@ -52,49 +56,52 @@ final class AlarmSettingViewController: BaseViewController<AlarmSettingViewModel
         }
     }
     
-    private func bindView() {
-        viewModel.$item
-            .compactMap { $0 }
-            .receive(on: RunLoop.main)
-            .sink { [weak self] item in
-                guard let self else { return }
-                showDetailViewController(type: item)
-            }
-            .store(in: &cancellables)
-    }
-    
-    private func showDetailViewController(type: AlarmSettingItem) {
-        let soundTypeViewModel = AlarmSoundTypeViewModel()
-        let soundTypeViewController = AlarmSoundTypeViewController(viewModel: soundTypeViewModel)
+    private func makeAlarmSoundOptions() -> [AlarmSoundOption] {
+        let savedType = UserDefaultsWrapper().object(
+            forKey: UserDefaultsWrapper.Key.soundType.rawValue,
+            of: AlarmSoundType.self
+        )
         
-        navigationController?.pushViewController(soundTypeViewController, animated: true)
+        let selectedType = savedType ?? .sound
+
+        return AlarmSoundType.allCases.map {
+            AlarmSoundOption(soundType: $0, isSelected: $0 == selectedType)
+        }
     }
 }
 
-extension AlarmSettingViewController: UICollectionViewDelegate,
+extension AlarmSoundTypeViewController: UICollectionViewDelegate,
                                    UICollectionViewDataSource,
                                    UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return AlarmSettingItem.allCases.count
+        return options.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MyPageCell.identifier,
-                                                            for: indexPath) as? MyPageCell else {
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: AlarmSoundTypeCollectionViewCell.identifier,
+                                                            for: indexPath) as? AlarmSoundTypeCollectionViewCell else {
             return .init()
         }
-        let item = AlarmSettingItem.allCases[indexPath.item]
-        cell.configure(with: item)
+        let item = options[indexPath.item]
+        cell.configure(item)
         
         return cell
     }
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: collectionView.bounds.width, height: 52)
+        let padding: CGFloat = 16
+        let spacing: CGFloat = 12
+        let width: CGFloat = collectionView.bounds.width - (2 * padding) - (spacing)
+        
+        return CGSize(width: width / 2.0, height: width / 2.0)
     }
     
     func collectionView(_ collectionView: UICollectionView,
                         didSelectItemAt indexPath: IndexPath) {
-        let selectedItem = AlarmSettingItem.allCases[indexPath.row]
-        viewModel.listTapped(selectedItem)
+        for i in 0..<options.count {
+            options[i].isSelected = (i == indexPath.item)
+        }
+        viewModel.saveSoundType(options[indexPath.row])
+        collectionView.reloadData()
     }
 }
+
