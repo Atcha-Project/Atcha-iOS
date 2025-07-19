@@ -22,8 +22,9 @@ final class HomeRegisterDIContainer {
     private lazy var searchAddressUseCase: SearchAddressUseCase = SearchAddressUseCaseImpl(repository: addressRepository)
     private lazy var streamUseCase: ObserveLocationStreamUseCase = ObserLocationStreamUseCaseImpl(repository: LocationStreamRepositoryImpl())
     
-    func makeHomeRegisterViewModel() -> HomeRegisterViewModel {
-        return HomeRegisterViewModel(searchAddressUseCase: searchAddressUseCase,
+    func makeHomeRegisterViewModel(context: HomeRegisterContext) -> HomeRegisterViewModel {
+        return HomeRegisterViewModel(context: context,
+                                     searchAddressUseCase: searchAddressUseCase,
                                      streamUseCase: streamUseCase,
                                      locationStateHolder: locationStateHolder)
     }

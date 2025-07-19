@@ -175,6 +175,7 @@
 		B6AC8BF42E2BD3FE00410ECD /* WebViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BF32E2BD3FE00410ECD /* WebViewController.swift */; };
 		B6AC8BF62E2BD91000410ECD /* AppInfoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BF52E2BD91000410ECD /* AppInfoProvider.swift */; };
 		B6AC8BF82E2BDA2900410ECD /* AppUpdateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BF72E2BDA2900410ECD /* AppUpdateManager.swift */; };
+		B6AC8BFA2E2BE59700410ECD /* MyPageHomeRegisterRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BF92E2BE59700410ECD /* MyPageHomeRegisterRouter.swift */; };
 		B6ADE1942E0C0DE6008C4E23 /* LoginType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6ADE1932E0C0DE6008C4E23 /* LoginType.swift */; };
 		B6B57EC22E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B57EC12E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift */; };
 		B6B57EC52E1AB0FE00B29EB1 /* MainRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B57EC42E1AB0FE00B29EB1 /* MainRoute.swift */; };
@@ -385,6 +386,7 @@
 		B6AC8BF32E2BD3FE00410ECD /* WebViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewController.swift; sourceTree = "<group>"; };
 		B6AC8BF52E2BD91000410ECD /* AppInfoProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppInfoProvider.swift; sourceTree = "<group>"; };
 		B6AC8BF72E2BDA2900410ECD /* AppUpdateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateManager.swift; sourceTree = "<group>"; };
+		B6AC8BF92E2BE59700410ECD /* MyPageHomeRegisterRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyPageHomeRegisterRouter.swift; sourceTree = "<group>"; };
 		B6ADE1932E0C0DE6008C4E23 /* LoginType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginType.swift; sourceTree = "<group>"; };
 		B6B57EC12E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastTrainSearchBottomView.swift; sourceTree = "<group>"; };
 		B6B57EC42E1AB0FE00B29EB1 /* MainRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainRoute.swift; sourceTree = "<group>"; };
@@ -862,6 +864,7 @@
 				B65C13472E07A10F0016D2F0 /* MyPageCoordinator.swift */,
 				B65C13492E07A1280016D2F0 /* MyPageRouter.swift */,
 				B65C134B2E07A18D0016D2F0 /* MyPageNavigationTarget.swift */,
+				B6AC8BF92E2BE59700410ECD /* MyPageHomeRegisterRouter.swift */,
 			);
 			path = MyPage;
 			sourceTree = "<group>";
@@ -1440,6 +1443,7 @@
 				B65C130E2E057D4D0016D2F0 /* NetworkDIContainer.swift in Sources */,
 				B6AC8BDE2E2BAD6F00410ECD /* UserInfoResponse.swift in Sources */,
 				6D1EE2DE2E090A3300F7BBF1 /* SearchLocationViewController.swift in Sources */,
+				B6AC8BFA2E2BE59700410ECD /* MyPageHomeRegisterRouter.swift in Sources */,
 				B6EDD73A2E0D87D2006170DF /* FileStorage.swift in Sources */,
 				6D1EE2EC2E0A7BEF00F7BBF1 /* OnboardingDIContainer.swift in Sources */,
 				B65C132F2E0658470016D2F0 /* MyPageViewController.swift in Sources */,

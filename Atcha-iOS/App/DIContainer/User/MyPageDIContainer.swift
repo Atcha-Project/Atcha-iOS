@@ -47,8 +47,9 @@ final class MyPageDIContainer {
     }
 }
 
+// MARK: Home Register
 extension MyPageDIContainer {
-    func makeHomeRegisterViewModel() -> HomeRegisterViewModel { homeDI.makeHomeRegisterViewModel() }
+    func makeHomeRegisterViewModel() -> HomeRegisterViewModel { homeDI.makeHomeRegisterViewModel(context: .myPage) }
     func makeHomeRegisterViewController(viewModel: HomeRegisterViewModel) -> HomeRegisterViewController {
         homeDI.makeHomeRegisterViewController(viewModel: viewModel)
     }

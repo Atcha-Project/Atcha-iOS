@@ -50,6 +50,23 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
                 self?.render(state)
             }
             .store(in: &cancellables)
+        
+        viewModel.$context
+            .receive(on: RunLoop.main)
+            .sink { [weak self] context in
+                guard let self else { return }
+                setupUI(context: context)
+            }
+            .store(in: &cancellables)
+    }
+    
+    private func setupUI(context: HomeRegisterContext) {
+        switch context {
+        case .onboarding:
+            view.backgroundColor = .red
+        case .myPage:
+            view.backgroundColor = .blue
+        }
     }
     
     // MARK: - 기본 UI
