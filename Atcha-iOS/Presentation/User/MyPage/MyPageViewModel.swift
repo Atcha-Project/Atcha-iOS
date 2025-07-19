@@ -22,7 +22,7 @@ final class MyPageViewModel: BaseViewModel {
             navigationTarget.send(.notification)
         case .term:
             navigationTarget.send(.term)
-        case .version(let version):
+        case .version:
             navigationTarget.send(.versionUpdate)
         }
     }

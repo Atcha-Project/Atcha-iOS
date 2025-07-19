@@ -159,7 +159,7 @@ extension AtchaList {
         var config = UIButton.Configuration.filled()
         config.baseBackgroundColor = UIColor.gray910
         config.baseForegroundColor = .white
-        config.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8)
+        config.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 12, bottom: 4, trailing: 12)
         config.cornerStyle = .medium
         config.title = title
         
@@ -180,6 +180,7 @@ extension AtchaList {
         button.snp.makeConstraints { make in
             make.trailing.equalToSuperview().inset(16)
             make.centerY.equalToSuperview()
+            make.height.equalTo(34)
         }
         
         actionButton = button
