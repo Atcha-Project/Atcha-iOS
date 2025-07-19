@@ -8,7 +8,7 @@
 import Foundation
 import UIKit
 
-class CourseTabCell: UICollectionViewCell {
+final class CourseTabCell: UICollectionViewCell {
     private let titleLabel: UILabel = UILabel()
     private let indicatorView: UIView = UIView()
     

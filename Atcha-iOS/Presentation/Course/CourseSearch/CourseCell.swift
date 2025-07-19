@@ -8,7 +8,7 @@
 import UIKit
 import SnapKit
 
-class CourseCell: UICollectionViewCell {
+final class CourseCell: UICollectionViewCell {
     static let reusableId: String = "CourseCell"
     var onToggleExpanded: (() -> Void)?
     var onDetailTapped: (() -> Void)?

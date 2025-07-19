@@ -22,6 +22,7 @@ final class CourseModifyViewModel: BaseViewModel {
     @Published private(set) var items: [SearchResultItem] = []
     private(set) var mode: SearchMode = .recent
     private(set) var currentLocation: CLLocationCoordinate2D?
+    var onLocationSelected: ((Location) -> Void)?
     
     private let searchAddressUseCase: SearchAddressUseCase
     private let authorizationUseCase: RequestLocationAuthorizationUseCase
@@ -32,10 +33,9 @@ final class CourseModifyViewModel: BaseViewModel {
         self.authorizationUseCase = authorizationUseCase
         self.locationStateHolder = locationStateHolder
         
-        //        self.currentLocation = locationStateHolder.currentLocation
         self.currentLocation = CLLocationCoordinate2D(latitude: 37.554722,
                                                       longitude: 126.970833)
-        self.currentLocation = locationStateHolder.currentLocation
+//        self.currentLocation = locationStateHolder.currentLocation
         self.mode = .recent
         
         super.init()
