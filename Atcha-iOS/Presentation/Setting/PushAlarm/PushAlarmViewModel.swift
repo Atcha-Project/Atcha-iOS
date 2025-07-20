@@ -45,11 +45,8 @@ final class PushAlarmViewModel: BaseViewModel {
         Task {
             do {
                 let response = try await signUpUseCase.excute(request)
-                print("response: \(response)")
                 
-                print("accessToken 저장 전: \(response.accessToken)")
                 AppDIContainer.shared.tokenStorage.accessToken = response.accessToken
-                print("저장된 accessToken: \(AppDIContainer.shared.tokenStorage.accessToken ?? "nil")")
                 AppDIContainer.shared.tokenStorage.refreshToken = response.refreshToken
                 
                 UserDefaultsWrapper().set(response.id, forKey: UserDefaultsWrapper.Key.userId.rawValue)
