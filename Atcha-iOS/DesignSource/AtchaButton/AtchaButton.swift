@@ -47,17 +47,6 @@ enum ButtonSize {
             right: horizontalPadding
         )
     }
-    
-    func attributedTitle(_ text: String, color: UIColor = .black) -> NSAttributedString {
-        switch self {
-        case .h52:
-            return AtchaFont.H4_SB_17(text, color: color)
-        case .h48:
-            return AtchaFont.B2_SB_15(text, color: color)
-        case .h44, .h32:
-            return AtchaFont.B5_SB_14(text, color: color)
-        }
-    }
 }
 
 // MARK: - FilledButtonStyle: 테두리 없는 버튼
@@ -108,6 +97,7 @@ final class AtchaButton: UIButton {
     }
     
     private var onTap: (() -> Void)?
+    private let size: ButtonSize
     
     init(
         text: String,
@@ -117,6 +107,7 @@ final class AtchaButton: UIButton {
         onTap: (() -> Void)? = nil
     ) {
         self.onTap = onTap
+        self.size = size
         super.init(frame: .zero)
         
         layer.cornerRadius = size.cornerRadius
@@ -130,11 +121,11 @@ final class AtchaButton: UIButton {
         
         switch style {
         case .filled(let filledStyle):
-            setAttributedTitle(size.attributedTitle(text, color: filledStyle.textColor), for: .normal)
+            setAttributedTitle(filledStyle.attributedText(text, size: size), for: .normal)
             backgroundColor = filledStyle.backgroundColor
             
         case .line(let lineStyle):
-            setAttributedTitle(size.attributedTitle(text, color: lineStyle.textColor), for: .normal)
+            setAttributedTitle(lineStyle.attributedText(text, size: size), for: .normal)
             backgroundColor = .clear
             layer.borderWidth = 1
             layer.borderColor = lineStyle.borderColor.cgColor
@@ -169,17 +160,64 @@ final class AtchaButton: UIButton {
     }
 }
 
+extension FilledButtonStyle {
+    func attributedText(_ text: String, size: ButtonSize) -> NSAttributedString {
+        switch (self, size) {
+        case (.primary, .h52): return AtchaFont.H4_SB_17(text, color: textColor)
+        case (.primary, .h48): return AtchaFont.B2_SB_15(text, color: textColor)
+        case (.primary, .h44): return AtchaFont.B5_SB_14(text, color: textColor)
+        case (.primary, .h32): return AtchaFont.B5_SB_14(text, color: textColor)
+
+        case (.white, .h52): return AtchaFont.H4_SB_17(text, color: textColor)
+        case (.white, .h48): return AtchaFont.B2_SB_15(text, color: textColor)
+        case (.white, .h44): return AtchaFont.B5_SB_14(text, color: textColor)
+        case (.white, .h32): return AtchaFont.B5_SB_14(text, color: textColor)
+
+        case (.defaultGray, .h52): return AtchaFont.B1_R_17(text, color: textColor)
+        case (.defaultGray, .h48): return AtchaFont.B3_M_15(text, color: textColor)
+        case (.defaultGray, .h44): return AtchaFont.B6_R_14(text, color: textColor)
+        case (.defaultGray, .h32): return AtchaFont.B6_R_14(text, color: textColor)
+            
+        case (.opacity, .h52): return AtchaFont.B1_R_17(text, color: textColor)
+        case (.opacity, .h48): return AtchaFont.B3_M_15(text, color: textColor)
+        case (.opacity, .h44): return AtchaFont.B6_R_14(text, color: textColor)
+        case (.opacity, .h32): return AtchaFont.B6_R_14(text, color: textColor)
+            
+        case (.disabled, .h52): return AtchaFont.B1_R_17(text, color: textColor)
+        case (.disabled, .h48): return AtchaFont.B3_M_15(text, color: textColor)
+        case (.disabled, .h44): return AtchaFont.B6_R_14(text, color: textColor)
+        case (.disabled, .h32): return AtchaFont.B6_R_14(text, color: textColor)
+        }
+    }
+}
+
+extension LineButtonStyle {
+    func attributedText(_ text: String, size: ButtonSize) -> NSAttributedString {
+        switch (self, size) {
+        case (.line, .h52): return AtchaFont.B1_R_17(text, color: textColor)
+        case (.line, .h48): return AtchaFont.B4_R_15(text, color: textColor)
+        case (.line, .h44): return AtchaFont.B6_R_14(text, color: textColor)
+        case (.line, .h32): return AtchaFont.B6_R_14(text, color: textColor)
+            
+        case (.disabled, .h52): return AtchaFont.B1_R_17(text, color: textColor)
+        case (.disabled, .h48): return AtchaFont.B4_R_15(text, color: textColor)
+        case (.disabled, .h44): return AtchaFont.B6_R_14(text, color: textColor)
+        case (.disabled, .h32): return AtchaFont.B6_R_14(text, color: textColor)
+        }
+    }
+}
+
 extension AtchaButton {
     func updateStyle(text: String, style: Style) {
         switch style {
         case .filled(let filledStyle):
-            setAttributedTitle(ButtonSize.h52.attributedTitle(text, color: filledStyle.textColor), for: .normal)
+            setAttributedTitle(filledStyle.attributedText(text, size: size), for: .normal)
             backgroundColor = filledStyle.backgroundColor
             layer.borderWidth = 0
             layer.borderColor = nil
             
         case .line(let lineStyle):
-            setAttributedTitle(ButtonSize.h52.attributedTitle(text, color: lineStyle.textColor), for: .normal)
+            setAttributedTitle(lineStyle.attributedText(text, size: size), for: .normal)
             backgroundColor = .clear
             layer.borderWidth = 1
             layer.borderColor = lineStyle.borderColor.cgColor
