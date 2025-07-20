@@ -47,16 +47,17 @@ final class SplashViewModel: BaseViewModel {
     }
     
     func makeInitialFlow() {
-//        if let _ = UserDefaultsWrapper().string(forKey: UserDefaultsWrapper.Key.providerToken.rawValue) {
-//            if let _ = AppDIContainer.shared.tokenStorage.accessToken {
-//                fetchUserInfo()
-//                routerHandler?(.main)
-//            } else {
-//                routerHandler?(.onboarding)
-//            }
-//        } else {
-//            routerHandler?(.login)
-//        }
-        routerHandler?(.login)
+        if let _ = UserDefaultsWrapper().string(forKey: UserDefaultsWrapper.Key.providerToken.rawValue) {
+            if let _ = AppDIContainer.shared.tokenStorage.accessToken {
+                fetchUserInfo()
+                routerHandler?(.main)
+            } else {
+                routerHandler?(.onboarding)
+            }
+        } else {
+            routerHandler?(.login)
+        }
+        
+//        routerHandler?(.login)
     }
 }

@@ -72,7 +72,7 @@ extension TokenStorageImpl {
     func clearAllTokens() {
         keychain.remove(forKey: accessTokenKey.rawValue)
         keychain.remove(forKey: refreshTokenKey.rawValue)
-        keychain.remove(forKey: fcmTokenKey.rawValue)
+//        keychain.remove(forKey: fcmTokenKey.rawValue)
     }
     
     func clearAccessToken() {

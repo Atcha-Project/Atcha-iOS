@@ -26,7 +26,7 @@ final class SplashViewController: BaseViewController<SplashViewModel> {
         
         setupUI()
 //        viewModel.checkAppVersion()
-//        viewModel.makeInitialFlow()
+        viewModel.makeInitialFlow()
     }
     
     private func setupUI() {
