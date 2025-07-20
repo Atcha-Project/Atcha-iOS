@@ -8,53 +8,47 @@
 import UIKit
 import SnapKit
 
-class LoginIntroCell: UICollectionViewCell {
-    static let id: String = "LoginIntroCell"
+final class LoginIntroCell: UICollectionViewCell {
+    static let id = "LoginIntroCell"
     
     private let titleLabel = UILabel()
-    private let subtitleLabel = UILabel()
     private let imageView = UIImageView()
     
-    func configure(title: String, subTitle: String, image: UIImage) {
-        titleLabel.attributedText = AtchaFont.H1_B_26(title, color: AtchaColor.white)
-        subtitleLabel.attributedText = AtchaFont.B6_R_14(subTitle, color: AtchaColor.gray200)
-        imageView.image = image
-    }
-    
     override init(frame: CGRect) {
-        super.init(frame: .zero)
-        
+        super.init(frame: frame)
         setupUI()
+        setupAutoLayout()
     }
     
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        super.init(coder: coder)
+        setupUI()
+        setupAutoLayout()
     }
     
-    // MARK: - LoginIntro Cell UI
+    func configure(info: LoginIntro) {
+        titleLabel.attributedText = AtchaFont.H1_B_26(info.title, color: AtchaColor.white)
+        imageView.image = info.image
+    }
+    
     private func setupUI() {
-        titleLabel.numberOfLines = .zero
+        contentView.addSubViews(titleLabel, imageView)
+        titleLabel.numberOfLines = 0
         titleLabel.textAlignment = .center
-        
-        subtitleLabel.numberOfLines = .zero
-        subtitleLabel.textAlignment = .center
-        
-        
-        let labelStack = UIStackView(arrangedSubviews: [titleLabel, subtitleLabel])
-        labelStack.axis = .vertical
-        labelStack.spacing = 12
-        labelStack.alignment = .center
-        
-        contentView.addSubViews(labelStack, imageView)
-        
-        labelStack.snp.makeConstraints { make in
-            make.top.equalTo(contentView.safeAreaLayoutGuide.snp.top).offset(40)
-            make.leading.trailing.equalToSuperview()
+    }
+    
+    private func setupAutoLayout() {
+        titleLabel.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(30)
+            make.centerX.equalToSuperview()
         }
         
         imageView.snp.makeConstraints { make in
-            make.center.equalToSuperview()
-            make.leading.trailing.equalToSuperview()
+            make.top.equalTo(titleLabel.snp.bottom).offset(60)
+            make.centerX.equalToSuperview()
+            make.width.equalToSuperview().multipliedBy(0.8)
+            make.height.equalTo(imageView.snp.width).multipliedBy(320.0 / 350.0)
+//            make.bottom.lessThanOrEqualToSuperview().inset(40)
         }
     }
 }
