@@ -67,13 +67,15 @@ extension APIServiceImpl {
         }
         
         return try await withCheckedThrowingContinuation { continuation in
-            session.request(url,
-                            method: endpoint.method,
-                            parameters: body.toDictionary(),
-                            encoding: endpoint.encoding,
-                            headers: endpoint.headers)
+            session.request(
+                url,
+                method: endpoint.method,
+                parameters: body.toDictionary(),
+                encoding: endpoint.encoding,
+                headers: endpoint.headers
+            )
             .validate()
-            .responseDecodable(of: T.self) { response in
+            .responseDecodable(of: APIResponse<T>.self) { response in
                 if let statusCode = response.response?.statusCode,
                    (200...299).contains(statusCode),
                    T.self == APIEmptyResponse.self {
@@ -82,14 +84,21 @@ extension APIServiceImpl {
                 }
                 
                 switch response.result {
-                case .success(let decoded):
-                    continuation.resume(returning: decoded)
-                case .failure(let error):
-                    if let statusCode = response.response?.statusCode {
-                        continuation.resume(throwing: APIError.serverError(statusCode: statusCode))
+                case .success(let apiResponse):
+                    if apiResponse.responseCode == "SUCCESS" {
+                        if let result = apiResponse.result {
+                            continuation.resume(returning: result)
+                        } else if T.self == APIEmptyResponse.self {
+                            continuation.resume(returning: APIEmptyResponse() as! T)
+                        } else {
+                            continuation.resume(throwing: APIError.noData)
+                        }
                     } else {
-                        continuation.resume(throwing: APIError.unknown(error: error))
+                        continuation.resume(throwing: APIError.serverError(statusCode: response.response?.statusCode ?? -1))
                     }
+                    
+                case .failure(let error):
+                    continuation.resume(throwing: APIError.unknown(error: error))
                 }
             }
         }

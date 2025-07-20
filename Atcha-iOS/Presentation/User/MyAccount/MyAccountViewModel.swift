@@ -24,6 +24,7 @@ final class MyAccountViewModel: BaseViewModel {
             do {
                 let _ = try await signOutUseCase.excute()
                 AppDIContainer.shared.tokenStorage.clearAllTokens()
+                UserDefaultsWrapper().removeAll()
                 signOutFinish?()
             } catch {
                 print("error 발생")
@@ -37,6 +38,8 @@ final class MyAccountViewModel: BaseViewModel {
                 let _ = try await logoutUseCase.excute()
                 AppDIContainer.shared.tokenStorage.clearAccessToken()
                 AppDIContainer.shared.tokenStorage.clearRefreshToken()
+                UserDefaultsWrapper().remove(forKey: UserDefaultsWrapper.Key.providerToken.rawValue)
+                UserDefaultsWrapper().remove(forKey: UserDefaultsWrapper.Key.provider.rawValue)
                 signOutFinish?()
             } catch {
                 print("error 발생")
