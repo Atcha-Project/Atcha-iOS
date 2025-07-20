@@ -10,26 +10,37 @@ import SnapKit
 
 final class SplashViewController: BaseViewController<SplashViewModel> {
     private let backgroundImageView: UIImageView = UIImageView()
-    private let appLogoImageView: UIImageView = UIImageView()
+    
+    private let characterImageView: UIImageView = UIImageView()
+    private let logoImageView: UIImageView = UIImageView()
+    private lazy var logoStackView: UIStackView = {
+        let stack = UIStackView(arrangedSubviews: [characterImageView, logoImageView])
+        stack.axis = .vertical
+        stack.alignment = .center
+        stack.spacing = 12
+        return stack
+    }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setupUI()
-        viewModel.checkAppVersion()
-        viewModel.makeInitialFlow()
+//        viewModel.checkAppVersion()
+//        viewModel.makeInitialFlow()
     }
     
     private func setupUI() {
-        view.addSubViews(backgroundImageView, appLogoImageView)
+        view.addSubViews(backgroundImageView, logoStackView)
         
-        backgroundImageView.image = UIImage.imgSplash
-        appLogoImageView.image = UIImage.imgAtcha
+        backgroundImageView.image = UIImage.splashBG
+        logoImageView.image = UIImage.imgAtcha
+        characterImageView.image = UIImage.imgAtchaCharacter
+        characterImageView.tintColor = .main
         
         backgroundImageView.snp.makeConstraints { make in
-            make.edges.equalTo(view.safeAreaLayoutGuide)
+            make.edges.equalToSuperview()
         }
-        appLogoImageView.snp.makeConstraints { make in
+        logoStackView.snp.makeConstraints { make in
             make.centerX.equalTo(view.safeAreaLayoutGuide)
             make.centerY.equalTo(view.safeAreaLayoutGuide)
         }
