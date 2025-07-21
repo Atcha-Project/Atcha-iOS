@@ -10,6 +10,7 @@ import UIKit
 final class MyPageViewController: BaseViewController<MyPageViewModel> {
     private let navigationBar: UIView = AtchaNavigationBar.title("마이페이지", shouldShowCloseButton: false)
     private let footerLabel: UILabel  = UILabel()
+    private let bannerImageView: UIImageView = UIImageView()
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .vertical
@@ -30,13 +31,16 @@ final class MyPageViewController: BaseViewController<MyPageViewModel> {
         
         setupUI()
         setupAutoLayout()
+        addGesture()
     }
     
     private func setupUI() {
         view.addSubViews(navigationBar,
+                         bannerImageView,
                          collectionView,
                          footerLabel)
         
+        bannerImageView.image = UIImage.banner
         footerLabel.attributedText = AtchaFont.R_12("티맵 API와 공공데이터로 막차 정보를 제공합니다.",
                                                     color: .gray300)
     }
@@ -46,14 +50,31 @@ final class MyPageViewController: BaseViewController<MyPageViewModel> {
             $0.top.equalTo(view.safeAreaLayoutGuide.snp.top)
             $0.leading.trailing.equalToSuperview()
         }
+        bannerImageView.snp.makeConstraints {
+            $0.top.equalTo(navigationBar.snp.bottom).offset(8)
+            $0.leading.trailing.equalToSuperview().inset(16)
+            $0.height.equalTo(bannerImageView.snp.width).multipliedBy(88.0 / 328.0)
+        }
         collectionView.snp.makeConstraints {
-            $0.top.equalTo(navigationBar.snp.bottom)
+            $0.top.equalTo(bannerImageView.snp.bottom).offset(20)
             $0.leading.trailing.bottom.equalToSuperview()
         }
         footerLabel.snp.makeConstraints {
             $0.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(-10)
             $0.centerX.equalToSuperview()
         }
+    }
+    
+    private func addGesture() {
+        bannerImageView.isUserInteractionEnabled = true
+        
+        let tapGesture = UITapGestureRecognizer(target: self,
+                                                action: #selector(bannerTapped))
+        bannerImageView.addGestureRecognizer(tapGesture)
+    }
+    
+    @objc func bannerTapped() {
+        viewModel.bannerTapped()
     }
 }
 

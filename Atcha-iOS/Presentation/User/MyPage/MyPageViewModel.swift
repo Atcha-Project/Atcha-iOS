@@ -26,4 +26,8 @@ final class MyPageViewModel: BaseViewModel {
             navigationTarget.send(.versionUpdate)
         }
     }
+    
+    func bannerTapped() {
+        navigationTarget.send(.banner)
+    }
 }

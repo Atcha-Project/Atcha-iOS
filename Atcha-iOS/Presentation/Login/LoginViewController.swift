@@ -11,7 +11,7 @@ import AuthenticationServices
 
 final class LoginViewController: BaseViewController<LoginViewModel> {
     private var appleLoginDelegateWrapper: AppleLoginDelegateWrapper?
-    
+    private let backgroundImageView: UIImageView = UIImageView()
     private let kakaoLoginButton: UIButton = UIButton(type: .custom)
     private let appleLoginButton: UIButton = UIButton(type: .custom)
     
@@ -20,6 +20,7 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
+        layout.minimumLineSpacing = 0
         
         let collectionView = UICollectionView(frame: .zero,
                                               collectionViewLayout: layout)
@@ -54,22 +55,24 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        autoScrollTimer = Timer.scheduledTimer(timeInterval: 4.0,
-                                               target: self,
-                                               selector: #selector(goToNextPage),
-                                               userInfo: nil,
-                                               repeats: true)
+//        autoScrollTimer = Timer.scheduledTimer(timeInterval: 4.0,
+//                                               target: self,
+//                                               selector: #selector(goToNextPage),
+//                                               userInfo: nil,
+//                                               repeats: true)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         
-        autoScrollTimer?.invalidate()
-        autoScrollTimer = nil
+//        autoScrollTimer?.invalidate()
+//        autoScrollTimer = nil
     }
     
     private func setupUI() {
-        view.addSubViews(pageControl, collectionView, loginButtonStackView)
+        view.addSubViews(backgroundImageView, pageControl, collectionView, loginButtonStackView)
+        
+        backgroundImageView.image = UIImage.splashBG
         
         pageControl.numberOfPages = LoginIntro.allCases.count
         pageControl.currentPage = 0
@@ -79,6 +82,10 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
     }
     
     private func setupAutoLayout() {
+        backgroundImageView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        
         pageControl.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(56)

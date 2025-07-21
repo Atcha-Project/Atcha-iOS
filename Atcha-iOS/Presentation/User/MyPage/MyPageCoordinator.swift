@@ -42,6 +42,9 @@ final class MyPageCoordinator {
 
     private func navigate(to target: MyPageNavigationTarget) {
         switch target {
+        case .banner:
+            let vc = WebViewController(type: .form)
+            navigationController.pushViewController(vc, animated: true)
         case .account:
             let vm = diContainer.makeMyAccountViewModel()
             vm.signOutFinish = { [weak self] in self?.signoutFinish?() }
@@ -59,7 +62,7 @@ final class MyPageCoordinator {
             let vc = diContainer.makeAlarmSettingViewController(viewModel: vm)
             navigationController.pushViewController(vc, animated: true)
         case .term:
-            let vc = WebViewController(viewModel: BaseViewModel())
+            let vc = WebViewController(type: .term)
             navigationController.pushViewController(vc, animated: true)
         case .versionUpdate:
             router.openAppStore()

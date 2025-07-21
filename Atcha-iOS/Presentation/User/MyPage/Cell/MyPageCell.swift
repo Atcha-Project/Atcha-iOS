@@ -31,7 +31,6 @@ final class MyPageCell: UICollectionViewCell {
         contentView.addSubview(list)
         list.snp.makeConstraints { make in
             make.edges.equalToSuperview()
-            make.height.equalTo(52)
         }
         atchaList = list
     }
