@@ -20,6 +20,7 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
+        layout.minimumLineSpacing = 0
         
         let collectionView = UICollectionView(frame: .zero,
                                               collectionViewLayout: layout)
@@ -54,18 +55,18 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        autoScrollTimer = Timer.scheduledTimer(timeInterval: 4.0,
-                                               target: self,
-                                               selector: #selector(goToNextPage),
-                                               userInfo: nil,
-                                               repeats: true)
+//        autoScrollTimer = Timer.scheduledTimer(timeInterval: 4.0,
+//                                               target: self,
+//                                               selector: #selector(goToNextPage),
+//                                               userInfo: nil,
+//                                               repeats: true)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         
-        autoScrollTimer?.invalidate()
-        autoScrollTimer = nil
+//        autoScrollTimer?.invalidate()
+//        autoScrollTimer = nil
     }
     
     private func setupUI() {
