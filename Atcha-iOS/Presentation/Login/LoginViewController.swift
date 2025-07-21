@@ -11,7 +11,7 @@ import AuthenticationServices
 
 final class LoginViewController: BaseViewController<LoginViewModel> {
     private var appleLoginDelegateWrapper: AppleLoginDelegateWrapper?
-    
+    private let backgroundImageView: UIImageView = UIImageView()
     private let kakaoLoginButton: UIButton = UIButton(type: .custom)
     private let appleLoginButton: UIButton = UIButton(type: .custom)
     
@@ -70,7 +70,9 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
     }
     
     private func setupUI() {
-        view.addSubViews(pageControl, collectionView, loginButtonStackView)
+        view.addSubViews(backgroundImageView, pageControl, collectionView, loginButtonStackView)
+        
+        backgroundImageView.image = UIImage.splashBG
         
         pageControl.numberOfPages = LoginIntro.allCases.count
         pageControl.currentPage = 0
@@ -80,6 +82,10 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
     }
     
     private func setupAutoLayout() {
+        backgroundImageView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        
         pageControl.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(56)
