@@ -66,11 +66,6 @@ extension LoginViewModel {
                     UserDefaultsWrapper().set(lon, forKey: UserDefaultsWrapper.Key.lon.rawValue)
                 }
                 
-                if let lat = response.latitude,
-                   let lon = response.longitude {
-                    UserDefaultsWrapper().set(lat, forKey: UserDefaultsWrapper.Key.lat.rawValue)
-                    UserDefaultsWrapper().set(lon, forKey: UserDefaultsWrapper.Key.lon.rawValue)
-                }
                 print("로그인 완료 ✅\(response.accessToken)")
             } catch {
                 print("로그인 실패: \(error.localizedDescription)")

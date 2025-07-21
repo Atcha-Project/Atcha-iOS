@@ -70,7 +70,7 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
             setupUI()
             navigationBar.isHidden = true
         case .myPage:
-            viewModel.selectedState = .selected(name: "우리집", address: "우리집 주소")
+            viewModel.setupSelectedHome()
             nextButton.isHidden = true
             titleLabel.isHidden = true
             subTitleLabel.isHidden = true
