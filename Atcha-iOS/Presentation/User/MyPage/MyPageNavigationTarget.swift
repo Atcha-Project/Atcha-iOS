@@ -8,6 +8,7 @@
 import Foundation
 
 enum MyPageNavigationTarget {
+    case banner
     case account
     case home
     case notification
