@@ -78,14 +78,15 @@ extension LoginViewModel {
             let request = AuthCheckRequest(provider: provider.rawValue, accessToken: token)
             let result = try await loginUseCase.checkRegistration(request)
             
+            UserDefaultsWrapper().set(token, forKey: UserDefaultsWrapper.Key.providerToken.rawValue)
+            UserDefaultsWrapper().set(provider.rawValue, forKey: UserDefaultsWrapper.Key.provider.rawValue)
+            
             switch result {
             case .registered:
                 await login(token: token, type: provider)
                 isExistUser?(true)
                 print("회원 → 로그인 진행")
             case .notRegistered:
-                UserDefaultsWrapper().set(token, forKey: UserDefaultsWrapper.Key.providerToken.rawValue)
-                UserDefaultsWrapper().set(provider.rawValue, forKey: UserDefaultsWrapper.Key.provider.rawValue)
                 isExistUser?(false)
                 print("비회원 → 회원가입 유도")
             default:
