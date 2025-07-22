@@ -66,7 +66,7 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
         NoSearchCourseUI()
         noSearchStack.isHidden = true
         bind()
-        viewModel.courseSearch()
+        viewModel.startCourseStream()
     }
     
     // MARK: - 경로탐색 UI
