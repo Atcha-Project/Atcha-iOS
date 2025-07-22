@@ -43,103 +43,103 @@ enum AtchaFont {
     
     // MARK: - Display Styles
     // Display 1
-    static func D1_EB_56(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.ExtraBold, size: 56, lineHeight: 67, text: text, color: color)
+    static func D1_EB_56(_ text: String, color: UIColor = .label, alignment: NSTextAlignment = .left) -> NSAttributedString {
+        styled(.ExtraBold, size: 56, lineHeight: 67, text: text, color: color, alignment: alignment)
     }
     
     // Display 2
-    static func D2_EB_44(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.ExtraBold, size: 44, lineHeight: 54, text: text, color: color)
+    static func D2_EB_44(_ text: String, color: UIColor = .label, alignment: NSTextAlignment = .left) -> NSAttributedString {
+        styled(.ExtraBold, size: 44, lineHeight: 54, text: text, color: color, alignment: alignment)
     }
     
     // Display 3
-    static func D3_EB_40(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.ExtraBold, size: 40, lineHeight: 42, text: text, color: color)
+    static func D3_EB_40(_ text: String, color: UIColor = .label, alignment: NSTextAlignment = .left) -> NSAttributedString {
+        styled(.ExtraBold, size: 40, lineHeight: 42, text: text, color: color, alignment: alignment)
     }
     
     // Display 4
-    static func D4_B_28(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.Bold, size: 44, lineHeight: 34, text: text, color: color)
+    static func D4_B_28(_ text: String, color: UIColor = .label, alignment: NSTextAlignment = .left) -> NSAttributedString {
+        styled(.Bold, size: 44, lineHeight: 34, text: text, color: color, alignment: alignment)
     }
     
     // MARK: - Heading Styles
     // Heading 1
-    static func H1_B_26(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.Bold, size: 26, lineHeight: 34, text: text, color: color)
+    static func H1_B_26(_ text: String, color: UIColor = .label, alignment: NSTextAlignment = .left) -> NSAttributedString {
+        styled(.Bold, size: 26, lineHeight: 34, text: text, color: color, alignment: alignment)
     }
     
     // Heading 2
-    static func H2_B_22(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.Bold, size: 22, lineHeight: 28, text: text, color: color)
+    static func H2_B_22(_ text: String, color: UIColor = .label, alignment: NSTextAlignment = .left) -> NSAttributedString {
+        styled(.Bold, size: 22, lineHeight: 28, text: text, color: color, alignment: alignment)
     }
     
     // Heading 3
-    static func H3_B_20(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.Bold, size: 20, lineHeight: 25, text: text, color: color)
+    static func H3_B_20(_ text: String, color: UIColor = .label, alignment: NSTextAlignment = .left) -> NSAttributedString {
+        styled(.Bold, size: 20, lineHeight: 25, text: text, color: color, alignment: alignment)
     }
     
     // Heading 4
-    static func H4_SB_17(_ text: String?, color: UIColor = .label) -> NSAttributedString {
-        styled(.SemiBold, size: 17, lineHeight: 24, text: text ?? "", color: color)
+    static func H4_SB_17(_ text: String?, color: UIColor = .label, alignment: NSTextAlignment = .left) -> NSAttributedString {
+        styled(.SemiBold, size: 17, lineHeight: 24, text: text ?? "", color: color, alignment: alignment)
     }
     
     
     // MARK: - Body Styles
     // Body 1
-    static func B1_R_17(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.Regular, size: 17, lineHeight: 24, text: text, color: color)
+    static func B1_R_17(_ text: String, color: UIColor = .label, alignment: NSTextAlignment = .left) -> NSAttributedString {
+        styled(.Regular, size: 17, lineHeight: 24, text: text, color: color, alignment: alignment)
     }
     
     // Body 2
-    static func B2_SB_15(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.SemiBold, size: 15, lineHeight: 20, text: text, color: color)
+    static func B2_SB_15(_ text: String, color: UIColor = .label, alignment: NSTextAlignment = .left) -> NSAttributedString {
+        styled(.SemiBold, size: 15, lineHeight: 20, text: text, color: color, alignment: alignment)
     }
     
     // Body 3
-    static func B3_M_15(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.Medium, size: 15, lineHeight: 20, text: text, color: color)
+    static func B3_M_15(_ text: String, color: UIColor = .label, alignment: NSTextAlignment = .left) -> NSAttributedString {
+        styled(.Medium, size: 15, lineHeight: 20, text: text, color: color, alignment: alignment)
     }
     
     // Body 4
-    static func B4_R_15(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.Regular, size: 15, lineHeight: 20, text: text, color: color)
+    static func B4_R_15(_ text: String, color: UIColor = .label, alignment: NSTextAlignment = .left) -> NSAttributedString {
+        styled(.Regular, size: 15, lineHeight: 20, text: text, color: color, alignment: alignment)
     }
     
     // Body 5
-    static func B5_SB_14(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.SemiBold, size: 14, lineHeight: 18, text: text, color: color)
+    static func B5_SB_14(_ text: String, color: UIColor = .label, alignment: NSTextAlignment = .left) -> NSAttributedString {
+        styled(.SemiBold, size: 14, lineHeight: 18, text: text, color: color, alignment: alignment)
     }
     
     // Body 6
-    static func B6_R_14(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.Regular, size: 14, lineHeight: 18, text: text, color: color)
+    static func B6_R_14(_ text: String, color: UIColor = .label, alignment: NSTextAlignment = .left) -> NSAttributedString {
+        styled(.Regular, size: 14, lineHeight: 18, text: text, color: color, alignment: alignment)
     }
     
     // Body 7
-    static func B7_M_13(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.Medium, size: 13, lineHeight: 16, text: text, color: color)
+    static func B7_M_13(_ text: String, color: UIColor = .label, alignment: NSTextAlignment = .left) -> NSAttributedString {
+        styled(.Medium, size: 13, lineHeight: 16, text: text, color: color, alignment: alignment)
     }
     
     // MARK: - Detail Styles
     // Detail 1
-    static func R_12(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.Regular, size: 12, lineHeight: 14, text: text, color: color)
+    static func R_12(_ text: String, color: UIColor = .label, alignment: NSTextAlignment = .left) -> NSAttributedString {
+        styled(.Regular, size: 12, lineHeight: 14, text: text, color: color, alignment: alignment)
     }
     
     // Detail 2
-    static func M_11(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.Medium, size: 11, lineHeight: 13, text: text, color: color)
+    static func M_11(_ text: String, color: UIColor = .label, alignment: NSTextAlignment = .left) -> NSAttributedString {
+        styled(.Medium, size: 11, lineHeight: 13, text: text, color: color, alignment: alignment)
     }
     
     // Detail 3
-    static func M_9(_ text: String, color: UIColor = .label) -> NSAttributedString {
-        styled(.Medium, size: 9, lineHeight: 11, text: text, color: color)
+    static func M_9(_ text: String, color: UIColor = .label, alignment: NSTextAlignment = .left) -> NSAttributedString {
+        styled(.Medium, size: 9, lineHeight: 11, text: text, color: color, alignment: alignment)
     }
     
     // MARK: - 사용 예시
     //
     // UILabel:
-    // titleLabel.attributedText = AtchaFont.H2_SB_26("자리에서 떠나기 전에", alignment: .center)
+    // titleLabel.attributedText = AtchaFont.H2_SB_26("자리에서 떠나기 전에")
     // descriptionLabel.attributedText = AtchaFont.Body_R_12("설명 텍스트입니다", color: AtchaColor.gray600)
     //
     // UIButton:

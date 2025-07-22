@@ -27,7 +27,7 @@ final class LoginIntroCell: UICollectionViewCell {
     }
     
     func configure(info: LoginIntro) {
-        titleLabel.attributedText = AtchaFont.H1_B_26(info.title, color: AtchaColor.white)
+        titleLabel.attributedText = AtchaFont.H1_B_26(info.title, color: AtchaColor.white, alignment: .center)
         imageView.image = info.image
     }
     

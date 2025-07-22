@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 
 final class MyAccountViewController: BaseViewController<MyAccountViewModel> {
-    private lazy var navigationBar: TitleNavigationBar = AtchaNavigationBar.title("내 계정", onClose: { [weak self] in
+    private lazy var navigationBar: TitleNavigationBar = AtchaNavigationBar.title("내 계정", shouldShowCloseButton: false, onBack:  { [weak self] in
         guard let self else { return }
         navigationController?.popViewController(animated: true)
     })

@@ -8,7 +8,7 @@
 import UIKit
 
 final class AlarmSettingViewController: BaseViewController<AlarmSettingViewModel> {
-    private lazy var navigationBar: TitleNavigationBar = AtchaNavigationBar.title("알림 설정", onClose: { [weak self] in
+    private lazy var navigationBar: TitleNavigationBar = AtchaNavigationBar.title("알림 설정", shouldShowCloseButton: false, onBack:  { [weak self] in
         guard let self else { return }
         navigationController?.popViewController(animated: true)
     })
