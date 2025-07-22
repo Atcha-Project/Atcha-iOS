@@ -23,9 +23,11 @@ enum AtchaFont {
                                lineHeight: CGFloat,
                                text: String,
                                color: UIColor = .label,
-                               letterSpacing: CGFloat = 0) -> NSAttributedString {
+                               letterSpacing: CGFloat = 0,
+                               alignment: NSTextAlignment = .left) -> NSAttributedString {
         let font = UIFont(name: fontName.rawValue, size: size)!
         let paragraph = NSMutableParagraphStyle()
+        paragraph.alignment = alignment
         paragraph.minimumLineHeight = lineHeight
         paragraph.maximumLineHeight = lineHeight
         
@@ -137,7 +139,7 @@ enum AtchaFont {
     // MARK: - 사용 예시
     //
     // UILabel:
-    // titleLabel.attributedText = AtchaFont.H2_SB_26("자리에서 떠나기 전에")
+    // titleLabel.attributedText = AtchaFont.H2_SB_26("자리에서 떠나기 전에", alignment: .center)
     // descriptionLabel.attributedText = AtchaFont.Body_R_12("설명 텍스트입니다", color: AtchaColor.gray600)
     //
     // UIButton:
