@@ -34,6 +34,7 @@ final class CourseSearchViewModel: BaseViewModel {
     private let startLat: String
     private let startLon: String
     public private(set) var startAddress: String
+    private var courseStreamTask: Task<Void, Never>?
     
     init(
         courseUseCase: CourseUseCase,
@@ -97,6 +98,52 @@ final class CourseSearchViewModel: BaseViewModel {
                 print("탭별 코스 가져오기 실패: \(error)")
             }
         }
+    }
+    
+    // MARK: - 코스 검색 스트리밍용
+    func startCourseStream() {
+        courseStreamTask?.cancel() // 이전 스트림 중지
+        
+        courseStreamTask = Task {
+            let userDefaults = UserDefaultsWrapper()
+            let endLat = userDefaults.string(forKey: UserDefaultsWrapper.Key.lat.rawValue) ?? "37.554722"
+            let endLon = userDefaults.string(forKey: UserDefaultsWrapper.Key.lon.rawValue) ?? "126.970833"
+
+            let request = CourseSearchRequest(
+                startLat: startLat,
+                startLon: startLon,
+                endLat: endLat,
+                endLon: endLon,
+                sortType: 1
+            )
+
+            do {
+                for try await course in courseUseCase.observeCourseStream(request) {
+                    let uiModel = CourseUIModel(
+                        id: course.routeId ?? UUID().uuidString,
+                        course: course,
+                        isExpanded: false
+                    )
+
+                    // 중복 제거 (같은 routeId가 이미 존재하면 무시)
+                    if !allCourses.contains(where: { $0.id == uiModel.id }) {
+                        self.allCourses.append(uiModel)
+                        self.fetchCourses(for: 0) // default 탭으로 반영
+                    }
+                }
+            } catch {
+                print("코스 스트리밍 실패: \(error)")
+            }
+        }
+    }
+    
+    func stopCourseStream() {
+        courseStreamTask?.cancel()
+        courseStreamTask = nil
+    }
+    
+    deinit {
+        stopCourseStream()
     }
     
     // MARK: UI 확장을 위한 토글 함수
