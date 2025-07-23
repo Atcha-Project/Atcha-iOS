@@ -112,7 +112,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
         flagImageView.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
             make.centerY.equalTo(mapContainerView.snp.centerY)
-            make.height.equalTo(65)
+            make.height.equalTo(63)
             make.width.equalTo(48)
         }
         lastTrainView.snp.makeConstraints { make in

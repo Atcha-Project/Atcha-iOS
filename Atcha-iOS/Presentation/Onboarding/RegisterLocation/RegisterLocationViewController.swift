@@ -258,7 +258,7 @@ extension RegisterLocationViewController: TMapViewDelegate {
         locationSettingImage.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top).inset(250)
-            make.height.equalTo(65)
+            make.height.equalTo(63)
             make.width.equalTo(48)
         }
     }
