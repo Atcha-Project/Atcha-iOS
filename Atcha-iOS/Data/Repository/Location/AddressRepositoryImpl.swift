@@ -57,10 +57,9 @@ final class AddressRepositoryImpl: AddressRepository {
             Endpoint(
                 path: "https://atcha.p-e.kr/api/locations/histories", 
                 method: .post,
-                encoding: JSONEncoding.default,
+                encoding: JSONEncoding.default
             ),
-            body: request
-        )
+            body: request)
     }
     
     func clearAllSearchHistories() async throws -> APIEmptyResponse {

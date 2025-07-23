@@ -41,8 +41,7 @@ final class UserRepositoryImpl: UserRepository {
         return try await apiService.request(
             Endpoint(
                 path: "https://atcha.p-e.kr/api/members/me",
-                method: .delete,
-                
+                method: .delete
             )
         )
     }
@@ -65,7 +64,7 @@ final class UserRepositoryImpl: UserRepository {
         return try await apiService.request(
             Endpoint(
                 path: "https://atcha.p-e.kr/api/auth/logout",
-                method: .post,
+                method: .post
             )
         )
     }

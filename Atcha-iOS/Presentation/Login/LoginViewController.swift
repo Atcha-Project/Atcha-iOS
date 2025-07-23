@@ -99,7 +99,7 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
         
         loginButtonStackView.snp.makeConstraints { make in
             make.horizontalEdges.equalToSuperview()
-            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
+            make.bottom.equalToSuperview().inset(40)
         }
     }
     

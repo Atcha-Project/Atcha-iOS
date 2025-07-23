@@ -35,8 +35,9 @@ final class CourseRepositoryImpl: CourseRepository {
                     "endLon": request.endLon,
                     "sortType": request.sortType
                 ],
-                headers: headers,
-            ))
+                headers: headers
+            )
+        )
     }
     
     func observeCourseStream(_ request: CourseSearchRequest) -> AsyncThrowingStream<CourseSearchResponse, Error> {
