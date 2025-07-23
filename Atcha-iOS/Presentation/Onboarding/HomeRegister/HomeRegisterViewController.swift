@@ -10,7 +10,7 @@ import SnapKit
 import CoreLocation
 
 final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel> {
-    private lazy var navigationBar: TitleNavigationBar = AtchaNavigationBar.title("우리집 변경", onClose: { [weak self] in
+    private lazy var navigationBar: TitleNavigationBar = AtchaNavigationBar.title("우리집 변경", shouldShowCloseButton: false, onBack: { [weak self] in
         guard let self else { return }
         navigationController?.popViewController(animated: true)
     })

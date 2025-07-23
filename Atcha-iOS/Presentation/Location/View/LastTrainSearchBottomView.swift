@@ -44,10 +44,10 @@ final class LastTrainSearchBottomView: UIView {
         return stack
     }()
     
-    private let searchButton: AtchaButton = AtchaButton(text: "검색하기",
+    private let searchButton: AtchaButton = AtchaButton(text: "막차 검색하기",
                                                         size: .h52,
                                                         style: .filled(.primary),
-                                                        image: UIImage(named: "search")) {}
+                                                        image: .imgSearch16Px) {}
     
     override init(frame: CGRect) {
         super.init(frame: frame)

@@ -112,7 +112,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
         flagImageView.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
             make.centerY.equalTo(mapContainerView.snp.centerY)
-            make.height.equalTo(65)
+            make.height.equalTo(63)
             make.width.equalTo(48)
         }
         lastTrainView.snp.makeConstraints { make in
@@ -123,12 +123,12 @@ final class MainViewController: BaseViewController<MainViewModel>,
         myPageButton.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
             make.trailing.equalToSuperview().inset(16)
-            make.width.height.equalTo(36)
+            make.width.height.equalTo(40)
         }
         loactionButton.snp.makeConstraints { make in
             make.bottom.equalTo(lastTrainView.snp.top).inset(-16)
             make.trailing.equalToSuperview().inset(16)
-            make.width.height.equalTo(36)
+            make.width.height.equalTo(40)
         }
         atchaImageView.snp.makeConstraints { make in
             make.width.height.equalTo(64)

@@ -8,7 +8,9 @@
 import UIKit
 
 final class MyPageViewController: BaseViewController<MyPageViewModel> {
-    private let navigationBar: UIView = AtchaNavigationBar.title("마이페이지", shouldShowCloseButton: false)
+    private lazy var navigationBar: UIView = AtchaNavigationBar.title("마이페이지", shouldShowCloseButton: false, onBack:  { [weak self] in
+        self?.navigationController?.popViewController(animated: true)
+    })
     private let footerLabel: UILabel  = UILabel()
     private let bannerImageView: UIImageView = UIImageView()
     private lazy var collectionView: UICollectionView = {

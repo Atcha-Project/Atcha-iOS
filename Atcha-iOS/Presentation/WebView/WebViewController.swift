@@ -9,11 +9,11 @@ import Foundation
 import WebKit
 
 final class WebViewController: BaseViewController<BaseViewModel> {
-    private lazy var navigationBar: TitleNavigationBar = AtchaNavigationBar.title("개인정보 처리방침",
-                                                                                  onClose: { [weak self] in
+    private lazy var navigationBar: TitleNavigationBar = AtchaNavigationBar.title("개인정보 처리방침", shouldShowCloseButton: false, onBack:  { [weak self] in
         guard let self else { return }
         navigationController?.popViewController(animated: true)
     })
+    
     private let webView = WKWebView()
     @Published private(set) var type: WebViewType
     

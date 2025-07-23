@@ -9,7 +9,7 @@ import UIKit
 
 final class AlarmSoundTypeViewController: BaseViewController<AlarmSoundTypeViewModel> {
     private lazy var options: [AlarmSoundOption] = []
-    private lazy var navigationBar: TitleNavigationBar = AtchaNavigationBar.title("진동/벨소리 설정", onClose: { [weak self] in
+    private lazy var navigationBar: TitleNavigationBar = AtchaNavigationBar.title("진동/벨소리 설정", shouldShowCloseButton: false, onBack:  { [weak self] in
         guard let self else { return }
         navigationController?.popViewController(animated: true)
     })

@@ -79,14 +79,14 @@ final class CourseSettingViewController: BaseViewController<CourseSettingViewMod
         flagImageView.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
             make.centerY.equalTo(mapContainerView.snp.centerY)
-            make.height.equalTo(65)
+            make.height.equalTo(63)
             make.width.equalTo(48)
         }
         
         currentLoactionButton.snp.makeConstraints { make in
             make.bottom.equalTo(settingBottomView.snp.top).inset(-16)
             make.trailing.equalToSuperview().inset(16)
-            make.size.equalTo(36)
+            make.size.equalTo(40)
         }
         
         settingBottomView.snp.makeConstraints { make in
