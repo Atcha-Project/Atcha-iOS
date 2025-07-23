@@ -163,30 +163,30 @@ final class AtchaButton: UIButton {
 extension FilledButtonStyle {
     func attributedText(_ text: String, size: ButtonSize) -> NSAttributedString {
         switch (self, size) {
-        case (.primary, .h52): return AtchaFont.H4_SB_17(text, color: textColor)
-        case (.primary, .h48): return AtchaFont.B2_SB_15(text, color: textColor)
-        case (.primary, .h44): return AtchaFont.B5_SB_14(text, color: textColor)
-        case (.primary, .h32): return AtchaFont.B5_SB_14(text, color: textColor)
+        case (.primary, .h52): return AtchaFont.H4_SB_17(lineHeight: 0, text, color: textColor)
+        case (.primary, .h48): return AtchaFont.B2_SB_15(lineHeight: 0, text, color: textColor)
+        case (.primary, .h44): return AtchaFont.B5_SB_14(lineHeight: 0, text, color: textColor)
+        case (.primary, .h32): return AtchaFont.B5_SB_14(lineHeight: 0, text, color: textColor)
 
-        case (.white, .h52): return AtchaFont.H4_SB_17(text, color: textColor)
-        case (.white, .h48): return AtchaFont.B2_SB_15(text, color: textColor)
-        case (.white, .h44): return AtchaFont.B5_SB_14(text, color: textColor)
-        case (.white, .h32): return AtchaFont.B5_SB_14(text, color: textColor)
+        case (.white, .h52): return AtchaFont.H4_SB_17(lineHeight: 0, text, color: textColor)
+        case (.white, .h48): return AtchaFont.B2_SB_15(lineHeight: 0, text, color: textColor)
+        case (.white, .h44): return AtchaFont.B5_SB_14(lineHeight: 0, text, color: textColor)
+        case (.white, .h32): return AtchaFont.B5_SB_14(lineHeight: 0, text, color: textColor)
 
-        case (.defaultGray, .h52): return AtchaFont.B1_R_17(text, color: textColor)
-        case (.defaultGray, .h48): return AtchaFont.B3_M_15(text, color: textColor)
-        case (.defaultGray, .h44): return AtchaFont.B6_R_14(text, color: textColor)
-        case (.defaultGray, .h32): return AtchaFont.B6_R_14(text, color: textColor)
+        case (.defaultGray, .h52): return AtchaFont.B1_R_17(lineHeight: 0, text, color: textColor)
+        case (.defaultGray, .h48): return AtchaFont.B3_M_15(lineHeight: 0,text, color: textColor)
+        case (.defaultGray, .h44): return AtchaFont.B6_R_14(lineHeight: 0, text, color: textColor)
+        case (.defaultGray, .h32): return AtchaFont.B6_R_14(lineHeight: 0, text, color: textColor)
             
-        case (.opacity, .h52): return AtchaFont.B1_R_17(text, color: textColor)
-        case (.opacity, .h48): return AtchaFont.B3_M_15(text, color: textColor)
-        case (.opacity, .h44): return AtchaFont.B6_R_14(text, color: textColor)
-        case (.opacity, .h32): return AtchaFont.B6_R_14(text, color: textColor)
+        case (.opacity, .h52): return AtchaFont.B1_R_17(lineHeight: 0, text, color: textColor)
+        case (.opacity, .h48): return AtchaFont.B3_M_15(lineHeight: 0, text, color: textColor)
+        case (.opacity, .h44): return AtchaFont.B6_R_14(lineHeight: 0, text, color: textColor)
+        case (.opacity, .h32): return AtchaFont.B6_R_14(lineHeight: 0, text, color: textColor)
             
-        case (.disabled, .h52): return AtchaFont.B1_R_17(text, color: textColor)
-        case (.disabled, .h48): return AtchaFont.B3_M_15(text, color: textColor)
-        case (.disabled, .h44): return AtchaFont.B6_R_14(text, color: textColor)
-        case (.disabled, .h32): return AtchaFont.B6_R_14(text, color: textColor)
+        case (.disabled, .h52): return AtchaFont.B1_R_17(lineHeight: 0, text, color: textColor)
+        case (.disabled, .h48): return AtchaFont.B3_M_15(lineHeight: 0, text, color: textColor)
+        case (.disabled, .h44): return AtchaFont.B6_R_14(lineHeight: 0, text, color: textColor)
+        case (.disabled, .h32): return AtchaFont.B6_R_14(lineHeight: 0, text, color: textColor)
         }
     }
 }
@@ -194,15 +194,15 @@ extension FilledButtonStyle {
 extension LineButtonStyle {
     func attributedText(_ text: String, size: ButtonSize) -> NSAttributedString {
         switch (self, size) {
-        case (.line, .h52): return AtchaFont.B1_R_17(text, color: textColor)
-        case (.line, .h48): return AtchaFont.B4_R_15(text, color: textColor)
-        case (.line, .h44): return AtchaFont.B6_R_14(text, color: textColor)
-        case (.line, .h32): return AtchaFont.B6_R_14(text, color: textColor)
+        case (.line, .h52): return AtchaFont.B1_R_17(lineHeight: 0, text, color: textColor)
+        case (.line, .h48): return AtchaFont.B4_R_15(lineHeight: 0, text, color: textColor)
+        case (.line, .h44): return AtchaFont.B6_R_14(lineHeight: 0, text, color: textColor)
+        case (.line, .h32): return AtchaFont.B6_R_14(lineHeight: 0, text, color: textColor)
             
-        case (.disabled, .h52): return AtchaFont.B1_R_17(text, color: textColor)
-        case (.disabled, .h48): return AtchaFont.B4_R_15(text, color: textColor)
-        case (.disabled, .h44): return AtchaFont.B6_R_14(text, color: textColor)
-        case (.disabled, .h32): return AtchaFont.B6_R_14(text, color: textColor)
+        case (.disabled, .h52): return AtchaFont.B1_R_17(lineHeight: 0, text, color: textColor)
+        case (.disabled, .h48): return AtchaFont.B4_R_15(lineHeight: 0, text, color: textColor)
+        case (.disabled, .h44): return AtchaFont.B6_R_14(lineHeight: 0, text, color: textColor)
+        case (.disabled, .h32): return AtchaFont.B6_R_14(lineHeight: 0, text, color: textColor)
         }
     }
 }
