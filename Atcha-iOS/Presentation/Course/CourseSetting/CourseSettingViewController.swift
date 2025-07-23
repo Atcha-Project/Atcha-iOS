@@ -86,7 +86,7 @@ final class CourseSettingViewController: BaseViewController<CourseSettingViewMod
         currentLoactionButton.snp.makeConstraints { make in
             make.bottom.equalTo(settingBottomView.snp.top).inset(-16)
             make.trailing.equalToSuperview().inset(16)
-            make.size.equalTo(36)
+            make.size.equalTo(40)
         }
         
         settingBottomView.snp.makeConstraints { make in

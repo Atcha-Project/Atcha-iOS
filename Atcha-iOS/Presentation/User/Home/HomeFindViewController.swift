@@ -122,7 +122,7 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
         loactionButton.snp.makeConstraints { make in
             make.bottom.equalTo(bottomView.snp.top).inset(-16)
             make.trailing.equalToSuperview().inset(16)
-            make.width.height.equalTo(36)
+            make.width.height.equalTo(40)
         }
         
         bottomView.snp.makeConstraints { make in

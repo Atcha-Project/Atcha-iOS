@@ -29,6 +29,7 @@ struct CourseUIModel: Hashable {
 final class CourseSearchViewModel: BaseViewModel {
     @Published var courses: [CourseUIModel] = []
     private var allCourses: [CourseUIModel] = []
+    @Published var isServerError: Bool = false
     
     private let courseUseCase: CourseUseCase
     private let startLat: String
@@ -96,6 +97,8 @@ final class CourseSearchViewModel: BaseViewModel {
                 self.fetchCourses(for: 0)
             } catch {
                 print("탭별 코스 가져오기 실패: \(error)")
+                    self.isServerError = true
+                    self.courses = []
             }
         }
     }

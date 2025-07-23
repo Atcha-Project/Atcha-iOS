@@ -131,11 +131,25 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
                 self?.applySnapshot(courses: courses)
                 
                 if courses.isEmpty {
+                    if self?.viewModel.isServerError == false {
+                        self?.noSearchLabel.attributedText = AtchaFont.B4_R_15("앗! 시간이 늦어서 더이상 막차가 없어요.", color: AtchaColor.gray400)
+                    }
                     self?.noSearchStack.isHidden = false
                 } else {
                     self?.noSearchStack.isHidden = true
                 }
                 
+            }
+            .store(in: &cancellables)
+        
+        viewModel.$isServerError
+            .receive(on: RunLoop.main)
+            .sink { [weak self] isError in
+                guard let self = self else { return }
+                if isError {
+                    self.noSearchLabel.attributedText = AtchaFont.B4_R_15("검색 가능한 막차 정보가 없습니다.", color: AtchaColor.gray400)
+                    self.noSearchStack.isHidden = false
+                }
             }
             .store(in: &cancellables)
     }
@@ -204,7 +218,7 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
     private func NoSearchCourseUI() {
         noSearchImageView.image = UIImage.atchaGray
         noSearchImageView.contentMode = .scaleAspectFit
-        noSearchLabel.attributedText = AtchaFont.B4_R_15("검색 가능한 막차 정보가 없습니다.", color: AtchaColor.gray400)
+        noSearchLabel.attributedText = AtchaFont.B4_R_15("앗! 시간이 늦어서 더이상 막차가 없어요.", color: AtchaColor.gray400)
         
         noSearchStack.addArrangedSubview(noSearchImageView)
         noSearchStack.addArrangedSubview(noSearchLabel)
