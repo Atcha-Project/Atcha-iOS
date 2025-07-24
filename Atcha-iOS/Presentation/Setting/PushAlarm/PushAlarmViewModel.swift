@@ -38,7 +38,7 @@ final class PushAlarmViewModel: BaseViewModel {
             address: locationStateHolder.address ?? "",
             lat: locationStateHolder.currentLocation?.latitude ?? 0.0,
             lon: locationStateHolder.currentLocation?.longitude ?? 0.0,
-            alertFrequencies: selectedAlarms.map { $0.rawValue },
+            alertFrequencies: [1] + selectedAlarms.map { $0.rawValue },
             fcmToken: fcmToken
         )
         
