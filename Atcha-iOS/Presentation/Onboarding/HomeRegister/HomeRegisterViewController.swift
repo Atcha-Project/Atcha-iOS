@@ -15,14 +15,6 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
         navigationController?.popViewController(animated: true)
     })
     private let titleLabel = UILabel()
-    private let subTitleLabel = UILabel()
-    private lazy var titleStackView: UIStackView = {
-        let stack = UIStackView(arrangedSubviews: [titleLabel, subTitleLabel])
-        stack.axis = .vertical
-        stack.alignment = .leading
-        stack.spacing = 12
-        return stack
-    }()
     
     private let searchLocationContainer = UIView()
     private let searchLocationLabel = UILabel()
@@ -73,22 +65,21 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
             viewModel.setupSelectedHome()
             nextButton.isHidden = true
             titleLabel.isHidden = true
-            subTitleLabel.isHidden = true
         }
     }
     
     // MARK: - 기본 UI
     private func setupUI() {
         view.addSubViews(navigationBar,
-                         titleStackView,
+                         titleLabel,
                          searchLocationContainer,
                          currentLocationButton,
                          nextButton)
         searchLocationContainer.addSubview(searchLocationLabel)
-        titleLabel.attributedText = AtchaFont.H2_B_22("우리 집을 등록해 보세요",
+        titleLabel.attributedText = AtchaFont.H2_B_22("우리집 또는 귀가 장소를\n알려주세요",
                                                       color: AtchaColor.white)
-        subTitleLabel.attributedText = AtchaFont.B4_R_15("출발지에서 우리집까지 빠르게 막차 찾을 수 있어요.",
-                                                         color: AtchaColor.gray200)
+        titleLabel.textAlignment = .left
+        titleLabel.numberOfLines = 0
         searchLocationContainer.backgroundColor = AtchaColor.gray930
         searchLocationContainer.layer.cornerRadius = 10
         searchLocationContainer.isUserInteractionEnabled = true
@@ -112,12 +103,12 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
             $0.leading.trailing.equalToSuperview()
         }
         
-        titleStackView.snp.makeConstraints { make in
+        titleLabel.snp.makeConstraints { make in
             make.top.equalTo(navigationBar.snp.bottom)
             make.leading.equalToSuperview().inset(16)
         }
         searchLocationContainer.snp.makeConstraints { make in
-            make.top.equalTo(titleStackView.snp.bottom).offset(48)
+            make.top.equalTo(titleLabel.snp.bottom).offset(32)
             make.leading.trailing.equalToSuperview().inset(16)
             make.height.equalTo(50)
         }

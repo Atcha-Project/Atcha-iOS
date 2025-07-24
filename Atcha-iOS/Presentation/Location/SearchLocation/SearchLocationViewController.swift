@@ -136,7 +136,7 @@ final class SearchLocationViewController: BaseViewController<SearchLocationViewM
 
 extension SearchLocationViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return viewModel.numberOfSections()
+        return viewModel.locations.count
     }
     
     // MARK: - Cell UI
