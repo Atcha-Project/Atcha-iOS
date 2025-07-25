@@ -61,7 +61,7 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
     }
     
     private func refreshAccessToken(refreshToken: String, completion: @escaping (Result<String, Error>) -> Void) {
-        let url = "\(NetworkConstant.baseURL)/auth/reissue"
+        let url = "https://atcha.p-e.kr/api/auth/reissue"
         
         let headers: HTTPHeaders = [
             "Authorization": "Bearer \(refreshToken)"

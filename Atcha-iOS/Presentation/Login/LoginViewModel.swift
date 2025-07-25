@@ -66,7 +66,7 @@ extension LoginViewModel {
                     UserDefaultsWrapper().set(lon, forKey: UserDefaultsWrapper.Key.lon.rawValue)
                 }
                 
-                print("로그인 완료 ✅\(response.accessToken)")
+                print("로그인 완료")
             } catch {
                 print("로그인 실패: \(error.localizedDescription)")
             }
