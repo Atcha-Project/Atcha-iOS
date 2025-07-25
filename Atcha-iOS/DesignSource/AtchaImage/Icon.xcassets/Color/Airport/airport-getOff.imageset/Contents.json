@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "Ellipse 1742.png",
+      "filename" : "airport-getOff.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "Ellipse 1742@2x.png",
+      "filename" : "airport-getOff@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "Ellipse 1742@3x.png",
+      "filename" : "airport-getOff@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

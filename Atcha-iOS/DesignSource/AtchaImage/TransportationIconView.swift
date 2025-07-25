@@ -8,52 +8,52 @@
 import Foundation
 
 let subwayIcon: [String: String] = [
-    "1": "line1-26px",
-    "117": "line1-26px",
-    "118": "line1-26px",
+    "1": "line1",
+    "117": "line1",
+    "118": "line1",
     
-    "2": "line2-26px",
-    "10": "line2-26px",
-    "11": "line2-26px",
+    "2": "line2",
+    "10": "line2",
+    "11": "line2",
     
-    "3": "line3-26px",
+    "3": "line3",
     
-    "4": "line4-26px",
-    "119": "line4-26px",
+    "4": "line4",
+    "119": "line4",
     
-    "5": "line5-26px",
-    "6": "line6-26px",
-    "7": "line7-26px",
-    "8": "line8-26px",
+    "5": "line5",
+    "6": "line6",
+    "7": "line7",
+    "8": "line8",
     
-    "9": "line9-26px",
-    "120": "line9-26px",
+    "9": "line9",
+    "120": "line9",
     
-    "21": "Incheon1-26px",
-    "22": "Incheon2-26px",
+    "21": "Incheon1",
+    "22": "Incheon2",
     
-    "100": "Suin-Bundang-26px",
-    "121": "Suin-Bundang-26px",
+    "100": "Suin-Bundang",
+    "121": "Suin-Bundang",
     
-    "101": "airport-26px",
-    "124": "airport-26px",
+    "101": "airport",
+    "124": "airport",
     
-    "104": "Gyeongui-jungang-26px",
-    "122": "Gyeongui-jungang-26px",
+    "104": "Gyeongui-jungang",
+    "122": "Gyeongui-jungang",
     
-    "107": "EverLine-26px",
+    "107": "EverLine",
     
-    "108": "Gyeongchun-26px",
-    "123": "Gyeongchun-26px",
+    "108": "Gyeongchun",
+    "123": "Gyeongchun",
     
-    "109": "Shinbundang-26px",
-    "110": "Uijeongbu-26px",
-    "112": "Gyeonggang-26px",
-    "113": "Ui-Sinseol-26px",
-    "114": "Seohae-26px",
-    "115": "Gimpo-26px",
-    "116": "Sillim-26px",
-    "125": "GTX-A-26px"
+    "109": "Shinbundang",
+    "110": "Uijeongbu",
+    "112": "Gyeonggang",
+    "113": "Ui-Sinseol",
+    "114": "Seohae",
+    "115": "Gimpo",
+    "116": "Sillim",
+    "125": "GTX-A"
 ]
 
 let busIcon: [String: String] = [

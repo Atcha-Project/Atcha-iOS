@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "Property 1=Start.png",
+      "filename" : "marker-start.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "Property 1=Start@2x.png",
+      "filename" : "marker-start@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "Property 1=Start@3x.png",
+      "filename" : "marker-start@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }
