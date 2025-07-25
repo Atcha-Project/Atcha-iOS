@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "Property 1=End.png",
+      "filename" : "marker-end.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "Property 1=End@2x.png",
+      "filename" : "marker-end@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "Property 1=End@3x.png",
+      "filename" : "marker-end@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

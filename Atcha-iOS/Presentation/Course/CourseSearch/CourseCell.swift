@@ -217,7 +217,7 @@ final class CourseCell: UICollectionViewCell {
         for (index, leg) in course.legs.enumerated() {
             switch leg.modeEnum {
             case .walk:
-                let walkIcon = UIImageView(image: UIImage.routeCircleWalkGray700)
+                let walkIcon = UIImageView(image: UIImage.walkGray700)
                 walkIcon.snp.makeConstraints { $0.size.equalTo(26) }
                 courseCompactStack.addArrangedSubview(walkIcon)
             case .bus:
@@ -288,7 +288,7 @@ final class CourseCell: UICollectionViewCell {
             case .walk:
                 let stepView = CourseStepView()
                 stepView.configure(
-                    icon: UIImage.routeCircleWalkGray700,
+                    icon: UIImage.walkGray700,
                     title: "걷기",
                     time: leg.sectionTime,
                     topLineStyle: topLine,
@@ -346,7 +346,7 @@ final class CourseCell: UICollectionViewCell {
             case .unknown:
                 let stepView = CourseStepView()
                 stepView.configure(
-                    icon: UIImage.routeCircleWalkGray700,
+                    icon: UIImage.walkGray700,
                     title: "알 수 없음",
                     time: nil,
                     topLineStyle: topLine,
