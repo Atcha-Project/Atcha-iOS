@@ -39,7 +39,7 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
                for session: Session,
                dueTo error: Error,
                completion: @escaping (RetryResult) -> Void) {
-        guard let response = request.task?.response as? HTTPURLResponse, response.statusCode == 400 else {
+        guard let response = request.task?.response as? HTTPURLResponse, response.statusCode == 401 else {
             completion(.doNotRetry)
             return
         }
@@ -52,7 +52,8 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
         refreshAccessToken(refreshToken: refreshToken) { [weak self] result in
             switch result {
             case .success(let newAccessToken):
-                self?.tokenStorage.accessToken = newAccessToken
+                self?.tokenStorage.accessToken = newAccessToken?.accessToken
+                self?.tokenStorage.refreshToken = newAccessToken?.refreshToken
                 completion(.retry)
             case .failure:
                 completion(.doNotRetry)
@@ -60,7 +61,8 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
         }
     }
     
-    private func refreshAccessToken(refreshToken: String, completion: @escaping (Result<String, Error>) -> Void) {
+    private func refreshAccessToken(refreshToken: String,
+                                    completion: @escaping (Result<RefreshTokenResponse?, Error>) -> Void) {
         let url = "https://atcha.p-e.kr/api/auth/reissue"
         
         let headers: HTTPHeaders = [
@@ -72,13 +74,14 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
             method: .get,
             headers: headers
         )
-        .validate()
-        .responseDecodable(of: RefreshTokenResponse.self) { response in
+//        .validate()
+        .responseDecodable(of: APIResponse<RefreshTokenResponse>.self) { response in
             switch response.result {
             case .success(let refreshResponse):
-                completion(.success(refreshResponse.accessToken))
+                print("refreshResponse : \(refreshResponse)")
+                completion(.success(refreshResponse.result))
             case .failure(let error):
-                completion(.failure(error))
+                print("error123 : ", error.localizedDescription)
             }
         }
     }
