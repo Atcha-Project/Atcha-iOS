@@ -39,7 +39,7 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
                for session: Session,
                dueTo error: Error,
                completion: @escaping (RetryResult) -> Void) {
-        guard let response = request.task?.response as? HTTPURLResponse, response.statusCode == 401 else {
+        guard let response = request.task?.response as? HTTPURLResponse, response.statusCode == 400 else {
             completion(.doNotRetry)
             return
         }
@@ -61,10 +61,17 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
     }
     
     private func refreshAccessToken(refreshToken: String, completion: @escaping (Result<String, Error>) -> Void) {
-        let url = "\(NetworkConstant.baseURL)/auth/reissue"
-        AF.request(url, method: .post,
-                   parameters: ["Authorization": "Bearer \(refreshToken)"],
-                   encoding: JSONEncoding.default)
+        let url = "https://atcha.p-e.kr/api/auth/reissue"
+        
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(refreshToken)"
+        ]
+        
+        AF.request(
+            url,
+            method: .get,
+            headers: headers
+        )
         .validate()
         .responseDecodable(of: RefreshTokenResponse.self) { response in
             switch response.result {

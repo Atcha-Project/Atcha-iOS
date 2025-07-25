@@ -84,12 +84,7 @@ final class CourseModifyViewModel: BaseViewModel {
         Task {
             do {
                 _ = try await searchAddressUseCase.clearAllSearchHistories()
-                self.items = self.items.filter {
-                    switch $0 {
-                    case .result: return false
-                    case .recent: return false
-                    }
-                }
+                self.items = []
             } catch {
                 print("최근 장소 전체 삭제 실패")
             }

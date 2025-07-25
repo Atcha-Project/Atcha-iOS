@@ -95,7 +95,7 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
     
     // MARK: - 알림 리스트 UI
     private func setupAlarmLists() {
-        AlarmTimeOption.allCases.enumerated().forEach { index, alarm in
+        AlarmTimeOption.displayOptions.enumerated().forEach { index, alarm in
             let listView: AtchaList
             switch index {
             default:

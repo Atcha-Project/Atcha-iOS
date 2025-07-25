@@ -27,15 +27,14 @@ final class CourseModifyViewController: BaseViewController<CourseModifyViewModel
     private let recentAllDeleteLabel: UILabel = UILabel()
     private let emptyRecentLabel: UILabel = UILabel()
     
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setupUI()
         setupAutoLayout()
         bindViewModel()
+        viewModel.recentSearchLocation()
         setupSearchTextFieldCallbacks()
-        //        viewModel.recentSearchLocation()
     }
     
     // MARK: - ViewModel 바인딩
