@@ -26,6 +26,14 @@ final class CourseModifyCoordinator {
             self?.showCourseSetting(location: location)
         }
         
+        viewModel.onLocationConfirmed = { [weak self] locationInfo, coordinate in
+                self?.showCourseSearch(
+                    startLat: "\(coordinate.latitude)",
+                    startLon: "\(coordinate.longitude)",
+                    startAddress: locationInfo.name ?? "주소 없음"
+                )
+            }
+        
         
         let viewController = CourseModifyViewController(viewModel: viewModel)
         navigationController.pushViewController(viewController, animated: true)
@@ -34,12 +42,12 @@ final class CourseModifyCoordinator {
     private func showCourseSetting(location: Location) {
         let vm = diContainer.makeCourseSettingViewModel(location: location)
         vm.onTapLocationButton = { [weak self] locationInfo, coordinate in
-            print("사용자가 선택한 위치: \(locationInfo.name ?? "없음") / \(locationInfo.address ?? "없음")")
-            print("좌표: \(coordinate.latitude), \(coordinate.longitude)")
-            
+            print("사용자가 선택한 위치: \(locationInfo.name ?? "없음")")
+
             self?.navigationController.popViewController(animated: true)
-            if let name = locationInfo.name {
-                self?.showCourseSearch(startLat: "\(coordinate.latitude)", startLon: "\(coordinate.longitude)", startAddress: "\(name)")
+
+            if let modifyVC = self?.navigationController.viewControllers.compactMap({ $0 as? CourseModifyViewController }).last {
+                modifyVC.didReceiveLocation(locationInfo: locationInfo, coordinate: coordinate)
             }
         }
         let vc = diContainer.makeCourseSettingViewController(viewModel: vm)
