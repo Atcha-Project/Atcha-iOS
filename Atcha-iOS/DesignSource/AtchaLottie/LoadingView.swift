@@ -35,7 +35,6 @@ final class LoadingView: UIView {
         
         animationView.snp.makeConstraints {
             $0.center.equalToSuperview()
-            $0.width.height.equalTo(150)
         }
     }
     
