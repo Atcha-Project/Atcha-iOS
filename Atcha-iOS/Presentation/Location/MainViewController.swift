@@ -61,9 +61,11 @@ final class MainViewController: BaseViewController<MainViewModel>,
                 guard let self else { return }
                 switch action {
                 case .currentTapped:
-                    viewModel.routeHandler?(.changeCourse)
+                    viewModel.handleRoute(route: .changeCourse)
                 case .searchTapped:
-                    viewModel.routeHandler?(.courseSearch(startLat: "37.566295", startLon: "126.977945", startAddress: "서울시청"))
+                    viewModel.handleRoute(route: .courseSearch(startLat: "",
+                                                               startLon: "",
+                                                               startAddress: ""))
                 }
             }
             .store(in: &cancellables)
@@ -158,7 +160,7 @@ extension MainViewController {
     }
     
     @objc private func didTapMyPageButton() {
-        viewModel.routeHandler?(.myPage)
+        viewModel.handleRoute(route: .myPage)
     }
     
     @objc private func didTapLocationButton() {

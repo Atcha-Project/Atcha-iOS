@@ -82,6 +82,24 @@ final class MainViewModel: BaseViewModel {
         }
     }
     
+    func handleRoute(route: MainRoute) {
+        switch route {
+        case .changeCourse:
+            routeHandler?(.changeCourse)
+        case .courseSearch:
+            guard let currentLocation else { return }
+            let lat: String = "\(currentLocation.latitude)"
+            let lon: String = "\(currentLocation.longitude)"
+            let address: String = address ?? ""
+            
+            routeHandler?(.courseSearch(startLat: lat,
+                                        startLon: lon,
+                                        startAddress: address))
+        case .myPage:
+            routeHandler?(.myPage)
+        }
+    }
+    
     func setupLocation() {
         requestPermissionAndStartTracking()
     }
