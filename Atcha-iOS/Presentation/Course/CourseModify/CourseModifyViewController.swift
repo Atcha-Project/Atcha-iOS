@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import CoreLocation
 
 final class CourseModifyViewController: BaseViewController<CourseModifyViewModel> {
     private lazy var topNavigationBar: BackOnlyNavigationBar = AtchaNavigationBar.backOnly(onBack: { [weak self] in
@@ -26,6 +27,8 @@ final class CourseModifyViewController: BaseViewController<CourseModifyViewModel
     private let recentLabel: UILabel = UILabel()
     private let recentAllDeleteLabel: UILabel = UILabel()
     private let emptyRecentLabel: UILabel = UILabel()
+    private var isFromSetting: Bool = false
+    private var loadingView: LoadingView = LoadingView()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -35,6 +38,26 @@ final class CourseModifyViewController: BaseViewController<CourseModifyViewModel
         bindViewModel()
         viewModel.recentSearchLocation()
         setupSearchTextFieldCallbacks()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        guard !isFromSetting else {
+            isFromSetting = false  // ✅ 한 번만 사용되도록 초기화
+            return
+        }
+        
+        tableView.isHidden = false
+        tableHeaderView.isHidden = false
+        let text = searchTextField.text?.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines) ?? ""
+        
+        guard !text.isEmpty,
+              let coordinate = viewModel.currentLocation else { return }
+        
+        viewModel.searchLocation(keyword: text,
+                                 lat: coordinate.latitude,
+                                 lon: coordinate.longitude)
     }
     
     // MARK: - ViewModel 바인딩
@@ -209,6 +232,24 @@ final class CourseModifyViewController: BaseViewController<CourseModifyViewModel
         
         viewModel.deleteSearchHistory(request: request)
     }
+    
+    func didReceiveLocation(locationInfo: LocationInfo, coordinate: CLLocationCoordinate2D) {
+        isFromSetting = true
+        
+        searchTextField.setText(locationInfo.name ?? "주소 없음")
+        tableView.isHidden = true
+        tableHeaderView.isHidden = true
+        
+        view.addSubview(loadingView)
+        loadingView.start()
+        loadingView.snp.makeConstraints { $0.edges.equalToSuperview() }
+        
+        // 1초 후 ViewModel에게 전달
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            self.loadingView.stop()
+            self.viewModel.onLocationConfirmed?(locationInfo, coordinate)
+        }
+    }
 }
 
 extension CourseModifyViewController: UITableViewDataSource, UITableViewDelegate {
@@ -285,7 +326,7 @@ extension CourseModifyViewController: UITableViewDataSource, UITableViewDelegate
         switch item {
         case .recent(let loc), .result(let loc):
             print("선택된 장소: \(loc.name ?? "")")
-
+            
             viewModel.addRecentSearchLocation(request: RecentSearchRequest(name: loc.name, lat: loc.lat, lon: loc.lon, businessCategory: loc.businessCategory, address: loc.address))
             
             viewModel.onLocationSelected?(loc)
