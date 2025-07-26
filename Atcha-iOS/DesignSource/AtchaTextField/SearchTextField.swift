@@ -13,6 +13,9 @@ import SnapKit
 final class SearchTextField: UIView {
     var onTextChange: ((String) -> Void)?
     var onTextReset: (() -> Void)?
+    var text: String? {
+        return textField.text
+    }
     
     private let textField = UITextField()
     private let resetButton = UIButton()
@@ -99,5 +102,10 @@ final class SearchTextField: UIView {
         resetButton.isHidden = true
         onTextReset?()
         onTextChange?("")
+    }
+    
+    func setText(_ text: String) {
+        textField.text = text
+        resetButton.isHidden = text.isEmpty
     }
 }
