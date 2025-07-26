@@ -90,7 +90,7 @@ final class HomeRegisterViewModel: BaseViewModel {
         self.selectedState = .selected(name: name, address: address)
     }
     
-    private func fetchCurrentAddress(lat: Double, lon: Double) async throws -> ReverseGeocodeLocationResponse {
+    private func fetchCurrentAddress(lat: Double, lon: Double) async throws -> Location? {
         let request: ReverseGeocodeLocationRequest = ReverseGeocodeLocationRequest(lat: lat, lon: lon)
         return try await searchAddressUseCase.searchLocation(request)
     }

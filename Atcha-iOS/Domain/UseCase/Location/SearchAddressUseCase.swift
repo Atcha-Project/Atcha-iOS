@@ -9,7 +9,8 @@ import Foundation
 import CoreLocation
 
 protocol SearchAddressUseCase {
-    func searchLocation(_ request: ReverseGeocodeLocationRequest) async throws -> ReverseGeocodeLocationResponse
+    func searchLocation(_ request: ReverseGeocodeLocationRequest) async throws -> Location?
+    
     func searchAddress(_ request: SearchLocationRequest) async throws -> [Location]
     
     // 최근 검색 조회
@@ -31,8 +32,8 @@ final class SearchAddressUseCaseImpl: SearchAddressUseCase {
         self.repository = repository
     }
     
-    func searchLocation(_ request: ReverseGeocodeLocationRequest) async throws -> ReverseGeocodeLocationResponse {
-        return try await repository.fetchCurrentLocation(request: request)
+    func searchLocation(_ request: ReverseGeocodeLocationRequest) async throws -> Location? {
+        return try await repository.fetchCurrentLocation(request: request).toEntity()
     }
     
     func searchAddress(_ request: SearchLocationRequest) async throws -> [Location] {

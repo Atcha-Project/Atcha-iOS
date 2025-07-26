@@ -111,15 +111,16 @@ final class MainViewController: BaseViewController<MainViewModel>,
             }
             .store(in: &cancellables)
         
-        //        viewModel.$taxiFare
-        //            .removeDuplicates()
-        //            .compactMap { $0 }
-        //            .receive(on: RunLoop.main)
-        //            .sink { [weak self] fare in
-        ////                guard let self else { return }
-        //                print("fare : \(fare)")
-        //            }
-        //            .store(in: &cancellables)
+        viewModel.$taxiFare
+            .removeDuplicates()
+            .compactMap { $0 }
+            .receive(on: RunLoop.main)
+            .sink { [weak self] fare in
+                guard let self else { return }
+                let fareStr = String(format: "%.0f", fare)
+                ballonView.setupTitle(bottomMessage: "여기서 막차 놓치면 택시비 : 약 \(fareStr)원")
+            }
+            .store(in: &cancellables)
     }
     
     private func setupAutoLayout() {

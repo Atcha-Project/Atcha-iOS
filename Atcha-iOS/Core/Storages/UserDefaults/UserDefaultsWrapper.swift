@@ -17,6 +17,10 @@ final public class UserDefaultsWrapper {
         userDefaults.set(value, forKey: key)
     }
     
+    public func set(_ value: Double, forKey key: String) {
+        userDefaults.set(value, forKey: key)
+    }
+    
     public func set(_ value: String, forKey key: String) {
         userDefaults.set(value, forKey: key)
     }
@@ -37,8 +41,12 @@ final public class UserDefaultsWrapper {
     
     
     // MARK: - 불러오기
-    public func  integer(forKey key: String) -> Int? {
+    public func integer(forKey key: String) -> Int? {
         return userDefaults.value(forKey: key) as? Int
+    }
+    
+    public func double(forKey key: String) -> Double? {
+        return userDefaults.value(forKey: key) as? Double
     }
     
     public func string(forKey key: String) -> String? {
