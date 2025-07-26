@@ -40,8 +40,6 @@ final class TMapWrapper: NSObject, MapRendering {
         mapView.setApiKey(Bundle.main.tMapKey)
         mapView.delegate = self
         mapView.locationDelgate = self
-        mapView.isShowCompass = false
-        mapView.isZoomEnable = false
     }
     
     func updateUserMarker(coordinate: CLLocationCoordinate2D) {
@@ -64,8 +62,8 @@ extension TMapWrapper: TMapViewDelegate, TmapViewLocationDelegate {
     func mapViewDidFinishLoadingMap() {
         mapView.setMapType(.Night)
         mapView.setZoom(18)
-//        mapView.trackinMode = .followWithCourse
-//        mapView.isTrackingLocation = true
+        mapView.isZoomEnable = false
+        mapView.isShowCompass = false
         
         delegate?.didFinishLoadingMap(self)
 //        guard let center = mapView.getCenter() else { return }

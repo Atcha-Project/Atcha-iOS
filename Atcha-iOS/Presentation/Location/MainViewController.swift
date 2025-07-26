@@ -11,7 +11,7 @@ import CoreLocation
 import TMapSDK
 
 final class MainViewController: BaseViewController<MainViewModel>,
-                               TMapWrapperDelegate {
+                                TMapWrapperDelegate {
     
     private let mapContainerView: TMapContainerView = TMapContainerView()
     private let lastTrainView: LastTrainSearchBottomView = LastTrainSearchBottomView()
@@ -19,6 +19,9 @@ final class MainViewController: BaseViewController<MainViewModel>,
     private let myPageButton: UIButton = UIButton()
     private let loactionButton: UIButton = UIButton()
     private let atchaImageView: UIImageView = UIImageView()
+    private let ballonView: AtchaBallon = AtchaBallon()
+    
+    private var firstAddress: String?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -35,15 +38,17 @@ final class MainViewController: BaseViewController<MainViewModel>,
             atchaImageView,
             lastTrainView,
             myPageButton,
-            loactionButton
+            loactionButton,
+            ballonView
         )
-
+        
         mapContainerView.delegate = self
-
+        
         configureButton(myPageButton, imageName: "mypage-filled", action: #selector(didTapMyPageButton))
         configureButton(loactionButton, imageName: "mylocation-filled", action: #selector(didTapLocationButton))
         flagImageView.image = UIImage.settingLocationMark
         atchaImageView.image = UIImage.atcha
+        ballonView.setupTitle(bottomMessage: "여기서 막차 놓치면 택시비")
     }
     
     private func configureButton(_ button: UIButton, imageName: String, action: Selector) {
@@ -59,9 +64,11 @@ final class MainViewController: BaseViewController<MainViewModel>,
                 guard let self else { return }
                 switch action {
                 case .currentTapped:
-                    viewModel.routeHandler?(.changeCourse)
+                    viewModel.handleRoute(route: .changeCourse)
                 case .searchTapped:
-                    viewModel.routeHandler?(.courseSearch(startLat: "37.566295", startLon: "126.977945", startAddress: "서울시청"))
+                    viewModel.handleRoute(route: .courseSearch(startLat: "",
+                                                               startLon: "",
+                                                               startAddress: ""))
                 }
             }
             .store(in: &cancellables)
@@ -72,11 +79,19 @@ final class MainViewController: BaseViewController<MainViewModel>,
             .receive(on: RunLoop.main)
             .sink { [weak self] address in
                 guard let self else { return }
-                lastTrainView.setupCurrentLocationTitle(address)
+                
+                if firstAddress == nil {
+                    firstAddress = address
+                }
+                
+                if address == firstAddress {
+                    lastTrainView.setupCurrentLocationTitle("현위치 : \(address)")
+                } else {
+                    lastTrainView.setupCurrentLocationTitle(address)
+                }
             }
             .store(in: &cancellables)
         
-        // 현재 내 위치 location
         viewModel.$currentLocation
             .compactMap { $0 }
             .receive(on: DispatchQueue.main)
@@ -96,22 +111,22 @@ final class MainViewController: BaseViewController<MainViewModel>,
             }
             .store(in: &cancellables)
         
-//        viewModel.$taxiFare
-//            .removeDuplicates()
-//            .compactMap { $0 }
-//            .receive(on: RunLoop.main)
-//            .sink { [weak self] fare in
-////                guard let self else { return }
-//                print("fare : \(fare)")
-//            }
-//            .store(in: &cancellables)
-        
+        viewModel.$taxiFare
+            .removeDuplicates()
+            .compactMap { $0 }
+            .receive(on: RunLoop.main)
+            .sink { [weak self] fare in
+                guard let self else { return }
+                let fareStr = String(format: "%.0f", fare)
+                ballonView.setupTitle(bottomMessage: "여기서 막차 놓치면 택시비 : 약 \(fareStr)원")
+            }
+            .store(in: &cancellables)
     }
     
     private func setupAutoLayout() {
         flagImageView.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
-            make.centerY.equalTo(mapContainerView.snp.centerY)
+            make.centerY.equalTo(mapContainerView.snp.centerY).offset(-63)
             make.height.equalTo(63)
             make.width.equalTo(48)
         }
@@ -129,6 +144,10 @@ final class MainViewController: BaseViewController<MainViewModel>,
             make.bottom.equalTo(lastTrainView.snp.top).inset(-16)
             make.trailing.equalToSuperview().inset(16)
             make.width.height.equalTo(40)
+        }
+        ballonView.snp.makeConstraints { make in
+            make.leading.equalToSuperview().inset(8)
+            make.bottom.equalTo(lastTrainView.snp.top).inset(-45)
         }
         atchaImageView.snp.makeConstraints { make in
             make.width.height.equalTo(64)
@@ -149,7 +168,7 @@ extension MainViewController {
     }
     
     @objc private func didTapMyPageButton() {
-        viewModel.routeHandler?(.myPage)
+        viewModel.handleRoute(route: .myPage)
     }
     
     @objc private func didTapLocationButton() {

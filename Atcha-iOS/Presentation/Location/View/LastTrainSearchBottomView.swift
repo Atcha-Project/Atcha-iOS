@@ -113,8 +113,7 @@ final class LastTrainSearchBottomView: UIView {
     }
     
     func setupCurrentLocationTitle(_ address: String) {
-        // TODO: - 현재 내 위치랑 동일한 경우, 현위치 포함 아닌경우 pass
-        currentLocationLabel.attributedText = AtchaFont.B1_R_17("현위치 : \(address)", color: .main)
+        currentLocationLabel.attributedText = AtchaFont.B1_R_17("\(address)", color: .main)
     }
 }
 

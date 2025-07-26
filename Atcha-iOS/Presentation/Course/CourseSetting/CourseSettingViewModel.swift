@@ -105,7 +105,7 @@ final class CourseSettingViewModel: BaseViewModel {
 
 // MARK: - Search Address
 extension CourseSettingViewModel {
-    private func fetchCurrentAddress(lat: Double, lon: Double) async throws -> ReverseGeocodeLocationResponse {
+    private func fetchCurrentAddress(lat: Double, lon: Double) async throws -> Location? {
         let request: ReverseGeocodeLocationRequest = ReverseGeocodeLocationRequest(lat: lat, lon: lon)
         return try await searchAddressUseCase.searchLocation(request)
     }

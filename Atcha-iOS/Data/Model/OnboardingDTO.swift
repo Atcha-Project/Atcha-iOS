@@ -30,13 +30,6 @@ struct ReverseGeocodeLocationRequest: Codable {
     let lon: Double
 }
 
-struct ReverseGeocodeLocationResponse: Codable {
-    let name: String?
-    let address: String?
-    let lat: Double?
-    let lon: Double?
-}
-
 struct SelectedLocation {
     let name: String
     let address: String
@@ -44,16 +37,3 @@ struct SelectedLocation {
     let lon: Double
 }
 
-struct FetchTaxiFareRequest: Codable {
-    let originLat: Double?
-    let originLon: Double?
-    let destinationLat: Double?
-    let destinationLon: Double?
-    
-    enum CodingKeys: String, CodingKey {
-        case originLat = "startLat"
-        case originLon = "startLon"
-        case destinationLat = "endLat"
-        case destinationLon = "endLon"
-    }
-}

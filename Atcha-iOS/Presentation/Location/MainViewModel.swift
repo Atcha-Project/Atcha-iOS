@@ -47,11 +47,23 @@ final class MainViewModel: BaseViewModel {
                 guard let self, let location else { return }
                 currentLocation = location
                 Task {
-                    let address = try? await self.fetchCurrentAddress(lat: location.latitude,
-                                                                      lon: location.longitude)
+                    let info = try? await self.fetchCurrentAddress(lat: location.latitude,
+                                                                   lon: location.longitude)
                     
-                    self.address = address?.name
+                    if let address = info?.name, !address.isEmpty {
+                        self.address = address
+                    } else if let address = info?.address {
+                        self.address = address
+                    }
+                    
+                    let request = FetchTaxiFareRequest(originLat: info?.lat,
+                                                       originLon: info?.lon,
+                                                       destinationLat: UserDefaultsWrapper().double(forKey: UserDefaultsWrapper.Key.lat.rawValue),
+                                                       destinationLon: UserDefaultsWrapper().double(forKey: UserDefaultsWrapper.Key.lon.rawValue))
+                    
+                    self.taxiFare = try? await self.fetchTaxiFare(request: request)
                 }
+                
             }
             .store(in: &cancellables)
     }
@@ -60,7 +72,7 @@ final class MainViewModel: BaseViewModel {
         Task {
             let status = await authorizationUseCase.askLocationPermission()
             guard status == .authorizedAlways || status == .authorizedWhenInUse else { return }
-
+            
             streamTask = Task {
                 var didSendInitialLocation = false
                 for await location in streamUseCase.startUpdate() {
@@ -70,10 +82,28 @@ final class MainViewModel: BaseViewModel {
                         self.currentLocation = currentLocation
                         didSendInitialLocation = true
                     }
-
+                    
                     selectedLocation = currentLocation
                 }
             }
+        }
+    }
+    
+    func handleRoute(route: MainRoute) {
+        switch route {
+        case .changeCourse:
+            routeHandler?(.changeCourse)
+        case .courseSearch:
+            guard let currentLocation else { return }
+            let lat: String = "\(currentLocation.latitude)"
+            let lon: String = "\(currentLocation.longitude)"
+            let address: String = address ?? ""
+            
+            routeHandler?(.courseSearch(startLat: lat,
+                                        startLon: lon,
+                                        startAddress: address))
+        case .myPage:
+            routeHandler?(.myPage)
         }
     }
     
@@ -93,8 +123,12 @@ final class MainViewModel: BaseViewModel {
 
 // MARK: - Search Address
 extension MainViewModel {
-    private func fetchCurrentAddress(lat: Double, lon: Double) async throws -> ReverseGeocodeLocationResponse {
+    private func fetchCurrentAddress(lat: Double, lon: Double) async throws -> Location? {
         let request: ReverseGeocodeLocationRequest = ReverseGeocodeLocationRequest(lat: lat, lon: lon)
         return try await searchAddressUseCase.searchLocation(request)
+    }
+    
+    private func fetchTaxiFare(request: FetchTaxiFareRequest) async throws -> Double {
+        return try await fetchTaxiFareUseCase.fetchTaxiFare(request: request)
     }
 }
