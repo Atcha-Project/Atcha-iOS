@@ -16,13 +16,13 @@ struct Course: Codable, Hashable {
     let totalDistance: Int?
     let totalWalkDistance: Int?
     let pathType: Int?
-    let legs: [legs]
+    let legs: [Legs]
 }
 
-struct legs: Codable, Hashable {
+struct Legs: Codable, Hashable {
     let distance: Int?
     let sectionTime: Int?
-    let mode: String?
+    let mode: TransportMode?
     let departureDateTime: String?
     let route: String?
     let type: String?
@@ -54,15 +54,15 @@ struct step: Codable, Hashable{
     let linestring: String?
 }
 
-enum TransportMode: String {
+enum TransportMode: String, Codable {
     case walk = "WALK"
     case bus = "BUS"
     case subway = "SUBWAY"
     case unknown
 }
 
-extension legs {
-    var modeEnum: TransportMode {
-        return TransportMode(rawValue: mode?.uppercased() ?? "") ?? .unknown
-    }
-}
+//extension Legs {
+//    var modeEnum: TransportMode {
+//        return TransportMode(rawValue: mode?.uppercased() ?? "") ?? .unknown
+//    }
+//}

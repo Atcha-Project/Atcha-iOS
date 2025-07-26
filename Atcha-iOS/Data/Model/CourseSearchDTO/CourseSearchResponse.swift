@@ -36,7 +36,7 @@ struct CourseSearchResponse: Codable {
 struct LegResponse: Codable {
     let distance: Int?
     let sectionTime: Int?
-    let mode: String?
+    let mode: TransportMode?
     let departureDateTime: String?
     let route: String?
     let type: String?
@@ -47,8 +47,8 @@ struct LegResponse: Codable {
     let step: [StepResponse]?
     let passShape: String?
     
-    func toEntity() -> legs {
-        return legs(
+    func toEntity() -> Legs {
+        return Legs(
             distance: distance,
             sectionTime: sectionTime,
             mode: mode,

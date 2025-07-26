@@ -62,14 +62,14 @@ final class CourseSearchViewModel: BaseViewModel {
         case 1:
             // BUS만 포함된 코스
             self.courses = allCourses.filter { uiModel in
-                let modes = uiModel.course.legs.map { $0.modeEnum }
+                let modes = uiModel.course.legs.compactMap { $0.mode }
                 return !modes.contains(.subway) && modes.contains(.bus)
             }
             
         case 2:
             // SUBWAY만 포함된 코스
             self.courses = allCourses.filter { uiModel in
-                let modes = uiModel.course.legs.map { $0.modeEnum }
+                let modes = uiModel.course.legs.compactMap { $0.mode }
                 return !modes.contains(.bus) && modes.contains(.subway)
             }
         default:
