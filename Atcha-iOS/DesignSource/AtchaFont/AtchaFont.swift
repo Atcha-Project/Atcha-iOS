@@ -48,8 +48,8 @@ enum AtchaFont {
     }
     
     // Display 2
-    static func D2_EB_44(lineHeight: CGFloat = 54, _ text: String, color: UIColor = .label, alignment: NSTextAlignment = .left) -> NSAttributedString {
-        styled(.ExtraBold, size: 44, lineHeight: lineHeight, text: text, color: color, alignment: alignment)
+    static func D2_EB_48(lineHeight: CGFloat = 54, _ text: String, color: UIColor = .label, alignment: NSTextAlignment = .left) -> NSAttributedString {
+        styled(.ExtraBold, size: 48, lineHeight: lineHeight, text: text, color: color, alignment: alignment)
     }
     
     // Display 3
