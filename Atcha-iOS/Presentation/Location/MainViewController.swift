@@ -11,7 +11,7 @@ import CoreLocation
 import TMapSDK
 
 final class MainViewController: BaseViewController<MainViewModel>,
-                               TMapWrapperDelegate {
+                                TMapWrapperDelegate {
     
     private let mapContainerView: TMapContainerView = TMapContainerView()
     private let lastTrainView: LastTrainSearchBottomView = LastTrainSearchBottomView()
@@ -19,6 +19,8 @@ final class MainViewController: BaseViewController<MainViewModel>,
     private let myPageButton: UIButton = UIButton()
     private let loactionButton: UIButton = UIButton()
     private let atchaImageView: UIImageView = UIImageView()
+    
+    private var firstAddress: String?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -37,9 +39,9 @@ final class MainViewController: BaseViewController<MainViewModel>,
             myPageButton,
             loactionButton
         )
-
+        
         mapContainerView.delegate = self
-
+        
         configureButton(myPageButton, imageName: "mypage-filled", action: #selector(didTapMyPageButton))
         configureButton(loactionButton, imageName: "mylocation-filled", action: #selector(didTapLocationButton))
         flagImageView.image = UIImage.settingLocationMark
@@ -72,11 +74,19 @@ final class MainViewController: BaseViewController<MainViewModel>,
             .receive(on: RunLoop.main)
             .sink { [weak self] address in
                 guard let self else { return }
-                lastTrainView.setupCurrentLocationTitle(address)
+                
+                if firstAddress == nil {
+                    firstAddress = address
+                }
+                
+                if address == firstAddress {
+                    lastTrainView.setupCurrentLocationTitle("현위치 : \(address)")
+                } else {
+                    lastTrainView.setupCurrentLocationTitle(address)
+                }
             }
             .store(in: &cancellables)
         
-        // 현재 내 위치 location
         viewModel.$currentLocation
             .compactMap { $0 }
             .receive(on: DispatchQueue.main)
@@ -96,22 +106,21 @@ final class MainViewController: BaseViewController<MainViewModel>,
             }
             .store(in: &cancellables)
         
-//        viewModel.$taxiFare
-//            .removeDuplicates()
-//            .compactMap { $0 }
-//            .receive(on: RunLoop.main)
-//            .sink { [weak self] fare in
-////                guard let self else { return }
-//                print("fare : \(fare)")
-//            }
-//            .store(in: &cancellables)
-        
+        //        viewModel.$taxiFare
+        //            .removeDuplicates()
+        //            .compactMap { $0 }
+        //            .receive(on: RunLoop.main)
+        //            .sink { [weak self] fare in
+        ////                guard let self else { return }
+        //                print("fare : \(fare)")
+        //            }
+        //            .store(in: &cancellables)
     }
     
     private func setupAutoLayout() {
         flagImageView.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
-            make.centerY.equalTo(mapContainerView.snp.centerY)
+            make.centerY.equalTo(mapContainerView.snp.centerY).offset(-63)
             make.height.equalTo(63)
             make.width.equalTo(48)
         }

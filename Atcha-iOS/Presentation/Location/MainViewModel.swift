@@ -47,10 +47,15 @@ final class MainViewModel: BaseViewModel {
                 guard let self, let location else { return }
                 currentLocation = location
                 Task {
-                    let address = try? await self.fetchCurrentAddress(lat: location.latitude,
-                                                                      lon: location.longitude)
+                    let info = try? await self.fetchCurrentAddress(lat: location.latitude,
+                                                                   lon: location.longitude)
                     
-                    self.address = address?.name
+                    if let address = info?.name, !address.isEmpty {
+                        self.address = address
+                    } else if let address = info?.address {
+                        self.address = address
+                    }
+                    
                 }
             }
             .store(in: &cancellables)
@@ -60,7 +65,7 @@ final class MainViewModel: BaseViewModel {
         Task {
             let status = await authorizationUseCase.askLocationPermission()
             guard status == .authorizedAlways || status == .authorizedWhenInUse else { return }
-
+            
             streamTask = Task {
                 var didSendInitialLocation = false
                 for await location in streamUseCase.startUpdate() {
@@ -70,7 +75,7 @@ final class MainViewModel: BaseViewModel {
                         self.currentLocation = currentLocation
                         didSendInitialLocation = true
                     }
-
+                    
                     selectedLocation = currentLocation
                 }
             }
