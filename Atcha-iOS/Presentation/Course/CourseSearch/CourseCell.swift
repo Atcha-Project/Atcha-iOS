@@ -206,7 +206,7 @@ final class CourseCell: UICollectionViewCell {
             departTimeLabel.attributedText = AtchaFont.B7_M_13(departTime.convertedToHourMinute, color: AtchaColor.main)
         }
         
-        if let boardingLeg = course.legs.first(where: { $0.mode == "SUBWAY" || $0.mode == "BUS" }),
+        if let boardingLeg = course.legs.first(where: { $0.mode?.rawValue == "SUBWAY" || $0.mode?.rawValue == "BUS" }),
            let boardingTime = boardingLeg.departureDateTime {
             boardingTimeLabel.attributedText = AtchaFont.B7_M_13(boardingTime.convertedToHourMinute, color: AtchaColor.white)
         } else {
@@ -215,7 +215,7 @@ final class CourseCell: UICollectionViewCell {
         
         courseCompactStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         for (index, leg) in course.legs.enumerated() {
-            switch leg.modeEnum {
+            switch leg.mode {
             case .walk:
                 let walkIcon = UIImageView(image: UIImage.walkGray700)
                 walkIcon.snp.makeConstraints { $0.size.equalTo(26) }
@@ -238,7 +238,7 @@ final class CourseCell: UICollectionViewCell {
                         courseCompactStack.addArrangedSubview(subwayIconView)
                     }
                 }
-            case .unknown:
+            default:
                 break
             }
             
@@ -265,7 +265,7 @@ final class CourseCell: UICollectionViewCell {
             if index == 0 {
                 topLine = .none
             } else {
-                if prevLeg?.modeEnum == .walk || leg.modeEnum == .walk {
+                if prevLeg?.mode == .walk || leg.mode == .walk {
                     topLine = .dotted
                 } else {
                     topLine = .solid
@@ -276,7 +276,7 @@ final class CourseCell: UICollectionViewCell {
             if index == course.legs.count - 1 {
                 bottomLine = .none
             } else {
-                if nextLeg?.modeEnum == .walk || leg.modeEnum == .walk {
+                if nextLeg?.mode == .walk || leg.mode == .walk {
                     bottomLine = .dotted
                 } else {
                     bottomLine = .solid
@@ -284,7 +284,7 @@ final class CourseCell: UICollectionViewCell {
             }
             // --------------------------
             
-            switch leg.modeEnum {
+            switch leg.mode {
             case .walk:
                 let stepView = CourseStepView()
                 stepView.configure(
@@ -304,14 +304,14 @@ final class CourseCell: UICollectionViewCell {
                    let end = leg.end,
                    let endName = end.name {
                     
-                    let startIcon = UIImage(named: leg.modeEnum == .bus
+                    let startIcon = UIImage(named: leg.mode == .bus
                                             ? busIcon[leg.type ?? "0"] ?? busDefaultIcon
                                             : subwayIcon[leg.type ?? "0"] ?? subwayDefaultIcon)
                     
                     let startStepView = CourseStepView()
                     startStepView.configure(
                         icon: startIcon,
-                        title: leg.modeEnum == .bus ? "\(startName) 승차" : "\(startName)역 승차",
+                        title: leg.mode == .bus ? "\(startName) 승차" : "\(startName)역 승차",
                         time: nil,
                         topLineStyle: topLine,
                         bottomLineStyle: .solid,
@@ -323,18 +323,18 @@ final class CourseCell: UICollectionViewCell {
                     let isLastLeg = index == course.legs.count - 1
                     let endStepView = CourseStepView()
                     
-                    let getOffIcon = UIImage(named: leg.modeEnum == .bus
+                    let getOffIcon = UIImage(named: leg.mode == .bus
                                              ? busGetOffIcon[leg.type ?? "0"] ?? defaultGetOffIcon
                                              : subwayGetOffIcon[leg.type ?? "0"] ?? defaultGetOffIcon)
                     
                     // 하차 아이콘은 걷기로 연결될 수 있으므로 bottomLine 스타일
                     let endBottomLine: LineStyle = isLastLeg
                     ? .none
-                    : (nextLeg?.modeEnum == .walk ? .dotted : .solid)
+                    : (nextLeg?.mode == .walk ? .dotted : .solid)
                     
                     endStepView.configure(
                         icon: getOffIcon,
-                        title: leg.modeEnum == .bus ? "\(endName) 하차" : "\(endName)역 하차",
+                        title: leg.mode == .bus ? "\(endName) 하차" : "\(endName)역 하차",
                         time: nil,
                         topLineStyle: .solid,
                         bottomLineStyle: endBottomLine,
@@ -343,7 +343,8 @@ final class CourseCell: UICollectionViewCell {
                     courseDetailStack.addArrangedSubview(endStepView)
                 }
                 
-            case .unknown:
+//            case .unknown:
+            default:
                 let stepView = CourseStepView()
                 stepView.configure(
                     icon: UIImage.walkGray700,
