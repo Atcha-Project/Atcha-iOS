@@ -19,6 +19,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
     private let myPageButton: UIButton = UIButton()
     private let loactionButton: UIButton = UIButton()
     private let atchaImageView: UIImageView = UIImageView()
+    private let ballonView: AtchaBallon = AtchaBallon()
     
     private var firstAddress: String?
     
@@ -37,7 +38,8 @@ final class MainViewController: BaseViewController<MainViewModel>,
             atchaImageView,
             lastTrainView,
             myPageButton,
-            loactionButton
+            loactionButton,
+            ballonView
         )
         
         mapContainerView.delegate = self
@@ -46,6 +48,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
         configureButton(loactionButton, imageName: "mylocation-filled", action: #selector(didTapLocationButton))
         flagImageView.image = UIImage.settingLocationMark
         atchaImageView.image = UIImage.atcha
+        ballonView.setupTitle(bottomMessage: "여기서 막차 놓치면 택시비")
     }
     
     private func configureButton(_ button: UIButton, imageName: String, action: Selector) {
@@ -140,6 +143,10 @@ final class MainViewController: BaseViewController<MainViewModel>,
             make.bottom.equalTo(lastTrainView.snp.top).inset(-16)
             make.trailing.equalToSuperview().inset(16)
             make.width.height.equalTo(40)
+        }
+        ballonView.snp.makeConstraints { make in
+            make.leading.equalToSuperview().inset(8)
+            make.bottom.equalTo(lastTrainView.snp.top).inset(-45)
         }
         atchaImageView.snp.makeConstraints { make in
             make.width.height.equalTo(64)
