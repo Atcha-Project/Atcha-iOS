@@ -109,6 +109,7 @@ final class LastTrainSearchBottomView: UIView {
         searchButton.snp.makeConstraints { make in
             make.horizontalEdges.equalToSuperview().inset(18)
             make.top.equalTo(arrivalLocationView.snp.bottom).inset(-24)
+            make.bottom.equalToSuperview().inset(40)
         }
     }
     

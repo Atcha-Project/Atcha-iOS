@@ -136,12 +136,12 @@ final class MainViewController: BaseViewController<MainViewModel>,
         lastTrainView.snp.makeConstraints { make in
             make.horizontalEdges.equalToSuperview()
             make.bottom.equalToSuperview()
-            make.height.equalTo(224)
+//            make.height.equalTo(224)
         }
-        lastTrainDepartView.snp.makeConstraints { make in
-            make.horizontalEdges.equalToSuperview()
-            make.bottom.equalToSuperview()
-        }
+//        lastTrainDepartView.snp.makeConstraints { make in
+//            make.horizontalEdges.equalToSuperview()
+//            make.bottom.equalToSuperview()
+//        }
         myPageButton.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
             make.trailing.equalToSuperview().inset(16)
