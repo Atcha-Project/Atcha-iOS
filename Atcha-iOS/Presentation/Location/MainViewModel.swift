@@ -8,6 +8,7 @@
 import Foundation
 import CoreLocation
 import Combine
+import TMapSDK
 
 final class MainViewModel: BaseViewModel {
     @Published var currentLocation: CLLocationCoordinate2D?
@@ -23,6 +24,7 @@ final class MainViewModel: BaseViewModel {
     private var streamTask: Task<Void, Never>?
     
     var routeHandler: ((MainRoute) -> Void)?
+    var courseSearchResultHandler: (() -> Void)?
     
     init(authorizationUseCase: RequestLocationAuthorizationUseCase,
          streamUseCase: ObserveLocationStreamUseCase,
@@ -68,6 +70,10 @@ final class MainViewModel: BaseViewModel {
             .store(in: &cancellables)
     }
     
+    func drawRoute() {
+        print("drawRoute")
+    }
+    
     func requestPermissionAndStartTracking() {
         Task {
             let status = await authorizationUseCase.askLocationPermission()
@@ -106,6 +112,22 @@ final class MainViewModel: BaseViewModel {
             routeHandler?(.myPage)
         }
     }
+    
+//    func getWayPointList(passShape: String) -> [TMapPolyline] {
+//        let pointList: [TMapPolyline] = passShape
+//            .split(separator: " ")
+//            .compactMap { pair in
+//                let parts = pair.split(separator: ",")
+//                if parts.count == 2,
+//                   let longitude = Double(parts[0]),
+//                   let latitude = Double(parts[1]) {
+//                    return TMapPolyline(latitude: latitude, longitude: longitude)
+//                } else {
+//                    return nil
+//                }
+//            }
+//        return pointList
+//    }
     
     func setupLocation() {
         requestPermissionAndStartTracking()

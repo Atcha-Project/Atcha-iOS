@@ -15,6 +15,8 @@ final class MainCoordinator {
     private var myPageCoordinator: MyPageCoordinator?
     private var courseModifyCoordinator: CourseModifyCoordinator?
     
+    private var mainViewModel: MainViewModel?
+    
     var signoutFinish: (() -> Void)?
     var routeHandler: ((MainRoute) -> Void)?
     
@@ -26,9 +28,15 @@ final class MainCoordinator {
     
     func start() {
         let viewModel = diContainer.makeMainiewModel()
+        self.mainViewModel = viewModel
+        
         viewModel.routeHandler = { [weak self] route in
             guard let self else { return }
             handle(route: route)
+        }
+        viewModel.courseSearchResultHandler = { [weak self] in
+            guard let self else { return }
+            viewModel.drawRoute()
         }
         let viewController = diContainer.makeMainViewController(viewModel: viewModel)
         navigationController.pushViewController(viewController, animated: false)
@@ -47,9 +55,16 @@ final class MainCoordinator {
             myPageCoordinator.start()
         case let .courseSearch(startLat, startLon, startAddress):
             let courseDI = diContainer.makeCourseDIContainer()
-            let vc = courseDI.makeCourseSearchViewController(startLat: startLat, startLon: startLon, startAddress: startAddress)
-            navigationController.pushViewController(vc, animated: true)
-            print("🔍 courseSearch route tapped: \(navigationController.viewControllers)")
+            let vm = courseDI.makeCourseSearchViewModel(startLat: startLat,
+                                                        startLon: startLon,
+                                                        startAddress: startAddress)
+            let vc = courseDI.makeCourseSearchViewController(viewModel: vm)
+            vm.courseSearchFinish = { [weak self] in
+                guard let self else { return }
+                self.mainViewModel?.courseSearchResultHandler?()
+                navigationController.popViewController(animated: true)
+            }
+            self.navigationController.pushViewController(vc, animated: true)
         case .changeCourse:
             let courseDI = diContainer.makeCourseDIContainer()
             let courseModifyCoordinator = CourseModifyCoordinator(

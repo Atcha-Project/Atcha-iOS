@@ -190,8 +190,12 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
         cell.configure(with: model)
         
         // 버튼 탭 시 경로ID와 함께 상세 화면으로 이동
-        cell.onDetailTapped = { 
-            print(model.course.routeId ?? "경로 ID 없음")
+        cell.onDetailTapped = { [weak self] in
+            guard let self else { return }
+//            print(model.course.routeId ?? "경로 ID 없음")
+            print("model : \(model.course.legs.map { LegPathInfo(mode: $0.mode, step: $0.step, passShape: $0.passShape) })")
+            viewModel.courseSearchFinish?()
+            navigationController?.popViewController(animated: true)
         }
         
         // 버튼 탭 시 확장/축소 상태 변경 핸들러 연결

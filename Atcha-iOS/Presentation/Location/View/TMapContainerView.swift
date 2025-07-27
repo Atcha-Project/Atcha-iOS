@@ -7,9 +7,12 @@
 
 import UIKit
 import CoreLocation
+import TMapSDK
+import SnapKit
 
 final class TMapContainerView: UIView {
     private var tMapWrapper: TMapWrapper!
+    
     weak var delegate: TMapWrapperDelegate? {
         didSet {
             tMapWrapper?.delegate = delegate
@@ -41,6 +44,11 @@ final class TMapContainerView: UIView {
     
     func updateUserMarker(location: CLLocationCoordinate2D) {
         tMapWrapper.updateUserMarker(coordinate: location)
+    }
+    
+    func addTrafficLine(passShape: String) {
+        tMapWrapper.addTrafficLine(passShape: passShape)
+//        tMapWrapper.addWorkingTrafficLine()
     }
     
     func deinitMapView() {
