@@ -25,8 +25,7 @@ final class CourseDIContainer {
         return CourseSearchViewModel(courseUseCase: courseUseCase, startLat: startLat, startLon: startLon, startAddress: startAddress)
     }
     
-    func makeCourseSearchViewController(startLat: String, startLon: String, startAddress: String) -> UIViewController {
-        let viewModel = makeCourseSearchViewModel(startLat: startLat, startLon: startLon, startAddress: startAddress)
+    func makeCourseSearchViewController(viewModel: CourseSearchViewModel) -> UIViewController {
         return CourseSearchViewController(viewModel: viewModel)
     }
     

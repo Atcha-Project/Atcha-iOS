@@ -141,6 +141,7 @@
 		B6793D4B2E3493D6001BE9F5 /* AtcahaInsetLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6793D4A2E3493D6001BE9F5 /* AtcahaInsetLabel.swift */; };
 		B6793D4D2E349500001BE9F5 /* ReverseGeocodeLocationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6793D4C2E349500001BE9F5 /* ReverseGeocodeLocationResponse.swift */; };
 		B6793D4F2E34972B001BE9F5 /* FetchTaxiFareRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6793D4E2E34972B001BE9F5 /* FetchTaxiFareRequest.swift */; };
+		B6793D512E35C57E001BE9F5 /* LastTrainDepartBottomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6793D502E35C57E001BE9F5 /* LastTrainDepartBottomView.swift */; };
 		B67E3E552E0971B70056EEB3 /* Bundle+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B67E3E542E0971B70056EEB3 /* Bundle+Ext.swift */; };
 		B67E3E582E0980880056EEB3 /* AppleLoginDelegateWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B67E3E572E0980880056EEB3 /* AppleLoginDelegateWrapper.swift */; };
 		B68309532E005A3600E2D029 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B683093B2E005A3600E2D029 /* AppDelegate.swift */; };
@@ -358,6 +359,7 @@
 		B6793D4A2E3493D6001BE9F5 /* AtcahaInsetLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtcahaInsetLabel.swift; sourceTree = "<group>"; };
 		B6793D4C2E349500001BE9F5 /* ReverseGeocodeLocationResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReverseGeocodeLocationResponse.swift; sourceTree = "<group>"; };
 		B6793D4E2E34972B001BE9F5 /* FetchTaxiFareRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchTaxiFareRequest.swift; sourceTree = "<group>"; };
+		B6793D502E35C57E001BE9F5 /* LastTrainDepartBottomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastTrainDepartBottomView.swift; sourceTree = "<group>"; };
 		B67E3E542E0971B70056EEB3 /* Bundle+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Bundle+Ext.swift"; sourceTree = "<group>"; };
 		B67E3E572E0980880056EEB3 /* AppleLoginDelegateWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleLoginDelegateWrapper.swift; sourceTree = "<group>"; };
 		B67E3E592E09811E0056EEB3 /* Atcha-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Atcha-iOS.entitlements"; sourceTree = "<group>"; };
@@ -1325,6 +1327,7 @@
 				B6FB209C2E1D492F0032751B /* HomeRegisterBottomView.swift */,
 				B6B57EC12E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift */,
 				B6FB20812E1BE2870032751B /* TMapContainerView.swift */,
+				B6793D502E35C57E001BE9F5 /* LastTrainDepartBottomView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -1612,6 +1615,7 @@
 				B6D083352E02D928003C28E1 /* AtchaListType.swift in Sources */,
 				B65C130A2E057C920016D2F0 /* EndPoint.swift in Sources */,
 				B66401972E227E5E00A397AE /* HomeRouter.swift in Sources */,
+				B6793D512E35C57E001BE9F5 /* LastTrainDepartBottomView.swift in Sources */,
 				B6DC7C232E16B5C1005D8E17 /* AddressRepositoryImpl.swift in Sources */,
 				B65C130C2E057CAB0016D2F0 /* APIServiceImpl.swift in Sources */,
 				B66401992E229EB000A397AE /* SplashRouter.swift in Sources */,

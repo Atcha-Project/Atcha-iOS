@@ -37,6 +37,8 @@ final class CourseSearchViewModel: BaseViewModel {
     public private(set) var startAddress: String
     private var courseStreamTask: Task<Void, Never>?
     
+    var courseSearchFinish: (() -> Void)?
+    
     init(
         courseUseCase: CourseUseCase,
         startLat: String,
@@ -97,8 +99,8 @@ final class CourseSearchViewModel: BaseViewModel {
                 self.fetchCourses(for: 0)
             } catch {
                 print("탭별 코스 가져오기 실패: \(error)")
-                    self.isServerError = true
-                    self.courses = []
+                self.isServerError = true
+                self.courses = []
             }
         }
     }
@@ -111,7 +113,7 @@ final class CourseSearchViewModel: BaseViewModel {
             let userDefaults = UserDefaultsWrapper()
             let endLat = userDefaults.string(forKey: UserDefaultsWrapper.Key.lat.rawValue) ?? "37.554722"
             let endLon = userDefaults.string(forKey: UserDefaultsWrapper.Key.lon.rawValue) ?? "126.970833"
-
+            
             let request = CourseSearchRequest(
                 startLat: startLat,
                 startLon: startLon,
@@ -119,7 +121,7 @@ final class CourseSearchViewModel: BaseViewModel {
                 endLon: endLon,
                 sortType: 1
             )
-
+            
             do {
                 for try await course in courseUseCase.observeCourseStream(request) {
                     let uiModel = CourseUIModel(
@@ -127,7 +129,7 @@ final class CourseSearchViewModel: BaseViewModel {
                         course: course,
                         isExpanded: false
                     )
-
+                    
                     // 중복 제거 (같은 routeId가 이미 존재하면 무시)
                     if !allCourses.contains(where: { $0.id == uiModel.id }) {
                         self.allCourses.append(uiModel)

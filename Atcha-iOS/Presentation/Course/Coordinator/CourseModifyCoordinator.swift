@@ -27,13 +27,17 @@ final class CourseModifyCoordinator {
         }
         
         viewModel.onLocationConfirmed = { [weak self] locationInfo, coordinate in
-                self?.showCourseSearch(
-                    startLat: "\(coordinate.latitude)",
-                    startLon: "\(coordinate.longitude)",
-                    startAddress: locationInfo.name ?? "주소 없음"
-                )
-            }
-        
+            guard let self else { return }
+            let vm = diContainer.makeCourseSearchViewModel(startLat: "\(coordinate.latitude)",
+                                                           startLon: "\(coordinate.longitude)",
+                                                           startAddress: locationInfo.name ?? "주소 없음")
+            //                self?.showCourseSearch(
+            //                    startLat: "\(coordinate.latitude)",
+            //                    startLon: "\(coordinate.longitude)",
+            //                    startAddress: locationInfo.name ?? "주소 없음"
+            //                )
+            showCourseSearch(viewModel: vm)
+        }
         
         let viewController = CourseModifyViewController(viewModel: viewModel)
         navigationController.pushViewController(viewController, animated: true)
@@ -43,9 +47,9 @@ final class CourseModifyCoordinator {
         let vm = diContainer.makeCourseSettingViewModel(location: location)
         vm.onTapLocationButton = { [weak self] locationInfo, coordinate in
             print("사용자가 선택한 위치: \(locationInfo.name ?? "없음")")
-
+            
             self?.navigationController.popViewController(animated: true)
-
+            
             if let modifyVC = self?.navigationController.viewControllers.compactMap({ $0 as? CourseModifyViewController }).last {
                 modifyVC.didReceiveLocation(locationInfo: locationInfo, coordinate: coordinate)
             }
@@ -54,9 +58,8 @@ final class CourseModifyCoordinator {
         navigationController.pushViewController(vc, animated: true)
     }
     
-    private func showCourseSearch(startLat: String, startLon: String, startAddress: String) {
-        let vc = diContainer.makeCourseSearchViewController(startLat: startLat, startLon: startLon, startAddress: startAddress)
+    private func showCourseSearch(viewModel: CourseSearchViewModel) {
+        let vc = diContainer.makeCourseSearchViewController(viewModel: viewModel)
         navigationController.pushViewController(vc, animated: true)
     }
-    
 }

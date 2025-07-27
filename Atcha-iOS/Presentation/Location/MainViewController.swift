@@ -9,12 +9,14 @@ import UIKit
 import Foundation
 import CoreLocation
 import TMapSDK
+import VSMSDK
 
 final class MainViewController: BaseViewController<MainViewModel>,
                                 TMapWrapperDelegate {
     
     private let mapContainerView: TMapContainerView = TMapContainerView()
     private let lastTrainView: LastTrainSearchBottomView = LastTrainSearchBottomView()
+    private let lastTrainDepartView: LastTrainDepartBottomView = LastTrainDepartBottomView()
     private let flagImageView: UIImageView = UIImageView()
     private let myPageButton: UIButton = UIButton()
     private let loactionButton: UIButton = UIButton()
@@ -39,6 +41,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
             lastTrainView,
             myPageButton,
             loactionButton,
+            lastTrainDepartView,
             ballonView
         )
         
@@ -135,6 +138,10 @@ final class MainViewController: BaseViewController<MainViewModel>,
             make.bottom.equalToSuperview()
             make.height.equalTo(224)
         }
+        lastTrainDepartView.snp.makeConstraints { make in
+            make.horizontalEdges.equalToSuperview()
+            make.bottom.equalToSuperview()
+        }
         myPageButton.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
             make.trailing.equalToSuperview().inset(16)
@@ -165,6 +172,9 @@ final class MainViewController: BaseViewController<MainViewModel>,
 extension MainViewController {
     func didFinishLoadingMap(_ mapView: TMapWrapper) {
         viewModel.setupLocation()
+        
+        let passShape = "127.025347,37.637628 127.025619,37.637881 127.026825,37.638997 127.027403,37.639531 127.028386,37.638886 127.031444,37.636886 127.032253,37.636358 127.033556,37.635517 127.033622,37.635489 127.033839,37.635386 127.034283,37.635272 127.034531,37.635169 127.035389,37.634658 127.035700,37.634483 127.035917,37.634406 127.036078,37.634367 127.036086,37.634367 127.036769,37.634194 127.037456,37.634025 127.037678,37.633950 127.037931,37.633797 127.038625,37.632883 127.038728,37.632750 127.039133,37.632214 127.039147,37.632194 127.039272,37.632053 127.039544,37.631814 127.040014,37.631500 127.040017,37.631497"
+        mapContainerView.addTrafficLine(passShape: passShape)
     }
     
     @objc private func didTapMyPageButton() {

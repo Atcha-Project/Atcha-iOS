@@ -30,7 +30,7 @@ struct Legs: Codable, Hashable {
     let start: addressInfo?
     let end: addressInfo?
     let passStopList: [passStopList]?
-    let step: [step]?
+    let step: [Step]?
     let passShape: String?
 }
 
@@ -47,7 +47,7 @@ struct passStopList: Codable, Hashable {
     let lan: String?
 }
 
-struct step: Codable, Hashable{
+struct Step: Codable, Hashable{
     let streetName: String?
     let distance: Double?
     let description: String?
@@ -59,10 +59,33 @@ enum TransportMode: String, Codable {
     case bus = "BUS"
     case subway = "SUBWAY"
     case unknown
+
+    func icon(for routeType: String) -> String? {
+        switch self {
+        case .bus:
+            return TransportMode.busIcon[routeType]
+        case .subway:
+            return TransportMode.subwayIcon[routeType]
+        default:
+            return nil
+        }
+    }
+
+    func getOffIcon(for routeType: String) -> String? {
+        switch self {
+        case .bus:
+            return TransportMode.busGetOffIcon[routeType]
+        case .subway:
+            return TransportMode.subwayGetOffIcon[routeType]
+        default:
+            return nil
+        }
+    }
 }
 
-//extension Legs {
-//    var modeEnum: TransportMode {
-//        return TransportMode(rawValue: mode?.uppercased() ?? "") ?? .unknown
-//    }
-//}
+struct LegPathInfo {
+    let mode: TransportMode?
+    let step: [Step]?
+    let passShape: String?
+}
+

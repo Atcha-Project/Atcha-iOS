@@ -92,7 +92,7 @@ struct StepResponse: Codable {
     let description: String?
     let linestring: String?
     
-    func toEntity() -> step {
-        return step(streetName: streetName, distance: distance, description: description, linestring: linestring)
+    func toEntity() -> Step {
+        return Step(streetName: streetName, distance: distance, description: description, linestring: linestring)
     }
 }
