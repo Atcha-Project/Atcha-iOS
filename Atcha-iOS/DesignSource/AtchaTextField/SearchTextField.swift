@@ -61,7 +61,7 @@ final class SearchTextField: UIView {
         textfieldStack.backgroundColor = AtchaColor.gray930
         textfieldStack.layer.cornerRadius = 8
         textfieldStack.isLayoutMarginsRelativeArrangement = true
-        textfieldStack.layoutMargins = UIEdgeInsets(top: 10, left: 16, bottom: 10, right: 16)
+        textfieldStack.layoutMargins = UIEdgeInsets(top: 10, left: 14, bottom: 10, right: 14)
         
         
         addSubview(textfieldStack)
