@@ -157,22 +157,19 @@ extension MainViewController {
     private func handleLastTrainDepartAction(_ action: LastTrainDepartBottomView.Action) {
         switch action {
         case .exitTapped:
+            viewModel.requestPermissionAndStartTracking()
             view.showToast(message: "알림이 종료되었어요")
             lastTrainView.isHidden = false
             lastTrainDepartView.isHidden = true
             updateAtchaImageConstraint(relativeTo: lastTrainView)
-
         case .detailRoadMapTapped:
             print("detailRoadMapTapped 누르기")
-
         case .locationTapped:
-            print("locationTapped 누르기")
-
+            ballonView.setupTitle(bottomMessage: "위치를 변경하려면 알림을 종료해야 해요")
         case .reloadTapped:
             print("reloadTapped 누르기")
-
         case .timeTapped:
-            print("timeTapped 누르기")
+            ballonView.setupTitle(topMessage: "이때쯤 자리에서 출발하면 돼요", bottomMessage: "현재 교통 상황 기준으로,\n출발 시간이 가까워질수록 더 정확해져요")
         }
     }
 
@@ -224,7 +221,8 @@ extension MainViewController {
         lastTrainView.isHidden = true
         lastTrainDepartView.isHidden = false
         updateAtchaImageConstraint(relativeTo: lastTrainDepartView)
-
+        ballonView.setupTitle(bottomMessage: "이때쯤 자리에서 출발하면 돼요")
+        
         if let time = infos.first?.departureDateTime,
            let (hour, minute) = time.toHourMinute() {
             lastTrainDepartView.setupTime(hour: hour, minute: minute)
