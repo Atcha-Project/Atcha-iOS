@@ -47,8 +47,15 @@ final class MainViewController: BaseViewController<MainViewModel>,
         
         mapContainerView.delegate = self
         
-        configureButton(myPageButton, imageName: "mypage-filled", action: #selector(didTapMyPageButton))
-        configureButton(loactionButton, imageName: "mylocation-filled", action: #selector(didTapLocationButton))
+        lastTrainView.isHidden = false
+        lastTrainDepartView.isHidden = true
+        
+        configureButton(myPageButton,
+                        imageName: "mypage-filled",
+                        action: #selector(didTapMyPageButton))
+        configureButton(loactionButton,
+                        imageName: "mylocation-filled",
+                        action: #selector(didTapLocationButton))
         flagImageView.image = UIImage.settingLocationMark
         atchaImageView.image = UIImage.atcha
         ballonView.setupTitle(bottomMessage: "여기서 막차 놓치면 택시비")
@@ -60,72 +67,10 @@ final class MainViewController: BaseViewController<MainViewModel>,
         button.contentVerticalAlignment = .fill
         button.addTarget(self, action: action, for: .touchUpInside)
     }
-    
-    private func bindView() {
-        lastTrainView.actionPublisher
-            .sink { [weak self] action in
-                guard let self else { return }
-                switch action {
-                case .currentTapped:
-                    viewModel.handleRoute(route: .changeCourse)
-                case .searchTapped:
-                    viewModel.handleRoute(route: .courseSearch(startLat: "",
-                                                               startLon: "",
-                                                               startAddress: ""))
-                }
-            }
-            .store(in: &cancellables)
-        
-        viewModel.$address
-            .removeDuplicates()
-            .compactMap { $0 }
-            .receive(on: RunLoop.main)
-            .sink { [weak self] address in
-                guard let self else { return }
-                
-                if firstAddress == nil {
-                    firstAddress = address
-                }
-                
-                if address == firstAddress {
-                    lastTrainView.setupCurrentLocationTitle("현위치 : \(address)")
-                } else {
-                    lastTrainView.setupCurrentLocationTitle(address)
-                }
-            }
-            .store(in: &cancellables)
-        
-        viewModel.$currentLocation
-            .compactMap { $0 }
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] location in
-                guard let self else { return }
-                mapContainerView.setupCenter(location: location)
-            }
-            .store(in: &cancellables)
-        
-        // 선택한 location
-        viewModel.$selectedLocation
-            .compactMap { $0 }
-            .receive(on: RunLoop.main)
-            .sink { [weak self] location in
-                guard let self else { return }
-                mapContainerView.updateUserMarker(location: location)
-            }
-            .store(in: &cancellables)
-        
-        viewModel.$taxiFare
-            .removeDuplicates()
-            .compactMap { $0 }
-            .receive(on: RunLoop.main)
-            .sink { [weak self] fare in
-                guard let self else { return }
-                let fareStr = String(format: "%.0f", fare)
-                ballonView.setupTitle(bottomMessage: "여기서 막차 놓치면 택시비 : 약 \(fareStr)원")
-            }
-            .store(in: &cancellables)
-    }
-    
+}
+
+// MARK: AutoLayout
+extension MainViewController {
     private func setupAutoLayout() {
         flagImageView.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
@@ -136,12 +81,11 @@ final class MainViewController: BaseViewController<MainViewModel>,
         lastTrainView.snp.makeConstraints { make in
             make.horizontalEdges.equalToSuperview()
             make.bottom.equalToSuperview()
-//            make.height.equalTo(224)
         }
-//        lastTrainDepartView.snp.makeConstraints { make in
-//            make.horizontalEdges.equalToSuperview()
-//            make.bottom.equalToSuperview()
-//        }
+        lastTrainDepartView.snp.makeConstraints { make in
+            make.horizontalEdges.equalToSuperview()
+            make.bottom.equalToSuperview()
+        }
         myPageButton.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
             make.trailing.equalToSuperview().inset(16)
@@ -166,6 +110,89 @@ final class MainViewController: BaseViewController<MainViewModel>,
             make.top.equalToSuperview()
             make.bottom.equalTo(lastTrainView.snp.top).inset(30)
         }
+    }
+}
+
+// MARK: Bindings
+extension MainViewController {
+    private func bindView() {
+        lastTrainView.actionPublisher
+            .sink { [weak self] action in
+                guard let self else { return }
+                switch action {
+                case .currentTapped:
+                    viewModel.handleRoute(route: .changeCourse)
+                case .searchTapped:
+                    viewModel.handleRoute(route: .courseSearch(startLat: "",
+                                                               startLon: "",
+                                                               startAddress: ""))
+                }
+            }
+            .store(in: &cancellables)
+        
+        viewModel.$address
+            .removeDuplicates()
+            .compactMap { $0 }
+            .receive(on: RunLoop.main)
+            .sink { [weak self] address in
+                guard let self else { return }
+                if firstAddress == nil {
+                    firstAddress = address
+                }
+                
+                if address == firstAddress {
+                    lastTrainView.setupCurrentLocationTitle("현위치 : \(address)")
+                } else {
+                    lastTrainView.setupCurrentLocationTitle(address)
+                }
+            }
+            .store(in: &cancellables)
+        
+        viewModel.$currentLocation
+            .compactMap { $0 }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] location in
+                guard let self else { return }
+                mapContainerView.setupCenter(location: location)
+            }
+            .store(in: &cancellables)
+        
+        viewModel.$selectedLocation
+            .compactMap { $0 }
+            .receive(on: RunLoop.main)
+            .sink { [weak self] location in
+                guard let self else { return }
+                mapContainerView.updateUserMarker(location: location)
+            }
+            .store(in: &cancellables)
+        
+        viewModel.$legPathInfos
+            .filter { $0.count > 0 }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] infos in
+                guard let self else { return }
+                lastTrainView.isHidden = true
+                lastTrainDepartView.isHidden = false
+                
+                let time = infos.first?.departureDateTime ?? ""
+                if let (hour, minute) = time.toHourMinute() {
+                    lastTrainDepartView.setupTime(hour: hour, minute: minute)
+                }
+                
+                lastTrainDepartView.setupLoaction(location: viewModel.address)
+            }
+            .store(in: &cancellables)
+        
+        viewModel.$taxiFare
+            .removeDuplicates()
+            .compactMap { $0 }
+            .receive(on: RunLoop.main)
+            .sink { [weak self] fare in
+                guard let self else { return }
+                let fareStr = String(format: "%.0f", fare)
+                ballonView.setupTitle(bottomMessage: "여기서 막차 놓치면 택시비 : 약 \(fareStr)원")
+            }
+            .store(in: &cancellables)
     }
 }
 

@@ -19,6 +19,19 @@ struct Course: Codable, Hashable {
     let legs: [Legs]
 }
 
+extension Course {
+    func toLegPathInfos() -> [LegPathInfo] {
+        return legs.map { leg in
+            LegPathInfo(
+                departureDateTime: self.departureDateTime, // ✅ Course의 값을 사용
+                mode: leg.mode,
+                step: leg.step,
+                passShape: leg.passShape
+            )
+        }
+    }
+}
+
 struct Legs: Codable, Hashable {
     let distance: Int?
     let sectionTime: Int?
@@ -84,6 +97,7 @@ enum TransportMode: String, Codable {
 }
 
 struct LegPathInfo {
+    let departureDateTime: String?
     let mode: TransportMode?
     let step: [Step]?
     let passShape: String?

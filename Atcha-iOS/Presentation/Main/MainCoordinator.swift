@@ -34,9 +34,9 @@ final class MainCoordinator {
             guard let self else { return }
             handle(route: route)
         }
-        viewModel.courseSearchResultHandler = { [weak self] in
+        viewModel.courseSearchResultHandler = { [weak self] infos in
             guard let self else { return }
-            viewModel.drawRoute()
+            viewModel.drawRoute(infos: infos)
         }
         let viewController = diContainer.makeMainViewController(viewModel: viewModel)
         navigationController.pushViewController(viewController, animated: false)
@@ -59,9 +59,9 @@ final class MainCoordinator {
                                                         startLon: startLon,
                                                         startAddress: startAddress)
             let vc = courseDI.makeCourseSearchViewController(viewModel: vm)
-            vm.courseSearchFinish = { [weak self] in
+            vm.courseSearchFinish = { [weak self] infos in
                 guard let self else { return }
-                self.mainViewModel?.courseSearchResultHandler?()
+                self.mainViewModel?.courseSearchResultHandler?(infos)
                 navigationController.popViewController(animated: true)
             }
             self.navigationController.pushViewController(vc, animated: true)

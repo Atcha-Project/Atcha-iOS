@@ -170,13 +170,15 @@ final class LastTrainDepartBottomView: UIView {
         locationLabel.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleLocationTapped)))
     }
     
-    func setupTime(hour: String, minute: String) {
-        hourTimeLabel.attributedText = AtchaFont.D2_EB_48(hour, color: .white)
-        minuteTimeLabel.attributedText = AtchaFont.D2_EB_48(minute, color: .white)
+    func setupTime(hour: Int, minute: Int) {
+        hourTimeLabel.attributedText = AtchaFont.D2_EB_48(String(hour), color: .white)
+        minuteTimeLabel.attributedText = AtchaFont.D2_EB_48(String(minute), color: .white)
     }
     
-    func setupLoaction(location: String) {
-        locationLabel.attributedText = AtchaFont.B4_R_15(location, color: .gray300)
+    func setupLoaction(location: String?) {
+        guard let location else { return }
+        let title: String = "\(location) -> 우리집"
+        locationLabel.attributedText = AtchaFont.B4_R_15(title, color: .gray300)
     }
 }
 

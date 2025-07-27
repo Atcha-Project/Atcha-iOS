@@ -12,9 +12,11 @@ final class CourseCell: UICollectionViewCell {
     static let reusableId: String = "CourseCell"
     var onToggleExpanded: (() -> Void)?
     var onDetailTapped: (() -> Void)?
+    var onGetAlarmTapped: (() -> Void)?
 
     private let courseTapGesture = UITapGestureRecognizer()
     private let detailTapGesture = UITapGestureRecognizer()
+    private let onDetailTapGesture = UITapGestureRecognizer()
     
     private let containerView: UIView = UIView()
     private let totalTimeLabel: UILabel = UILabel()
@@ -37,9 +39,7 @@ final class CourseCell: UICollectionViewCell {
     private let courseCompactStack: UIStackView = UIStackView()
     private let courseDetailStack: UIStackView = UIStackView()
     private var isExpanded: Bool = false
-    private let alarmRegisterButton: AtchaButton = AtchaButton(text: "막차 알림 받기", size: .h44, style: .filled(.defaultGray), image: UIImage.bellOutlined) {
-        
-    }
+    private let alarmRegisterButton: AtchaButton = AtchaButton(text: "막차 알림 받기", size: .h44, style: .filled(.defaultGray), image: UIImage.bellOutlined)
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -367,6 +367,14 @@ final class CourseCell: UICollectionViewCell {
         courseTapGesture.addTarget(self, action: #selector(toggleCourseDetail))
         courseDownButton.isUserInteractionEnabled = true
         courseDownButton.addGestureRecognizer(courseTapGesture)
+        
+        onDetailTapGesture.addTarget(self, action: #selector(getAlarmTapped))
+        alarmRegisterButton.isUserInteractionEnabled = true
+        alarmRegisterButton.addGestureRecognizer(onDetailTapGesture)
+    }
+    
+    @objc private func getAlarmTapped() {
+        onDetailTapped?()
     }
     
     // MARK: - Course Detail View Handler
