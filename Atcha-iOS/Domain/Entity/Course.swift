@@ -59,6 +59,28 @@ enum TransportMode: String, Codable {
     case bus = "BUS"
     case subway = "SUBWAY"
     case unknown
+
+    func icon(for routeType: String) -> String? {
+        switch self {
+        case .bus:
+            return TransportMode.busIcon[routeType]
+        case .subway:
+            return TransportMode.subwayIcon[routeType]
+        default:
+            return nil
+        }
+    }
+
+    func getOffIcon(for routeType: String) -> String? {
+        switch self {
+        case .bus:
+            return TransportMode.busGetOffIcon[routeType]
+        case .subway:
+            return TransportMode.subwayGetOffIcon[routeType]
+        default:
+            return nil
+        }
+    }
 }
 
 struct LegPathInfo {
