@@ -10,6 +10,7 @@ import Foundation
 import CoreLocation
 import TMapSDK
 import VSMSDK
+import SnapKit
 
 final class MainViewController: BaseViewController<MainViewModel>,
                                 TMapWrapperDelegate {
@@ -24,6 +25,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
     private let ballonView: AtchaBallon = AtchaBallon()
     
     private var firstAddress: String?
+    private var atchaImageBottomConstraint: Constraint?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -98,12 +100,12 @@ extension MainViewController {
         }
         ballonView.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(8)
-            make.bottom.equalTo(lastTrainView.snp.top).inset(-45)
+            make.bottom.equalTo(atchaImageView.snp.top).inset(-10)
         }
         atchaImageView.snp.makeConstraints { make in
             make.width.height.equalTo(64)
             make.leading.equalToSuperview().inset(8)
-            make.bottom.equalTo(lastTrainView.snp.top).inset(24)
+            atchaImageBottomConstraint = make.bottom.equalTo(lastTrainView.snp.top).inset(24).constraint
         }
         mapContainerView.snp.makeConstraints { make in
             make.horizontalEdges.equalToSuperview()
@@ -114,87 +116,150 @@ extension MainViewController {
 }
 
 // MARK: Bindings
+// MARK: - Bindings
 extension MainViewController {
+
     private func bindView() {
+        bindLastTrainViewActions()
+        bindLastTrainDepartViewActions()
+        bindAddressUpdates()
+        bindCurrentLocationUpdates()
+        bindSelectedLocationUpdates()
+        bindLegPathUpdates()
+        bindTaxiFareUpdates()
+    }
+
+    // MARK: - View Actions
+    private func bindLastTrainViewActions() {
         lastTrainView.actionPublisher
-            .sink { [weak self] action in
-                guard let self else { return }
-                switch action {
-                case .currentTapped:
-                    viewModel.handleRoute(route: .changeCourse)
-                case .searchTapped:
-                    viewModel.handleRoute(route: .courseSearch(startLat: "",
-                                                               startLon: "",
-                                                               startAddress: ""))
-                }
-            }
+            .sink { [weak self] in self?.handleLastTrainViewAction($0) }
             .store(in: &cancellables)
-        
+    }
+
+    private func handleLastTrainViewAction(_ action: LastTrainSearchBottomView.Action) {
+        switch action {
+        case .currentTapped:
+            viewModel.handleRoute(route: .changeCourse)
+        case .searchTapped:
+            viewModel.handleRoute(route: .courseSearch(
+                startLat: "", startLon: "", startAddress: ""
+            ))
+        }
+    }
+
+    private func bindLastTrainDepartViewActions() {
+        lastTrainDepartView.actionPublisher
+            .receive(on: RunLoop.main)
+            .sink { [weak self] in self?.handleLastTrainDepartAction($0) }
+            .store(in: &cancellables)
+    }
+
+    private func handleLastTrainDepartAction(_ action: LastTrainDepartBottomView.Action) {
+        switch action {
+        case .exitTapped:
+            view.showToast(message: "알림이 종료되었어요")
+            lastTrainView.isHidden = false
+            lastTrainDepartView.isHidden = true
+            updateAtchaImageConstraint(relativeTo: lastTrainView)
+
+        case .detailRoadMapTapped:
+            print("detailRoadMapTapped 누르기")
+
+        case .locationTapped:
+            print("locationTapped 누르기")
+
+        case .reloadTapped:
+            print("reloadTapped 누르기")
+
+        case .timeTapped:
+            print("timeTapped 누르기")
+        }
+    }
+
+    // MARK: - ViewModel Bindings
+    private func bindAddressUpdates() {
         viewModel.$address
             .removeDuplicates()
             .compactMap { $0 }
             .receive(on: RunLoop.main)
-            .sink { [weak self] address in
-                guard let self else { return }
-                if firstAddress == nil {
-                    firstAddress = address
-                }
-                
-                if address == firstAddress {
-                    lastTrainView.setupCurrentLocationTitle("현위치 : \(address)")
-                } else {
-                    lastTrainView.setupCurrentLocationTitle(address)
-                }
-            }
+            .sink { [weak self] in self?.updateAddress($0) }
             .store(in: &cancellables)
-        
+    }
+
+    private func updateAddress(_ address: String) {
+        if firstAddress == nil {
+            firstAddress = address
+        }
+
+        let title = (address == firstAddress) ? "현위치 : \(address)" : address
+        lastTrainView.setupCurrentLocationTitle(title)
+    }
+
+    private func bindCurrentLocationUpdates() {
         viewModel.$currentLocation
             .compactMap { $0 }
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] location in
-                guard let self else { return }
-                mapContainerView.setupCenter(location: location)
-            }
+            .sink { [weak self] in self?.mapContainerView.setupCenter(location: $0) }
             .store(in: &cancellables)
-        
+    }
+
+    private func bindSelectedLocationUpdates() {
         viewModel.$selectedLocation
             .compactMap { $0 }
             .receive(on: RunLoop.main)
-            .sink { [weak self] location in
-                guard let self else { return }
-                mapContainerView.updateUserMarker(location: location)
-            }
+            .sink { [weak self] in self?.mapContainerView.updateUserMarker(location: $0) }
             .store(in: &cancellables)
-        
+    }
+
+    private func bindLegPathUpdates() {
         viewModel.$legPathInfos
-            .filter { $0.count > 0 }
+            .filter { !$0.isEmpty }
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] infos in
-                guard let self else { return }
-                lastTrainView.isHidden = true
-                lastTrainDepartView.isHidden = false
-                
-                let time = infos.first?.departureDateTime ?? ""
-                if let (hour, minute) = time.toHourMinute() {
-                    lastTrainDepartView.setupTime(hour: hour, minute: minute)
-                }
-                
-                lastTrainDepartView.setupLoaction(location: viewModel.address)
-            }
+            .sink { [weak self] in self?.handleLegPathInfos($0) }
             .store(in: &cancellables)
-        
+    }
+
+    private func handleLegPathInfos(_ infos: [LegPathInfo]) {
+        view.showToast(message: "알림이 등록되었어요.")
+        lastTrainView.isHidden = true
+        lastTrainDepartView.isHidden = false
+        updateAtchaImageConstraint(relativeTo: lastTrainDepartView)
+
+        if let time = infos.first?.departureDateTime,
+           let (hour, minute) = time.toHourMinute() {
+            lastTrainDepartView.setupTime(hour: hour, minute: minute)
+        }
+
+        lastTrainDepartView.setupLoaction(location: viewModel.address)
+    }
+
+    private func bindTaxiFareUpdates() {
         viewModel.$taxiFare
             .removeDuplicates()
             .compactMap { $0 }
             .receive(on: RunLoop.main)
-            .sink { [weak self] fare in
-                guard let self else { return }
-                let fareStr = String(format: "%.0f", fare)
-                ballonView.setupTitle(bottomMessage: "여기서 막차 놓치면 택시비 : 약 \(fareStr)원")
-            }
+            .sink { [weak self] in self?.updateTaxiFare($0) }
             .store(in: &cancellables)
     }
+
+    private func updateTaxiFare(_ fare: Double) {
+        let fareStr = String(format: "%.0f", fare)
+        ballonView.setupTitle(bottomMessage: "여기서 막차 놓치면 택시비 : 약 \(fareStr)원")
+    }
+
+    // MARK: - Constraint Helper
+    private func updateAtchaImageConstraint(relativeTo view: UIView, inset: CGFloat = 24) {
+        atchaImageBottomConstraint?.deactivate()
+        atchaImageView.snp.makeConstraints {
+            self.atchaImageBottomConstraint = $0
+                .bottom
+                .equalTo(view.snp.top)
+                .inset(inset)
+                .constraint
+        }
+    }
 }
+
 
 extension MainViewController {
     func didFinishLoadingMap(_ mapView: TMapWrapper) {
