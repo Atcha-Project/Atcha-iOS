@@ -29,7 +29,7 @@ final class LastTrainDepartBottomView: UIView {
     private let hourLabel: UILabel = UILabel()
     private let miniuteLabel: UILabel = UILabel()
     private let minuteTimeLabel: UILabel = UILabel()
-
+    
     private let locationLabel: UILabel = UILabel()
     
     private lazy var buttonStackView: UIStackView = {
@@ -53,12 +53,14 @@ final class LastTrainDepartBottomView: UIView {
         super.init(frame: frame)
         setupUI()
         setupAutoLayout()
+        setupActions()
     }
     
     required init?(coder: NSCoder) {
         super.init(coder: coder)
         setupUI()
         setupAutoLayout()
+        setupActions()
     }
     
     private func setupUI() {
@@ -83,7 +85,7 @@ final class LastTrainDepartBottomView: UIView {
         
         exitButton.setContentHuggingPriority(.required, for: .horizontal)
         exitButton.setContentCompressionResistancePriority(.required, for: .horizontal)
-
+        
         detailRoadMapButton.setContentHuggingPriority(.defaultLow, for: .horizontal)
         detailRoadMapButton.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         
@@ -157,6 +159,17 @@ final class LastTrainDepartBottomView: UIView {
         }
     }
     
+    private func setupActions() {
+        exitButton.addTarget(self, action: #selector(handleExitTapped), for: .touchUpInside)
+        detailRoadMapButton.addTarget(self, action: #selector(handleDetailRoadTapped), for: .touchUpInside)
+        reloadImageView.isUserInteractionEnabled = true
+        reloadImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleReloadTapped)))
+        hourTimeLabel.isUserInteractionEnabled = true
+        hourTimeLabel.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleTimeTapped)))
+        locationLabel.isUserInteractionEnabled = true
+        locationLabel.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleLocationTapped)))
+    }
+    
     func setupTime(hour: String, minute: String) {
         hourTimeLabel.attributedText = AtchaFont.D2_EB_44(hour, color: .white)
         minuteTimeLabel.attributedText = AtchaFont.D2_EB_44(minute, color: .white)
@@ -169,22 +182,27 @@ final class LastTrainDepartBottomView: UIView {
 
 extension LastTrainDepartBottomView {
     @objc private func handleExitTapped() {
+        print(#function)
         actionPublisher.send(.exitTapped)
     }
     
     @objc private func handleDetailRoadTapped() {
+        print(#function)
         actionPublisher.send(.detailRoadMapTapped)
     }
     
     @objc private func handleReloadTapped() {
+        print(#function)
         actionPublisher.send(.reloadTapped)
     }
     
     @objc private func handleTimeTapped() {
+        print(#function)
         actionPublisher.send(.timeTapped)
     }
     
     @objc private func handleLocationTapped() {
+        print(#function)
         actionPublisher.send(.locationTapped)
     }
 }
