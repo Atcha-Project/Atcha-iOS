@@ -16,6 +16,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
     
     private let mapContainerView: TMapContainerView = TMapContainerView()
     private let lastTrainView: LastTrainSearchBottomView = LastTrainSearchBottomView()
+    private let lastTrainDepartView: LastTrainDepartBottomView = LastTrainDepartBottomView()
     private let flagImageView: UIImageView = UIImageView()
     private let myPageButton: UIButton = UIButton()
     private let loactionButton: UIButton = UIButton()
@@ -40,6 +41,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
             lastTrainView,
             myPageButton,
             loactionButton,
+            lastTrainDepartView,
             ballonView
         )
         
@@ -135,6 +137,10 @@ final class MainViewController: BaseViewController<MainViewModel>,
             make.horizontalEdges.equalToSuperview()
             make.bottom.equalToSuperview()
             make.height.equalTo(224)
+        }
+        lastTrainDepartView.snp.makeConstraints { make in
+            make.horizontalEdges.equalToSuperview()
+            make.bottom.equalToSuperview()
         }
         myPageButton.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
