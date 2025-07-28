@@ -24,6 +24,7 @@ final class TMapWrapper: NSObject, MapRendering {
     private var userMarker: TMapMarker?
     var mapView: TMapView
     weak var delegate: TMapWrapperDelegate?
+    private var trafficLines: [TMapTrafficLine] = []
     
     public init(frame: CGRect) {
         self.mapView = TMapView(frame: UIScreen.main.bounds)
@@ -59,22 +60,26 @@ final class TMapWrapper: NSObject, MapRendering {
             return VSMMapPoint(longitude: lon, latitude: lat)
         }
 
-        guard vertices.count > 1 else {
-            print("⚠️ 유효한 좌표가 부족합니다")
-            return
-        }
+        guard vertices.count > 1 else { return }
 
         let trafficLine = TrafficLine()
         trafficLine.vertices = vertices
 
         let tmapTrafficLine = TMapTrafficLine(trafficLine: [trafficLine])
         tmapTrafficLine.prevColor = color
-        tmapTrafficLine.nextColor = color // ✅ 동일 색상 적용
+        tmapTrafficLine.nextColor = color 
         tmapTrafficLine.width = 6
-        tmapTrafficLine.outlineWidth = 2
-        tmapTrafficLine.showTrafficInfo = false // ✅ 강제 색상 사용 시 false로 설정
+        tmapTrafficLine.outlineWidth = 0
+        tmapTrafficLine.showTrafficInfo = false
         tmapTrafficLine.showDirectionIndicator = true
         tmapTrafficLine.map = mapView
+        
+        trafficLines.append(tmapTrafficLine)
+    }
+    
+    func clearMap() {
+        trafficLines.forEach { $0.map = nil }
+        trafficLines.removeAll()
     }
 }
 
@@ -82,7 +87,6 @@ extension TMapWrapper: TMapViewDelegate, TmapViewLocationDelegate {
     func mapViewDidFinishLoadingMap() {
         mapView.setMapType(.Night)
         mapView.setZoom(18)
-//        mapView.isZoomEnable = false
         mapView.isShowCompass = false
         delegate?.didFinishLoadingMap(self)
     }

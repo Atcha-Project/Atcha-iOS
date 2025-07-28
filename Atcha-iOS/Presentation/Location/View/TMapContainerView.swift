@@ -48,7 +48,10 @@ final class TMapContainerView: UIView {
     
     func addTrafficLine(passShape: String, color: UIColor) {
         tMapWrapper.addTrafficLine(passShape: passShape, color: color)
-//        tMapWrapper.addWorkingTrafficLine()
+    }
+    
+    func clearMapView() {
+        tMapWrapper.clearMap()
     }
     
     func deinitMapView() {

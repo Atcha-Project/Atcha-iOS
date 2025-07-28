@@ -114,22 +114,6 @@ final class MainViewModel: BaseViewModel {
         }
     }
     
-//    func getWayPointList(passShape: String) -> [TMapPolyline] {
-//        let pointList: [TMapPolyline] = passShape
-//            .split(separator: " ")
-//            .compactMap { pair in
-//                let parts = pair.split(separator: ",")
-//                if parts.count == 2,
-//                   let longitude = Double(parts[0]),
-//                   let latitude = Double(parts[1]) {
-//                    return TMapPolyline(latitude: latitude, longitude: longitude)
-//                } else {
-//                    return nil
-//                }
-//            }
-//        return pointList
-//    }
-    
     func setupLocation() {
         requestPermissionAndStartTracking()
     }
