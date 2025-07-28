@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 let subwayIcon: [String: String] = [
     "1": "line1",
@@ -223,5 +224,37 @@ extension TransportMode {
         "15": "widearea-getOff", "16": "widearea-getOff",
         "22": "widearea-getOff", "23": "widearea-getOff",
         "5": "airport-getOff", "17": "airport-getOff"
+    ]
+    
+    static let busColor: [String: UIColor] = [
+        "1": .regular, "10": .regular, "12": .regular,
+        "3": .town, "13": .town, "21": .town,
+        "2": .mainline, "11": .mainline,
+        "4": .widearea, "6": .widearea, "14": .widearea,
+        "15": .widearea, "16": .widearea, "22": .widearea, "23": .widearea,
+        "5": .widearea, "17": .widearea
+    ]
+    
+    static let subwayColor: [String: UIColor] = [
+        "1": .line1, "117": .line1, "118": .line1,
+        "2": .line2, "10": .line2, "11": .line2,
+        "3": .line3,
+        "4": .line4, "119": .line4,
+        "5": .line5, "6": .line6, "7": .line7, "8": .line8,
+        "9": .line9, "120": .line9,
+        "21": .incheon1, "22": .incheon2,
+        "100": .suinBundang, "121": .suinBundang,
+        "101": .airport, "124": .airport,
+        "104": .gyeonguiJungang, "122": .gyeonguiJungang,
+        "107": .everLine,
+        "108": .gyeongchun, "123": .gyeongchun,
+        "109": .shinbundang,
+        "110": .uijeongbu,
+        "112": .gyeonggang,
+        "113": .uiSinseol,
+        "114": .seohae,
+        "115": .gimpo,
+        "116": .sillim,
+        "125": .GTX_A
     ]
 }

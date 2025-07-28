@@ -252,14 +252,14 @@ extension MainViewController {
     
     private func addRouteLine(infos: [LegPathInfo]) {
         infos.forEach { info in
-            print("info.mode: \(info.mode?.rawValue ?? "-")")
-
             var shapeStrings: [String] = []
-
+            var colors: [UIColor] = []
+            
             switch info.mode {
             case .bus, .subway:
                 if let shape = info.passShape, !shape.isEmpty {
                     shapeStrings.append(shape)
+                    colors.append(info.mode?.getColor(for: info.type ?? "") ?? .magenta)
                 }
 
             case .walk:
@@ -267,6 +267,7 @@ extension MainViewController {
                 let merged = walkShapes.joined(separator: " ")
                 if !merged.isEmpty {
                     shapeStrings.append(merged)
+                    colors.append(.gray200)
                 }
 
             default:
@@ -274,11 +275,51 @@ extension MainViewController {
             }
 
             // passShape들을 기반으로 선 그리기
-            shapeStrings.forEach { shape in
-                mapContainerView.addTrafficLine(passShape: shape)
+//            shapeStrings.forEach { shape in
+//                mapContainerView.addTrafficLine(passShape: shape, color: )
+//            }
+            zip(shapeStrings, colors).forEach { shape, color in
+                print("color : \(color)")
+                print("shapeStrings : \(shapeStrings)")
+                mapContainerView.addTrafficLine(passShape: shape, color: color)
             }
         }
     }
+    
+//    private func addRouteLine(infos: [LegPathInfo]) {
+//        infos.forEach { info in
+//            let color: UIColor
+//            switch info.mode {
+//            case .bus:
+//                color = info.mode?.getColor(for: info.type ?? "") ?? .systemBlue
+//            case .subway:
+//                color = info.mode?.getColor(for: info.type ?? "") ?? .systemPurple
+//            case .walk:
+//                color = .gray
+//            default:
+//                color = .lightGray
+//            }
+//
+//            switch info.mode {
+//            case .bus, .subway:
+//                if let shape = info.passShape, !shape.isEmpty {
+//                    mapContainerView.addTrafficLine(passShape: shape, color: color)
+//                }
+//
+//            case .walk:
+//                let walkShapes = info.step?
+//                    .compactMap { $0.linestring }
+//                    .filter { !$0.isEmpty } ?? []
+//
+//                walkShapes.forEach { linestring in
+//                    mapContainerView.addTrafficLine(passShape: linestring, color: color)
+//                }
+//
+//            default:
+//                break
+//            }
+//        }
+//    }
     
     private func bindTaxiFareUpdates() {
         viewModel.$taxiFare

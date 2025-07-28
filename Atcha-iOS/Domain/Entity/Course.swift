@@ -5,7 +5,7 @@
 //  Created by wodnd on 7/17/25.
 //
 
-import Foundation
+import UIKit
 
 struct Course: Codable, Hashable {
     let routeId: String?
@@ -25,6 +25,7 @@ extension Course {
             LegPathInfo(
                 departureDateTime: self.departureDateTime, // ✅ Course의 값을 사용
                 mode: leg.mode,
+                type: leg.type,
                 step: leg.step,
                 passShape: leg.passShape
             )
@@ -83,6 +84,19 @@ enum TransportMode: String, Codable {
             return nil
         }
     }
+    
+    func getColor(for routeType: String) -> UIColor? {
+        switch self {
+        case .bus:
+            return TransportMode.busColor[routeType]
+        case .subway:
+            return TransportMode.subwayColor[routeType]
+        case .walk:
+            return .gray200
+        default:
+            return nil
+        }
+    }
 
     func getOffIcon(for routeType: String) -> String? {
         switch self {
@@ -99,6 +113,7 @@ enum TransportMode: String, Codable {
 struct LegPathInfo {
     let departureDateTime: String?
     let mode: TransportMode?
+    let type: String?
     let step: [Step]?
     let passShape: String?
 }

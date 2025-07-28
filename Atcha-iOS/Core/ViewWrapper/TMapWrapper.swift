@@ -49,8 +49,8 @@ final class TMapWrapper: NSObject, MapRendering {
             }
         }
     }
-
-    func addTrafficLine(passShape: String) {
+    
+    func addTrafficLine(passShape: String, color: UIColor) {
         let vertices = passShape.split(separator: " ").compactMap { pair -> VSMMapPoint? in
             let parts = pair.split(separator: ",")
             guard parts.count == 2,
@@ -58,48 +58,24 @@ final class TMapWrapper: NSObject, MapRendering {
                   let lat = Double(parts[1]) else { return nil }
             return VSMMapPoint(longitude: lon, latitude: lat)
         }
-        
+
+        guard vertices.count > 1 else {
+            print("⚠️ 유효한 좌표가 부족합니다")
+            return
+        }
+
         let trafficLine = TrafficLine()
-        trafficLine.vertices = (vertices as NSArray) as! [VSMMapPoint] // NSArray로 변환
+        trafficLine.vertices = vertices
 
         let tmapTrafficLine = TMapTrafficLine(trafficLine: [trafficLine])
-        tmapTrafficLine.nextColor = .blue
-        tmapTrafficLine.prevColor = .gray
-//        tmapTrafficLine.showTrafficInfo = true
-//        tmapTrafficLine.showDirectionIndicator = true
+        tmapTrafficLine.prevColor = color
+        tmapTrafficLine.nextColor = color // ✅ 동일 색상 적용
         tmapTrafficLine.width = 6
         tmapTrafficLine.outlineWidth = 2
+        tmapTrafficLine.showTrafficInfo = false // ✅ 강제 색상 사용 시 false로 설정
+        tmapTrafficLine.showDirectionIndicator = true
         tmapTrafficLine.map = mapView
     }
-    
-//    func addWorkingTrafficLine() {
-//        let points: [VSMMapPoint] = [
-//            VSMMapPoint(longitude: 126.970833, latitude: 37.554722), // 서울역
-//            VSMMapPoint(longitude: 126.977945, latitude: 37.566295), // 시청
-//            VSMMapPoint(longitude: 127.009500, latitude: 37.571600), // 동대문
-//            VSMMapPoint(longitude: 127.060240, latitude: 37.630420)  // 월계
-//        ]
-//        var trafficLines: [TrafficLine] = []
-//
-//        for i in 0..<(points.count - 1) {
-//            let trafficLine = TrafficLine()
-//            trafficLine.vertices = [points[i], points[i + 1]]
-//            
-//            trafficLines.append(trafficLine)
-//        }
-//
-//        let trafficShape = TMapTrafficLine(trafficLine: trafficLines)
-//       
-//        trafficShape.showTrafficInfo = true // ✅ 이게 꺼져 있으면 절대 안 보임
-//        trafficShape.showDirectionIndicator = true
-//        trafficShape.nextColor = .blue
-//        trafficShape.prevColor = .gray
-//        trafficShape.nextOutlineColor = .white
-//        trafficShape.prevOutlineColor = .lightGray
-//        trafficShape.width = 8
-//        trafficShape.outlineWidth = 4
-//        trafficShape.map = mapView  // ✅ 반드시 먼저 지정
-//    }
 }
 
 extension TMapWrapper: TMapViewDelegate, TmapViewLocationDelegate {
