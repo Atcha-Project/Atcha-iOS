@@ -75,6 +75,7 @@ final class AtchaBallon: UIView {
             return
         }
         topLabel.attributedText = AtchaFont.B7_M_13(topMessage)
+        topLabel.isHidden = false
     }
 }
 

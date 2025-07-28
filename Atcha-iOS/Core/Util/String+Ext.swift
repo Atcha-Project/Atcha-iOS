@@ -30,3 +30,18 @@ extension String {
         return ""
     }
 }
+
+extension String {
+    func toHourMinute() -> (hour: Int, minute: Int)? {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        
+        guard let date = formatter.date(from: self) else { return nil }
+        
+        let calendar = Calendar.current
+        let hour = calendar.component(.hour, from: date)
+        let minute = calendar.component(.minute, from: date)
+        
+        return hour == 0 ? (24, minute) : (hour, minute)
+    }
+}

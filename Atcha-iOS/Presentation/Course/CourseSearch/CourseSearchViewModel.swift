@@ -37,7 +37,7 @@ final class CourseSearchViewModel: BaseViewModel {
     public private(set) var startAddress: String
     private var courseStreamTask: Task<Void, Never>?
     
-    var courseSearchFinish: (() -> Void)?
+    var courseSearchFinish: (([LegPathInfo]) -> Void)?
     
     init(
         courseUseCase: CourseUseCase,

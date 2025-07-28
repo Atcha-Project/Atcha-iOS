@@ -5,7 +5,7 @@
 //  Created by wodnd on 7/17/25.
 //
 
-import Foundation
+import UIKit
 
 struct Course: Codable, Hashable {
     let routeId: String?
@@ -17,6 +17,20 @@ struct Course: Codable, Hashable {
     let totalWalkDistance: Int?
     let pathType: Int?
     let legs: [Legs]
+}
+
+extension Course {
+    func toLegPathInfos() -> [LegPathInfo] {
+        return legs.map { leg in
+            LegPathInfo(
+                departureDateTime: self.departureDateTime, // ✅ Course의 값을 사용
+                mode: leg.mode,
+                type: leg.type,
+                step: leg.step,
+                passShape: leg.passShape
+            )
+        }
+    }
 }
 
 struct Legs: Codable, Hashable {
@@ -59,13 +73,37 @@ enum TransportMode: String, Codable {
     case bus = "BUS"
     case subway = "SUBWAY"
     case unknown
+    
+    var icon: UIImage? {
+        switch self {
+//        case .bus: return UIImage.routeCircleLineBus
+//        case .subway: return UIImage.routeCircleLineSubway
+//        default: return UIImage.routeCircleLineWalk
+        case .bus: return UIImage.routeBusWhite
+        case .subway: return UIImage.routeCircleSubway
+        default: return UIImage.routeCircleWalk
+        }
+    }
 
-    func icon(for routeType: String) -> String? {
+    func getIcon(for routeType: String) -> UIImage? {
         switch self {
         case .bus:
             return TransportMode.busIcon[routeType]
         case .subway:
             return TransportMode.subwayIcon[routeType]
+        default:
+            return nil
+        }
+    }
+    
+    func getColor(for routeType: String) -> UIColor? {
+        switch self {
+        case .bus:
+            return TransportMode.busColor[routeType]
+        case .subway:
+            return TransportMode.subwayColor[routeType]
+        case .walk:
+            return .gray200
         default:
             return nil
         }
@@ -84,7 +122,9 @@ enum TransportMode: String, Codable {
 }
 
 struct LegPathInfo {
+    let departureDateTime: String?
     let mode: TransportMode?
+    let type: String?
     let step: [Step]?
     let passShape: String?
 }

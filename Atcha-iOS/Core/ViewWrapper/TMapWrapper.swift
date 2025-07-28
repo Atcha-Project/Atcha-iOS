@@ -25,12 +25,15 @@ final class TMapWrapper: NSObject, MapRendering {
     var mapView: TMapView
     weak var delegate: TMapWrapperDelegate?
     
+    private var trafficLines: [TMapTrafficLine] = []
+    private var trafficMarkers: [TMapMarker] = []
+    
     public init(frame: CGRect) {
         self.mapView = TMapView(frame: UIScreen.main.bounds)
         super.init()
         configureDefaultSettings()
     }
-
+    
     private func configureDefaultSettings() {
         mapView.setApiKey(Bundle.main.tMapKey)
         mapView.delegate = self
@@ -49,78 +52,132 @@ final class TMapWrapper: NSObject, MapRendering {
             }
         }
     }
-
-    func addTrafficLine(passShape: String) {
+    
+    //    func addTrafficLine(passShape: String, color: UIColor, markerImage: UIImage? = nil) {
+    //        let vertices = passShape.split(separator: " ").compactMap { pair -> VSMMapPoint? in
+    //            let parts = pair.split(separator: ",")
+    //            guard parts.count == 2,
+    //                  let lon = Double(parts[0]),
+    //                  let lat = Double(parts[1]) else { return nil }
+    //            return VSMMapPoint(longitude: lon, latitude: lat)
+    //        }
+    //
+    //        guard vertices.count > 1 else { return }
+    //
+    //        let trafficLine = TrafficLine()
+    //        trafficLine.vertices = vertices
+    //
+    //        let tmapTrafficLine = TMapTrafficLine(trafficLine: [trafficLine])
+    //        tmapTrafficLine.prevColor = color
+    //        tmapTrafficLine.nextColor = color
+    //        tmapTrafficLine.width = 6
+    //        tmapTrafficLine.outlineWidth = 0
+    //        tmapTrafficLine.showTrafficInfo = false
+    //        tmapTrafficLine.showDirectionIndicator = true
+    //        tmapTrafficLine.map = mapView
+    //
+    //        trafficLines.append(tmapTrafficLine)
+    //
+    //        if let image = markerImage, let start = vertices.first {
+    //            let marker = TMapMarker(position: CLLocationCoordinate2D(latitude: start.latitude, longitude: start.longitude))
+    //            marker.icon = image
+    //            marker.map = mapView
+    //            trafficMarkers.append(marker)
+    //        }
+    //    }
+    
+    func addTrafficLine(
+        passShape: String,
+        color: UIColor,
+        markerImage: UIImage? = nil,
+        isFirst: Bool = false,
+        isLast: Bool = false
+    ) {
         let vertices = passShape.split(separator: " ").compactMap { pair -> VSMMapPoint? in
             let parts = pair.split(separator: ",")
             guard parts.count == 2,
                   let lon = Double(parts[0]),
                   let lat = Double(parts[1]) else { return nil }
-            return VSMMapPoint(longitude: lon, latitude: lat) // 순서 중요!
+            return VSMMapPoint(longitude: lon, latitude: lat)
         }
         
+        guard vertices.count > 1 else { return }
+        
         let trafficLine = TrafficLine()
-        trafficLine.vertices = (vertices as NSArray) as! [VSMMapPoint] // NSArray로 변환
-
+        trafficLine.vertices = vertices
+        
         let tmapTrafficLine = TMapTrafficLine(trafficLine: [trafficLine])
-        tmapTrafficLine.nextColor = .blue
-        tmapTrafficLine.prevColor = .gray
-        tmapTrafficLine.showTrafficInfo = true
-        tmapTrafficLine.showDirectionIndicator = true
+        tmapTrafficLine.prevColor = color
+        tmapTrafficLine.nextColor = color
         tmapTrafficLine.width = 6
-        tmapTrafficLine.outlineWidth = 2
+        tmapTrafficLine.outlineWidth = 0
+        tmapTrafficLine.showTrafficInfo = false
+        tmapTrafficLine.showDirectionIndicator = true
         tmapTrafficLine.map = mapView
+        
+        trafficLines.append(tmapTrafficLine)
+        
+        // ✅ 최초 시작 마커
+        if isFirst, let start = vertices.first {
+            let marker = TMapMarker(position: CLLocationCoordinate2D(latitude: start.latitude, longitude: start.longitude))
+            marker.icon = UIImage.markerStart
+            marker.map = mapView
+            trafficMarkers.append(marker)
+        }
+        
+        // ✅ 최종 도착 마커
+        if isLast, let end = vertices.last {
+            let marker = TMapMarker(position: CLLocationCoordinate2D(latitude: end.latitude, longitude: end.longitude))
+            marker.icon = UIImage.markerEnd
+            marker.map = mapView
+            trafficMarkers.append(marker)
+        }
+        
+        // ✅ 중간 마커 이미지(선택적으로 사용)
+        //        if !isFirst && !isLast, let image = markerImage, let start = vertices.first {
+        //            let marker = TMapMarker(position: CLLocationCoordinate2D(latitude: start.latitude, longitude: start.longitude))
+        //            marker.icon = image
+        //            marker.offset = CGSize(width: 24, height: 24)
+        //            marker.map = mapView
+        //            trafficMarkers.append(marker)
+        //        }
+        if !isFirst && !isLast, let start = vertices.first,
+           let image = markerImage?.withRenderingMode(.alwaysTemplate) {
+            
+            let marker = TMapMarker(position: CLLocationCoordinate2D(latitude: start.latitude, longitude: start.longitude))
+            marker.icon = image.withTintColor(color)
+            marker.map = mapView
+            trafficMarkers.append(marker)
+        }
     }
     
-//    func addWorkingTrafficLine() {
-//        let points: [VSMMapPoint] = [
-//            VSMMapPoint(longitude: 126.970833, latitude: 37.554722), // 서울역
-//            VSMMapPoint(longitude: 126.977945, latitude: 37.566295), // 시청
-//            VSMMapPoint(longitude: 127.009500, latitude: 37.571600), // 동대문
-//            VSMMapPoint(longitude: 127.060240, latitude: 37.630420)  // 월계
-//        ]
-//        var trafficLines: [TrafficLine] = []
-//
-//        for i in 0..<(points.count - 1) {
-//            let trafficLine = TrafficLine()
-//            trafficLine.vertices = [points[i], points[i + 1]]
-//            
-//            trafficLines.append(trafficLine)
-//        }
-//
-//        let trafficShape = TMapTrafficLine(trafficLine: trafficLines)
-//       
-//        trafficShape.showTrafficInfo = true // ✅ 이게 꺼져 있으면 절대 안 보임
-//        trafficShape.showDirectionIndicator = true
-//        trafficShape.nextColor = .blue
-//        trafficShape.prevColor = .gray
-//        trafficShape.nextOutlineColor = .white
-//        trafficShape.prevOutlineColor = .lightGray
-//        trafficShape.width = 8
-//        trafficShape.outlineWidth = 4
-//        trafficShape.map = mapView  // ✅ 반드시 먼저 지정
-//    }
+    func clearMap() {
+        trafficLines.forEach { $0.map = nil }
+        trafficLines.removeAll()
+        
+        trafficMarkers.forEach { $0.map = nil }
+        trafficMarkers.removeAll()
+    }
 }
 
 extension TMapWrapper: TMapViewDelegate, TmapViewLocationDelegate {
     func mapViewDidFinishLoadingMap() {
         mapView.setMapType(.Night)
         mapView.setZoom(18)
-//        mapView.isZoomEnable = false
         mapView.isShowCompass = false
         delegate?.didFinishLoadingMap(self)
     }
-
+    
     func mapView(_ mapView: TMapView, singleTapOnMapWithoutTMapShape location: CLLocationCoordinate2D) {
         delegate?.mapView(self, didSelectLocation: location)
         mapView.setCenter(location)
     }
-
+    
     func mapView(_ mapView: TMapView, singleTapOnMap location: CLLocationCoordinate2D) {
         delegate?.mapView(self, didSelectLocation: location)
         mapView.setCenter(location)
     }
-
+    
     func mapView(_ mapView: TMapView,
                  shouldChangeFrom oldPosition: CLLocationCoordinate2D,
                  to newPosition: CLLocationCoordinate2D) {
