@@ -81,7 +81,7 @@ enum TransportMode: String, Codable {
 //        default: return UIImage.routeCircleLineWalk
         case .bus: return UIImage.routeBusWhite
         case .subway: return UIImage.routeCircleSubway
-        default: return UIImage.walkCircle
+        default: return UIImage.routeCircleWalk
         }
     }
 
