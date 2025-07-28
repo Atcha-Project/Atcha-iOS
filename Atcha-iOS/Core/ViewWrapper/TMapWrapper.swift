@@ -53,7 +53,46 @@ final class TMapWrapper: NSObject, MapRendering {
         }
     }
     
-    func addTrafficLine(passShape: String, color: UIColor, markerImage: UIImage? = nil) {
+    //    func addTrafficLine(passShape: String, color: UIColor, markerImage: UIImage? = nil) {
+    //        let vertices = passShape.split(separator: " ").compactMap { pair -> VSMMapPoint? in
+    //            let parts = pair.split(separator: ",")
+    //            guard parts.count == 2,
+    //                  let lon = Double(parts[0]),
+    //                  let lat = Double(parts[1]) else { return nil }
+    //            return VSMMapPoint(longitude: lon, latitude: lat)
+    //        }
+    //
+    //        guard vertices.count > 1 else { return }
+    //
+    //        let trafficLine = TrafficLine()
+    //        trafficLine.vertices = vertices
+    //
+    //        let tmapTrafficLine = TMapTrafficLine(trafficLine: [trafficLine])
+    //        tmapTrafficLine.prevColor = color
+    //        tmapTrafficLine.nextColor = color
+    //        tmapTrafficLine.width = 6
+    //        tmapTrafficLine.outlineWidth = 0
+    //        tmapTrafficLine.showTrafficInfo = false
+    //        tmapTrafficLine.showDirectionIndicator = true
+    //        tmapTrafficLine.map = mapView
+    //
+    //        trafficLines.append(tmapTrafficLine)
+    //
+    //        if let image = markerImage, let start = vertices.first {
+    //            let marker = TMapMarker(position: CLLocationCoordinate2D(latitude: start.latitude, longitude: start.longitude))
+    //            marker.icon = image
+    //            marker.map = mapView
+    //            trafficMarkers.append(marker)
+    //        }
+    //    }
+    
+    func addTrafficLine(
+        passShape: String,
+        color: UIColor,
+        markerImage: UIImage? = nil,
+        isFirst: Bool = false,
+        isLast: Bool = false
+    ) {
         let vertices = passShape.split(separator: " ").compactMap { pair -> VSMMapPoint? in
             let parts = pair.split(separator: ",")
             guard parts.count == 2,
@@ -78,9 +117,35 @@ final class TMapWrapper: NSObject, MapRendering {
         
         trafficLines.append(tmapTrafficLine)
         
-        if let image = markerImage, let start = vertices.first {
+        // ✅ 최초 시작 마커
+        if isFirst, let start = vertices.first {
             let marker = TMapMarker(position: CLLocationCoordinate2D(latitude: start.latitude, longitude: start.longitude))
-            marker.icon = image
+            marker.icon = UIImage.markerStart
+            marker.map = mapView
+            trafficMarkers.append(marker)
+        }
+        
+        // ✅ 최종 도착 마커
+        if isLast, let end = vertices.last {
+            let marker = TMapMarker(position: CLLocationCoordinate2D(latitude: end.latitude, longitude: end.longitude))
+            marker.icon = UIImage.markerEnd
+            marker.map = mapView
+            trafficMarkers.append(marker)
+        }
+        
+        // ✅ 중간 마커 이미지(선택적으로 사용)
+        //        if !isFirst && !isLast, let image = markerImage, let start = vertices.first {
+        //            let marker = TMapMarker(position: CLLocationCoordinate2D(latitude: start.latitude, longitude: start.longitude))
+        //            marker.icon = image
+        //            marker.offset = CGSize(width: 24, height: 24)
+        //            marker.map = mapView
+        //            trafficMarkers.append(marker)
+        //        }
+        if !isFirst && !isLast, let start = vertices.first,
+           let image = markerImage?.withRenderingMode(.alwaysTemplate) {
+            
+            let marker = TMapMarker(position: CLLocationCoordinate2D(latitude: start.latitude, longitude: start.longitude))
+            marker.icon = image.withTintColor(color)
             marker.map = mapView
             trafficMarkers.append(marker)
         }

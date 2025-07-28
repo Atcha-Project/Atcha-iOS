@@ -73,8 +73,19 @@ enum TransportMode: String, Codable {
     case bus = "BUS"
     case subway = "SUBWAY"
     case unknown
+    
+    var icon: UIImage? {
+        switch self {
+//        case .bus: return UIImage.routeCircleLineBus
+//        case .subway: return UIImage.routeCircleLineSubway
+//        default: return UIImage.routeCircleLineWalk
+        case .bus: return UIImage.routeBusWhite
+        case .subway: return UIImage.routeCircleSubway
+        default: return UIImage.walkCircle
+        }
+    }
 
-    func icon(for routeType: String) -> UIImage? {
+    func getIcon(for routeType: String) -> UIImage? {
         switch self {
         case .bus:
             return TransportMode.busIcon[routeType]

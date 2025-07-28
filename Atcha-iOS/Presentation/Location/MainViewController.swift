@@ -159,6 +159,7 @@ extension MainViewController {
             viewModel.requestPermissionAndStartTracking()
             view.showToast(message: "알림이 종료되었어요")
             lastTrainView.isHidden = false
+            flagImageView.isHidden = false
             lastTrainDepartView.isHidden = true
             updateAtchaImageConstraint(relativeTo: lastTrainView)
             mapContainerView.clearMapView()
@@ -220,6 +221,7 @@ extension MainViewController {
         view.showToast(message: "알림이 등록되었어요.")
         lastTrainView.isHidden = true
         lastTrainDepartView.isHidden = false
+        flagImageView.isHidden = true
         updateAtchaImageConstraint(relativeTo: lastTrainDepartView)
         ballonView.setupTitle(bottomMessage: "이때쯤 자리에서 출발하면 돼요")
         
@@ -232,39 +234,6 @@ extension MainViewController {
         addRouteLine(infos: infos)
     }
     
-//    private func addRouteLine(infos: [LegPathInfo]) {
-//        infos.forEach { info in
-//            var shapeStrings: [String] = []
-//            var colors: [UIColor] = []
-//            var images: [UIImage] = []
-//            
-//            switch info.mode {
-//            case .bus, .subway:
-//                if let shape = info.passShape, !shape.isEmpty {
-//                    shapeStrings.append(shape)
-//                    colors.append(info.mode?.getColor(for: info.type ?? "") ?? .magenta)
-//                    guard let image = info.mode?.icon(for: info.type ?? "") else { return }
-//                    images.append(image)
-//                }
-//
-//            case .walk:
-//                let walkShapes = info.step?.compactMap { $0.linestring }.filter { !$0.isEmpty } ?? []
-//                let merged = walkShapes.joined(separator: " ")
-//                if !merged.isEmpty {
-//                    shapeStrings.append(merged)
-//                    colors.append(.gray200)
-//                    images.append(UIImage.walkGray700)
-//                }
-//
-//            default:
-//                break
-//            }
-//
-//            zip(shapeStrings, colors).forEach { shape, color in
-//                mapContainerView.addTrafficLine(passShape: shape, color: color)
-//            }
-//        }
-//    }
     private func addRouteLine(infos: [LegPathInfo]) {
         var shapeStrings: [String] = []
         var colors: [UIColor] = []
@@ -276,9 +245,9 @@ extension MainViewController {
                 if let shape = info.passShape, !shape.isEmpty {
                     shapeStrings.append(shape)
                     colors.append(info.mode?.getColor(for: info.type ?? "") ?? .magenta)
-
-                    let icon = info.mode?.icon(for: info.type ?? "") ?? UIImage.walkGray700
-                    images.append(icon)
+                    if let icon = info.mode?.icon {
+                        images.append(icon)
+                    }
                 }
 
             case .walk:
@@ -287,7 +256,9 @@ extension MainViewController {
                 if !merged.isEmpty {
                     shapeStrings.append(merged)
                     colors.append(.gray200)
-                    images.append(UIImage.walkGray700)
+                    if let icon = info.mode?.icon {
+                        images.append(icon)
+                    }
                 }
 
             default:
@@ -295,8 +266,17 @@ extension MainViewController {
             }
         }
 
-        zip3(shapeStrings, colors, images).forEach { shape, color, image in
-            mapContainerView.addTrafficLine(passShape: shape, color: color, markerImage: image)
+        for (index, (shape, color, image)) in zip3(shapeStrings, colors, images).enumerated() {
+            let isFirst = index == 0
+            let isLast = index == shapeStrings.count - 1
+
+            mapContainerView.addTrafficLine(
+                passShape: shape,
+                color: color,
+                markerImage: image,
+                isFirst: isFirst,
+                isLast: isLast
+            )
         }
     }
     
