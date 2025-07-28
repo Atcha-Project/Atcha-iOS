@@ -56,7 +56,7 @@ final class TMapWrapper: NSObject, MapRendering {
             guard parts.count == 2,
                   let lon = Double(parts[0]),
                   let lat = Double(parts[1]) else { return nil }
-            return VSMMapPoint(longitude: lon, latitude: lat) // 순서 중요!
+            return VSMMapPoint(longitude: lon, latitude: lat)
         }
         
         let trafficLine = TrafficLine()
@@ -65,8 +65,8 @@ final class TMapWrapper: NSObject, MapRendering {
         let tmapTrafficLine = TMapTrafficLine(trafficLine: [trafficLine])
         tmapTrafficLine.nextColor = .blue
         tmapTrafficLine.prevColor = .gray
-        tmapTrafficLine.showTrafficInfo = true
-        tmapTrafficLine.showDirectionIndicator = true
+//        tmapTrafficLine.showTrafficInfo = true
+//        tmapTrafficLine.showDirectionIndicator = true
         tmapTrafficLine.width = 6
         tmapTrafficLine.outlineWidth = 2
         tmapTrafficLine.map = mapView

@@ -115,10 +115,9 @@ extension MainViewController {
     }
 }
 
-// MARK: Bindings
 // MARK: - Bindings
 extension MainViewController {
-
+    
     private func bindView() {
         bindLastTrainViewActions()
         bindLastTrainDepartViewActions()
@@ -128,14 +127,14 @@ extension MainViewController {
         bindLegPathUpdates()
         bindTaxiFareUpdates()
     }
-
+    
     // MARK: - View Actions
     private func bindLastTrainViewActions() {
         lastTrainView.actionPublisher
             .sink { [weak self] in self?.handleLastTrainViewAction($0) }
             .store(in: &cancellables)
     }
-
+    
     private func handleLastTrainViewAction(_ action: LastTrainSearchBottomView.Action) {
         switch action {
         case .currentTapped:
@@ -146,14 +145,14 @@ extension MainViewController {
             ))
         }
     }
-
+    
     private func bindLastTrainDepartViewActions() {
         lastTrainDepartView.actionPublisher
             .receive(on: RunLoop.main)
             .sink { [weak self] in self?.handleLastTrainDepartAction($0) }
             .store(in: &cancellables)
     }
-
+    
     private func handleLastTrainDepartAction(_ action: LastTrainDepartBottomView.Action) {
         switch action {
         case .exitTapped:
@@ -172,7 +171,7 @@ extension MainViewController {
             ballonView.setupTitle(topMessage: "이때쯤 자리에서 출발하면 돼요", bottomMessage: "현재 교통 상황 기준으로,\n출발 시간이 가까워질수록 더 정확해져요")
         }
     }
-
+    
     // MARK: - ViewModel Bindings
     private func bindAddressUpdates() {
         viewModel.$address
@@ -182,16 +181,16 @@ extension MainViewController {
             .sink { [weak self] in self?.updateAddress($0) }
             .store(in: &cancellables)
     }
-
+    
     private func updateAddress(_ address: String) {
         if firstAddress == nil {
             firstAddress = address
         }
-
+        
         let title = (address == firstAddress) ? "현위치 : \(address)" : address
         lastTrainView.setupCurrentLocationTitle(title)
     }
-
+    
     private func bindCurrentLocationUpdates() {
         viewModel.$currentLocation
             .compactMap { $0 }
@@ -199,7 +198,7 @@ extension MainViewController {
             .sink { [weak self] in self?.mapContainerView.setupCenter(location: $0) }
             .store(in: &cancellables)
     }
-
+    
     private func bindSelectedLocationUpdates() {
         viewModel.$selectedLocation
             .compactMap { $0 }
@@ -207,7 +206,7 @@ extension MainViewController {
             .sink { [weak self] in self?.mapContainerView.updateUserMarker(location: $0) }
             .store(in: &cancellables)
     }
-
+    
     private func bindLegPathUpdates() {
         viewModel.$legPathInfos
             .filter { !$0.isEmpty }
@@ -215,7 +214,7 @@ extension MainViewController {
             .sink { [weak self] in self?.handleLegPathInfos($0) }
             .store(in: &cancellables)
     }
-
+    
     private func handleLegPathInfos(_ infos: [LegPathInfo]) {
         view.showToast(message: "알림이 등록되었어요.")
         lastTrainView.isHidden = true
@@ -227,10 +226,60 @@ extension MainViewController {
            let (hour, minute) = time.toHourMinute() {
             lastTrainDepartView.setupTime(hour: hour, minute: minute)
         }
-
+        
         lastTrainDepartView.setupLoaction(location: viewModel.address)
+        addRouteLine(infos: infos)
     }
+    
+//    private func addRouteLine(infos: [LegPathInfo]) {
+//        infos.forEach { info in
+//            
+//            print("info : \(info.mode)")
+//            
+//            switch info.mode {
+//            case .bus:
+//                mapContainerView.addTrafficLine(passShape: info.passShape ?? "")
+//            case .subway:
+//                mapContainerView.addTrafficLine(passShape: info.passShape ?? "")
+//            case .walk:
+//                info.step?.forEach { step in
+//                    mapContainerView.addTrafficLine(passShape: step.linestring ?? "")
+//                }
+//            default: break
+//            }
+//        }
+//    }
+    
+    private func addRouteLine(infos: [LegPathInfo]) {
+        infos.forEach { info in
+            print("info.mode: \(info.mode?.rawValue ?? "-")")
 
+            var shapeStrings: [String] = []
+
+            switch info.mode {
+            case .bus, .subway:
+                if let shape = info.passShape, !shape.isEmpty {
+                    shapeStrings.append(shape)
+                }
+
+            case .walk:
+                let walkShapes = info.step?.compactMap { $0.linestring }.filter { !$0.isEmpty } ?? []
+                let merged = walkShapes.joined(separator: " ")
+                if !merged.isEmpty {
+                    shapeStrings.append(merged)
+                }
+
+            default:
+                break
+            }
+
+            // passShape들을 기반으로 선 그리기
+            shapeStrings.forEach { shape in
+                mapContainerView.addTrafficLine(passShape: shape)
+            }
+        }
+    }
+    
     private func bindTaxiFareUpdates() {
         viewModel.$taxiFare
             .removeDuplicates()
@@ -239,12 +288,12 @@ extension MainViewController {
             .sink { [weak self] in self?.updateTaxiFare($0) }
             .store(in: &cancellables)
     }
-
+    
     private func updateTaxiFare(_ fare: Double) {
         let fareStr = String(format: "%.0f", fare)
         ballonView.setupTitle(bottomMessage: "여기서 막차 놓치면 택시비 : 약 \(fareStr)원")
     }
-
+    
     // MARK: - Constraint Helper
     private func updateAtchaImageConstraint(relativeTo view: UIView, inset: CGFloat = 24) {
         atchaImageBottomConstraint?.deactivate()
@@ -264,7 +313,7 @@ extension MainViewController {
         viewModel.setupLocation()
         
         let passShape = "127.025347,37.637628 127.025619,37.637881 127.026825,37.638997 127.027403,37.639531 127.028386,37.638886 127.031444,37.636886 127.032253,37.636358 127.033556,37.635517 127.033622,37.635489 127.033839,37.635386 127.034283,37.635272 127.034531,37.635169 127.035389,37.634658 127.035700,37.634483 127.035917,37.634406 127.036078,37.634367 127.036086,37.634367 127.036769,37.634194 127.037456,37.634025 127.037678,37.633950 127.037931,37.633797 127.038625,37.632883 127.038728,37.632750 127.039133,37.632214 127.039147,37.632194 127.039272,37.632053 127.039544,37.631814 127.040014,37.631500 127.040017,37.631497"
-        mapContainerView.addTrafficLine(passShape: passShape)
+//        mapContainerView.addTrafficLine(passShape: passShape)
     }
     
     @objc private func didTapMyPageButton() {
