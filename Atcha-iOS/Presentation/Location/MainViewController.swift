@@ -280,7 +280,7 @@ extension MainViewController {
         }
     }
     
-    func zip3<A, B, C>(_ a: [A], _ b: [B], _ c: [C]) -> [(A, B, C)] {
+    private func zip3<A, B, C>(_ a: [A], _ b: [B], _ c: [C]) -> [(A, B, C)] {
         let count = min(a.count, b.count, c.count)
         return (0..<count).map { (a[$0], b[$0], c[$0]) }
     }
