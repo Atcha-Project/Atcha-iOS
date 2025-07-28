@@ -232,16 +232,53 @@ extension MainViewController {
         addRouteLine(infos: infos)
     }
     
+//    private func addRouteLine(infos: [LegPathInfo]) {
+//        infos.forEach { info in
+//            var shapeStrings: [String] = []
+//            var colors: [UIColor] = []
+//            var images: [UIImage] = []
+//            
+//            switch info.mode {
+//            case .bus, .subway:
+//                if let shape = info.passShape, !shape.isEmpty {
+//                    shapeStrings.append(shape)
+//                    colors.append(info.mode?.getColor(for: info.type ?? "") ?? .magenta)
+//                    guard let image = info.mode?.icon(for: info.type ?? "") else { return }
+//                    images.append(image)
+//                }
+//
+//            case .walk:
+//                let walkShapes = info.step?.compactMap { $0.linestring }.filter { !$0.isEmpty } ?? []
+//                let merged = walkShapes.joined(separator: " ")
+//                if !merged.isEmpty {
+//                    shapeStrings.append(merged)
+//                    colors.append(.gray200)
+//                    images.append(UIImage.walkGray700)
+//                }
+//
+//            default:
+//                break
+//            }
+//
+//            zip(shapeStrings, colors).forEach { shape, color in
+//                mapContainerView.addTrafficLine(passShape: shape, color: color)
+//            }
+//        }
+//    }
     private func addRouteLine(infos: [LegPathInfo]) {
+        var shapeStrings: [String] = []
+        var colors: [UIColor] = []
+        var images: [UIImage] = []
+
         infos.forEach { info in
-            var shapeStrings: [String] = []
-            var colors: [UIColor] = []
-            
             switch info.mode {
             case .bus, .subway:
                 if let shape = info.passShape, !shape.isEmpty {
                     shapeStrings.append(shape)
                     colors.append(info.mode?.getColor(for: info.type ?? "") ?? .magenta)
+
+                    let icon = info.mode?.icon(for: info.type ?? "") ?? UIImage.walkGray700
+                    images.append(icon)
                 }
 
             case .walk:
@@ -250,16 +287,22 @@ extension MainViewController {
                 if !merged.isEmpty {
                     shapeStrings.append(merged)
                     colors.append(.gray200)
+                    images.append(UIImage.walkGray700)
                 }
 
             default:
                 break
             }
-
-            zip(shapeStrings, colors).forEach { shape, color in
-                mapContainerView.addTrafficLine(passShape: shape, color: color)
-            }
         }
+
+        zip3(shapeStrings, colors, images).forEach { shape, color, image in
+            mapContainerView.addTrafficLine(passShape: shape, color: color, markerImage: image)
+        }
+    }
+    
+    func zip3<A, B, C>(_ a: [A], _ b: [B], _ c: [C]) -> [(A, B, C)] {
+        let count = min(a.count, b.count, c.count)
+        return (0..<count).map { (a[$0], b[$0], c[$0]) }
     }
     
     private func bindTaxiFareUpdates() {

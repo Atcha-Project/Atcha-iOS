@@ -74,7 +74,7 @@ enum TransportMode: String, Codable {
     case subway = "SUBWAY"
     case unknown
 
-    func icon(for routeType: String) -> String? {
+    func icon(for routeType: String) -> UIImage? {
         switch self {
         case .bus:
             return TransportMode.busIcon[routeType]

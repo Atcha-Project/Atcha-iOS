@@ -46,8 +46,8 @@ final class TMapContainerView: UIView {
         tMapWrapper.updateUserMarker(coordinate: location)
     }
     
-    func addTrafficLine(passShape: String, color: UIColor) {
-        tMapWrapper.addTrafficLine(passShape: passShape, color: color)
+    func addTrafficLine(passShape: String, color: UIColor, markerImage: UIImage? = nil) {
+        tMapWrapper.addTrafficLine(passShape: passShape, color: color, markerImage: markerImage)
     }
     
     func clearMapView() {

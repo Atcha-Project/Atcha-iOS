@@ -24,14 +24,16 @@ final class TMapWrapper: NSObject, MapRendering {
     private var userMarker: TMapMarker?
     var mapView: TMapView
     weak var delegate: TMapWrapperDelegate?
+    
     private var trafficLines: [TMapTrafficLine] = []
+    private var trafficMarkers: [TMapMarker] = []
     
     public init(frame: CGRect) {
         self.mapView = TMapView(frame: UIScreen.main.bounds)
         super.init()
         configureDefaultSettings()
     }
-
+    
     private func configureDefaultSettings() {
         mapView.setApiKey(Bundle.main.tMapKey)
         mapView.delegate = self
@@ -51,7 +53,7 @@ final class TMapWrapper: NSObject, MapRendering {
         }
     }
     
-    func addTrafficLine(passShape: String, color: UIColor) {
+    func addTrafficLine(passShape: String, color: UIColor, markerImage: UIImage? = nil) {
         let vertices = passShape.split(separator: " ").compactMap { pair -> VSMMapPoint? in
             let parts = pair.split(separator: ",")
             guard parts.count == 2,
@@ -59,15 +61,15 @@ final class TMapWrapper: NSObject, MapRendering {
                   let lat = Double(parts[1]) else { return nil }
             return VSMMapPoint(longitude: lon, latitude: lat)
         }
-
+        
         guard vertices.count > 1 else { return }
-
+        
         let trafficLine = TrafficLine()
         trafficLine.vertices = vertices
-
+        
         let tmapTrafficLine = TMapTrafficLine(trafficLine: [trafficLine])
         tmapTrafficLine.prevColor = color
-        tmapTrafficLine.nextColor = color 
+        tmapTrafficLine.nextColor = color
         tmapTrafficLine.width = 6
         tmapTrafficLine.outlineWidth = 0
         tmapTrafficLine.showTrafficInfo = false
@@ -75,11 +77,21 @@ final class TMapWrapper: NSObject, MapRendering {
         tmapTrafficLine.map = mapView
         
         trafficLines.append(tmapTrafficLine)
+        
+        if let image = markerImage, let start = vertices.first {
+            let marker = TMapMarker(position: CLLocationCoordinate2D(latitude: start.latitude, longitude: start.longitude))
+            marker.icon = image
+            marker.map = mapView
+            trafficMarkers.append(marker)
+        }
     }
     
     func clearMap() {
         trafficLines.forEach { $0.map = nil }
         trafficLines.removeAll()
+        
+        trafficMarkers.forEach { $0.map = nil }
+        trafficMarkers.removeAll()
     }
 }
 
@@ -90,17 +102,17 @@ extension TMapWrapper: TMapViewDelegate, TmapViewLocationDelegate {
         mapView.isShowCompass = false
         delegate?.didFinishLoadingMap(self)
     }
-
+    
     func mapView(_ mapView: TMapView, singleTapOnMapWithoutTMapShape location: CLLocationCoordinate2D) {
         delegate?.mapView(self, didSelectLocation: location)
         mapView.setCenter(location)
     }
-
+    
     func mapView(_ mapView: TMapView, singleTapOnMap location: CLLocationCoordinate2D) {
         delegate?.mapView(self, didSelectLocation: location)
         mapView.setCenter(location)
     }
-
+    
     func mapView(_ mapView: TMapView,
                  shouldChangeFrom oldPosition: CLLocationCoordinate2D,
                  to newPosition: CLLocationCoordinate2D) {
