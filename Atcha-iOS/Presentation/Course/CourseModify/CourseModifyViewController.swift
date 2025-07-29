@@ -28,7 +28,6 @@ final class CourseModifyViewController: BaseViewController<CourseModifyViewModel
     private let recentAllDeleteLabel: UILabel = UILabel()
     private let emptyRecentLabel: UILabel = UILabel()
     private var isFromSetting: Bool = false
-    private var loadingView: LoadingView = LoadingView()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -240,13 +239,11 @@ final class CourseModifyViewController: BaseViewController<CourseModifyViewModel
         tableView.isHidden = true
         tableHeaderView.isHidden = true
         
-        view.addSubview(loadingView)
-        loadingView.start()
-        loadingView.snp.makeConstraints { $0.edges.equalToSuperview() }
+        self.showLoading()
         
         // 1초 후 ViewModel에게 전달
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            self.loadingView.stop()
+            self.hideLoading()
             self.viewModel.onLocationConfirmed?(locationInfo, coordinate)
         }
     }

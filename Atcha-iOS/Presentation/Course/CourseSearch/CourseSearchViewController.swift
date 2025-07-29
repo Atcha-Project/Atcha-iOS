@@ -64,11 +64,60 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
         
         setupUI()
         NoSearchCourseUI()
-        noSearchStack.isHidden = true
         bind()
         viewModel.startCourseStream()
     }
     
+    // MARK: ViewModel 바인딩
+    private func bind() {
+        // 1. 로딩 상태에 따라 로딩뷰 제어
+        viewModel.$isLoading
+            .receive(on: RunLoop.main)
+            .sink { [weak self] isLoading in
+                guard let self = self else { return }
+                
+                if isLoading {
+                    self.showLoading()
+                    self.noSearchStack.isHidden = true
+                } else {
+                    self.hideLoading()
+                }
+            }
+            .store(in: &cancellables)
+        
+        // 2. 서버 에러 시 메시지 표시
+        viewModel.$isServerError
+            .combineLatest(viewModel.$isLoading)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] (isError, isLoading) in
+                guard let self = self else { return }
+
+                if isError && !isLoading {
+                    self.noSearchLabel.attributedText = AtchaFont.B4_R_15("검색 가능한 막차 정보가 없습니다.", color: AtchaColor.gray400)
+                    self.noSearchStack.isHidden = false
+                }
+            }
+            .store(in: &cancellables)
+        
+        // 3. 코스 데이터 변경 시 처리
+        viewModel.$courses
+            .receive(on: RunLoop.main)
+            .sink { [weak self] courses in
+                guard let self = self else { return }
+                
+                self.applySnapshot(courses: courses)
+                
+                if !self.viewModel.isLoading {
+                    if courses.isEmpty && !self.viewModel.isServerError {
+                        self.noSearchLabel.attributedText = AtchaFont.B4_R_15("앗! 시간이 늦어서 더이상 막차가 없어요.", color: AtchaColor.gray400)
+                        self.noSearchStack.isHidden = false
+                    } else {
+                        self.noSearchStack.isHidden = true
+                    }
+                }
+            }
+            .store(in: &cancellables)
+    }
     // MARK: - 경로탐색 UI
     private func setupUI() {
         view.backgroundColor = AtchaColor.gray950
@@ -123,37 +172,6 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
         }
     }
     
-    // MARK: ViewModel 바인딩
-    private func bind() {
-        viewModel.$courses
-            .receive(on: RunLoop.main)
-            .sink { [weak self] courses in
-                self?.applySnapshot(courses: courses)
-                
-                if courses.isEmpty {
-                    if self?.viewModel.isServerError == false {
-                        self?.noSearchLabel.attributedText = AtchaFont.B4_R_15("앗! 시간이 늦어서 더이상 막차가 없어요.", color: AtchaColor.gray400)
-                    }
-                    self?.noSearchStack.isHidden = false
-                } else {
-                    self?.noSearchStack.isHidden = true
-                }
-                
-            }
-            .store(in: &cancellables)
-        
-        viewModel.$isServerError
-            .receive(on: RunLoop.main)
-            .sink { [weak self] isError in
-                guard let self = self else { return }
-                if isError {
-                    self.noSearchLabel.attributedText = AtchaFont.B4_R_15("검색 가능한 막차 정보가 없습니다.", color: AtchaColor.gray400)
-                    self.noSearchStack.isHidden = false
-                }
-            }
-            .store(in: &cancellables)
-    }
-    
     // MARK: - Course CollectionView DataSource & Cell 바인딩
     private func setDataSource() -> DataSource {
         let dataSource: DataSource = UICollectionViewDiffableDataSource(collectionView: courseCollectionView)
@@ -201,9 +219,9 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
         // 버튼 탭 시 경로ID와 함께 상세 화면으로 이동
         cell.onDetailTapped = { [weak self] in
             guard let self else { return }
-//            print(model.course.routeId ?? "경로 ID 없음")
+            //            print(model.course.routeId ?? "경로 ID 없음")
             viewModel.courseSearchFinish?(model.course.toLegPathInfos())
-//            navigationController?.popViewController(animated: true)
+            //            navigationController?.popViewController(animated: true)
         }
         
         // 버튼 탭 시 확장/축소 상태 변경 핸들러 연결

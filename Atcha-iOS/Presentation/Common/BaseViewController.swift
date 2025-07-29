@@ -18,6 +18,8 @@ class BaseViewController<VM: BaseViewModel>: UIViewController {
         return indicator
     }()
     
+    private var loadingView: LoadingView?
+    
     // MARK: - Init
     init(viewModel: VM) {
         self.viewModel = viewModel
@@ -98,5 +100,30 @@ class BaseViewController<VM: BaseViewModel>: UIViewController {
         let ok = UIAlertAction(title: "확인", style: .default, handler: nil)
         alert.addAction(ok)
         present(alert, animated: true, completion: nil)
+    }
+    
+    // MARK: - 로딩 뷰 보여주기
+    func showLoading() {
+        if loadingView != nil { return }
+        
+        let loading = LoadingView(frame: view.bounds)
+        loading.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(loading)
+        
+        NSLayoutConstraint.activate([
+            loading.topAnchor.constraint(equalTo: view.topAnchor),
+            loading.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            loading.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            loading.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+        
+        loadingView = loading
+    }
+    
+    // MARK: - 로딩 뷰 숨기기
+    func hideLoading() {
+        loadingView?.stop()
+        loadingView?.removeFromSuperview()
+        loadingView = nil
     }
 }
