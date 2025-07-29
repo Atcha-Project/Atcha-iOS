@@ -23,6 +23,7 @@ extension Course {
     func toLegPathInfos() -> [LegPathInfo] {
         return legs.map { leg in
             LegPathInfo(
+                routeId: self.routeId,
                 departureDateTime: self.departureDateTime, // ✅ Course의 값을 사용
                 mode: leg.mode,
                 type: leg.type,
@@ -122,6 +123,7 @@ enum TransportMode: String, Codable {
 }
 
 struct LegPathInfo {
+    let routeId: String?
     let departureDateTime: String?
     let mode: TransportMode?
     let type: String?
