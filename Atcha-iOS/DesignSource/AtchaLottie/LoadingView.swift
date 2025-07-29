@@ -30,7 +30,7 @@ final class LoadingView: UIView {
     }
     
     private func setupUI() {
-        backgroundColor = .clear
+        backgroundColor = .black.withAlphaComponent(0.8)
         addSubview(animationView)
         
         animationView.snp.makeConstraints {

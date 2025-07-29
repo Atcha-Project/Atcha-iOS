@@ -10,10 +10,11 @@ import Foundation
 final class DetailRouteViewModel: BaseViewModel {
     
     private let routeId: String?
+    @Published var isViewDidLoaded: Bool = false
     
     init(routeId: String?) {
         self.routeId = routeId
         
-        print("routeId : \(routeId)")
+        super.init()
     }
 }
