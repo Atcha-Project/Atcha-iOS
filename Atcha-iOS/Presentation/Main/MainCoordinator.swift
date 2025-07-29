@@ -72,6 +72,9 @@ final class MainCoordinator {
                 diContainer: courseDI)
             self.courseModifyCoordinator = courseModifyCoordinator
             courseModifyCoordinator.start()
+            
+        case let .detailRoute(routeId):
+            
         }
         
         routeHandler?(route)

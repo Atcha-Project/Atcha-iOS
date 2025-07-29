@@ -62,6 +62,11 @@ extension MainDIContainer {
     }
 }
 
+// MARK: - Detail Route
+extension MainDIContainer {
+    
+}
+
 // MARK: - Cousre
 extension MainDIContainer {
 //    func makeCourseSearchViewModel(startLat: String, startLon: String, startAddress: String) -> CourseSearchViewModel {
