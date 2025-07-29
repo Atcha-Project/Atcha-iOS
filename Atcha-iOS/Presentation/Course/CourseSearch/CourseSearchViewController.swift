@@ -212,16 +212,16 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
             
             print("model : \(model.course)")
             
-            viewModel.courseSearchFinish?(model.course.toLegPathInfos())
+            viewModel.getAlarmTapped?(model.course.toLegPathInfos())
             navigationController?.popToRootViewController(animated: true)
         }
         
         // 버튼 탭 시 경로ID와 함께 상세 화면으로 이동
         cell.onDetailTapped = { [weak self] in
             guard let self else { return }
-            //            print(model.course.routeId ?? "경로 ID 없음")
-            viewModel.courseSearchFinish?(model.course.toLegPathInfos())
-            //            navigationController?.popViewController(animated: true)
+            let pathInfo: [LegPathInfo] = model.course.toLegPathInfos()
+            let tafficInfo: [LegTrafficInfo] = model.course.toLegTrafficInfos()
+            viewModel.getDetailTapped?((pathInfo, tafficInfo))
         }
         
         // 버튼 탭 시 확장/축소 상태 변경 핸들러 연결

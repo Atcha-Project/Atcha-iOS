@@ -8,13 +8,16 @@
 import Foundation
 
 final class DetailRouteViewModel: BaseViewModel {
+    @Published var infos: ([LegPathInfo], [LegTrafficInfo])
     
-    private let routeId: String?
-    @Published var isViewDidLoaded: Bool = false
-    
-    init(routeId: String?) {
-        self.routeId = routeId
+    init(infos: ([LegPathInfo], [LegTrafficInfo])) {
+        self.infos = infos
         
         super.init()
+        self.bind()
+    }
+    
+    private func bind() {
+        
     }
 }

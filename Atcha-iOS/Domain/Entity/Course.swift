@@ -19,6 +19,64 @@ struct Course: Codable, Hashable {
     let legs: [Legs]
 }
 
+struct Legs: Codable, Hashable {
+    let distance: Int?
+    let sectionTime: Int?
+    let mode: TransportMode?
+    let departureDateTime: String?
+    let route: String?
+    let type: String?
+    let service: String?
+    let start: addressInfo?
+    let end: addressInfo?
+    let passStopList: [passStopList]?
+    let step: [Step]?
+    let passShape: String?
+}
+
+extension Course {
+    
+}
+
+// routeName  String  M  버스 노선 번호 -> route
+
+// stationName  String  M  정류장 이름
+
+// lat  Number  M  정류장 위도
+
+// lon  Number  M  정류장 경도
+
+// passStations    List  경유 정류장 리스트
+
+struct LegTrafficInfo {
+    let departureDateTime: String?
+    let totalTime: String?
+    
+    // Legs밑에 있는 애들
+    let sectionTime: String?
+    let mode: TransportMode?
+    let type: String?
+    let passStopList: [passStopList]?
+    let route: String? // "간선:N62"
+    
+    let walkDistance: [Step]? // 보행자 이동 거리 (미터)
+}
+
+extension Course {
+    func toLegTrafficInfos() -> [LegTrafficInfo] {
+        return legs.map { leg in
+            LegTrafficInfo(departureDateTime: departureDateTime,
+                           totalTime: "\(totalTime)",
+                           sectionTime: "\(leg.sectionTime)",
+                           mode: leg.mode,
+                           type: leg.type,
+                           passStopList: leg.passStopList,
+                           route: leg.route,
+                           walkDistance: leg.step)
+        }
+    }
+}
+
 extension Course {
     func toLegPathInfos() -> [LegPathInfo] {
         return legs.map { leg in
@@ -34,20 +92,7 @@ extension Course {
     }
 }
 
-struct Legs: Codable, Hashable {
-    let distance: Int?
-    let sectionTime: Int?
-    let mode: TransportMode?
-    let departureDateTime: String?
-    let route: String?
-    let type: String?
-    let service: String?
-    let start: addressInfo?
-    let end: addressInfo?
-    let passStopList: [passStopList]?
-    let step: [Step]?
-    let passShape: String?
-}
+
 
 struct addressInfo: Codable, Hashable{
     let name: String?
@@ -130,4 +175,3 @@ struct LegPathInfo {
     let step: [Step]?
     let passShape: String?
 }
-

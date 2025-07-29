@@ -59,10 +59,14 @@ final class MainCoordinator {
                                                         startLon: startLon,
                                                         startAddress: startAddress)
             let vc = courseDI.makeCourseSearchViewController(viewModel: vm)
-            vm.courseSearchFinish = { [weak self] infos in
+            vm.getAlarmTapped = { [weak self] infos in
                 guard let self else { return }
                 self.mainViewModel?.courseSearchResultHandler?(infos)
                 navigationController.popViewController(animated: true)
+            }
+            vm.getDetailTapped = { [weak self] infos in
+                guard let self else { return }
+                handle(route: .detailRoute(infos: infos.0, infos.1))
             }
             self.navigationController.pushViewController(vc, animated: true)
         case .changeCourse:
@@ -73,9 +77,9 @@ final class MainCoordinator {
             self.courseModifyCoordinator = courseModifyCoordinator
             courseModifyCoordinator.start()
             
-        case let .detailRoute(routeId):
+        case let .detailRoute(infos):
             let routeDI = diContainer.makeRouteDIContainer()
-            let vm = routeDI.makeDetailRouteViewModel(routeId: routeId)
+            let vm = routeDI.makeDetailRouteViewModel(infos: infos)
             let vc = routeDI.makeDetailRouteViewController(viewModel: vm)
             navigationController.pushViewController(vc, animated: false)
         }

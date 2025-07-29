@@ -94,7 +94,7 @@ final class MainViewModel: BaseViewModel {
             routeHandler?(.myPage)
             
         case .detailRoute:
-            routeHandler?(.detailRoute(routeId: legPathInfos.first?.routeId))
+            routeHandler?(.detailRoute(infos: [], []))
         }
     }
     

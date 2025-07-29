@@ -164,7 +164,7 @@ extension MainViewController {
             updateAtchaImageConstraint(relativeTo: lastTrainView)
             mapContainerView.clearMapView()
         case .detailRoadMapTapped:
-            viewModel.handleRoute(route: .detailRoute(routeId: ""))
+            viewModel.handleRoute(route: .detailRoute(infos: [], []))
             print("detailRoadMapTapped 누르기")
         case .locationTapped:
             ballonView.setupTitle(bottomMessage: "위치를 변경하려면 알림을 종료해야 해요")

@@ -14,8 +14,8 @@ final class RouteDIContainer {
         self.apiService = apiService
     }
     
-    func makeDetailRouteViewModel(routeId: String?) -> DetailRouteViewModel {
-        return DetailRouteViewModel(routeId: routeId)
+    func makeDetailRouteViewModel(infos: ([LegPathInfo], [LegTrafficInfo])) -> DetailRouteViewModel {
+        return DetailRouteViewModel(infos: infos)
     }
     
     func makeDetailRouteViewController(viewModel: DetailRouteViewModel) -> DetailRouteViewController {

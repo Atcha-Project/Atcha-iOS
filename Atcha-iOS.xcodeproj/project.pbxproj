@@ -145,7 +145,7 @@
 		B6793D542E386DFE001BE9F5 /* DetailRouteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6793D532E386DFE001BE9F5 /* DetailRouteViewController.swift */; };
 		B6793D562E386E0E001BE9F5 /* DetailRouteViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6793D552E386E0E001BE9F5 /* DetailRouteViewModel.swift */; };
 		B6793D592E387367001BE9F5 /* RouteDIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6793D582E387367001BE9F5 /* RouteDIContainer.swift */; };
-		B6793D5C2E38792A001BE9F5 /* DetailRouteInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6793D5B2E38792A001BE9F5 /* DetailRouteInfoViewController.swift */; };
+		B6793D5C2E38792A001BE9F5 /* DetailRouteInfoBottomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6793D5B2E38792A001BE9F5 /* DetailRouteInfoBottomView.swift */; };
 		B6793D5E2E38792F001BE9F5 /* DetailRouteInfoViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6793D5D2E38792F001BE9F5 /* DetailRouteInfoViewModel.swift */; };
 		B67E3E552E0971B70056EEB3 /* Bundle+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B67E3E542E0971B70056EEB3 /* Bundle+Ext.swift */; };
 		B67E3E582E0980880056EEB3 /* AppleLoginDelegateWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B67E3E572E0980880056EEB3 /* AppleLoginDelegateWrapper.swift */; };
@@ -368,7 +368,7 @@
 		B6793D532E386DFE001BE9F5 /* DetailRouteViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailRouteViewController.swift; sourceTree = "<group>"; };
 		B6793D552E386E0E001BE9F5 /* DetailRouteViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailRouteViewModel.swift; sourceTree = "<group>"; };
 		B6793D582E387367001BE9F5 /* RouteDIContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteDIContainer.swift; sourceTree = "<group>"; };
-		B6793D5B2E38792A001BE9F5 /* DetailRouteInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailRouteInfoViewController.swift; sourceTree = "<group>"; };
+		B6793D5B2E38792A001BE9F5 /* DetailRouteInfoBottomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailRouteInfoBottomView.swift; sourceTree = "<group>"; };
 		B6793D5D2E38792F001BE9F5 /* DetailRouteInfoViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailRouteInfoViewModel.swift; sourceTree = "<group>"; };
 		B67E3E542E0971B70056EEB3 /* Bundle+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Bundle+Ext.swift"; sourceTree = "<group>"; };
 		B67E3E572E0980880056EEB3 /* AppleLoginDelegateWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleLoginDelegateWrapper.swift; sourceTree = "<group>"; };
@@ -1075,7 +1075,7 @@
 		B6793D5A2E38791B001BE9F5 /* DetailRouteInfo */ = {
 			isa = PBXGroup;
 			children = (
-				B6793D5B2E38792A001BE9F5 /* DetailRouteInfoViewController.swift */,
+				B6793D5B2E38792A001BE9F5 /* DetailRouteInfoBottomView.swift */,
 				B6793D5D2E38792F001BE9F5 /* DetailRouteInfoViewModel.swift */,
 			);
 			path = DetailRouteInfo;
@@ -1601,7 +1601,7 @@
 				B68309672E005B5300E2D029 /* UIView+Ext.swift in Sources */,
 				6D1EE2F72E0A933000F7BBF1 /* OnboardingCoordinator.swift in Sources */,
 				B67E3E582E0980880056EEB3 /* AppleLoginDelegateWrapper.swift in Sources */,
-				B6793D5C2E38792A001BE9F5 /* DetailRouteInfoViewController.swift in Sources */,
+				B6793D5C2E38792A001BE9F5 /* DetailRouteInfoBottomView.swift in Sources */,
 				B65C13462E07A0D70016D2F0 /* CoordinatorFactory.swift in Sources */,
 				B68309552E005A3600E2D029 /* AtchaColor.swift in Sources */,
 				6D73EBE82E1B54A500F8DF8B /* CourseRepository.swift in Sources */,

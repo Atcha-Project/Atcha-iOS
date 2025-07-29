@@ -11,5 +11,5 @@ enum MainRoute {
     case myPage
     case courseSearch(startLat: String, startLon: String, startAddress: String)
     case changeCourse
-    case detailRoute(routeId: String?)
+    case detailRoute(infos: [LegPathInfo], [LegTrafficInfo])
 }
