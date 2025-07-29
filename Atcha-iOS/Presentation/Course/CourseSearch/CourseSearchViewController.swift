@@ -88,11 +88,12 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
         
         // 2. 서버 에러 시 메시지 표시
         viewModel.$isServerError
+            .combineLatest(viewModel.$isLoading)
             .receive(on: RunLoop.main)
-            .sink { [weak self] isError in
+            .sink { [weak self] (isError, isLoading) in
                 guard let self = self else { return }
-                
-                if isError && !self.viewModel.isLoading {
+
+                if isError && !isLoading {
                     self.noSearchLabel.attributedText = AtchaFont.B4_R_15("검색 가능한 막차 정보가 없습니다.", color: AtchaColor.gray400)
                     self.noSearchStack.isHidden = false
                 }
