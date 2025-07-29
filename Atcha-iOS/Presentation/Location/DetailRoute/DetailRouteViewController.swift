@@ -16,34 +16,22 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
     private let loactionButton: UIButton = UIButton()
     private let backButton: UIButton = UIButton()
     private var activityIndicator: UIActivityIndicatorView?
-    private lazy var bottomSheet = BottomSheetView(frame: CGRect(x: 0,
-                                                                 y: view.frame.height - 100,
-                                                                 width: view.frame.width,
-                                                                 height: 400))
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setupUI()
         setupAutoLayout()
         bindView()
-        
-        backButton.addTarget(self, action: #selector(didTapClose), for: .touchUpInside)
         viewModel.setLoading(true)
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        
-    }
-    
     private func setupUI() {
-        
-        let screenHeight = view.frame.height
         let bottomSheet = BottomSheetView(frame: CGRect(
             x: 0,
-            y: screenHeight * (1 - 0.45), // 최초 45% 높이로 진입
+            y: view.frame.height * (1 - 0.45), // 최초 45% 높이로 진입
             width: view.frame.width,
-            height: screenHeight * 0.85   // 최대 90%까지 확장 가능
+            height: view.frame.height * 0.8   // 최대 90%까지 확장 가능
         ))
         view.addSubViews(mapContainerView, bottomSheet, backButton)
         mapContainerView.delegate = self
@@ -53,6 +41,7 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         backButton.backgroundColor = .black
         backButton.clipsToBounds = true
         backButton.setCornerRadius(18)
+        backButton.addTarget(self, action: #selector(didTapClose), for: .touchUpInside)
     }
     
     private func setupAutoLayout() {
@@ -92,11 +81,9 @@ extension DetailRouteViewController {
     }
 }
 
-class BottomSheetView: UIView {
-    
-    // 화면 비율 설정
+final class BottomSheetView: UIView {
     private let minHeightRatio: CGFloat = 0.45
-    private let maxHeightRatio: CGFloat = 0.9
+    private let maxHeightRatio: CGFloat = 0.78
     
     private var panGestureRecognizer: UIPanGestureRecognizer!
     private var currentState: SheetState = .collapsed
@@ -131,8 +118,8 @@ class BottomSheetView: UIView {
     }
     
     private func setupView() {
-        backgroundColor = .black
-        layer.cornerRadius = 16
+        backgroundColor = .gray950
+        layer.cornerRadius = 20
         layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
     }
     
