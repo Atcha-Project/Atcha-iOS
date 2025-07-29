@@ -129,6 +129,7 @@ final class CourseSearchViewModel: BaseViewModel {
                 
                 for try await course in courseUseCase.observeCourseStream(request) {
                     hasReceived = true
+                    self.setLoading(false)
                     
                     let uiModel = CourseUIModel(
                         id: course.routeId ?? UUID().uuidString,
@@ -144,10 +145,9 @@ final class CourseSearchViewModel: BaseViewModel {
 
                 if !hasReceived {
                     print("스트림에서 아무 응답도 수신되지 않음")
+                    self.setLoading(false)
                     self.isServerError = true
                 }
-
-                self.setLoading(false)
 
             } catch {
                 print("스트림 오류 발생: \(error.localizedDescription)")

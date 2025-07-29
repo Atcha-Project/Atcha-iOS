@@ -58,7 +58,6 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
     private let noSearchStack: UIStackView = UIStackView()
     private let noSearchImageView: UIImageView = UIImageView()
     private let noSearchLabel: UILabel = UILabel()
-    private let loadingView: LoadingView = LoadingView()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -78,10 +77,10 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
                 guard let self = self else { return }
                 
                 if isLoading {
-                    self.loadingUIStart()
+                    self.showLoading()
                     self.noSearchStack.isHidden = true
                 } else {
-                    self.loadingView.stop()
+                    self.hideLoading()
                 }
             }
             .store(in: &cancellables)
@@ -261,12 +260,6 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
         noSearchStack.snp.makeConstraints { make in
             make.center.equalTo(courseCollectionView)
         }
-    }
-    
-    private func loadingUIStart() {
-        view.addSubview(loadingView)
-        loadingView.start()
-        loadingView.snp.makeConstraints { $0.edges.equalToSuperview() }
     }
 }
 
