@@ -108,6 +108,7 @@ final class CourseSearchViewModel: BaseViewModel {
     // MARK: - 코스 검색 스트리밍용
     func startCourseStream() {
         courseStreamTask?.cancel() // 이전 스트림 중지
+        setLoading(true)
         
         courseStreamTask = Task {
             let userDefaults = UserDefaultsWrapper()
@@ -134,10 +135,14 @@ final class CourseSearchViewModel: BaseViewModel {
                     if !allCourses.contains(where: { $0.id == uiModel.id }) {
                         self.allCourses.append(uiModel)
                         self.fetchCourses(for: 0) // default 탭으로 반영
+                        self.setLoading(false)
                     }
                 }
             } catch {
                 print("코스 스트리밍 실패: \(error)")
+                self.setLoading(false) // ✅ 실패 시에도 로딩 종료
+                self.isServerError = true
+                self.courses = []
             }
         }
     }
