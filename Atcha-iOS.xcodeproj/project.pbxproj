@@ -23,6 +23,9 @@
 		6D1EE2F02E0A7F0000F7BBF1 /* OnboardingRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2EF2E0A7F0000F7BBF1 /* OnboardingRepository.swift */; };
 		6D1EE2F22E0A80AA00F7BBF1 /* OnboardingDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2F12E0A80AA00F7BBF1 /* OnboardingDTO.swift */; };
 		6D1EE2F72E0A933000F7BBF1 /* OnboardingCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2F62E0A933000F7BBF1 /* OnboardingCoordinator.swift */; };
+		6D2B8C942E38A97500608104 /* BusDetailHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2B8C932E38A97500608104 /* BusDetailHeaderView.swift */; };
+		6D2B8C972E38ABF600608104 /* BusInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2B8C962E38ABF600608104 /* BusInfoViewController.swift */; };
+		6D2B8C992E38ABFD00608104 /* BusInfoViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2B8C982E38ABFD00608104 /* BusInfoViewModel.swift */; };
 		6D368BA22E02D2AA00144EE7 /* TitleNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D368BA12E02D2AA00144EE7 /* TitleNavigationBar.swift */; };
 		6D368BA42E02D5E200144EE7 /* IconTitleNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D368BA32E02D5E200144EE7 /* IconTitleNavigationBar.swift */; };
 		6D368BA82E02E92000144EE7 /* BackOnlyNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D368BA72E02E92000144EE7 /* BackOnlyNavigationBar.swift */; };
@@ -252,6 +255,9 @@
 		6D1EE2EF2E0A7F0000F7BBF1 /* OnboardingRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingRepository.swift; sourceTree = "<group>"; };
 		6D1EE2F12E0A80AA00F7BBF1 /* OnboardingDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingDTO.swift; sourceTree = "<group>"; };
 		6D1EE2F62E0A933000F7BBF1 /* OnboardingCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingCoordinator.swift; sourceTree = "<group>"; };
+		6D2B8C932E38A97500608104 /* BusDetailHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusDetailHeaderView.swift; sourceTree = "<group>"; };
+		6D2B8C962E38ABF600608104 /* BusInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusInfoViewController.swift; sourceTree = "<group>"; };
+		6D2B8C982E38ABFD00608104 /* BusInfoViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusInfoViewModel.swift; sourceTree = "<group>"; };
 		6D368BA12E02D2AA00144EE7 /* TitleNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitleNavigationBar.swift; sourceTree = "<group>"; };
 		6D368BA32E02D5E200144EE7 /* IconTitleNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconTitleNavigationBar.swift; sourceTree = "<group>"; };
 		6D368BA72E02E92000144EE7 /* BackOnlyNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackOnlyNavigationBar.swift; sourceTree = "<group>"; };
@@ -524,6 +530,15 @@
 			path = Coordinator;
 			sourceTree = "<group>";
 		};
+		6D2B8C952E38ABED00608104 /* BusInfo */ = {
+			isa = PBXGroup;
+			children = (
+				6D2B8C962E38ABF600608104 /* BusInfoViewController.swift */,
+				6D2B8C982E38ABFD00608104 /* BusInfoViewModel.swift */,
+			);
+			path = BusInfo;
+			sourceTree = "<group>";
+		};
 		6D368BAB2E0396B100144EE7 /* AtchaTextField */ = {
 			isa = PBXGroup;
 			children = (
@@ -662,8 +677,10 @@
 		6D91A90B2E38A1AC0081BAFC /* BusDetail */ = {
 			isa = PBXGroup;
 			children = (
+				6D2B8C952E38ABED00608104 /* BusInfo */,
 				6D91A90C2E38A1BE0081BAFC /* BusDetailViewController.swift */,
 				6D91A90E2E38A1C60081BAFC /* BusDetailViewModel.swift */,
+				6D2B8C932E38A97500608104 /* BusDetailHeaderView.swift */,
 			);
 			path = BusDetail;
 			sourceTree = "<group>";
@@ -1594,6 +1611,7 @@
 				6D91A8F32E2A1EB80081BAFC /* CourseModifyCoordinator.swift in Sources */,
 				B6FB209B2E1D33550032751B /* HomeFindViewModel.swift in Sources */,
 				6DFF29B42E0CDA0E0039399F /* LocationService.swift in Sources */,
+				6D2B8C972E38ABF600608104 /* BusInfoViewController.swift in Sources */,
 				6D91A9062E352D030081BAFC /* WithDrawTextBox.swift in Sources */,
 				6D368BB22E03BD2C00144EE7 /* SearchTextField.swift in Sources */,
 				B65C12E02E042D260016D2F0 /* UserRepository.swift in Sources */,
@@ -1629,6 +1647,7 @@
 				B6AC8BF82E2BDA2900410ECD /* AppUpdateManager.swift in Sources */,
 				B6D083352E02D928003C28E1 /* AtchaListType.swift in Sources */,
 				B65C130A2E057C920016D2F0 /* EndPoint.swift in Sources */,
+				6D2B8C992E38ABFD00608104 /* BusInfoViewModel.swift in Sources */,
 				B66401972E227E5E00A397AE /* HomeRouter.swift in Sources */,
 				B6793D512E35C57E001BE9F5 /* LastTrainDepartBottomView.swift in Sources */,
 				B6DC7C232E16B5C1005D8E17 /* AddressRepositoryImpl.swift in Sources */,
@@ -1642,6 +1661,7 @@
 				6D91A90D2E38A1BE0081BAFC /* BusDetailViewController.swift in Sources */,
 				B6FB209D2E1D492F0032751B /* HomeRegisterBottomView.swift in Sources */,
 				6DC3BEF32E04FE1D00831470 /* KeychainKey.swift in Sources */,
+				6D2B8C942E38A97500608104 /* BusDetailHeaderView.swift in Sources */,
 				6D5E03BE2E24F70B0065AFBE /* FetchRecentSearchRequest.swift in Sources */,
 				B6DC7C1D2E169F37005D8E17 /* MapBottomType.swift in Sources */,
 				B65C134A2E07A1280016D2F0 /* MyPageRouter.swift in Sources */,

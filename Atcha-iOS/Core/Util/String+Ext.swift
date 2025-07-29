@@ -45,3 +45,14 @@ extension String {
         return hour == 0 ? (24, minute) : (hour, minute)
     }
 }
+
+
+extension String {
+    // MARK: - 버스명, 버스번호 분리
+    func splitRouteName() -> (type: String, number: String) {
+        let components = self.split(separator: ":").map { String($0) }
+        let type = components.first ?? ""
+        let number = components.count > 1 ? components[1] : ""
+        return (type, number)
+    }
+}
