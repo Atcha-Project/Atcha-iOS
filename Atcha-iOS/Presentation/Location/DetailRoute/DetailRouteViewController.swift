@@ -43,7 +43,7 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         
         backButton.snp.makeConstraints { make in
             make.leading.equalToSuperview().offset(16)
-            make.top.equalTo(12)
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(12)
             make.width.height.equalTo(36)
         }
     }

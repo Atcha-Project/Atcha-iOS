@@ -92,6 +92,9 @@ final class MainViewModel: BaseViewModel {
                                         startAddress: address))
         case .myPage:
             routeHandler?(.myPage)
+            
+        case .detailRoute:
+            routeHandler?(.detailRoute(routeId: legPathInfos.first?.routeId))
         }
     }
     
