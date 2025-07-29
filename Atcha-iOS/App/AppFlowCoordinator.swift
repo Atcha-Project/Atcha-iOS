@@ -27,24 +27,20 @@ class AppFlowCoordinator {
         window.rootViewController = navigationController
         window.makeKeyAndVisible()
         
-//        let splashCoordinator = container.makeSplashCoordinator(navigationController: navigationController)
-//        splashCoordinator.routerHandler = { [weak self] router in
-//            guard let self else { return }
-//            switch router {
-//            case .login:
-//                showLoginFlow()
-//            case .main:
-//                showMainFlow()
-//            case .onboarding:
-//                showOnboardingFlow()
-//            }
-//        }
-//        splashCoordinator.start()
-//        self.splashCoordinator = splashCoordinator
-//        
-        let viewModel = BusDetailViewModel(busRouteId: "", routeName: "")
-        let homeRegisterVC = BusDetailViewController(viewModel: viewModel)
-        navigationController.pushViewController(homeRegisterVC, animated: false)
+        let splashCoordinator = container.makeSplashCoordinator(navigationController: navigationController)
+        splashCoordinator.routerHandler = { [weak self] router in
+            guard let self else { return }
+            switch router {
+            case .login:
+                showLoginFlow()
+            case .main:
+                showMainFlow()
+            case .onboarding:
+                showOnboardingFlow()
+            }
+        }
+        splashCoordinator.start()
+        self.splashCoordinator = splashCoordinator
     }
     
     private func showMainFlow() {

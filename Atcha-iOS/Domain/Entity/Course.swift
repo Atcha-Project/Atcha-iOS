@@ -31,6 +31,18 @@ extension Course {
             )
         }
     }
+    
+    func toBusDetailInfo(for route: String) -> BusDetailInfo? {
+        guard let leg = legs.first(where: { $0.mode == .bus && $0.route == route }) else {
+            return nil
+        }
+        
+        return BusDetailInfo(
+            route: leg.route,
+            start: leg.start,
+            passStopList: leg.passStopList
+        )
+    }
 }
 
 struct Legs: Codable, Hashable {
@@ -76,15 +88,15 @@ enum TransportMode: String, Codable {
     
     var icon: UIImage? {
         switch self {
-//        case .bus: return UIImage.routeCircleLineBus
-//        case .subway: return UIImage.routeCircleLineSubway
-//        default: return UIImage.routeCircleLineWalk
+            //        case .bus: return UIImage.routeCircleLineBus
+            //        case .subway: return UIImage.routeCircleLineSubway
+            //        default: return UIImage.routeCircleLineWalk
         case .bus: return UIImage.routeBusWhite
         case .subway: return UIImage.routeCircleSubway
         default: return UIImage.routeCircleWalk
         }
     }
-
+    
     func getIcon(for routeType: String) -> UIImage? {
         switch self {
         case .bus:
@@ -108,7 +120,7 @@ enum TransportMode: String, Codable {
             return nil
         }
     }
-
+    
     func getOffIcon(for routeType: String) -> String? {
         switch self {
         case .bus:
@@ -129,3 +141,8 @@ struct LegPathInfo {
     let passShape: String?
 }
 
+struct BusDetailInfo {
+    let route: String?
+    let start: addressInfo?
+    let passStopList: [passStopList]?
+}

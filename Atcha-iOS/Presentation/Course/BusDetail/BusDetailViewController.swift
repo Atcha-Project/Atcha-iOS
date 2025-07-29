@@ -11,11 +11,14 @@ import SnapKit
 
 class BusDetailViewController: BaseViewController<BusDetailViewModel> {
 
-    private let topNavigationBar: IconTitleNavigationBar = AtchaNavigationBar.iconTitle("350", UIImage.busMainline) {
-        
-    } onClose: {
-        
-    }
+    private lazy var topNavigationBar: IconTitleNavigationBar = {
+        AtchaNavigationBar.iconTitle(
+            viewModel.busNumber, 
+            viewModel.icon
+        ) {
+        } onClose: {
+        }
+    }()
     private let headerView: BusDetailHeaderView = BusDetailHeaderView()
     
     override func viewDidLoad() {
