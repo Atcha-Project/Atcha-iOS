@@ -74,7 +74,10 @@ final class MainCoordinator {
             courseModifyCoordinator.start()
             
         case let .detailRoute(routeId):
-            
+            let routeDI = diContainer.makeRouteDIContainer()
+            let vm = routeDI.makeDetailRouteViewModel(routeId: routeId)
+            let vc = routeDI.makeDetailRouteViewController(viewModel: vm)
+            navigationController.pushViewController(vc, animated: true)
         }
         
         routeHandler?(route)

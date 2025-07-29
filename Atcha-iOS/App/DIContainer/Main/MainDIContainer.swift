@@ -25,6 +25,10 @@ final class MainDIContainer {
                           locationStateHolder: locationStateHolder)
     }()
     
+    private lazy var rotueDI: RouteDIContainer = {
+        RouteDIContainer(apiService: apiService)
+    }()
+    
     init(apiService: APIService, locationStateHolder: LocationStateHolder) {
         self.apiService = apiService
         self.locationStateHolder = locationStateHolder
@@ -64,7 +68,9 @@ extension MainDIContainer {
 
 // MARK: - Detail Route
 extension MainDIContainer {
-    
+    func makeRouteDIContainer() -> RouteDIContainer {
+        return rotueDI
+    }
 }
 
 // MARK: - Cousre

@@ -9,9 +9,11 @@ import Foundation
 
 final class DetailRouteViewModel: BaseViewModel {
     
-    private let routeId: String
+    private let routeId: String?
     
-    init(routeId: String) {
+    init(routeId: String?) {
         self.routeId = routeId
+        
+        print("routeId : \(routeId)")
     }
 }
