@@ -57,10 +57,10 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
     }
     
     private func bindView() {
-        viewModel.$infos
-            .filter { !$0.0.isEmpty }
+        viewModel.$legtPathInfo
+            .filter { !$0.isEmpty }
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] in self?.addRouteLine(infos: $0.0) }
+            .sink { [weak self] in self?.addRouteLine(infos: $0) }
             .store(in: &cancellables)
     }
     
@@ -72,9 +72,8 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         var shapeStrings: [String] = []
         var colors: [UIColor] = []
         var images: [UIImage] = []
-        
-        
-        
+        var allCoordinates: [CLLocationCoordinate2D] = []  // ✅ 전체 좌표 수집
+
         infos.forEach { info in
             switch info.mode {
             case .bus, .subway:
@@ -84,8 +83,9 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
                     if let icon = info.mode?.icon {
                         images.append(icon)
                     }
+                    allCoordinates.append(contentsOf: convertShapeToCoords(shape))
                 }
-                
+
             case .walk:
                 let walkShapes = info.step?.compactMap { $0.linestring }.filter { !$0.isEmpty } ?? []
                 let merged = walkShapes.joined(separator: " ")
@@ -95,24 +95,29 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
                     if let icon = info.mode?.icon {
                         images.append(icon)
                     }
+                    allCoordinates.append(contentsOf: convertShapeToCoords(merged))
                 }
-                
-            default:
-                break
+
+            default: break
             }
         }
-        
+
         for (index, (shape, color, image)) in zip3(shapeStrings, colors, images).enumerated() {
             let isFirst = index == 0
             let isLast = index == shapeStrings.count - 1
-            
-            mapContainerView.addTrafficLine(
-                passShape: shape,
-                color: color,
-                markerImage: image,
-                isFirst: isFirst,
-                isLast: isLast
-            )
+            mapContainerView.addTrafficLine(passShape: shape, color: color, markerImage: image, isFirst: isFirst, isLast: isLast)
+        }
+        
+        mapContainerView.adjustMapToFit(coordinates: allCoordinates)
+    }
+    
+    private func convertShapeToCoords(_ shape: String) -> [CLLocationCoordinate2D] {
+        shape.split(separator: " ").compactMap { pair in
+            let parts = pair.split(separator: ",")
+            guard parts.count == 2,
+                  let lon = Double(parts[0]),
+                  let lat = Double(parts[1]) else { return nil }
+            return CLLocationCoordinate2D(latitude: lat, longitude: lon)
         }
     }
     

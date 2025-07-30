@@ -35,7 +35,7 @@ final class MainCoordinator {
             handle(route: route)
         }
         viewModel.courseSearchResultHandler = { [weak self] infos in
-            guard let self else { return }
+            guard let _ = self else { return }
             viewModel.drawRoute(infos: infos)
         }
         let viewController = diContainer.makeMainViewController(viewModel: viewModel)
@@ -77,9 +77,9 @@ final class MainCoordinator {
             self.courseModifyCoordinator = courseModifyCoordinator
             courseModifyCoordinator.start()
             
-        case let .detailRoute(infos):
+        case .detailRoute(let pathInfo, let trafficInfo):
             let routeDI = diContainer.makeRouteDIContainer()
-            let vm = routeDI.makeDetailRouteViewModel(infos: infos)
+            let vm = routeDI.makeDetailRouteViewModel(infos: (pathInfo, trafficInfo))
             let vc = routeDI.makeDetailRouteViewController(viewModel: vm)
             navigationController.pushViewController(vc, animated: false)
         }

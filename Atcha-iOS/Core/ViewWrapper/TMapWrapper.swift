@@ -53,39 +53,6 @@ final class TMapWrapper: NSObject, MapRendering {
         }
     }
     
-    //    func addTrafficLine(passShape: String, color: UIColor, markerImage: UIImage? = nil) {
-    //        let vertices = passShape.split(separator: " ").compactMap { pair -> VSMMapPoint? in
-    //            let parts = pair.split(separator: ",")
-    //            guard parts.count == 2,
-    //                  let lon = Double(parts[0]),
-    //                  let lat = Double(parts[1]) else { return nil }
-    //            return VSMMapPoint(longitude: lon, latitude: lat)
-    //        }
-    //
-    //        guard vertices.count > 1 else { return }
-    //
-    //        let trafficLine = TrafficLine()
-    //        trafficLine.vertices = vertices
-    //
-    //        let tmapTrafficLine = TMapTrafficLine(trafficLine: [trafficLine])
-    //        tmapTrafficLine.prevColor = color
-    //        tmapTrafficLine.nextColor = color
-    //        tmapTrafficLine.width = 6
-    //        tmapTrafficLine.outlineWidth = 0
-    //        tmapTrafficLine.showTrafficInfo = false
-    //        tmapTrafficLine.showDirectionIndicator = true
-    //        tmapTrafficLine.map = mapView
-    //
-    //        trafficLines.append(tmapTrafficLine)
-    //
-    //        if let image = markerImage, let start = vertices.first {
-    //            let marker = TMapMarker(position: CLLocationCoordinate2D(latitude: start.latitude, longitude: start.longitude))
-    //            marker.icon = image
-    //            marker.map = mapView
-    //            trafficMarkers.append(marker)
-    //        }
-    //    }
-    
     func addTrafficLine(
         passShape: String,
         color: UIColor,
@@ -93,6 +60,7 @@ final class TMapWrapper: NSObject, MapRendering {
         isFirst: Bool = false,
         isLast: Bool = false
     ) {
+        // 1. 경로 문자열 파싱
         let vertices = passShape.split(separator: " ").compactMap { pair -> VSMMapPoint? in
             let parts = pair.split(separator: ",")
             guard parts.count == 2,
@@ -100,12 +68,13 @@ final class TMapWrapper: NSObject, MapRendering {
                   let lat = Double(parts[1]) else { return nil }
             return VSMMapPoint(longitude: lon, latitude: lat)
         }
-        
+
         guard vertices.count > 1 else { return }
-        
+
+        // 2. 교통 라인 추가
         let trafficLine = TrafficLine()
         trafficLine.vertices = vertices
-        
+
         let tmapTrafficLine = TMapTrafficLine(trafficLine: [trafficLine])
         tmapTrafficLine.prevColor = color
         tmapTrafficLine.nextColor = color
@@ -114,40 +83,82 @@ final class TMapWrapper: NSObject, MapRendering {
         tmapTrafficLine.showTrafficInfo = false
         tmapTrafficLine.showDirectionIndicator = true
         tmapTrafficLine.map = mapView
-        
+
         trafficLines.append(tmapTrafficLine)
-        
-        // ✅ 최초 시작 마커
+
+        // 3. 시작 마커
         if isFirst, let start = vertices.first {
             let marker = TMapMarker(position: CLLocationCoordinate2D(latitude: start.latitude, longitude: start.longitude))
             marker.icon = UIImage.markerStart
             marker.map = mapView
             trafficMarkers.append(marker)
         }
-        
-        // ✅ 최종 도착 마커
+
+        // 4. 도착 마커
         if isLast, let end = vertices.last {
             let marker = TMapMarker(position: CLLocationCoordinate2D(latitude: end.latitude, longitude: end.longitude))
             marker.icon = UIImage.markerEnd
             marker.map = mapView
             trafficMarkers.append(marker)
         }
-        
-        // ✅ 중간 마커 이미지(선택적으로 사용)
-        //        if !isFirst && !isLast, let image = markerImage, let start = vertices.first {
-        //            let marker = TMapMarker(position: CLLocationCoordinate2D(latitude: start.latitude, longitude: start.longitude))
-        //            marker.icon = image
-        //            marker.offset = CGSize(width: 24, height: 24)
-        //            marker.map = mapView
-        //            trafficMarkers.append(marker)
-        //        }
+
+        // 5. 중간 마커
         if !isFirst && !isLast, let start = vertices.first,
            let image = markerImage?.withRenderingMode(.alwaysTemplate) {
-            
             let marker = TMapMarker(position: CLLocationCoordinate2D(latitude: start.latitude, longitude: start.longitude))
             marker.icon = image.withTintColor(color)
             marker.map = mapView
             trafficMarkers.append(marker)
+        }
+    }
+
+    func adjustMapToFit(coordinates: [CLLocationCoordinate2D]) {
+        guard !coordinates.isEmpty else { return }
+
+        let lats = coordinates.map { $0.latitude }
+        let lons = coordinates.map { $0.longitude }
+
+        guard let minLat = lats.min(), let maxLat = lats.max(),
+              let minLon = lons.min(), let maxLon = lons.max() else { return }
+
+        let rawCenterLat = (minLat + maxLat) / 2.0
+        let centerLon = (minLon + maxLon) / 2.0
+
+        let mapViewHeight = mapView.bounds.height
+        let screenHeight = UIScreen.main.bounds.height
+        let mapRatio = mapViewHeight / screenHeight
+
+        let desiredCenterRatioInMap = 0.5 / mapRatio
+        let verticalOffsetRatio = 0.5 - desiredCenterRatioInMap
+
+        let latSpan = maxLat - minLat
+        let adjustedCenterLat = rawCenterLat + latSpan * verticalOffsetRatio
+
+        let paddedLatSpan = latSpan + 0.01
+        let paddedLonSpan = (maxLon - minLon) + 0.003
+
+        let aspectRatio = mapView.bounds.width / mapView.bounds.height
+        let adjustedSpan = max(paddedLatSpan, paddedLonSpan * aspectRatio)
+
+        let center = CLLocationCoordinate2D(latitude: adjustedCenterLat, longitude: centerLon)
+        let zoomLevel = calculateZoomLevelBySpan(span: adjustedSpan)
+
+        mapView.setCenter(center)
+        mapView.setZoom(zoomLevel)
+    }
+    
+    // ✅ 줌 계산 함수 (span 기반)
+    func calculateZoomLevelBySpan(span: Double) -> Int {
+        print("span : \(span)")
+        switch span {
+        case 0..<0.003: return 17
+        case 0..<0.005: return 16
+        case 0..<0.01:  return 15
+        case 0..<0.02:  return 14
+        case 0..<0.05:  return 12
+        case 0..<0.1:   return 11
+        case 0..<0.2:   return 10
+        default:        return 16
         }
     }
     

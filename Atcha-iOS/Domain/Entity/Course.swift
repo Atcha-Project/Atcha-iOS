@@ -38,16 +38,6 @@ extension Course {
     
 }
 
-// routeName  String  M  버스 노선 번호 -> route
-
-// stationName  String  M  정류장 이름
-
-// lat  Number  M  정류장 위도
-
-// lon  Number  M  정류장 경도
-
-// passStations    List  경유 정류장 리스트
-
 struct LegTrafficInfo {
     let departureDateTime: String?
     let totalTime: String?
@@ -59,7 +49,7 @@ struct LegTrafficInfo {
     let passStopList: [passStopList]?
     let route: String? // "간선:N62"
     
-    let walkDistance: [Step]? // 보행자 이동 거리 (미터)
+    let steps: [Step]? // 보행자 이동 거리 (미터)
 }
 
 extension Course {
@@ -72,7 +62,7 @@ extension Course {
                            type: leg.type,
                            passStopList: leg.passStopList,
                            route: leg.route,
-                           walkDistance: leg.step)
+                           steps: leg.step)
         }
     }
 }
