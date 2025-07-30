@@ -15,7 +15,8 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         AtchaNavigationBar.iconTitle(
             viewModel.busNumber,
             viewModel.icon
-        ) {
+        ) { [weak self] in
+            self?.navigationController?.popViewController(animated: true)
         } onClose: {
         }
     }()

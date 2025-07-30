@@ -59,12 +59,29 @@ extension String {
 
 extension String {
     // MARK: - 요일 한글로 변경
-    func DaytoKorean() -> String {
+    func dayToKorean() -> String {
         switch self {
         case "WEEKDAY": return "평일"
         case "SATURDAY": return "토요일"
         case "HOLIDAY": return "공휴일"
         default: return self
+        }
+    }
+}
+
+
+extension String {
+    // MARK: - 서비스 지역 한글로 변경
+    func serviceRegionToKorean() -> String {
+        switch self.uppercased() {
+        case "SEOUL":
+            return "서울"
+        case "GYEONGGI":
+            return "경기"
+        case "INCHEON":
+            return "인천"
+        default:
+            return self
         }
     }
 }

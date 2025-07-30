@@ -14,6 +14,8 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
             viewModel.busNumber,
             viewModel.icon
         ) {
+            [weak self] in
+            self?.navigationController?.popViewController(animated: true)
         } onClose: {
         }
     }()
@@ -45,23 +47,23 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
         
         setupUI()
         setupAutoLayout()
-        
-        // 🚨 테스트용 더미데이터 (실제로는 viewModel에서 주입)
-        let mockServiceHours: [ServiceHours] = [
-            // 평일 (WEEKDAY)
-            ServiceHours(dailyType: "WEEKDAY", busDirection: "UP", startTime: "2025-07-30T04:30", endTime: "2025-07-30T23:00", term: 10),
-            ServiceHours(dailyType: "WEEKDAY", busDirection: "DOWN", startTime: "2025-07-30T05:00", endTime: "2025-07-30T23:30", term: 12),
-            
-            // 토요일 (SATURDAY)
-            ServiceHours(dailyType: "SATURDAY", busDirection: "UP", startTime: "2025-07-30T05:00", endTime: "2025-07-30T22:30", term: 15),
-            ServiceHours(dailyType: "SATURDAY", busDirection: "DOWN", startTime: "2025-07-30T05:30", endTime: "2025-07-30T23:00", term: 15),
-            
-            // 공휴일 (HOLIDAY)
-            ServiceHours(dailyType: "HOLIDAY", busDirection: "UP", startTime: "2025-07-30T05:30", endTime: "2025-07-30T22:00", term: 20),
-            ServiceHours(dailyType: "HOLIDAY", busDirection: "DOWN", startTime: "2025-07-30T06:00", endTime: "2025-07-30T22:30", term: 20)
-        ]
-        setupOperationTime(mockServiceHours)
-        setupDispatchTime(mockServiceHours)
+        bind()
+    }
+    
+    private func bind() {
+        viewModel.$operationInfo
+            .receive(on: RunLoop.main)
+            .sink { [weak self] info in
+                guard let self else { return }
+                
+                let hours = info?.serviceHours ?? []
+                setupOperationTime(hours)
+                setupDispatchTime(hours)
+                
+                startStationLabel.attributedText = AtchaFont.B6_R_14(info?.startStationName ?? "출발지", color: AtchaColor.white)
+                endStationLabel.attributedText = AtchaFont.B6_R_14(info?.endStationName ?? "도착지", color: AtchaColor.white)
+            }
+            .store(in: &cancellables)
     }
     
     private func setupUI() {
@@ -79,7 +81,7 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
         stationStack.axis = .horizontal
         stationStack.spacing = 6
         
-        operationRegionLabel.attributedText = AtchaFont.B7_M_13("서울", color: AtchaColor.gray200)
+        operationRegionLabel.attributedText = AtchaFont.B7_M_13(viewModel.busRouteInfo.serviceRegion?.serviceRegionToKorean() ?? "서울", color: AtchaColor.gray200)
         operationTimeTitleLabel.attributedText = AtchaFont.B3_M_15("운행시간", color: AtchaColor.white)
         dispatchTitleLabel.attributedText = AtchaFont.B3_M_15("배차간격", color: AtchaColor.white)
         
@@ -155,7 +157,7 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
             
             // 요일 라벨
             let dayLabel = UILabel()
-            dayLabel.attributedText = AtchaFont.B6_R_14(dailyType.DaytoKorean(), color: AtchaColor.gray200)
+            dayLabel.attributedText = AtchaFont.B6_R_14(dailyType.dayToKorean(), color: AtchaColor.gray200)
             rowStack.addArrangedSubview(dayLabel)
             
             dayLabel.snp.makeConstraints { make in
@@ -197,7 +199,7 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
             
             // 요일 라벨
             let dayLabel = UILabel()
-            dayLabel.attributedText = AtchaFont.B6_R_14(dailyType.DaytoKorean(), color: AtchaColor.gray200)
+            dayLabel.attributedText = AtchaFont.B6_R_14(dailyType.dayToKorean(), color: AtchaColor.gray200)
             rowStack.addArrangedSubview(dayLabel)
             
             // term 값 가져오기 (보통 UP/DOWN이 같다고 가정)

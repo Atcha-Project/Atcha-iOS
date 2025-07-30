@@ -34,9 +34,9 @@ final class BusInfoRepositoryImpl: BusInfoRepository {
                 path: "https://atcha.p-e.kr/api/transits/bus-routes/operation-info",
                 method: .get,
                 parameters: [
-                    "busRouteId": request.busRouteId,
-                    "routeName": request.routeName,
-                    "serviceRegion": request.serviceRegion
+                    "busRouteId": request.busRouteId ?? "",
+                    "routeName": request.routeName ?? "",
+                    "serviceRegion": request.serviceRegion ?? ""
                 ]
             )
         )
@@ -49,9 +49,9 @@ final class BusInfoRepositoryImpl: BusInfoRepository {
                 path: "https://atcha.p-e.kr/api/transits/bus-routes/positions",
                 method: .get,
                 parameters: [
-                    "busRouteId": request.busRouteId,
-                    "routeName": request.routeName,
-                    "serviceRegion": request.serviceRegion
+                    "busRouteId": request.busRouteId ?? "",
+                    "routeName": request.routeName ?? "",
+                    "serviceRegion": request.serviceRegion ?? ""
                 ]
             )
         )
