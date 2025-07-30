@@ -17,19 +17,14 @@ struct Course: Codable, Hashable {
     let totalWalkDistance: Int?
     let pathType: Int?
     let legs: [Legs]
-}
-
-extension Course {
-    func toLegPathInfos() -> [LegPathInfo] {
-        return legs.map { leg in
-            LegPathInfo(
-                departureDateTime: self.departureDateTime, // ✅ Course의 값을 사용
-                mode: leg.mode,
-                type: leg.type,
-                step: leg.step,
-                passShape: leg.passShape
-            )
-        }
+    
+    var formattedTotalTime: String {
+        guard let totalTime = totalTime else { return "N/A" }
+        
+        let minutes = totalTime / 60
+        let seconds = totalTime % 60
+        
+        return String(format: "%d분 %02d초", minutes, seconds)
     }
 }
 
@@ -46,6 +41,74 @@ struct Legs: Codable, Hashable {
     let passStopList: [passStopList]?
     let step: [Step]?
     let passShape: String?
+    
+    var formattedSectionTime: String {
+        guard let totalTime = sectionTime else { return "N/A" }
+        
+        let minutes = totalTime / 60
+        let seconds = totalTime % 60
+        
+        return String(format: "%d분 %02d초", minutes, seconds)
+    }
+    
+    var busName: String {
+        guard let route = route, let mode = mode else { return "N/A" }
+        
+        if mode == .bus {
+            if let colonIndex = route.firstIndex(of: ":") {
+                let substring = route[route.index(after: colonIndex)...]
+                return String(substring)
+            }
+        }
+        
+        return route
+    }
+}
+
+struct LegInfo {
+    let pathInfo: [LegPathInfo]
+    let trafficInfo: [LegTrafficInfo]
+}
+
+struct LegTrafficInfo {
+    let departureDateTime: String?
+    let totalTime: String?
+    let sectionTime: String?
+    let mode: TransportMode?
+    let type: String?
+    let passStopList: [passStopList]?
+    let steps: [Step]? // 보행자 이동 거리 (미터)
+    let busName: String?
+}
+
+extension Course {
+    func toLegTrafficInfos() -> [LegTrafficInfo] {
+        return legs.map { leg in
+            LegTrafficInfo(departureDateTime: departureDateTime,
+                           totalTime: formattedTotalTime,
+                           sectionTime: leg.formattedSectionTime,
+                           mode: leg.mode,
+                           type: leg.type,
+                           passStopList: leg.passStopList,
+                           steps: leg.step,
+                           busName: leg.busName)
+        }
+    }
+}
+
+extension Course {
+    func toLegPathInfos() -> [LegPathInfo] {
+        return legs.map { leg in
+            LegPathInfo(
+                routeId: self.routeId,
+                departureDateTime: self.departureDateTime, // ✅ Course의 값을 사용
+                mode: leg.mode,
+                type: leg.type,
+                step: leg.step,
+                passShape: leg.passShape
+            )
+        }
+    }
 }
 
 struct addressInfo: Codable, Hashable{
@@ -122,10 +185,10 @@ enum TransportMode: String, Codable {
 }
 
 struct LegPathInfo {
+    let routeId: String?
     let departureDateTime: String?
     let mode: TransportMode?
     let type: String?
     let step: [Step]?
     let passShape: String?
 }
-

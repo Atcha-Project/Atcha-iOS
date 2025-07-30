@@ -68,9 +68,9 @@ class BaseViewController<VM: BaseViewModel>: UIViewController {
             .sink { [weak self] isLoading in
                 guard let self else { return }
                 if isLoading {
-                    loadingIndicator.startAnimating()
+                    showLoading()
                 } else {
-                    loadingIndicator.stopAnimating()
+                    hideLoading()
                 }
             }
             .store(in: &cancellables)

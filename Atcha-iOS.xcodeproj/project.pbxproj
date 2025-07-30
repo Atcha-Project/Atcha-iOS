@@ -142,6 +142,11 @@
 		B6793D4D2E349500001BE9F5 /* ReverseGeocodeLocationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6793D4C2E349500001BE9F5 /* ReverseGeocodeLocationResponse.swift */; };
 		B6793D4F2E34972B001BE9F5 /* FetchTaxiFareRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6793D4E2E34972B001BE9F5 /* FetchTaxiFareRequest.swift */; };
 		B6793D512E35C57E001BE9F5 /* LastTrainDepartBottomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6793D502E35C57E001BE9F5 /* LastTrainDepartBottomView.swift */; };
+		B6793D542E386DFE001BE9F5 /* DetailRouteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6793D532E386DFE001BE9F5 /* DetailRouteViewController.swift */; };
+		B6793D562E386E0E001BE9F5 /* DetailRouteViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6793D552E386E0E001BE9F5 /* DetailRouteViewModel.swift */; };
+		B6793D592E387367001BE9F5 /* RouteDIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6793D582E387367001BE9F5 /* RouteDIContainer.swift */; };
+		B6793D5C2E38792A001BE9F5 /* DetailRouteInfoBottomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6793D5B2E38792A001BE9F5 /* DetailRouteInfoBottomView.swift */; };
+		B6793D5E2E38792F001BE9F5 /* DetailRouteInfoViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6793D5D2E38792F001BE9F5 /* DetailRouteInfoViewModel.swift */; };
 		B67E3E552E0971B70056EEB3 /* Bundle+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B67E3E542E0971B70056EEB3 /* Bundle+Ext.swift */; };
 		B67E3E582E0980880056EEB3 /* AppleLoginDelegateWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B67E3E572E0980880056EEB3 /* AppleLoginDelegateWrapper.swift */; };
 		B68309532E005A3600E2D029 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B683093B2E005A3600E2D029 /* AppDelegate.swift */; };
@@ -360,6 +365,11 @@
 		B6793D4C2E349500001BE9F5 /* ReverseGeocodeLocationResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReverseGeocodeLocationResponse.swift; sourceTree = "<group>"; };
 		B6793D4E2E34972B001BE9F5 /* FetchTaxiFareRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchTaxiFareRequest.swift; sourceTree = "<group>"; };
 		B6793D502E35C57E001BE9F5 /* LastTrainDepartBottomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastTrainDepartBottomView.swift; sourceTree = "<group>"; };
+		B6793D532E386DFE001BE9F5 /* DetailRouteViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailRouteViewController.swift; sourceTree = "<group>"; };
+		B6793D552E386E0E001BE9F5 /* DetailRouteViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailRouteViewModel.swift; sourceTree = "<group>"; };
+		B6793D582E387367001BE9F5 /* RouteDIContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteDIContainer.swift; sourceTree = "<group>"; };
+		B6793D5B2E38792A001BE9F5 /* DetailRouteInfoBottomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailRouteInfoBottomView.swift; sourceTree = "<group>"; };
+		B6793D5D2E38792F001BE9F5 /* DetailRouteInfoViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailRouteInfoViewModel.swift; sourceTree = "<group>"; };
 		B67E3E542E0971B70056EEB3 /* Bundle+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Bundle+Ext.swift"; sourceTree = "<group>"; };
 		B67E3E572E0980880056EEB3 /* AppleLoginDelegateWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleLoginDelegateWrapper.swift; sourceTree = "<group>"; };
 		B67E3E592E09811E0056EEB3 /* Atcha-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Atcha-iOS.entitlements"; sourceTree = "<group>"; };
@@ -803,6 +813,7 @@
 		B65C12D82E042A320016D2F0 /* DIContainer */ = {
 			isa = PBXGroup;
 			children = (
+				B6793D572E38735A001BE9F5 /* Route */,
 				6D91A8EB2E2A1A5D0081BAFC /* Course */,
 				B69E31AF2E276705001040F4 /* Permission */,
 				B66401872E22767100A397AE /* Setting */,
@@ -1043,6 +1054,33 @@
 			path = AtchaBallon;
 			sourceTree = "<group>";
 		};
+		B6793D522E386DF1001BE9F5 /* DetailRoute */ = {
+			isa = PBXGroup;
+			children = (
+				B6793D5A2E38791B001BE9F5 /* DetailRouteInfo */,
+				B6793D532E386DFE001BE9F5 /* DetailRouteViewController.swift */,
+				B6793D552E386E0E001BE9F5 /* DetailRouteViewModel.swift */,
+			);
+			path = DetailRoute;
+			sourceTree = "<group>";
+		};
+		B6793D572E38735A001BE9F5 /* Route */ = {
+			isa = PBXGroup;
+			children = (
+				B6793D582E387367001BE9F5 /* RouteDIContainer.swift */,
+			);
+			path = Route;
+			sourceTree = "<group>";
+		};
+		B6793D5A2E38791B001BE9F5 /* DetailRouteInfo */ = {
+			isa = PBXGroup;
+			children = (
+				B6793D5B2E38792A001BE9F5 /* DetailRouteInfoBottomView.swift */,
+				B6793D5D2E38792F001BE9F5 /* DetailRouteInfoViewModel.swift */,
+			);
+			path = DetailRouteInfo;
+			sourceTree = "<group>";
+		};
 		B67E3E562E0980810056EEB3 /* Wrapper */ = {
 			isa = PBXGroup;
 			children = (
@@ -1269,6 +1307,7 @@
 		B6C507512E12969E000AB39F /* Location */ = {
 			isa = PBXGroup;
 			children = (
+				B6793D522E386DF1001BE9F5 /* DetailRoute */,
 				6D1EE2D72E08E4B400F7BBF1 /* SearchLocation */,
 				B6B57EC32E1AB0ED00B29EB1 /* Coordinator */,
 				B6DC7C1B2E169EF2005D8E17 /* View */,
@@ -1476,6 +1515,7 @@
 				B65C12E42E042D6B0016D2F0 /* UserRepositoryImpl.swift in Sources */,
 				6DFF29932E0CBE8A0039399F /* RegisterLocationViewModel.swift in Sources */,
 				B6AC8BE12E2BC36400410ECD /* AlarmSettingViewController.swift in Sources */,
+				B6793D562E386E0E001BE9F5 /* DetailRouteViewModel.swift in Sources */,
 				6D368BAD2E0396C100144EE7 /* RegisterTextField.swift in Sources */,
 				B6CF46F52E09620100304A85 /* LoginCoordinator.swift in Sources */,
 				B6FB208A2E1BE5200032751B /* FetchTaxiFareRepositoryImpl.swift in Sources */,
@@ -1502,6 +1542,7 @@
 				B6C507482E129640000AB39F /* RequestLocationAuthorizationUseCase.swift in Sources */,
 				B6C5074A2E129649000AB39F /* ObserveLocationStreamUseCase.swift in Sources */,
 				B69E31A82E2681EF001040F4 /* CLLocationCoordinate2D+Ext.swift in Sources */,
+				B6793D592E387367001BE9F5 /* RouteDIContainer.swift in Sources */,
 				6D73EB6F2E169F7700F8DF8B /* TransportationIconView.swift in Sources */,
 				B65C13312E0658580016D2F0 /* MyPageViewModel.swift in Sources */,
 				B6AC8BFE2E2D1F5400410ECD /* LoginItnro.swift in Sources */,
@@ -1513,6 +1554,7 @@
 				B6EDD73C2E0D87F2006170DF /* FileStorageImpl.swift in Sources */,
 				B6793D4B2E3493D6001BE9F5 /* AtcahaInsetLabel.swift in Sources */,
 				B6AC8BD12E2A80AF00410ECD /* MyAccountViewController.swift in Sources */,
+				B6793D542E386DFE001BE9F5 /* DetailRouteViewController.swift in Sources */,
 				B65C12FE2E057AF90016D2F0 /* NetworkConstant.swift in Sources */,
 				B6AC8BE72E2BC4E300410ECD /* AlarmSettingDIContainer.swift in Sources */,
 				6D8D8B132E01B338003DABB2 /* AtchaButton.swift in Sources */,
@@ -1559,6 +1601,7 @@
 				B68309672E005B5300E2D029 /* UIView+Ext.swift in Sources */,
 				6D1EE2F72E0A933000F7BBF1 /* OnboardingCoordinator.swift in Sources */,
 				B67E3E582E0980880056EEB3 /* AppleLoginDelegateWrapper.swift in Sources */,
+				B6793D5C2E38792A001BE9F5 /* DetailRouteInfoBottomView.swift in Sources */,
 				B65C13462E07A0D70016D2F0 /* CoordinatorFactory.swift in Sources */,
 				B68309552E005A3600E2D029 /* AtchaColor.swift in Sources */,
 				6D73EBE82E1B54A500F8DF8B /* CourseRepository.swift in Sources */,
@@ -1614,6 +1657,7 @@
 				B6AC8BF82E2BDA2900410ECD /* AppUpdateManager.swift in Sources */,
 				B6D083352E02D928003C28E1 /* AtchaListType.swift in Sources */,
 				B65C130A2E057C920016D2F0 /* EndPoint.swift in Sources */,
+				B6793D5E2E38792F001BE9F5 /* DetailRouteInfoViewModel.swift in Sources */,
 				B66401972E227E5E00A397AE /* HomeRouter.swift in Sources */,
 				B6793D512E35C57E001BE9F5 /* LastTrainDepartBottomView.swift in Sources */,
 				B6DC7C232E16B5C1005D8E17 /* AddressRepositoryImpl.swift in Sources */,

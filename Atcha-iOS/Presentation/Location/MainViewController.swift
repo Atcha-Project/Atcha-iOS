@@ -164,6 +164,7 @@ extension MainViewController {
             updateAtchaImageConstraint(relativeTo: lastTrainView)
             mapContainerView.clearMapView()
         case .detailRoadMapTapped:
+            viewModel.handleRoute(route: .detailRoute(infos: LegInfo(pathInfo: [], trafficInfo: [])))
             print("detailRoadMapTapped 누르기")
         case .locationTapped:
             ballonView.setupTitle(bottomMessage: "위치를 변경하려면 알림을 종료해야 해요")
@@ -238,6 +239,7 @@ extension MainViewController {
         var shapeStrings: [String] = []
         var colors: [UIColor] = []
         var images: [UIImage] = []
+        var allCoordinates: [CLLocationCoordinate2D] = []  // ✅ 전체 좌표 수집
 
         infos.forEach { info in
             switch info.mode {
@@ -248,6 +250,7 @@ extension MainViewController {
                     if let icon = info.mode?.icon {
                         images.append(icon)
                     }
+                    allCoordinates.append(contentsOf: convertShapeToCoords(shape))
                 }
 
             case .walk:
@@ -259,26 +262,75 @@ extension MainViewController {
                     if let icon = info.mode?.icon {
                         images.append(icon)
                     }
+                    allCoordinates.append(contentsOf: convertShapeToCoords(merged))
                 }
 
-            default:
-                break
+            default: break
             }
         }
 
         for (index, (shape, color, image)) in zip3(shapeStrings, colors, images).enumerated() {
             let isFirst = index == 0
             let isLast = index == shapeStrings.count - 1
-
-            mapContainerView.addTrafficLine(
-                passShape: shape,
-                color: color,
-                markerImage: image,
-                isFirst: isFirst,
-                isLast: isLast
-            )
+            mapContainerView.addTrafficLine(passShape: shape, color: color, markerImage: image, isFirst: isFirst, isLast: isLast)
         }
     }
+    
+    private func convertShapeToCoords(_ shape: String) -> [CLLocationCoordinate2D] {
+        shape.split(separator: " ").compactMap { pair in
+            let parts = pair.split(separator: ",")
+            guard parts.count == 2,
+                  let lon = Double(parts[0]),
+                  let lat = Double(parts[1]) else { return nil }
+            return CLLocationCoordinate2D(latitude: lat, longitude: lon)
+        }
+    }
+    
+//    private func addRouteLine(infos: [LegPathInfo]) {
+//        var shapeStrings: [String] = []
+//        var colors: [UIColor] = []
+//        var images: [UIImage] = []
+//
+//        infos.forEach { info in
+//            switch info.mode {
+//            case .bus, .subway:
+//                if let shape = info.passShape, !shape.isEmpty {
+//                    shapeStrings.append(shape)
+//                    colors.append(info.mode?.getColor(for: info.type ?? "") ?? .magenta)
+//                    if let icon = info.mode?.icon {
+//                        images.append(icon)
+//                    }
+//                }
+//
+//            case .walk:
+//                let walkShapes = info.step?.compactMap { $0.linestring }.filter { !$0.isEmpty } ?? []
+//                let merged = walkShapes.joined(separator: " ")
+//                if !merged.isEmpty {
+//                    shapeStrings.append(merged)
+//                    colors.append(.gray200)
+//                    if let icon = info.mode?.icon {
+//                        images.append(icon)
+//                    }
+//                }
+//
+//            default:
+//                break
+//            }
+//        }
+//
+//        for (index, (shape, color, image)) in zip3(shapeStrings, colors, images).enumerated() {
+//            let isFirst = index == 0
+//            let isLast = index == shapeStrings.count - 1
+//
+//            mapContainerView.addTrafficLine(
+//                passShape: shape,
+//                color: color,
+//                markerImage: image,
+//                isFirst: isFirst,
+//                isLast: isLast
+//            )
+//        }
+//    }
     
     private func zip3<A, B, C>(_ a: [A], _ b: [B], _ c: [C]) -> [(A, B, C)] {
         let count = min(a.count, b.count, c.count)
