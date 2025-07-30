@@ -31,11 +31,15 @@
 		6D2B8CA42E39A74800608104 /* BusRealTimeInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2B8CA32E39A74800608104 /* BusRealTimeInfo.swift */; };
 		6D2B8CA62E39A89C00608104 /* BusPositionInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2B8CA52E39A89C00608104 /* BusPositionInfo.swift */; };
 		6D2B8CA92E39A9DE00608104 /* BusOperationInfoRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2B8CA82E39A9DE00608104 /* BusOperationInfoRequest.swift */; };
-		6D2B8CAB2E39A9E500608104 /* BusOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2B8CAA2E39A9E500608104 /* BusOperationResponse.swift */; };
+		6D2B8CAB2E39A9E500608104 /* BusOperationInfoResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2B8CAA2E39A9E500608104 /* BusOperationInfoResponse.swift */; };
 		6D2B8CAE2E39AAEE00608104 /* BusRealTimeInfoRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2B8CAD2E39AAEE00608104 /* BusRealTimeInfoRequest.swift */; };
 		6D2B8CB02E39AAFA00608104 /* BusRealTimeInfoResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2B8CAF2E39AAFA00608104 /* BusRealTimeInfoResponse.swift */; };
 		6D2B8CB32E39AC4B00608104 /* BusPositionInfoRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2B8CB22E39AC4B00608104 /* BusPositionInfoRequest.swift */; };
 		6D2B8CB52E39AC7200608104 /* BusPositionInfoResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2B8CB42E39AC7200608104 /* BusPositionInfoResponse.swift */; };
+		6D2B8CB82E39C89200608104 /* BusInfoDIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2B8CB72E39C89200608104 /* BusInfoDIContainer.swift */; };
+		6D2B8CBA2E39C8E100608104 /* BusInfoUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2B8CB92E39C8E100608104 /* BusInfoUseCase.swift */; };
+		6D2B8CBE2E39C9CB00608104 /* BusInfoRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2B8CBD2E39C9CB00608104 /* BusInfoRepository.swift */; };
+		6D2B8CC02E39CC8800608104 /* BusInfoRepositoryImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2B8CBF2E39CC8800608104 /* BusInfoRepositoryImpl.swift */; };
 		6D368BA22E02D2AA00144EE7 /* TitleNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D368BA12E02D2AA00144EE7 /* TitleNavigationBar.swift */; };
 		6D368BA42E02D5E200144EE7 /* IconTitleNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D368BA32E02D5E200144EE7 /* IconTitleNavigationBar.swift */; };
 		6D368BA82E02E92000144EE7 /* BackOnlyNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D368BA72E02E92000144EE7 /* BackOnlyNavigationBar.swift */; };
@@ -273,11 +277,15 @@
 		6D2B8CA32E39A74800608104 /* BusRealTimeInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusRealTimeInfo.swift; sourceTree = "<group>"; };
 		6D2B8CA52E39A89C00608104 /* BusPositionInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusPositionInfo.swift; sourceTree = "<group>"; };
 		6D2B8CA82E39A9DE00608104 /* BusOperationInfoRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusOperationInfoRequest.swift; sourceTree = "<group>"; };
-		6D2B8CAA2E39A9E500608104 /* BusOperationResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusOperationResponse.swift; sourceTree = "<group>"; };
+		6D2B8CAA2E39A9E500608104 /* BusOperationInfoResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusOperationInfoResponse.swift; sourceTree = "<group>"; };
 		6D2B8CAD2E39AAEE00608104 /* BusRealTimeInfoRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusRealTimeInfoRequest.swift; sourceTree = "<group>"; };
 		6D2B8CAF2E39AAFA00608104 /* BusRealTimeInfoResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusRealTimeInfoResponse.swift; sourceTree = "<group>"; };
 		6D2B8CB22E39AC4B00608104 /* BusPositionInfoRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusPositionInfoRequest.swift; sourceTree = "<group>"; };
 		6D2B8CB42E39AC7200608104 /* BusPositionInfoResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusPositionInfoResponse.swift; sourceTree = "<group>"; };
+		6D2B8CB72E39C89200608104 /* BusInfoDIContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusInfoDIContainer.swift; sourceTree = "<group>"; };
+		6D2B8CB92E39C8E100608104 /* BusInfoUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusInfoUseCase.swift; sourceTree = "<group>"; };
+		6D2B8CBD2E39C9CB00608104 /* BusInfoRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusInfoRepository.swift; sourceTree = "<group>"; };
+		6D2B8CBF2E39CC8800608104 /* BusInfoRepositoryImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusInfoRepositoryImpl.swift; sourceTree = "<group>"; };
 		6D368BA12E02D2AA00144EE7 /* TitleNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitleNavigationBar.swift; sourceTree = "<group>"; };
 		6D368BA32E02D5E200144EE7 /* IconTitleNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconTitleNavigationBar.swift; sourceTree = "<group>"; };
 		6D368BA72E02E92000144EE7 /* BackOnlyNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackOnlyNavigationBar.swift; sourceTree = "<group>"; };
@@ -591,7 +599,7 @@
 			isa = PBXGroup;
 			children = (
 				6D2B8CA82E39A9DE00608104 /* BusOperationInfoRequest.swift */,
-				6D2B8CAA2E39A9E500608104 /* BusOperationResponse.swift */,
+				6D2B8CAA2E39A9E500608104 /* BusOperationInfoResponse.swift */,
 			);
 			path = BusOperationInfo;
 			sourceTree = "<group>";
@@ -612,6 +620,14 @@
 				6D2B8CB42E39AC7200608104 /* BusPositionInfoResponse.swift */,
 			);
 			path = BusPositionInfo;
+			sourceTree = "<group>";
+		};
+		6D2B8CB62E39C87F00608104 /* BusInfo */ = {
+			isa = PBXGroup;
+			children = (
+				6D2B8CB72E39C89200608104 /* BusInfoDIContainer.swift */,
+			);
+			path = BusInfo;
 			sourceTree = "<group>";
 		};
 		6D368BAB2E0396B100144EE7 /* AtchaTextField */ = {
@@ -645,7 +661,6 @@
 		6D73EB562E16117400F8DF8B /* Course */ = {
 			isa = PBXGroup;
 			children = (
-				6D91A90B2E38A1AC0081BAFC /* BusDetail */,
 				6D91A8F12E2A1E9B0081BAFC /* Coordinator */,
 				6D73EB582E1611A600F8DF8B /* CourseSearch */,
 				6D73EB592E1611B700F8DF8B /* CourseModify */,
@@ -861,6 +876,7 @@
 				6DC3BF5F2E071F0900831470 /* LoginUseCase.swift */,
 				6D1EE2ED2E0A7D7300F7BBF1 /* OnboardingUseCase.swift */,
 				6D73EBE52E1B51E000F8DF8B /* CourseUseCase.swift */,
+				6D2B8CB92E39C8E100608104 /* BusInfoUseCase.swift */,
 			);
 			path = UseCase;
 			sourceTree = "<group>";
@@ -873,6 +889,7 @@
 				B65C131D2E058C250016D2F0 /* AppVersionRepository.swift */,
 				6D1EE2EF2E0A7F0000F7BBF1 /* OnboardingRepository.swift */,
 				6D73EBE72E1B54A500F8DF8B /* CourseRepository.swift */,
+				6D2B8CBD2E39C9CB00608104 /* BusInfoRepository.swift */,
 			);
 			path = Repository;
 			sourceTree = "<group>";
@@ -890,6 +907,7 @@
 			isa = PBXGroup;
 			children = (
 				B6C5074B2E129656000AB39F /* Location */,
+				6D2B8CBF2E39CC8800608104 /* BusInfoRepositoryImpl.swift */,
 				B65C12E32E042D6B0016D2F0 /* UserRepositoryImpl.swift */,
 				B65C131F2E058C360016D2F0 /* AppVersionRepositoryImpl.swift */,
 				6D73EBE92E1B551600F8DF8B /* CourseRepositoryImpl.swift */,
@@ -911,6 +929,7 @@
 		B65C12D82E042A320016D2F0 /* DIContainer */ = {
 			isa = PBXGroup;
 			children = (
+				6D2B8CB62E39C87F00608104 /* BusInfo */,
 				6D91A8EB2E2A1A5D0081BAFC /* Course */,
 				B69E31AF2E276705001040F4 /* Permission */,
 				B66401872E22767100A397AE /* Setting */,
@@ -1118,6 +1137,7 @@
 		B673C48C2E0424E200EE4AD0 /* Presentation */ = {
 			isa = PBXGroup;
 			children = (
+				6D91A90B2E38A1AC0081BAFC /* BusDetail */,
 				B6AC8BF22E2BD3F500410ECD /* WebView */,
 				B66401862E22761800A397AE /* Setting */,
 				6D73EB562E16117400F8DF8B /* Course */,
@@ -1608,6 +1628,7 @@
 				6D8D8B172E02BBC0003DABB2 /* AtchaNavigationBar.swift in Sources */,
 				B6AC8BEC2E2BC60600410ECD /* AlarmSoundTypeViewModel.swift in Sources */,
 				B65C134C2E07A18D0016D2F0 /* MyPageNavigationTarget.swift in Sources */,
+				6D2B8CBA2E39C8E100608104 /* BusInfoUseCase.swift in Sources */,
 				B68309542E005A3600E2D029 /* SceneDelegate.swift in Sources */,
 				B600CA132E07FD29008B0D87 /* MyPageCoordinator.swift in Sources */,
 				B6C507482E129640000AB39F /* RequestLocationAuthorizationUseCase.swift in Sources */,
@@ -1741,6 +1762,7 @@
 				B66401992E229EB000A397AE /* SplashRouter.swift in Sources */,
 				B6FB20842E1BE4B80032751B /* FetchTaxiFareUseCase.swift in Sources */,
 				B6713CBE2E12998600AF8486 /* MainDIContainer.swift in Sources */,
+				6D2B8CB82E39C89200608104 /* BusInfoDIContainer.swift in Sources */,
 				6DC3BF682E0721F300831470 /* LoginDTO.swift in Sources */,
 				6D73EB6B2E16845000F8DF8B /* String+Ext.swift in Sources */,
 				B65C131E2E058C250016D2F0 /* AppVersionRepository.swift in Sources */,
@@ -1748,8 +1770,9 @@
 				B6FB209D2E1D492F0032751B /* HomeRegisterBottomView.swift in Sources */,
 				6DC3BEF32E04FE1D00831470 /* KeychainKey.swift in Sources */,
 				6D2B8C942E38A97500608104 /* BusDetailHeaderView.swift in Sources */,
+				6D2B8CBE2E39C9CB00608104 /* BusInfoRepository.swift in Sources */,
 				6D5E03BE2E24F70B0065AFBE /* FetchRecentSearchRequest.swift in Sources */,
-				6D2B8CAB2E39A9E500608104 /* BusOperationResponse.swift in Sources */,
+				6D2B8CAB2E39A9E500608104 /* BusOperationInfoResponse.swift in Sources */,
 				B6DC7C1D2E169F37005D8E17 /* MapBottomType.swift in Sources */,
 				B65C134A2E07A1280016D2F0 /* MyPageRouter.swift in Sources */,
 				B65C131C2E058C150016D2F0 /* CheckAppVersionUseCase.swift in Sources */,
@@ -1770,6 +1793,7 @@
 				B65C13442E06E0BC0016D2F0 /* SplashCoordinator.swift in Sources */,
 				B65C13262E058CC30016D2F0 /* BaseViewModel.swift in Sources */,
 				B65C132A2E058FD70016D2F0 /* APIResponse.swift in Sources */,
+				6D2B8CC02E39CC8800608104 /* BusInfoRepositoryImpl.swift in Sources */,
 				B6AC8BD32E2A80BC00410ECD /* MyAccountViewModel.swift in Sources */,
 				B6D083332E02D8F5003C28E1 /* AtchaList.swift in Sources */,
 				B65C12DE2E042CF00016D2F0 /* UserInfo.swift in Sources */,

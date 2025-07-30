@@ -32,3 +32,73 @@ struct BusPositionsResponse: Codable {
     let busCongestion: String?
     let remainSeats: Int?
 }
+
+extension BusPositionInfoResponse {
+    func toEntity() -> BusPositionInfo? {
+        guard
+            let busRouteStationList = busRouteStationList,
+            let turnPoint = turnPoint,
+            let busPositions = busPositions
+        else {
+            return nil
+        }
+        
+        return BusPositionInfo(
+            busRouteStationList: busRouteStationList.compactMap { $0.toEntity() },
+            turnPoint: turnPoint,
+            busPositions: busPositions.compactMap { $0.toEntity() }
+        )
+    }
+}
+
+extension BusRouteStationListResponse {
+    func toEntity() -> BusRouteStationList? {
+        guard
+            let busRouteId = busRouteId,
+            let busRouteName = busRouteName,
+            let busStationId = busStationId,
+            let busStationNumber = busStationNumber,
+            let busStationName = busStationName,
+            let busStationLat = busStationLat,
+            let busStationLon = busStationLon,
+            let order = order
+        else {
+            return nil
+        }
+        
+        return BusRouteStationList(
+            busRouteId: busRouteId,
+            busRouteName: busRouteName,
+            busStationId: busStationId,
+            busStationNumber: busStationNumber,
+            busStationName: busStationName,
+            busStationLat: busStationLat,
+            busStationLon: busStationLon,
+            order: order
+        )
+    }
+}
+
+extension BusPositionsResponse {
+    func toEntity() -> BusPositions? {
+        guard
+            let vehicleId = vehicleId,
+            let sectionOrder = sectionOrder,
+            let vehicleNumber = vehicleNumber,
+            let sectionProgress = sectionProgress,
+            let busCongestion = busCongestion,
+            let remainSeats = remainSeats
+        else {
+            return nil
+        }
+        
+        return BusPositions(
+            vehicleId: vehicleId,
+            sectionOrder: sectionOrder,
+            vehicleNumber: vehicleNumber,
+            sectionProgress: sectionProgress,
+            busCongestion: busCongestion,
+            remainSeats: remainSeats
+        )
+    }
+}

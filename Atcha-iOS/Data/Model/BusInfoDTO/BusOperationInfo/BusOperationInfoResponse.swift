@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct BusOperationResponse: Codable {
+struct BusOperationInfoResponse: Codable {
     let startStationName: String?
     let endStationName: String?
     let serviceHours: [ServiceHoursResponse]?
@@ -22,7 +22,7 @@ struct ServiceHoursResponse: Codable {
 }
 
 
-extension BusOperationResponse {
+extension BusOperationInfoResponse {
     func toEntity() -> BusOperationInfo? {
         guard
             let startStationName = startStationName,
