@@ -32,6 +32,14 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
         return stack
     }()
     
+    private let dispatchTitleLabel: UILabel = UILabel()
+    private let dispatchStack: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .horizontal
+        stack.spacing = 15
+        return stack
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -43,16 +51,17 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
             // 평일 (WEEKDAY)
             ServiceHours(dailyType: "WEEKDAY", busDirection: "UP", startTime: "2025-07-30T04:30", endTime: "2025-07-30T23:00", term: 10),
             ServiceHours(dailyType: "WEEKDAY", busDirection: "DOWN", startTime: "2025-07-30T05:00", endTime: "2025-07-30T23:30", term: 12),
-
+            
             // 토요일 (SATURDAY)
             ServiceHours(dailyType: "SATURDAY", busDirection: "UP", startTime: "2025-07-30T05:00", endTime: "2025-07-30T22:30", term: 15),
             ServiceHours(dailyType: "SATURDAY", busDirection: "DOWN", startTime: "2025-07-30T05:30", endTime: "2025-07-30T23:00", term: 15),
-
+            
             // 공휴일 (HOLIDAY)
             ServiceHours(dailyType: "HOLIDAY", busDirection: "UP", startTime: "2025-07-30T05:30", endTime: "2025-07-30T22:00", term: 20),
             ServiceHours(dailyType: "HOLIDAY", busDirection: "DOWN", startTime: "2025-07-30T06:00", endTime: "2025-07-30T22:30", term: 20)
         ]
         setupOperationTime(mockServiceHours)
+        setupDispatchTime(mockServiceHours)
     }
     
     private func setupUI() {
@@ -71,8 +80,8 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
         stationStack.spacing = 6
         
         operationRegionLabel.attributedText = AtchaFont.B7_M_13("서울", color: AtchaColor.gray200)
-        
         operationTimeTitleLabel.attributedText = AtchaFont.B3_M_15("운행시간", color: AtchaColor.white)
+        dispatchTitleLabel.attributedText = AtchaFont.B3_M_15("배차간격", color: AtchaColor.white)
         
         view.addSubViews(
             topNavigationBar,
@@ -80,7 +89,9 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
             stationStack,
             operationRegionLabel,
             operationTimeTitleLabel,
-            operationTimeStack
+            operationTimeStack,
+            dispatchTitleLabel,
+            dispatchStack
         )
     }
     
@@ -115,6 +126,16 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
             make.top.equalTo(operationTimeTitleLabel.snp.bottom).offset(6)
             make.leading.equalToSuperview().offset(16)
             make.trailing.equalToSuperview().offset(16)
+        }
+        
+        dispatchTitleLabel.snp.makeConstraints { make in
+            make.top.equalTo(operationTimeStack.snp.bottom).offset(32)
+            make.leading.equalToSuperview().offset(16)
+        }
+        
+        dispatchStack.snp.makeConstraints { make in
+            make.top.equalTo(dispatchTitleLabel.snp.bottom).offset(6)
+            make.leading.equalToSuperview().offset(16)
         }
     }
     
@@ -160,6 +181,40 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
             }
             
             operationTimeStack.addArrangedSubview(rowStack)
+        }
+    }
+    
+    private func setupDispatchTime(_ serviceHours: [ServiceHours]) {
+        dispatchStack.arrangedSubviews.forEach { $0.removeFromSuperview() } // 초기화
+        let grouped = Dictionary(grouping: serviceHours, by: { $0.dailyType })
+        
+        for dailyType in ["WEEKDAY", "SATURDAY", "HOLIDAY"] {
+            guard let hours = grouped[dailyType] else { continue }
+            
+            let rowStack = UIStackView()
+            rowStack.axis = .horizontal
+            rowStack.spacing = 6
+            
+            // 요일 라벨
+            let dayLabel = UILabel()
+            dayLabel.attributedText = AtchaFont.B6_R_14(dailyType.DaytoKorean(), color: AtchaColor.gray200)
+            rowStack.addArrangedSubview(dayLabel)
+            
+            // term 값 가져오기 (보통 UP/DOWN이 같다고 가정)
+            if let up = hours.first(where: { $0.busDirection == "UP" }),
+               let term = up.term {
+                let termLabel = UILabel()
+                termLabel.attributedText = AtchaFont.B6_R_14("\(term)분", color: AtchaColor.white)
+                rowStack.addArrangedSubview(termLabel)
+            } else if let down = hours.first(where: { $0.busDirection == "DOWN" }),
+                      let term = down.term {
+                // UP이 없을 경우 DOWN 기준
+                let termLabel = UILabel()
+                termLabel.attributedText = AtchaFont.B6_R_14("\(term)분", color: AtchaColor.white)
+                rowStack.addArrangedSubview(termLabel)
+            }
+            
+            dispatchStack.addArrangedSubview(rowStack)
         }
     }
 }
