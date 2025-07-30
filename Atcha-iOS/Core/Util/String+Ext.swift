@@ -56,3 +56,15 @@ extension String {
         return (type, number)
     }
 }
+
+extension String {
+    // MARK: - 요일 한글로 변경
+    func DaytoKorean() -> String {
+        switch self {
+        case "WEEKDAY": return "평일"
+        case "SATURDAY": return "토요일"
+        case "HOLIDAY": return "공휴일"
+        default: return self
+        }
+    }
+}

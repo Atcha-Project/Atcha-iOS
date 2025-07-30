@@ -10,6 +10,7 @@ import UIKit
 
 final class BusDetailHeaderView: UIView {
     
+    var onInfoTap: (() -> Void)?
     private let infoStack = UIStackView()
     private let infoLabel = UILabel()
     private let infoImageView = UIImageView()
@@ -22,6 +23,7 @@ final class BusDetailHeaderView: UIView {
         super.init(frame: frame)
         setupUI()
         setupLayout()
+        setupGesture()
     }
     
     required init?(coder: NSCoder) {
@@ -64,5 +66,17 @@ final class BusDetailHeaderView: UIView {
         infoImageView.snp.makeConstraints { make in
             make.size.equalTo(12)
         }
+    }
+    
+    private func setupGesture() {
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(infoTapped))
+        infoStack.isUserInteractionEnabled = true
+        infoLabel.isUserInteractionEnabled = false
+        infoImageView.isUserInteractionEnabled = false
+        infoStack.addGestureRecognizer(tapGesture)
+    }
+    
+    @objc private func infoTapped() {
+        onInfoTap?()
     }
 }

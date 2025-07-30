@@ -10,10 +10,10 @@ import Combine
 import SnapKit
 
 class BusDetailViewController: BaseViewController<BusDetailViewModel> {
-
+    
     private lazy var topNavigationBar: IconTitleNavigationBar = {
         AtchaNavigationBar.iconTitle(
-            viewModel.busNumber, 
+            viewModel.busNumber,
             viewModel.icon
         ) {
         } onClose: {
@@ -23,9 +23,10 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         setupUI()
         setupAutoLayout()
+        bindActions()
     }
     
     private func setupUI() {
@@ -45,6 +46,12 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
             make.top.equalTo(topNavigationBar.snp.bottom)
             make.trailing.leading.equalToSuperview()
             make.height.equalTo(42)
+        }
+    }
+    
+    private func bindActions() {
+        headerView.onInfoTap = { [weak self] in
+            self?.viewModel.onInfoTap?()
         }
     }
 }

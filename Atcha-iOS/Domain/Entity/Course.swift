@@ -38,9 +38,18 @@ extension Course {
         }
         
         return BusDetailInfo(
-            route: leg.route,
-            start: leg.start,
-            passStopList: leg.passStopList
+            routeName: leg.route,
+            stationName: leg.start?.name,
+            lat: leg.start?.lat,
+            lon: leg.start?.lon,
+            passStations:leg.passStopList?.map {
+                PassStations(
+                    index: $0.index,
+                    stationName: $0.stationName,
+                    lat: $0.lat,
+                    lon: $0.lon
+                )
+            }
         )
     }
 }
@@ -63,14 +72,14 @@ struct Legs: Codable, Hashable {
 struct addressInfo: Codable, Hashable{
     let name: String?
     let lon: Double?
-    let lan: Double?
+    let lat: Double?
 }
 
 struct passStopList: Codable, Hashable {
     let index: Int?
     let stationName: String?
     let lon: String?
-    let lan: String?
+    let lat: String?
 }
 
 struct Step: Codable, Hashable{
@@ -142,7 +151,9 @@ struct LegPathInfo {
 }
 
 struct BusDetailInfo {
-    let route: String?
-    let start: addressInfo?
-    let passStopList: [passStopList]?
+    let routeName: String?
+    let stationName: String?
+    let lat: Double?
+    let lon: Double?
+    let passStations: [PassStations]?
 }

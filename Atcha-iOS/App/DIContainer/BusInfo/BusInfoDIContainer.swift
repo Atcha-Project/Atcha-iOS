@@ -14,5 +14,23 @@ final class BusInfoDIContainer {
     init(apiService: APIService) {
         self.apiService = apiService
     }
+    
+    func makeBusDetailViewModel(busDetailInfo: BusDetailInfo) -> BusDetailViewModel {
+        let busInfoUseCase = BusInfoUseCaseImpl(repository: BusInfoRepositoryImpl(apiService: apiService))
+        return BusDetailViewModel(busInfoUseCase: busInfoUseCase, busDetailInfo: busDetailInfo)
+    }
+
+    func makeBusDetailViewController(viewModel: BusDetailViewModel) -> UIViewController {
+        return BusDetailViewController(viewModel: viewModel)
+    }
+    
+    func makeBusInfoViewModel(busDetailInfo: BusDetailInfo) -> BusInfoViewModel {
+        let busInfoUseCase = BusInfoUseCaseImpl(repository: BusInfoRepositoryImpl(apiService: apiService))
+        return BusInfoViewModel(busInfoUseCase: busInfoUseCase, busDetailInfo: busDetailInfo)
+    }
+
+    func makeBusInfoViewController(viewModel: BusInfoViewModel) -> UIViewController {
+        return BusInfoViewController(viewModel: viewModel)
+    }
 }
 

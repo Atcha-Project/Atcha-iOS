@@ -27,3 +27,13 @@ struct RealTimeBusArrival: Codable {
     let vehicleId: String?
     let remainingStations: Int?
 }
+
+extension BusRealTimeInfo {
+    func toBusRouteInfo() -> BusRouteInfo {
+        return BusRouteInfo(
+            busRouteId: busRouteId,
+            routeName: routeName,
+            serviceRegion: serviceRegion
+        )
+    }
+}

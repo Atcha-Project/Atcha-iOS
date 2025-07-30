@@ -20,8 +20,22 @@ final class BusDetailCoordinator {
         self.diContainer = diContainer
     }
     
-    func start() {
+    func start(busDetailInfo: BusDetailInfo) {
+        let viewModel = diContainer.makeBusDetailViewModel(busDetailInfo: busDetailInfo)
+        viewModel.onInfoTap = { [weak self] in
+            print("터치됨, self:", self as Any)
+            self?.showBusInfo(busDetailInfo: busDetailInfo)
+        }
+        let viewController = diContainer.makeBusDetailViewController(viewModel: viewModel)
         
+        navigationController.pushViewController(viewController, animated: true)
+    }
+    
+    private func showBusInfo(busDetailInfo: BusDetailInfo) {
+        let viewModel = diContainer.makeBusInfoViewModel(busDetailInfo: busDetailInfo)
+        let viewController = diContainer.makeBusInfoViewController(viewModel: viewModel)
+        
+        navigationController.pushViewController(viewController, animated: true)
     }
 }
 
