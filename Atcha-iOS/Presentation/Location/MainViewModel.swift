@@ -16,6 +16,7 @@ final class MainViewModel: BaseViewModel {
     @Published var address: String?
     @Published var taxiFare: Double?
     @Published var legPathInfos: [LegPathInfo] = []
+    @Published var legTrafficInfos: [LegTrafficInfo] = []
     
     private let searchAddressUseCase: SearchAddressUseCase
     private let authorizationUseCase: RequestLocationAuthorizationUseCase
@@ -25,7 +26,7 @@ final class MainViewModel: BaseViewModel {
     private var streamTask: Task<Void, Never>?
     
     var routeHandler: ((MainRoute) -> Void)?
-    var courseSearchResultHandler: (([LegPathInfo]) -> Void)?
+    var courseSearchResultHandler: ((LegInfo) -> Void)?
     
     init(authorizationUseCase: RequestLocationAuthorizationUseCase,
          streamUseCase: ObserveLocationStreamUseCase,
@@ -52,8 +53,9 @@ final class MainViewModel: BaseViewModel {
             .store(in: &cancellables)
     }
     
-    func drawRoute(infos: [LegPathInfo]) {
-        legPathInfos = infos
+    func drawRoute(infos: LegInfo) {
+        legPathInfos = infos.pathInfo
+        legTrafficInfos = infos.trafficInfo
     }
     
     func requestPermissionAndStartTracking() {
@@ -94,7 +96,8 @@ final class MainViewModel: BaseViewModel {
             routeHandler?(.myPage)
             
         case .detailRoute:
-            routeHandler?(.detailRoute(infos: [], []))
+            routeHandler?(.detailRoute(infos: LegInfo(pathInfo: legPathInfos,
+                                                      trafficInfo: legTrafficInfos)))
         }
     }
     

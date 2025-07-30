@@ -9,11 +9,11 @@ import Foundation
 import UIKit
 
 final class DetailRouteViewModel: BaseViewModel {
-    private let infos: ([LegPathInfo], [LegTrafficInfo])
+    private let infos: LegInfo
     @Published var legtPathInfo: [LegPathInfo] = []
     @Published var legTrafficInfo: [LegTrafficInfo] = []
     
-    init(infos: ([LegPathInfo], [LegTrafficInfo])) {
+    init(infos: LegInfo) {
         self.infos = infos
         
         super.init()
@@ -21,8 +21,8 @@ final class DetailRouteViewModel: BaseViewModel {
     }
     
     private func bind() {
-        self.legtPathInfo = infos.0
-        self.legTrafficInfo = infos.1
+        self.legtPathInfo = infos.pathInfo
+        self.legTrafficInfo = infos.trafficInfo
         
         // 시간
         let time = legTrafficInfo.first?.departureDateTime

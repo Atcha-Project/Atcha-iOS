@@ -209,10 +209,9 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
         
         cell.onGetAlarmTapped = { [weak self] in
             guard let self else { return }
-            
-            print("model : \(model.course)")
-            
-            viewModel.getAlarmTapped?(model.course.toLegPathInfos())
+            let pathInfo: [LegPathInfo] = model.course.toLegPathInfos()
+            let tafficInfo: [LegTrafficInfo] = model.course.toLegTrafficInfos()
+            viewModel.getAlarmTapped?(LegInfo(pathInfo: pathInfo, trafficInfo: tafficInfo))
             navigationController?.popToRootViewController(animated: true)
         }
         
@@ -221,7 +220,7 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
             guard let self else { return }
             let pathInfo: [LegPathInfo] = model.course.toLegPathInfos()
             let tafficInfo: [LegTrafficInfo] = model.course.toLegTrafficInfos()
-            viewModel.getDetailTapped?((pathInfo, tafficInfo))
+            viewModel.getDetailTapped?(LegInfo(pathInfo: pathInfo, trafficInfo: tafficInfo))
         }
         
         // 버튼 탭 시 확장/축소 상태 변경 핸들러 연결

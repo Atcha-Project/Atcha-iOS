@@ -66,7 +66,7 @@ final class MainCoordinator {
             }
             vm.getDetailTapped = { [weak self] infos in
                 guard let self else { return }
-                handle(route: .detailRoute(infos: infos.0, infos.1))
+                handle(route: .detailRoute(infos: infos))
             }
             self.navigationController.pushViewController(vc, animated: true)
         case .changeCourse:
@@ -77,9 +77,9 @@ final class MainCoordinator {
             self.courseModifyCoordinator = courseModifyCoordinator
             courseModifyCoordinator.start()
             
-        case .detailRoute(let pathInfo, let trafficInfo):
+        case .detailRoute(let infos):
             let routeDI = diContainer.makeRouteDIContainer()
-            let vm = routeDI.makeDetailRouteViewModel(infos: (pathInfo, trafficInfo))
+            let vm = routeDI.makeDetailRouteViewModel(infos: infos)
             let vc = routeDI.makeDetailRouteViewController(viewModel: vm)
             navigationController.pushViewController(vc, animated: false)
         }

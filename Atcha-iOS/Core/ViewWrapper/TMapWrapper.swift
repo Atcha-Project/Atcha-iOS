@@ -78,7 +78,7 @@ final class TMapWrapper: NSObject, MapRendering {
         let tmapTrafficLine = TMapTrafficLine(trafficLine: [trafficLine])
         tmapTrafficLine.prevColor = color
         tmapTrafficLine.nextColor = color
-        tmapTrafficLine.width = 6
+        tmapTrafficLine.width = 9
         tmapTrafficLine.outlineWidth = 0
         tmapTrafficLine.showTrafficInfo = false
         tmapTrafficLine.showDirectionIndicator = true
