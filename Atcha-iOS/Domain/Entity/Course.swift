@@ -26,6 +26,27 @@ struct Course: Codable, Hashable {
         
         return String(format: "%d분 %02d초", minutes, seconds)
     }
+    
+    func toBusDetailInfo(for route: String) -> BusDetailInfo? {
+        guard let leg = legs.first(where: { $0.mode == .bus && $0.route == route }) else {
+            return nil
+        }
+        
+        return BusDetailInfo(
+            routeName: leg.route,
+            stationName: leg.start?.name,
+            lat: leg.start?.lat,
+            lon: leg.start?.lon,
+            passStations:leg.passStopList?.map {
+                PassStations(
+                    index: $0.index,
+                    stationName: $0.stationName,
+                    lat: $0.lat,
+                    lon: $0.lon
+                )
+            }
+        )
+    }
 }
 
 struct Legs: Codable, Hashable {
@@ -114,14 +135,14 @@ extension Course {
 struct addressInfo: Codable, Hashable{
     let name: String?
     let lon: Double?
-    let lan: Double?
+    let lat: Double?
 }
 
 struct passStopList: Codable, Hashable {
     let index: Int?
     let stationName: String?
     let lon: String?
-    let lan: String?
+    let lat: String?
 }
 
 struct Step: Codable, Hashable{
@@ -139,15 +160,15 @@ enum TransportMode: String, Codable {
     
     var icon: UIImage? {
         switch self {
-//        case .bus: return UIImage.routeCircleLineBus
-//        case .subway: return UIImage.routeCircleLineSubway
-//        default: return UIImage.routeCircleLineWalk
+            //        case .bus: return UIImage.routeCircleLineBus
+            //        case .subway: return UIImage.routeCircleLineSubway
+            //        default: return UIImage.routeCircleLineWalk
         case .bus: return UIImage.routeBusWhite
         case .subway: return UIImage.routeCircleSubway
         default: return UIImage.routeCircleWalk
         }
     }
-
+    
     func getIcon(for routeType: String) -> UIImage? {
         switch self {
         case .bus:
@@ -171,7 +192,7 @@ enum TransportMode: String, Codable {
             return nil
         }
     }
-
+    
     func getOffIcon(for routeType: String) -> String? {
         switch self {
         case .bus:
@@ -191,4 +212,12 @@ struct LegPathInfo {
     let type: String?
     let step: [Step]?
     let passShape: String?
+}
+
+struct BusDetailInfo {
+    let routeName: String?
+    let stationName: String?
+    let lat: Double?
+    let lon: Double?
+    let passStations: [PassStations]?
 }

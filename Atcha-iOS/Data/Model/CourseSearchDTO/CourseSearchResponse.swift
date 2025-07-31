@@ -68,10 +68,10 @@ struct LegResponse: Codable {
 struct AddressInfoResponse: Codable {
     let name: String?
     let lon: Double?
-    let lan: Double?
+    let lat: Double?
     
     func toEntity() -> addressInfo {
-        return addressInfo(name: name, lon: lon, lan: lan)
+        return addressInfo(name: name, lon: lon, lat: lat)
     }
 }
 
@@ -79,10 +79,10 @@ struct PassStopResponse: Codable {
     let index: Int?
     let stationName: String?
     let lon: String?
-    let lan: String?
+    let lat: String?
     
     func toEntity() -> passStopList {
-        return passStopList(index: index, stationName: stationName, lon: lon, lan: lan)
+        return passStopList(index: index, stationName: stationName, lon: lon, lat: lat)
     }
 }
 

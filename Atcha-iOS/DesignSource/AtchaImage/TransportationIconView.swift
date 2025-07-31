@@ -258,3 +258,31 @@ extension TransportMode {
         "125": .GTX_A
     ]
 }
+
+enum BusType: String {
+    case 일반, 좌석, 마을, 직행좌석, 공항
+    case 간선급행, 외곽, 간선, 지선, 순환, 광역, 급행
+    case 시외, 리무진, 농어촌, 시외버스, 고속버스
+    case unknown
+    
+    init(from raw: String) {
+        self = BusType(rawValue: raw) ?? .unknown
+    }
+    
+    var icon: UIImage {
+        switch self {
+        case .일반, .외곽, .지선:
+            return UIImage(named: "bus-regular") ?? UIImage(named: "bus-default")!
+        case .좌석, .간선:
+            return UIImage(named: "bus-mainline") ?? UIImage(named: "bus-default")!
+        case .마을, .순환, .농어촌:
+            return UIImage(named: "bus-town") ?? UIImage(named: "bus-default")!
+        case .직행좌석, .간선급행, .광역, .급행, .시외, .시외버스, .고속버스:
+            return UIImage(named: "bus-widearea") ?? UIImage(named: "bus-default")!
+        case .공항, .리무진:
+            return UIImage(named: "bus-airport") ?? UIImage(named: "bus-default")!
+        case .unknown:
+            return UIImage(named: "bus-default")!
+        }
+    }
+}
