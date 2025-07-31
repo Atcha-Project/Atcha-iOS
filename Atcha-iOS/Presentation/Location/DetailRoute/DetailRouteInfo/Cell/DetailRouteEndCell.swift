@@ -1,15 +1,15 @@
 //
-//  DetailRouteStartCell.swift
+//  DetailRouteEndCell.swift
 //  Atcha-iOS
 //
-//  Created by geonhui Yu on 7/31/25.
+//  Created by geonhui Yu on 8/1/25.
 //
 
 import UIKit
 import SnapKit
 
-final class DetailRouteStartCell: UICollectionReusableView {
-    static let id: String = "DetailRouteStartCell"
+final class DetailRouteEndCell: UICollectionReusableView {
+    static let id: String = "DetailRouteEndCell"
     
     private let imageView: UIImageView = UIImageView()
     private let locationLabel: UILabel = UILabel()
@@ -47,7 +47,7 @@ final class DetailRouteStartCell: UICollectionReusableView {
     }
     
     func configure(info: LegTrafficInfo) {
-        imageView.image = UIImage.markerStart
-        locationLabel.attributedText = AtchaFont.B3_M_15("앗차 강남점")
+        imageView.image = UIImage.markerEnd
+        locationLabel.attributedText = AtchaFont.B3_M_15("우리집")
     }
 }

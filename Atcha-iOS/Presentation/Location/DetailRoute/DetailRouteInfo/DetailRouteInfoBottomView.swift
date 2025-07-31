@@ -151,9 +151,9 @@ extension DetailRouteInfoBottomView {
         )
         
         collectionView.register(
-            DetailRouteStartCell.self,
+            DetailRouteEndCell.self,
             forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter,
-            withReuseIdentifier: DetailRouteStartCell.id
+            withReuseIdentifier: DetailRouteEndCell.id
         )
         
         collectionView.register(DetailRouteWalkCell.self, forCellWithReuseIdentifier: "DetailRouteWalkCell")
@@ -301,14 +301,28 @@ extension DetailRouteInfoBottomView {
                 return nil
             }
             
-            let view = collectionView.dequeueReusableSupplementaryView(
-                ofKind: kind,
-                withReuseIdentifier: DetailRouteStartCell.id,
-                for: indexPath
-            ) as! DetailRouteStartCell
+            if kind == UICollectionView.elementKindSectionHeader {
+                let headerView = collectionView.dequeueReusableSupplementaryView(
+                    ofKind: kind,
+                    withReuseIdentifier: DetailRouteStartCell.id,
+                    for: indexPath
+                ) as! DetailRouteStartCell
+                
+                headerView.configure(info: item)
+                return headerView
+                
+            } else if kind == UICollectionView.elementKindSectionFooter {
+                let footerView = collectionView.dequeueReusableSupplementaryView(
+                    ofKind: kind,
+                    withReuseIdentifier: DetailRouteEndCell.id,
+                    for: indexPath
+                ) as! DetailRouteEndCell
+                
+                footerView.configure(info: item)
+                return footerView
+            }
             
-            view.configure(info: item)
-            return view
+            return nil
         }
     }
 }
