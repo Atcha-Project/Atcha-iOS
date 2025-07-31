@@ -16,12 +16,7 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
     private let loactionButton: UIButton = UIButton()
     private let backButton: UIButton = UIButton()
     private var activityIndicator: UIActivityIndicatorView?
-    private lazy var bottomSheet: DetailRouteInfoBottomView = DetailRouteInfoBottomView(frame: CGRect(
-        x: 0,
-        y: view.frame.height * (1 - 0.45),
-        width: view.frame.width,
-        height: view.frame.height * 0.8
-    ))
+    private lazy var bottomSheet: DetailRouteInfoBottomView = DetailRouteInfoBottomView()
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -53,6 +48,10 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             make.leading.equalToSuperview().offset(16)
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(12)
             make.width.height.equalTo(36)
+        }
+        bottomSheet.snp.makeConstraints {
+            $0.leading.trailing.bottom.equalToSuperview()
+            $0.height.equalTo(view.frame.height * 0.5) 
         }
     }
     

@@ -59,7 +59,7 @@ struct Legs: Codable, Hashable {
     let service: String?
     let start: addressInfo?
     let end: addressInfo?
-    let passStopList: [passStopList]?
+    let passStopList: [PassStopList]?
     let step: [Step]?
     let passShape: String?
     
@@ -95,7 +95,7 @@ struct LegTrafficInfo: Hashable {
     let sectionTime: String?
     let mode: TransportMode?
     let type: String?
-    let passStopList: [passStopList]?
+    let passStopList: [PassStopList]?
     let steps: [Step]? // 보행자 이동 거리 (미터)
     let busName: String?
 }
@@ -136,7 +136,7 @@ struct addressInfo: Codable, Hashable{
     let lat: Double?
 }
 
-struct passStopList: Codable, Hashable {
+struct PassStopList: Codable, Hashable {
     let index: Int?
     let stationName: String?
     let lon: String?

@@ -27,16 +27,20 @@ final class DetailRouteBusCell: UICollectionViewCell {
     
     // MARK: - Summary
     private let summaryLabel: UILabel = UILabel()
+    private let summaryButton: UIButton = UIButton()
     
     // MARK: - 하차 정보
     private let endLabel: UILabel = UILabel()
     
+    private var stationInfos: [PassStopList] = []
     private var isExpanded: Bool = false
+    var didTapSummary: (() -> Void)?
     
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
         setupConstraints()
+        setupAction()
         contentView.backgroundColor = .clear
     }
     
@@ -46,8 +50,8 @@ final class DetailRouteBusCell: UICollectionViewCell {
     
     private func setupUI() {
         contentView.addSubViews(iconImageView, stickView, circleView,
-                                startLabel,
-                                busBackView, summaryLabel, stationListStackView,
+                                startLabel, busBackView,
+                                summaryLabel, summaryButton, stationListStackView,
                                 endLabel)
         
         iconImageView.contentMode = .scaleAspectFill
@@ -56,9 +60,12 @@ final class DetailRouteBusCell: UICollectionViewCell {
         busBackView.setCornerRadius(4)
         busBackView.addSubViews(busLabel, busDetailArrowImageView)
         
+        summaryButton.setImage(UIImage.chevronDown, for: .normal)
+        summaryButton.imageView?.tintColor = .gray200
+        
         stationListStackView.axis = .vertical
         stationListStackView.spacing = 10
-        stationListStackView.isHidden = false
+        stationListStackView.isHidden = true
     }
     
     private func setupConstraints() {
@@ -76,7 +83,7 @@ final class DetailRouteBusCell: UICollectionViewCell {
         
         circleView.snp.makeConstraints {
             $0.leading.equalTo(iconImageView)
-            $0.bottom.equalToSuperview().inset(8)
+            $0.bottom.equalToSuperview()
             $0.centerX.equalTo(iconImageView)
             $0.size.equalTo(16)
         }
@@ -110,24 +117,51 @@ final class DetailRouteBusCell: UICollectionViewCell {
             $0.leading.equalTo(busBackView)
         }
         
+        summaryButton.snp.makeConstraints { make in
+            make.centerY.equalTo(summaryLabel.snp.centerY)
+            make.leading.equalTo(summaryLabel.snp.trailing).offset(4)
+            make.size.equalTo(10)
+        }
+        
         stationListStackView.snp.makeConstraints {
             $0.top.equalTo(summaryLabel.snp.bottom).offset(16)
             $0.leading.equalTo(startLabel)
-            $0.bottom.equalTo(endLabel.snp.top)
+            $0.bottom.equalTo(endLabel.snp.top).offset(-36)
         }
         
         endLabel.snp.makeConstraints {
-            $0.top.equalTo(summaryLabel.snp.bottom).offset(36)
-            $0.leading.equalTo(summaryLabel)
+            $0.top.equalTo(stationListStackView.snp.bottom).offset(12)
+            $0.leading.trailing.equalTo(stationListStackView)
+            $0.bottom.equalToSuperview()
         }
     }
     
+    private func setupAction() {
+        summaryButton.addTarget(self,
+                                action: #selector(handleSummaryButton),
+                                for: .touchUpInside)
+        
+        summaryLabel.isUserInteractionEnabled = true
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleSummaryButton))
+        summaryLabel.addGestureRecognizer(tapGesture)
+    }
+    
+    @objc private func handleSummaryButton() {
+        isExpanded.toggle()
+        stationListStackView.isHidden = !isExpanded
+        stationListStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        addStationNameLabel(info: stationInfos)
+        didTapSummary?()
+    }
+    
     func configure(info: LegTrafficInfo) {
+        stationInfos = []
         guard let passStopList = info.passStopList,
               let firstStation = passStopList.first,
               let lastStation = passStopList.last,
               let sectionTime = info.sectionTime else { return }
         
+        stationInfos = passStopList
         iconImageView.image = info.mode?.getIcon(for: info.type ?? "")
         stickView.backgroundColor = info.mode?.getColor(for: info.type ?? "")
         circleView.backgroundColor = info.mode?.getColor(for: info.type ?? "")
@@ -149,9 +183,12 @@ final class DetailRouteBusCell: UICollectionViewCell {
         busLabel.attributedText = AtchaFont.B6_R_14(info.busName ?? "", color: .white)
         
         summaryLabel.attributedText = AtchaFont.B7_M_13("\(sectionTime), \(passStopList.count)개 정류장 이동", color: .white)
+        addStationNameLabel(info: stationInfos)
         
-//        stationListStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
-        passStopList.forEach { list in
+    }
+    
+    private func addStationNameLabel(info: [PassStopList]) {
+        info.forEach { list in
             let label = UILabel()
             label.attributedText = AtchaFont.B4_R_15(list.stationName ?? "", color: .gray200)
             label.numberOfLines = 1

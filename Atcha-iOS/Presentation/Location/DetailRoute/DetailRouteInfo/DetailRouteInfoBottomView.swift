@@ -142,6 +142,7 @@ extension DetailRouteInfoBottomView {
             $0.leading.trailing.bottom.equalToSuperview()
         }
         
+        collectionView.alwaysBounceVertical = true
         collectionView.register(DetailRouteStartCell.self, forCellWithReuseIdentifier: "DetailRouteStartCell")
         collectionView.register(DetailRouteWalkCell.self, forCellWithReuseIdentifier: "DetailRouteWalkCell")
         collectionView.register(DetailRouteBusCell.self, forCellWithReuseIdentifier: "DetailRouteBusCell")
@@ -211,6 +212,10 @@ extension DetailRouteInfoBottomView {
                 return cell
             case .bus:
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: DetailRouteBusCell.id, for: indexPath) as! DetailRouteBusCell
+                cell.didTapSummary = { [weak self] in
+                    guard let self = self else { return }
+                    collectionView.collectionViewLayout.invalidateLayout()
+                }
                 cell.configure(info: item)
                 return cell
             case .subway:
