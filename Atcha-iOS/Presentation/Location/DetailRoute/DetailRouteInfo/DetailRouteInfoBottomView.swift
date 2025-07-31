@@ -190,15 +190,15 @@ extension DetailRouteInfoBottomView {
         }
 
         let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                              heightDimension: .absolute(height))
+                                              heightDimension: .estimated(height))
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
 
         let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                               heightDimension: .absolute(height))
+                                               heightDimension: .estimated(height))
         let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
 
         let section = NSCollectionLayoutSection(group: group)
-        section.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16)
+        section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16)
         return section
     }
     
