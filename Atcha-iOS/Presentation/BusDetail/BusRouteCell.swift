@@ -8,14 +8,38 @@
 import UIKit
 import SnapKit
 
+enum BusCongestion: String {
+    case low = "LOW"
+    case medium = "MEDIUM"
+    case high = "HIGH"
+    case veryHigh = "VERY_HIGH"
+    case unknown = "UNKNOWN"
+    
+    var displayText: String? {
+        switch self {
+        case .low: return "여유"
+        case .medium: return "보통"
+        case .high, .veryHigh: return "혼잡"
+        case .unknown: return nil
+        }
+    }
+}
+
 class BusRouteCell: UICollectionViewCell {
     static let reusableId: String = "BusRouteCell"
-    
+    private var countdownTimers: [Timer] = []
+    private var remainSeconds: [Int] = []
     private let stationLabel: UILabel = UILabel()
     private let stationNumberLabel: UILabel = UILabel()
     private let stationStack: UIStackView = UIStackView()
     
-    private let remainTimeLabel: UILabel = UILabel()
+    private let remainTimeStack: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.spacing = 3
+        stack.alignment = .leading
+        return stack
+    }()
     private let busInfoStack: UIStackView = UIStackView()
     
     private let routeLineImageView: UIImageView = UIImageView()
@@ -27,6 +51,16 @@ class BusRouteCell: UICollectionViewCell {
         setupUI()
         setupAutoLayout()
     }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        // 타이머 초기화
+        countdownTimers.forEach { $0.invalidate() }
+        countdownTimers.removeAll()
+        remainSeconds.removeAll()
+        remainTimeStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+    }
+    
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -40,7 +74,7 @@ class BusRouteCell: UICollectionViewCell {
         stationStack.alignment = .leading
         
         busInfoStack.addArrangedSubview(stationStack)
-        busInfoStack.addArrangedSubview(remainTimeLabel)
+        busInfoStack.addArrangedSubview(remainTimeStack)
         busInfoStack.axis = .vertical
         busInfoStack.spacing = 5
         busInfoStack.alignment = .leading
@@ -67,14 +101,85 @@ class BusRouteCell: UICollectionViewCell {
         isTurnPoint: Bool,
         isCurrentStation: Bool,
         busType: BusType,
-        buses: [BusPositions],
+        remainInfo: [RealTimeBusArrival],
+        bus: [BusPositions],
         isAfterTurnPoint: Bool
     ) {
         stationLabel.attributedText = AtchaFont.B6_R_14(lineHeight: 0, station.busStationName ?? "", color: AtchaColor.white)
         stationNumberLabel.attributedText = AtchaFont.B7_M_13(lineHeight: 0, station.busStationNumber ?? "", color: AtchaColor.gray200)
         
         leadingConstraint?.update(offset: isTurnPoint ? 52 : 76)
-
+        
+        remainTimeStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        countdownTimers.forEach { $0.invalidate() }
+        countdownTimers.removeAll()
+        remainSeconds.removeAll()
+        
+        if isCurrentStation {
+            for info in remainInfo {
+                guard let vehicleId = info.vehicleId else { continue }
+                
+                print("도착전 버스 : \(info.remainingStations)")
+                // busPositions에서 같은 vehicleId를 가진 버스 찾기
+                let matchedBus = bus.first(where: { $0.vehicleId == vehicleId })
+                
+                var remainStation = 0
+                if let matchedBus = matchedBus,
+                   let busSection = matchedBus.sectionOrder,
+                   let currentOrder = station.order {
+                   remainStation = currentOrder - busSection
+                }
+                
+                let congestion = BusCongestion(rawValue: info.busCongestion ?? "")
+                let seconds = info.remainingTime ?? 0
+                remainSeconds.append(seconds)
+                
+                let label = UILabel()
+                label.attributedText = AtchaFont.B7_M_13(
+                    lineHeight: 0,
+                    seconds.toHourMinuteSecondString, // 새 함수 (초 → "분 초" 변환)
+                    color: AtchaColor.Etc.remainTime
+                )
+                remainTimeStack.addArrangedSubview(label)
+                
+                // 타이머 시작
+                let timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self, weak label] timer in
+                    guard let self = self, let label = label else {
+                        timer.invalidate()
+                        return
+                    }
+                    
+                    if let index = self.remainTimeStack.arrangedSubviews.firstIndex(of: label) {
+                        self.remainSeconds[index] = max(0, self.remainSeconds[index] - 1)
+                        let updated = self.remainSeconds[index]
+                        
+                        if updated > 180 { // 3분 초과 → 일반 시간 표시
+                            label.attributedText = AtchaFont.B7_M_13(
+                                lineHeight: 0,
+                                "\(updated.toHourMinuteSecondString) (\(remainStation)번째 전, \(congestion?.displayText ?? ""))",
+                                color: AtchaColor.Etc.remainTime
+                            )
+                        } else if updated > 0 { // 3분 이하 → "곧 도착"
+                            label.attributedText = AtchaFont.B7_M_13(
+                                lineHeight: 0,
+                                "곧 도착 (\(remainStation)번째 전, \(congestion?.displayText ?? ""))",
+                                color: AtchaColor.Etc.remainTime
+                            )
+                        } else {
+                            // 시간이 0이 되면 스택에서 제거
+                            self.remainTimeStack.removeArrangedSubview(label)
+                            label.removeFromSuperview()
+                            self.remainSeconds.remove(at: index)
+                            timer.invalidate()
+                        }
+                    }
+                }
+                RunLoop.main.add(timer, forMode: .common)
+                countdownTimers.append(timer)
+            }
+        }
+        
+        
         switch busType {
         case .좌석, .간선: // mainline
             if isCurrentStation {

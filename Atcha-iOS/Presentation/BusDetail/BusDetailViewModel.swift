@@ -23,6 +23,9 @@ final class BusDetailViewModel: BaseViewModel {
     var onInfoTap: (() -> Void)?
     
     @Published var busPositionInfo: BusPositionInfo?
+    @Published var busRealTimeInfo: BusRealTimeInfo?
+    
+    private var refreshTimer: Timer?
     
     init(
         busInfoUseCase: BusInfoUseCase,
@@ -49,6 +52,8 @@ final class BusDetailViewModel: BaseViewModel {
         Task { [weak self] in
             await self?.busRealTimeInfo(request: request)
         }
+        
+        startAutoRefresh(request: request)
     }
     
     var icon: UIImage {
@@ -69,7 +74,7 @@ final class BusDetailViewModel: BaseViewModel {
                     serviceRegion: busRouteInfo.serviceRegion
                 )
                 self.busPositionInfo(request: positionRequest)
-                
+                self.busRealTimeInfo = response
             } catch {
                 print("실시간 버스 조회 실패")
             }
@@ -83,10 +88,23 @@ final class BusDetailViewModel: BaseViewModel {
             do {
                 let response = try await busInfoUseCase.busPositionInfo(request)
                 self.busPositionInfo = response
-                print("실시간 버스 조회: \(response)")
             } catch {
-                print("실시간 버스 조회 실패")
+                print("버스 위치 정보 실패")
             }
         }
+    }
+    
+    private func startAutoRefresh(request: BusRealTimeInfoRequest) {
+        refreshTimer?.invalidate()
+        refreshTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
+            Task { [weak self] in
+                await self?.busRealTimeInfo(request: request)
+            }
+        }
+        RunLoop.main.add(refreshTimer!, forMode: .common)
+    }
+    
+    deinit {
+        refreshTimer?.invalidate()
     }
 }

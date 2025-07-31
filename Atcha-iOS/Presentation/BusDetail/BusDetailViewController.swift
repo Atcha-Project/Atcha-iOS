@@ -126,22 +126,25 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         }
         
         let busType = viewModel.busType
-        let busesAtStation = viewModel.busPositionInfo?.busPositions ?? []
+        let busesAtStation = viewModel.busRealTimeInfo?.realTimeBusArrival ?? []
+        let busPosition = viewModel.busPositionInfo?.busPositions ?? []
+
         
         let order = station.order ?? 0
         let turnPoint = viewModel.busPositionInfo?.turnPoint ?? 9999
         
         let isTurnPoint = (order == turnPoint)
         let isCurrentStation = (station.busStationName == viewModel.busDetailInfo.start?.name)
-        let isAfterTurnPoint = (order > turnPoint)   // 회차 지점 이후 정류장
+        let isAfterTurnPoint = (order > turnPoint) 
         
         cell.configure(
             with: station,
             isTurnPoint: isTurnPoint,
             isCurrentStation: isCurrentStation,
             busType: busType,
-            buses: busesAtStation,
-            isAfterTurnPoint: isAfterTurnPoint  // ✅ 새로 전달
+            remainInfo: busesAtStation,
+            bus: busPosition,
+            isAfterTurnPoint: isAfterTurnPoint
         )
         
         return cell
