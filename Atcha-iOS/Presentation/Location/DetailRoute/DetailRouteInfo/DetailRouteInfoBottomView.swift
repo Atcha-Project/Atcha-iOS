@@ -22,11 +22,11 @@ final class DetailRouteInfoBottomView: UIView {
     }
     
     private var collapsedHeight: CGFloat {
-        return parentViewHeight * 0.45
+        return parentViewHeight * 0.5
     }
     
     private var expandedHeight: CGFloat {
-        return parentViewHeight * 0.78
+        return parentViewHeight * 0.85
     }
     
     private let routerInfo: [LegTrafficInfo] = []
@@ -143,6 +143,7 @@ extension DetailRouteInfoBottomView {
         }
         
         collectionView.alwaysBounceVertical = true
+        collectionView.backgroundColor = .gray950
         collectionView.register(DetailRouteStartCell.self, forCellWithReuseIdentifier: "DetailRouteStartCell")
         collectionView.register(DetailRouteWalkCell.self, forCellWithReuseIdentifier: "DetailRouteWalkCell")
         collectionView.register(DetailRouteBusCell.self, forCellWithReuseIdentifier: "DetailRouteBusCell")
@@ -260,11 +261,22 @@ extension DetailRouteInfoBottomView {
     }
     
     private func animateTransition(shouldExpand: Bool) {
-        guard let _ = self.superview else { return }
-        let targetY = shouldExpand ? (parentViewHeight - expandedHeight) : (parentViewHeight - collapsedHeight)
+        guard let superview = self.superview else { return }
+
+        let targetHeight = shouldExpand ? expandedHeight : collapsedHeight
+
+        self.snp.remakeConstraints { make in
+            make.leading.trailing.bottom.equalToSuperview()
+            make.height.equalTo(targetHeight)
+        }
         
-        UIView.animate(withDuration: 0.3, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 1.0, options: [.curveEaseInOut], animations: {
-            self.frame.origin.y = targetY
+        UIView.animate(withDuration: 0.3,
+                       delay: 0,
+                       usingSpringWithDamping: 0.8,
+                       initialSpringVelocity: 1.0,
+                       options: [.curveEaseInOut],
+                       animations: {
+            superview.layoutIfNeeded()
         }, completion: { _ in
             self.currentState = shouldExpand ? .expanded : .collapsed
         })
