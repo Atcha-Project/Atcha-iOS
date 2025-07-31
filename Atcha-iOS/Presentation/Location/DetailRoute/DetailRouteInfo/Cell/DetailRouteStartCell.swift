@@ -8,7 +8,7 @@
 import UIKit
 import SnapKit
 
-final class DetailRouteStartCell: UICollectionViewCell {
+final class DetailRouteStartCell: UICollectionReusableView {
     static let id: String = "DetailRouteStartCell"
     
     private let imageView: UIImageView = UIImageView()
@@ -28,24 +28,24 @@ final class DetailRouteStartCell: UICollectionViewCell {
     }
     
     private func setupUI() {
-        contentView.backgroundColor = .blue
-//        contentView.backgroundColor = .gray950
+        imageView.contentMode = .scaleAspectFit
+        addSubViews(imageView, locationLabel)
     }
     
     func setupAutoLayout() {
         imageView.snp.makeConstraints { make in
-            make.leading.equalToSuperview()
+            make.leading.equalToSuperview().offset(6)
             make.centerY.equalToSuperview()
+            make.top.equalToSuperview()
         }
         
         locationLabel.snp.makeConstraints { make in
-            make.leading.equalTo(imageView.snp.trailing).inset(15)
+            make.leading.equalTo(imageView.snp.trailing).offset(15)
             make.centerY.equalToSuperview()
         }
     }
     
     func configure(info: LegTrafficInfo) {
-        print("default Info : \(info)")
         imageView.image = UIImage.markerStart
         locationLabel.attributedText = AtchaFont.B3_M_15("앗차 강남점")
     }

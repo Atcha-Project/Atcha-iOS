@@ -51,7 +51,7 @@ final class DetailRouteInfoBottomView: UIView {
         setupCollectionView()
         setupDataSource()
     }
-
+    
     required init?(coder: NSCoder) {
         super.init(coder: coder)
         setupView()
@@ -115,16 +115,16 @@ final class DetailRouteInfoBottomView: UIView {
     
     func setupRouteInfo(_ infos: [LegTrafficInfo]) {
         snapshot = NSDiffableDataSourceSnapshot<Section, LegTrafficInfo>()
-
+        
         for info in infos {
             let section = Section.item(info.id)
             snapshot.appendSections([section])
             snapshot.appendItems([info], toSection: section)
         }
-
+        
         applySnapshot()
     }
-
+    
     private func applySnapshot(animatingDifferences: Bool = true) {
         guard collectionView.dataSource != nil else { return }
         dataSource.apply(snapshot, animatingDifferences: animatingDifferences)
@@ -144,7 +144,18 @@ extension DetailRouteInfoBottomView {
         
         collectionView.alwaysBounceVertical = true
         collectionView.backgroundColor = .gray950
-        collectionView.register(DetailRouteStartCell.self, forCellWithReuseIdentifier: "DetailRouteStartCell")
+        collectionView.register(
+            DetailRouteStartCell.self,
+            forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
+            withReuseIdentifier: DetailRouteStartCell.id
+        )
+        
+        collectionView.register(
+            DetailRouteStartCell.self,
+            forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter,
+            withReuseIdentifier: DetailRouteStartCell.id
+        )
+        
         collectionView.register(DetailRouteWalkCell.self, forCellWithReuseIdentifier: "DetailRouteWalkCell")
         collectionView.register(DetailRouteBusCell.self, forCellWithReuseIdentifier: "DetailRouteBusCell")
         collectionView.register(DetailRouteSubwayCell.self, forCellWithReuseIdentifier: "DetailRouteSubwayCell")
@@ -159,13 +170,36 @@ extension DetailRouteInfoBottomView {
                     .itemIdentifiers(inSection: self.dataSource.snapshot().sectionIdentifiers[sectionIndex])
                     .first
             else {
-                return self?.defaultSectionLayout() ?? NSCollectionLayoutSection(group: NSCollectionLayoutGroup.vertical(
-                    layoutSize: NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                                       heightDimension: .absolute(80)),
-                    subitems: []
-                ))
+                return self?.defaultSectionLayout()
             }
-            return self.layout(for: item.mode ?? .bus)
+            
+            let section = self.layout(for: item.mode ?? .bus)
+            var supplementaryItems: [NSCollectionLayoutBoundarySupplementaryItem] = []
+            
+            if sectionIndex == 0 {
+                let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
+                                                        heightDimension: .absolute(38))
+                let header = NSCollectionLayoutBoundarySupplementaryItem(
+                    layoutSize: headerSize,
+                    elementKind: UICollectionView.elementKindSectionHeader,
+                    alignment: .top
+                )
+                supplementaryItems.append(header)
+            }
+            
+            if sectionIndex == self.dataSource.snapshot().sectionIdentifiers.count - 1 {
+                let footerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
+                                                        heightDimension: .absolute(38))
+                let footer = NSCollectionLayoutBoundarySupplementaryItem(
+                    layoutSize: footerSize,
+                    elementKind: UICollectionView.elementKindSectionFooter,
+                    alignment: .bottom
+                )
+                supplementaryItems.append(footer)
+            }
+            
+            section.boundarySupplementaryItems = supplementaryItems
+            return section
         }
     }
     
@@ -176,10 +210,9 @@ extension DetailRouteInfoBottomView {
         let section = NSCollectionLayoutSection(group: group)
         return section
     }
-
+    
     private func layout(for type: TransportMode) -> NSCollectionLayoutSection {
         let height: CGFloat
-
         switch type {
         case .walk:
             height = 70
@@ -190,44 +223,92 @@ extension DetailRouteInfoBottomView {
         default:
             height = 38
         }
-
+        
         let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
                                               heightDimension: .estimated(height))
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
-
+        
         let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
                                                heightDimension: .estimated(height))
         let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
-
+        let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(38))
+        let header = NSCollectionLayoutBoundarySupplementaryItem(
+            layoutSize: headerSize,
+            elementKind: UICollectionView.elementKindSectionHeader,
+            alignment: .top
+        )
+        
+        let footerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(38))
+        let footer = NSCollectionLayoutBoundarySupplementaryItem(
+            layoutSize: footerSize,
+            elementKind: UICollectionView.elementKindSectionFooter,
+            alignment: .bottom
+        )
+        
         let section = NSCollectionLayoutSection(group: group)
         section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16)
+        section.boundarySupplementaryItems = [header, footer]
         return section
     }
     
     private func setupDataSource() {
-        dataSource = UICollectionViewDiffableDataSource<Section, LegTrafficInfo>(collectionView: collectionView) { collectionView, indexPath, item in
+        dataSource = UICollectionViewDiffableDataSource<Section, LegTrafficInfo>(
+            collectionView: collectionView
+        ) { collectionView, indexPath, item in
             switch item.mode {
             case .walk:
-                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: DetailRouteWalkCell.id, for: indexPath) as! DetailRouteWalkCell
+                let cell = collectionView.dequeueReusableCell(
+                    withReuseIdentifier: DetailRouteWalkCell.id,
+                    for: indexPath
+                ) as! DetailRouteWalkCell
                 cell.configure(info: item)
                 return cell
+                
             case .bus:
-                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: DetailRouteBusCell.id, for: indexPath) as! DetailRouteBusCell
+                let cell = collectionView.dequeueReusableCell(
+                    withReuseIdentifier: DetailRouteBusCell.id,
+                    for: indexPath
+                ) as! DetailRouteBusCell
                 cell.didTapSummary = { [weak self] in
-                    guard let self = self else { return }
-                    self.applySnapshot()
+                    self?.applySnapshot()
                 }
                 cell.configure(info: item)
                 return cell
+                
             case .subway:
-                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: DetailRouteSubwayCell.id, for: indexPath) as! DetailRouteSubwayCell
+                let cell = collectionView.dequeueReusableCell(
+                    withReuseIdentifier: DetailRouteSubwayCell.id,
+                    for: indexPath
+                ) as! DetailRouteSubwayCell
                 cell.configure(info: item)
                 return cell
+                
             default:
-                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: DetailRouteStartCell.id, for: indexPath) as! DetailRouteStartCell
-                cell.configure(info: item)
-                return cell
+                return nil
             }
+        }
+        
+        dataSource.supplementaryViewProvider = { collectionView, kind, indexPath in
+            let sectionIndex = indexPath.section
+            let totalSections = self.dataSource.snapshot().sectionIdentifiers.count
+            if (kind == UICollectionView.elementKindSectionHeader && sectionIndex != 0) ||
+                (kind == UICollectionView.elementKindSectionFooter && sectionIndex != totalSections - 1) {
+                return nil
+            }
+            
+            let section = self.dataSource.snapshot().sectionIdentifiers[sectionIndex]
+            guard let item = self.dataSource.snapshot().itemIdentifiers(inSection: section).first else {
+                return nil
+            }
+            
+            let view = collectionView.dequeueReusableSupplementaryView(
+                ofKind: kind,
+                withReuseIdentifier: DetailRouteStartCell.id,
+                for: indexPath
+            ) as! DetailRouteStartCell
+            
+            view.configure(info: item)
+            return view
         }
     }
 }
@@ -262,9 +343,9 @@ extension DetailRouteInfoBottomView {
     
     private func animateTransition(shouldExpand: Bool) {
         guard let superview = self.superview else { return }
-
+        
         let targetHeight = shouldExpand ? expandedHeight : collapsedHeight
-
+        
         self.snp.remakeConstraints { make in
             make.leading.trailing.bottom.equalToSuperview()
             make.height.equalTo(targetHeight)
