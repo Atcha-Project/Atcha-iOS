@@ -86,6 +86,7 @@
 		6D91A9062E352D030081BAFC /* WithDrawTextBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D91A9052E352D030081BAFC /* WithDrawTextBox.swift */; };
 		6D91A90D2E38A1BE0081BAFC /* BusDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D91A90C2E38A1BE0081BAFC /* BusDetailViewController.swift */; };
 		6D91A90F2E38A1C60081BAFC /* BusDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D91A90E2E38A1C60081BAFC /* BusDetailViewModel.swift */; };
+		6D9283742E3AFF6A0090889B /* BusRouteCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D9283732E3AFF6A0090889B /* BusRouteCell.swift */; };
 		6DC3BEDD2E04F32400831470 /* UserDefaultsKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DC3BEDC2E04F32400831470 /* UserDefaultsKey.swift */; };
 		6DC3BEDF2E04F32D00831470 /* UserDefaultsWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DC3BEDE2E04F32D00831470 /* UserDefaultsWrapper.swift */; };
 		6DC3BEE22E04FD0700831470 /* KakaoSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 6DC3BEE12E04FD0700831470 /* KakaoSDK */; };
@@ -339,6 +340,7 @@
 		6D91A9052E352D030081BAFC /* WithDrawTextBox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithDrawTextBox.swift; sourceTree = "<group>"; };
 		6D91A90C2E38A1BE0081BAFC /* BusDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusDetailViewController.swift; sourceTree = "<group>"; };
 		6D91A90E2E38A1C60081BAFC /* BusDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusDetailViewModel.swift; sourceTree = "<group>"; };
+		6D9283732E3AFF6A0090889B /* BusRouteCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusRouteCell.swift; sourceTree = "<group>"; };
 		6DC3BEDC2E04F32400831470 /* UserDefaultsKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsKey.swift; sourceTree = "<group>"; };
 		6DC3BEDE2E04F32D00831470 /* UserDefaultsWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsWrapper.swift; sourceTree = "<group>"; };
 		6DC3BEF02E04FE1600831470 /* KeychainWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainWrapper.swift; sourceTree = "<group>"; };
@@ -791,6 +793,7 @@
 				6D2B8C952E38ABED00608104 /* BusInfo */,
 				6D91A90C2E38A1BE0081BAFC /* BusDetailViewController.swift */,
 				6D91A90E2E38A1C60081BAFC /* BusDetailViewModel.swift */,
+				6D9283732E3AFF6A0090889B /* BusRouteCell.swift */,
 				6D2B8C932E38A97500608104 /* BusDetailHeaderView.swift */,
 			);
 			path = BusDetail;
@@ -1748,6 +1751,7 @@
 				6D91A9012E33E3620081BAFC /* LoadingView.swift in Sources */,
 				B664018B2E2277A900A397AE /* AlarmTimeOption.swift in Sources */,
 				B65C13082E057C590016D2F0 /* APIService.swift in Sources */,
+				6D9283742E3AFF6A0090889B /* BusRouteCell.swift in Sources */,
 				6D73EB5F2E16120200F8DF8B /* CourseSearchViewModel.swift in Sources */,
 				6D73EBE62E1B51E000F8DF8B /* CourseUseCase.swift in Sources */,
 				B69E31B32E2786BF001040F4 /* PermissionType.swift in Sources */,
