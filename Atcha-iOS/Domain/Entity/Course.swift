@@ -21,10 +21,15 @@ struct Course: Codable, Hashable {
     var formattedTotalTime: String {
         guard let totalTime = totalTime else { return "N/A" }
         
-        let minutes = totalTime / 60
-        let seconds = totalTime % 60
+        let totalMinutes = Int(round(Double(totalTime) / 60.0))
+        let hours = totalMinutes / 60
+        let minutes = totalMinutes % 60
         
-        return String(format: "%d분 %02d초", minutes, seconds)
+        if hours > 0 {
+            return minutes > 0 ? "\(hours)시간 \(minutes)분" : "\(hours)시간"
+        } else {
+            return "\(minutes)분"
+        }
     }
     
     func toBusDetailInfo(for route: String) -> BusDetailInfo? {
@@ -46,6 +51,43 @@ struct Course: Codable, Hashable {
                 )
             }
         )
+    }
+    
+    private func makeStartEndTime(departure: String?, totalTime: String?) -> String? {
+        guard
+            let departure = departure,
+            let totalTime = totalTime
+        else { return nil }
+
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        formatter.locale = Locale(identifier: "ko_KR")
+
+        guard let departureDate = formatter.date(from: departure) else { return nil }
+
+        let minutes = parseTotalTimeToMinutes(totalTime)
+        let arrivalDate = departureDate.addingTimeInterval(TimeInterval(minutes * 60))
+
+        let displayFormatter = DateFormatter()
+        displayFormatter.dateFormat = "HH:mm"
+
+        return "\(displayFormatter.string(from: departureDate)) ~ \(displayFormatter.string(from: arrivalDate))"
+    }
+
+    private func parseTotalTimeToMinutes(_ time: String) -> Int {
+        var totalMinutes = 0
+
+        if let hourMatch = time.range(of: "\\d+(?=시간)", options: .regularExpression),
+           let hour = Int(time[hourMatch]) {
+            totalMinutes += hour * 60
+        }
+
+        if let minuteMatch = time.range(of: "\\d+(?=분)", options: .regularExpression),
+           let minute = Int(time[minuteMatch]) {
+            totalMinutes += minute
+        }
+
+        return totalMinutes
     }
 }
 
@@ -98,10 +140,14 @@ struct LegTrafficInfo: Hashable {
     let passStopList: [PassStopList]?
     let steps: [Step]? // 보행자 이동 거리 (미터)
     let busName: String?
+    var timeText: String?
 }
 
 extension Course {
     func toLegTrafficInfos() -> [LegTrafficInfo] {
+        let timeText = makeStartEndTime(departure: departureDateTime,
+                                        totalTime: formattedTotalTime)
+
         return legs.map { leg in
             LegTrafficInfo(departureDateTime: departureDateTime,
                            totalTime: formattedTotalTime,
@@ -110,7 +156,8 @@ extension Course {
                            type: leg.type,
                            passStopList: leg.passStopList,
                            steps: leg.step,
-                           busName: leg.busName)
+                           busName: leg.busName,
+                           timeText: timeText)
         }
     }
 }

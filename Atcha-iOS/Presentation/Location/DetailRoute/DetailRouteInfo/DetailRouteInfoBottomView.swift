@@ -74,9 +74,6 @@ final class DetailRouteInfoBottomView: UIView {
         layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         
         handleView.backgroundColor = .gray700
-        
-        totalTimeLabel.attributedText = AtchaFont.H1_B_26("1시간 24분") // 폰트 변경해야함
-        startEndTimeLabel.attributedText = AtchaFont.B7_M_13("22:32 ~ 23:42", color: .gray400)
         dividerView.backgroundColor = .opacity100
     }
     
@@ -114,6 +111,10 @@ final class DetailRouteInfoBottomView: UIView {
     }
     
     func setupRouteInfo(_ infos: [LegTrafficInfo]) {
+        // TODO: 폰트 변경해야함
+        totalTimeLabel.attributedText = AtchaFont.H1_B_26(infos.first?.totalTime ?? "")
+        startEndTimeLabel.attributedText = AtchaFont.B7_M_13(infos.first?.timeText ?? "", color: .gray400)
+        
         snapshot = NSDiffableDataSourceSnapshot<Section, LegTrafficInfo>()
         
         for info in infos {
