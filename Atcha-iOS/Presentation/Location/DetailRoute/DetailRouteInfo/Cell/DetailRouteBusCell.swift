@@ -198,7 +198,7 @@ final class DetailRouteBusCell: UICollectionViewCell {
     }
     
     private func addStationNameLabel(info: [PassStopList]) {
-        info.forEach { list in
+        info.dropLast().forEach { list in
             let label = UILabel()
             label.attributedText = AtchaFont.B4_R_15(list.stationName ?? "", color: .gray200)
             label.numberOfLines = 1
