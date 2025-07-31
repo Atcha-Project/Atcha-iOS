@@ -42,13 +42,10 @@ struct Legs: Codable, Hashable {
     let step: [Step]?
     let passShape: String?
     
-    var formattedSectionTime: String {
+    var formattedSectionTimeRounded: String {
         guard let totalTime = sectionTime else { return "N/A" }
-        
-        let minutes = totalTime / 60
-        let seconds = totalTime % 60
-        
-        return String(format: "%d분 %02d초", minutes, seconds)
+        let minutes = totalTime / 60 + ((totalTime % 60) >= 30 ? 1 : 0)
+        return "\(minutes)분"
     }
     
     var busName: String {
@@ -86,7 +83,7 @@ extension Course {
         return legs.map { leg in
             LegTrafficInfo(departureDateTime: departureDateTime,
                            totalTime: formattedTotalTime,
-                           sectionTime: leg.formattedSectionTime,
+                           sectionTime: leg.formattedSectionTimeRounded,
                            mode: leg.mode,
                            type: leg.type,
                            passStopList: leg.passStopList,
