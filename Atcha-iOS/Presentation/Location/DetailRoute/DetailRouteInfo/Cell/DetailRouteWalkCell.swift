@@ -41,7 +41,6 @@ final class DetailRouteWalkCell: UICollectionViewCell {
             make.width.equalTo(4)
             make.height.equalToSuperview()
         }
-
         summaryLabel.snp.makeConstraints { make in
             make.leading.equalTo(lineImageView.snp.trailing).offset(12)
             make.trailing.equalToSuperview().inset(16)
@@ -50,9 +49,15 @@ final class DetailRouteWalkCell: UICollectionViewCell {
     }
     
     func configure(info: LegTrafficInfo) {
-        let timeText = AtchaFont.B6_R_14("4분 걷기", color: .gray200)
-        let distanceText = AtchaFont.B6_R_14(" 255m", color: .gray500)
-
+        guard let sectionTime = info.sectionTime,
+              let totalDistance = info.steps?.compactMap({ $0.distance }).reduce(0, +) else {
+            return
+        }
+        let timeText = AtchaFont.B6_R_14("\(sectionTime) 걷기", color: .gray200)
+        
+        let formattedDistance = String(format: "%.0f", totalDistance)
+        let distanceText = AtchaFont.B6_R_14(" \(formattedDistance)m", color: .gray500)
+        
         let combined = NSMutableAttributedString()
         combined.append(timeText)
         combined.append(distanceText)
