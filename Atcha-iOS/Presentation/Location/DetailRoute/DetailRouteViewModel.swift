@@ -24,6 +24,7 @@ final class DetailRouteViewModel: BaseViewModel {
         self.legtPathInfo = infos.pathInfo
         self.legTrafficInfo = infos.trafficInfo
         
+        
         // 시간
 //        let time = legTrafficInfo.first?.departureDateTime //  Optional("2025-08-01T00:31:19")
 //        let totalTime = legTrafficInfo.first?.totalTime // Optional("5분 15초")

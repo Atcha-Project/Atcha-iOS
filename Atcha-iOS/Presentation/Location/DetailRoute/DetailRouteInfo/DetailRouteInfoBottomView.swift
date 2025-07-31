@@ -6,25 +6,15 @@
 //
 
 import UIKit
-import PanModal
 
 final class DetailRouteInfoBottomView: UIView {
-    private var panGestureRecognizer: UIPanGestureRecognizer!
-    private var currentState: SheetState = .collapsed
-    
-    private let handleView: UIView = UIView()
-    private let totalTimeLabel: UILabel = UILabel()
-    private let startEndTimeLabel: UILabel = UILabel()
-    private let progressView: DetailRouteProgressView = DetailRouteProgressView()
-    private let dividerView: UIView = UIView()
-    
     enum SheetState {
         case expanded
         case collapsed
     }
     
-    enum Section {
-        
+    enum Section: Hashable {
+        case item(UUID)
     }
     
     private var parentViewHeight: CGFloat {
@@ -39,19 +29,37 @@ final class DetailRouteInfoBottomView: UIView {
         return parentViewHeight * 0.78
     }
     
+    private let routerInfo: [LegTrafficInfo] = []
+    private var dataSource: UICollectionViewDiffableDataSource<Section, LegTrafficInfo>!
+    private var collectionView: UICollectionView!
+    
+    private var panGestureRecognizer: UIPanGestureRecognizer!
+    private var currentState: SheetState = .collapsed
+    
+    private let handleView: UIView = UIView()
+    private let totalTimeLabel: UILabel = UILabel()
+    private let startEndTimeLabel: UILabel = UILabel()
+    private let progressView: DetailRouteProgressView = DetailRouteProgressView()
+    private let dividerView: UIView = UIView()
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupView()
         setupPanGesture()
         setupAutoLayout()
+        setupCollectionView()
+        setupDataSource()
     }
-    
+
     required init?(coder: NSCoder) {
         super.init(coder: coder)
         setupView()
         setupPanGesture()
         setupAutoLayout()
+        setupCollectionView()
+        setupDataSource()
     }
+    
     
     private func setupView() {
         addSubViews(handleView,
@@ -66,7 +74,7 @@ final class DetailRouteInfoBottomView: UIView {
         
         handleView.backgroundColor = .gray700
         
-        totalTimeLabel.attributedText = AtchaFont.H1_B_26("1시간 24분") // 폰트 변경해야함 
+        totalTimeLabel.attributedText = AtchaFont.H1_B_26("1시간 24분") // 폰트 변경해야함
         startEndTimeLabel.attributedText = AtchaFont.B7_M_13("22:32 ~ 23:42", color: .gray400)
         dividerView.backgroundColor = .opacity100
     }
@@ -104,6 +112,122 @@ final class DetailRouteInfoBottomView: UIView {
         }
     }
     
+    func setupRouteInfo(_ infos: [LegTrafficInfo]) {
+        print("infos: \(infos)")
+        
+        guard collectionView.dataSource != nil else {
+            assertionFailure("💥 collectionView.dataSource가 설정되기 전에 데이터 apply 시도됨")
+            return
+        }
+
+        var snapshot = NSDiffableDataSourceSnapshot<Section, LegTrafficInfo>()
+        for info in infos {
+            let section = Section.item(info.id)
+            snapshot.appendSections([section])
+            snapshot.appendItems([info], toSection: section)
+        }
+
+        dataSource.apply(snapshot, animatingDifferences: true)
+    }
+}
+
+// MARK: - CollectionView
+extension DetailRouteInfoBottomView {
+    private func setupCollectionView() {
+        collectionView = UICollectionView(frame: .zero, collectionViewLayout: createLayout())
+        addSubview(collectionView)
+        
+        collectionView.snp.makeConstraints {
+            $0.top.equalTo(dividerView.snp.bottom).offset(8)
+            $0.leading.trailing.bottom.equalToSuperview()
+        }
+        
+        collectionView.register(DetailRouteStartCell.self, forCellWithReuseIdentifier: "DetailRouteStartCell")
+        collectionView.register(DetailRouteWalkCell.self, forCellWithReuseIdentifier: "DetailRouteWalkCell")
+        collectionView.register(DetailRouteBusCell.self, forCellWithReuseIdentifier: "DetailRouteBusCell")
+        collectionView.register(DetailRouteSubwayCell.self, forCellWithReuseIdentifier: "DetailRouteSubwayCell")
+    }
+    
+    private func createLayout() -> UICollectionViewCompositionalLayout {
+        return UICollectionViewCompositionalLayout { [weak self] sectionIndex, _ in
+            guard
+                let self = self,
+                sectionIndex < self.dataSource.snapshot().sectionIdentifiers.count,
+                let item = self.dataSource.snapshot()
+                    .itemIdentifiers(inSection: self.dataSource.snapshot().sectionIdentifiers[sectionIndex])
+                    .first
+            else {
+                return self?.defaultSectionLayout() ?? NSCollectionLayoutSection(group: NSCollectionLayoutGroup.vertical(
+                    layoutSize: NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
+                                                       heightDimension: .absolute(80)),
+                    subitems: []
+                ))
+            }
+            return self.layout(for: item.mode ?? .bus)
+        }
+    }
+    
+    private func defaultSectionLayout() -> NSCollectionLayoutSection {
+        let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(80))
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+        let group = NSCollectionLayoutGroup.vertical(layoutSize: itemSize, subitems: [item])
+        let section = NSCollectionLayoutSection(group: group)
+        return section
+    }
+
+    private func layout(for type: TransportMode) -> NSCollectionLayoutSection {
+        let height: CGFloat
+
+        switch type {
+        case .walk:
+            height = 70
+        case .bus:
+            height = 170
+        case .subway:
+            height = 160
+        default:
+            height = 38
+        }
+
+        let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
+                                              heightDimension: .absolute(height))
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+
+        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
+                                               heightDimension: .absolute(height))
+        let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
+
+        let section = NSCollectionLayoutSection(group: group)
+        section.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16)
+        return section
+    }
+    
+    private func setupDataSource() {
+        dataSource = UICollectionViewDiffableDataSource<Section, LegTrafficInfo>(collectionView: collectionView) { collectionView, indexPath, item in
+            switch item.mode {
+            case .walk:
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: DetailRouteWalkCell.id, for: indexPath) as! DetailRouteWalkCell
+                cell.configure(info: item)
+                return cell
+            case .bus:
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: DetailRouteBusCell.id, for: indexPath) as! DetailRouteBusCell
+                cell.configure(info: item)
+                return cell
+            case .subway:
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: DetailRouteSubwayCell.id, for: indexPath) as! DetailRouteSubwayCell
+                cell.configure(info: item)
+                return cell
+            default:
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: DetailRouteStartCell.id, for: indexPath) as! DetailRouteStartCell
+                cell.configure(info: item)
+                return cell
+            }
+        }
+    }
+}
+
+// MARK: - Gesture
+extension DetailRouteInfoBottomView {
     private func setupPanGesture() {
         panGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
         self.addGestureRecognizer(panGestureRecognizer)
@@ -139,151 +263,5 @@ final class DetailRouteInfoBottomView: UIView {
         }, completion: { _ in
             self.currentState = shouldExpand ? .expanded : .collapsed
         })
-    }
-}
-
-extension DetailRouteInfoBottomView {
-    
-}
-
-class MyCollectionViewController: UIViewController {
-    enum Section: Int, CaseIterable {
-        case itemASection
-        case itemBSection
-    }
-
-    // 다양한 아이템을 담을 수 있는 enum
-    enum ItemType: Hashable {
-        case itemA(ItemA)
-        case itemB(ItemB)
-    }
-
-    struct ItemA: Hashable {
-        let identifier = UUID()
-        let title: String
-    }
-
-    struct ItemB: Hashable {
-        let identifier = UUID()
-        let description: String
-    }
-
-    var collectionView: UICollectionView!
-    var dataSource: UICollectionViewDiffableDataSource<Section, ItemType>!
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        configureCollectionView()
-        configureDataSource()
-        applySnapshot()
-    }
-
-    // MARK: - Compositional Layout
-    private func makeCompositionalLayout() -> UICollectionViewLayout {
-        // sectionIndex로 분기 (현재 스냅샷 순서가 [A, B]이므로 0=A, 1=B)
-        return UICollectionViewCompositionalLayout { sectionIndex, environment in
-            guard let sectionKind = Section(rawValue: sectionIndex) else { return nil }
-
-            switch sectionKind {
-            case .itemASection:
-                // 1열 리스트
-                let itemSize = NSCollectionLayoutSize(
-                    widthDimension: .fractionalWidth(1.0),
-                    heightDimension: .absolute(56)
-                )
-                let item = NSCollectionLayoutItem(layoutSize: itemSize)
-
-                let groupSize = NSCollectionLayoutSize(
-                    widthDimension: .fractionalWidth(1.0),
-                    heightDimension: .estimated(56)
-                )
-                let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
-
-                let section = NSCollectionLayoutSection(group: group)
-                section.interGroupSpacing = 8
-                section.contentInsets = NSDirectionalEdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16)
-                return section
-
-            case .itemBSection:
-                // 가로 캐러셀 (카드형, 가운데 정렬 페이징)
-                let itemSize = NSCollectionLayoutSize(
-                    widthDimension: .fractionalWidth(1.0),
-                    heightDimension: .fractionalHeight(1.0)
-                )
-                let item = NSCollectionLayoutItem(layoutSize: itemSize)
-                item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8)
-
-                let groupSize = NSCollectionLayoutSize(
-                    widthDimension: .fractionalWidth(0.8),
-                    heightDimension: .absolute(140)
-                )
-                let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
-
-                let section = NSCollectionLayoutSection(group: group)
-                section.orthogonalScrollingBehavior = .groupPagingCentered
-                section.contentInsets = NSDirectionalEdgeInsets(top: 12, leading: 16, bottom: 20, trailing: 16)
-                return section
-            }
-        }
-    }
-
-    // MARK: - UI / DataSource
-    func configureCollectionView() {
-        let layout = makeCompositionalLayout()
-        collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: layout)
-        collectionView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        collectionView.backgroundColor = .systemBackground
-        collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "cell")
-        view.addSubview(collectionView)
-    }
-
-    func configureDataSource() {
-        dataSource = UICollectionViewDiffableDataSource<Section, ItemType>(collectionView: collectionView) { (collectionView, indexPath, item) -> UICollectionViewCell? in
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath)
-            cell.layer.cornerRadius = 10
-            cell.layer.masksToBounds = true
-
-            var content = UIListContentConfiguration.cell()
-            content.textProperties.numberOfLines = 1
-
-            switch item {
-            case .itemA(let itemA):
-                cell.contentView.backgroundColor = .secondarySystemBackground
-                content.text = itemA.title
-                content.secondaryText = "A 섹션"
-            case .itemB(let itemB):
-                cell.contentView.backgroundColor = .tertiarySystemBackground
-                content.text = itemB.description
-                content.secondaryText = "B 섹션"
-            }
-            cell.contentConfiguration = content
-            return cell
-        }
-    }
-
-    func applySnapshot() {
-        var snapshot = NSDiffableDataSourceSnapshot<Section, ItemType>()
-
-        // Section for ItemA
-        let itemsA: [ItemType] = [
-            .itemA(ItemA(title: "Item A1")),
-            .itemA(ItemA(title: "Item A2")),
-            .itemA(ItemA(title: "Item A3")),
-            .itemA(ItemA(title: "Item A4"))
-        ]
-        snapshot.appendSections([.itemASection])
-        snapshot.appendItems(itemsA, toSection: .itemASection)
-
-        // Section for ItemB
-        let itemsB: [ItemType] = [
-            .itemB(ItemB(description: "Description B1")),
-            .itemB(ItemB(description: "Description B2")),
-            .itemB(ItemB(description: "Description B3")),
-            .itemB(ItemB(description: "Description B4"))
-        ]
-        snapshot.appendSections([.itemBSection])
-        snapshot.appendItems(itemsB, toSection: .itemBSection)
-
-        dataSource.apply(snapshot, animatingDifferences: true)
     }
 }

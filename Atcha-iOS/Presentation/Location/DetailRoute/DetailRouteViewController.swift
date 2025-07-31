@@ -62,10 +62,12 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in self?.addRouteLine(infos: $0) }
             .store(in: &cancellables)
-    }
-    
-    @objc private func didTapClose() {
-        navigationController?.popViewController(animated: true)
+        
+        viewModel.$legTrafficInfo
+            .receive(on: RunLoop.main)
+            .compactMap { $0 }
+            .sink { [weak self] infos in self?.bottomSheet.setupRouteInfo(infos) }
+            .store(in: &cancellables)
     }
     
     private func addRouteLine(infos: [LegPathInfo]) {
@@ -131,6 +133,14 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
     }
 }
 
+// MARK: - Touch Event
+extension DetailRouteViewController {
+    @objc private func didTapClose() {
+        navigationController?.popViewController(animated: true)
+    }
+}
+
+// MARK: - Map Delegate
 extension DetailRouteViewController {
     func mapView(_ mapView: TMapWrapper, didUpdateLocation coordinate: CLLocationCoordinate2D) {}
     

@@ -88,7 +88,8 @@ struct LegInfo {
     let trafficInfo: [LegTrafficInfo]
 }
 
-struct LegTrafficInfo {
+struct LegTrafficInfo: Hashable {
+    let id: UUID = UUID()
     let departureDateTime: String?
     let totalTime: String?
     let sectionTime: String?
