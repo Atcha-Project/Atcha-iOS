@@ -374,7 +374,7 @@ final class CourseCell: UICollectionViewCell {
     }
     
     @objc private func getAlarmTapped() {
-        onDetailTapped?()
+        onGetAlarmTapped?()
     }
     
     // MARK: - Course Detail View Handler

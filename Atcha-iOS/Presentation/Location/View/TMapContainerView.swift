@@ -50,6 +50,10 @@ final class TMapContainerView: UIView {
         tMapWrapper.addTrafficLine(passShape: passShape, color: color, markerImage: markerImage, isFirst: isFirst, isLast: isLast)
     }
     
+    func adjustMapToFit(coordinates: [CLLocationCoordinate2D]) {
+        tMapWrapper.adjustMapToFit(coordinates: coordinates)
+    }
+    
     func clearMapView() {
         tMapWrapper.clearMap()
     }
