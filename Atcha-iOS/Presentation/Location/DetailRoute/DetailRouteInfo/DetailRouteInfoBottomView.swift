@@ -280,6 +280,9 @@ extension DetailRouteInfoBottomView {
                     withReuseIdentifier: DetailRouteSubwayCell.id,
                     for: indexPath
                 ) as! DetailRouteSubwayCell
+                cell.didTapSummary = { [weak self] in
+                    self?.applySnapshot()
+                }
                 cell.configure(info: item)
                 return cell
                 

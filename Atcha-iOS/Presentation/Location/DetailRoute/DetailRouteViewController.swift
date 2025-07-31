@@ -73,7 +73,7 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         var shapeStrings: [String] = []
         var colors: [UIColor] = []
         var images: [UIImage] = []
-        var allCoordinates: [CLLocationCoordinate2D] = []  // ✅ 전체 좌표 수집
+        var allCoordinates: [CLLocationCoordinate2D] = [] 
 
         infos.forEach { info in
             switch info.mode {
