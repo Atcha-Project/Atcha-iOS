@@ -37,7 +37,6 @@ final class DetailRouteEndCell: UICollectionReusableView {
             make.leading.equalToSuperview().offset(6)
             make.centerY.equalToSuperview()
             make.top.equalToSuperview()
-            make.size.equalTo(36)
         }
         
         locationLabel.snp.makeConstraints { make in
@@ -47,7 +46,7 @@ final class DetailRouteEndCell: UICollectionReusableView {
     }
     
     func configure(info: LegTrafficInfo) {
-        imageView.image = UIImage.markerEnd
+        imageView.image = UIImage.smallEndMarker
         locationLabel.attributedText = AtchaFont.B3_M_15("우리집")
     }
 }

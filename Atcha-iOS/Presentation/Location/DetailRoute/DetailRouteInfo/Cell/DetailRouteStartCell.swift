@@ -47,7 +47,7 @@ final class DetailRouteStartCell: UICollectionReusableView {
     }
     
     func configure(info: LegTrafficInfo) {
-        imageView.image = UIImage.markerStart
+        imageView.image = UIImage.smallStartMarker
         locationLabel.attributedText = AtchaFont.B3_M_15("앗차 강남점")
     }
 }
