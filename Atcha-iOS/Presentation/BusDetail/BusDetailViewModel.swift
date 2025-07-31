@@ -39,9 +39,9 @@ final class BusDetailViewModel: BaseViewModel {
         
         let request = BusRealTimeInfoRequest(
             routeName: busDetailInfo.routeName,
-            stationName: busDetailInfo.stationName,
-            lat: busDetailInfo.lat,
-            lon: busDetailInfo.lon,
+            stationName: busDetailInfo.start?.name,
+            lat: busDetailInfo.start?.lat,
+            lon: busDetailInfo.start?.lon,
             passStations: busDetailInfo.passStations)
         
         Task { [weak self] in

@@ -39,9 +39,7 @@ struct Course: Codable, Hashable {
         
         return BusDetailInfo(
             routeName: leg.route,
-            stationName: leg.start?.name,
-            lat: leg.start?.lat,
-            lon: leg.start?.lon,
+            start: leg.start,
             passStations:leg.passStopList?.map {
                 PassStations(
                     index: $0.index,
@@ -274,8 +272,6 @@ struct LegPathInfo {
 
 struct BusDetailInfo {
     let routeName: String?
-    let stationName: String?
-    let lat: Double?
-    let lon: Double?
+    let start: addressInfo?
     let passStations: [PassStations]?
 }

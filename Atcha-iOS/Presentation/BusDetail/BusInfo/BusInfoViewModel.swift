@@ -55,7 +55,6 @@ final class BusInfoViewModel: BaseViewModel {
             do {
                 let response = try await busInfoUseCase.busOperationInfo(request)
                 self.operationInfo = response
-                print("실시간 버스 조회: \(response)")
             } catch {
                 print("실시간 버스 조회 실패")
             }
