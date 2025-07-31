@@ -19,7 +19,7 @@ final class DetailRouteProgressView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         clipsToBounds = false
-        backgroundColor = .lightGray
+        backgroundColor = .gray800
         layer.cornerRadius = cornerRadius
     }
     
@@ -30,10 +30,37 @@ final class DetailRouteProgressView: UIView {
         layer.cornerRadius = cornerRadius
     }
     
-    func update(times: [CGFloat], colors: [UIColor]) {
+    func configure(infos: [LegTrafficInfo]) {
+        var times: [CGFloat] = []
+        var colors: [UIColor] = []
+
+        infos.forEach { info in
+            if let sectionTime = info.sectionTime,
+               let minutes = parseMinutes(from: sectionTime) {
+                times.append(CGFloat(minutes))
+            }
+
+            if let color = info.mode?.getGageColor(for: info.type ?? "") {
+                colors.append(color)
+            }
+        }
+
+        update(times: times, colors: colors)
+    }
+    
+    private func update(times: [CGFloat], colors: [UIColor]) {
         segmentTimes = times
         segmentColors = colors
         setNeedsLayout()
+    }
+    
+    private func parseMinutes(from string: String) -> Int? {
+        let clean = string.replacingOccurrences(of: "[^0-9.]", with: "", options: .regularExpression)
+        
+        if let value = Double(clean), Int(value.rounded()) > 0 {
+            return Int(value.rounded())
+        }
+        return nil
     }
     
     override func layoutSubviews() {
@@ -56,7 +83,6 @@ final class DetailRouteProgressView: UIView {
         
         let scalingFactor = min(1.0, bounds.width / usedWidth)
         
-        // 모든 segment 를 개별 생성
         var currentX: CGFloat = 0
         
         for (index, width) in segmentWidths.enumerated() {
@@ -77,16 +103,17 @@ final class DetailRouteProgressView: UIView {
             segmentView.clipsToBounds = true
             addSubview(segmentView)
             
-            // UILabel 추가
+            let roundedMinutes = Int(timeValue.rounded())
+            let timeText = "\(roundedMinutes)분"
+
             let label = UILabel(frame: segmentView.bounds)
-            label.text = String(format: "%.1f분", timeValue)
-            label.font = UIFont.systemFont(ofSize: 11, weight: .medium)
-            label.textColor = (color == .lightGray) ? .black : .white
+            label.attributedText = AtchaFont.M_9(timeText)
             label.textAlignment = .center
             label.adjustsFontSizeToFitWidth = true
-            label.minimumScaleFactor = 0.5
+            label.textColor = color == .gray800 ? .gray200 : .white
             segmentView.addSubview(label)
             
+         
             if index < segmentWidths.count - 1 {
                 currentX += scaledWidth - overlapSpacing
             } else {

@@ -238,6 +238,19 @@ enum TransportMode: String, Codable {
         }
     }
     
+    func getGageColor(for routeType: String) -> UIColor? {
+        switch self {
+        case .bus:
+            return TransportMode.busColor[routeType]
+        case .subway:
+            return TransportMode.subwayColor[routeType]
+        case .walk:
+            return .gray800
+        default:
+            return nil
+        }
+    }
+    
     func getOffIcon(for routeType: String) -> String? {
         switch self {
         case .bus:

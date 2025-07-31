@@ -114,6 +114,7 @@ final class DetailRouteInfoBottomView: UIView {
         // TODO: 폰트 변경해야함
         totalTimeLabel.attributedText = AtchaFont.H1_B_26(infos.first?.totalTime ?? "")
         startEndTimeLabel.attributedText = AtchaFont.B7_M_13(infos.first?.timeText ?? "", color: .gray400)
+        progressView.configure(infos: infos)
         
         snapshot = NSDiffableDataSourceSnapshot<Section, LegTrafficInfo>()
         
