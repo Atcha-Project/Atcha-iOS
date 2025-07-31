@@ -30,6 +30,7 @@ final class DetailRouteInfoBottomView: UIView {
     }
     
     private let routerInfo: [LegTrafficInfo] = []
+    private var snapshot = NSDiffableDataSourceSnapshot<Section, LegTrafficInfo>()
     private var dataSource: UICollectionViewDiffableDataSource<Section, LegTrafficInfo>!
     private var collectionView: UICollectionView!
     
@@ -113,21 +114,20 @@ final class DetailRouteInfoBottomView: UIView {
     }
     
     func setupRouteInfo(_ infos: [LegTrafficInfo]) {
-        print("infos: \(infos)")
-        
-        guard collectionView.dataSource != nil else {
-            assertionFailure("💥 collectionView.dataSource가 설정되기 전에 데이터 apply 시도됨")
-            return
-        }
+        snapshot = NSDiffableDataSourceSnapshot<Section, LegTrafficInfo>()
 
-        var snapshot = NSDiffableDataSourceSnapshot<Section, LegTrafficInfo>()
         for info in infos {
             let section = Section.item(info.id)
             snapshot.appendSections([section])
             snapshot.appendItems([info], toSection: section)
         }
 
-        dataSource.apply(snapshot, animatingDifferences: true)
+        applySnapshot()
+    }
+
+    private func applySnapshot(animatingDifferences: Bool = true) {
+        guard collectionView.dataSource != nil else { return }
+        dataSource.apply(snapshot, animatingDifferences: animatingDifferences)
     }
 }
 
@@ -214,7 +214,7 @@ extension DetailRouteInfoBottomView {
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: DetailRouteBusCell.id, for: indexPath) as! DetailRouteBusCell
                 cell.didTapSummary = { [weak self] in
                     guard let self = self else { return }
-                    collectionView.collectionViewLayout.invalidateLayout()
+                    self.applySnapshot()
                 }
                 cell.configure(info: item)
                 return cell

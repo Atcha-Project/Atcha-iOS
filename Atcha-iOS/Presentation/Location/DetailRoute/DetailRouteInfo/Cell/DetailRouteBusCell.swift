@@ -36,6 +36,10 @@ final class DetailRouteBusCell: UICollectionViewCell {
     private var isExpanded: Bool = false
     var didTapSummary: (() -> Void)?
     
+    private var stationListStackViewTopConstraint: Constraint?
+    private var stationListStackViewBottomConstraint: Constraint?
+    private var endLabelTopConstraintWithoutStack: Constraint?
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
@@ -124,13 +128,13 @@ final class DetailRouteBusCell: UICollectionViewCell {
         }
         
         stationListStackView.snp.makeConstraints {
-            $0.top.equalTo(summaryLabel.snp.bottom).offset(16)
             $0.leading.equalTo(startLabel)
-            $0.bottom.equalTo(endLabel.snp.top).offset(-36)
+            stationListStackViewTopConstraint = $0.top.equalTo(summaryLabel.snp.bottom).offset(16).constraint
+            stationListStackViewBottomConstraint = $0.bottom.equalTo(endLabel.snp.top).offset(-12).constraint
         }
-        
+
         endLabel.snp.makeConstraints {
-            $0.top.equalTo(stationListStackView.snp.bottom).offset(12)
+            endLabelTopConstraintWithoutStack = $0.top.equalTo(summaryLabel.snp.bottom).offset(36).constraint
             $0.leading.trailing.equalTo(stationListStackView)
             $0.bottom.equalToSuperview()
         }
@@ -149,8 +153,15 @@ final class DetailRouteBusCell: UICollectionViewCell {
     @objc private func handleSummaryButton() {
         isExpanded.toggle()
         stationListStackView.isHidden = !isExpanded
+
         stationListStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         addStationNameLabel(info: stationInfos)
+
+        stationListStackViewTopConstraint?.isActive = isExpanded
+        stationListStackViewBottomConstraint?.isActive = isExpanded
+        endLabelTopConstraintWithoutStack?.isActive = !isExpanded
+
+        UIView.animate(withDuration: 0.3) { self.layoutIfNeeded() }
         didTapSummary?()
     }
     
@@ -184,7 +195,6 @@ final class DetailRouteBusCell: UICollectionViewCell {
         
         summaryLabel.attributedText = AtchaFont.B7_M_13("\(sectionTime), \(passStopList.count)개 정류장 이동", color: .white)
         addStationNameLabel(info: stationInfos)
-        
     }
     
     private func addStationNameLabel(info: [PassStopList]) {
