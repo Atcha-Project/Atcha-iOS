@@ -21,8 +21,6 @@ class BusRouteCell: UICollectionViewCell {
     private let routeLineImageView: UIImageView = UIImageView()
     private let routeStack: UIStackView = UIStackView()
     private var leadingConstraint: Constraint?
-    private var lineHeightConstraint: Constraint?
-    private var lineWidthConstraint: Constraint?
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -62,11 +60,6 @@ class BusRouteCell: UICollectionViewCell {
             make.top.bottom.equalToSuperview()
             self.leadingConstraint = make.leading.equalToSuperview().offset(76).constraint
         }
-        
-        routeLineImageView.snp.makeConstraints { make in
-            self.lineWidthConstraint = make.width.equalTo(14).constraint
-            self.lineHeightConstraint = make.height.equalTo(68).constraint
-        }
     }
     
     func configure(
@@ -81,34 +74,8 @@ class BusRouteCell: UICollectionViewCell {
         stationNumberLabel.attributedText = AtchaFont.B7_M_13(lineHeight: 0, station.busStationNumber ?? "", color: AtchaColor.gray200)
         
         leadingConstraint?.update(offset: isTurnPoint ? 52 : 76)
-        lineHeightConstraint?.update(offset: isCurrentStation ? 107 : 68)
-        lineWidthConstraint?.update(offset: isTurnPoint ? 38 : 14)
 
         switch busType {
-        case .일반, .외곽, .지선: // regular
-            if isCurrentStation {
-                if isTurnPoint {
-                    // 2. 현재 정류장이면서 회차 정류장 → mainline-long-turn
-                    routeLineImageView.image = UIImage.mainlineLongTurn
-                } else if isAfterTurnPoint {
-                    // 3. 현재 정류장이면서 회차 이후 정류장 → mainline-long-opacity
-                    routeLineImageView.image = UIImage.mainlineLongOpacity
-                } else {
-                    // 1. 현재 정류장이면서 회차 아님 → mainline-long
-                    routeLineImageView.image = UIImage.mainlineLong
-                }
-            } else {
-                if isTurnPoint {
-                    // 5. 현재X, 회차 정류장 → mainline-short-turn
-                    routeLineImageView.image = UIImage.mainlineShortTurn
-                } else if isAfterTurnPoint {
-                    // 6. 현재X, 회차 이후 → mainline-short-opacity
-                    routeLineImageView.image = UIImage.mainlineShortOpacity
-                } else {
-                    // 4. 현재X, 회차 아님 → mainline-short
-                    routeLineImageView.image = UIImage.mainlineShort
-                }
-            }
         case .좌석, .간선: // mainline
             if isCurrentStation {
                 if isTurnPoint {
@@ -133,100 +100,94 @@ class BusRouteCell: UICollectionViewCell {
                     routeLineImageView.image = UIImage.mainlineShort
                 }
             }
-        case .마을, .순환, .농어촌: // town
+        case .일반, .외곽, .지선: // regular
             if isCurrentStation {
                 if isTurnPoint {
-                    // 2. 현재 정류장이면서 회차 정류장 → mainline-long-turn
-                    routeLineImageView.image = UIImage.mainlineLongTurn
+                    routeLineImageView.image = UIImage.regularLongTurn
                 } else if isAfterTurnPoint {
-                    // 3. 현재 정류장이면서 회차 이후 정류장 → mainline-long-opacity
-                    routeLineImageView.image = UIImage.mainlineLongOpacity
+                    routeLineImageView.image = UIImage.regularLongOpacity
                 } else {
-                    // 1. 현재 정류장이면서 회차 아님 → mainline-long
-                    routeLineImageView.image = UIImage.mainlineLong
+                    routeLineImageView.image = UIImage.regularLong
                 }
             } else {
                 if isTurnPoint {
-                    // 5. 현재X, 회차 정류장 → mainline-short-turn
-                    routeLineImageView.image = UIImage.mainlineShortTurn
+                    routeLineImageView.image = UIImage.regularShortTurn
                 } else if isAfterTurnPoint {
-                    // 6. 현재X, 회차 이후 → mainline-short-opacity
-                    routeLineImageView.image = UIImage.mainlineShortOpacity
+                    routeLineImageView.image = UIImage.regularShortOpacity
                 } else {
-                    // 4. 현재X, 회차 아님 → mainline-short
-                    routeLineImageView.image = UIImage.mainlineShort
+                    routeLineImageView.image = UIImage.regularShort
+                }
+            }
+        case .마을, .순환, .농어촌: // town
+            if isCurrentStation {
+                if isTurnPoint {
+                    routeLineImageView.image = UIImage.townLongTurn
+                } else if isAfterTurnPoint {
+                    routeLineImageView.image = UIImage.townLongOpacity
+                } else {
+                    routeLineImageView.image = UIImage.townLong
+                }
+            } else {
+                if isTurnPoint {
+                    routeLineImageView.image = UIImage.townShortTurn
+                } else if isAfterTurnPoint {
+                    routeLineImageView.image = UIImage.townShortOpacity
+                } else {
+                    routeLineImageView.image = UIImage.townShort
                 }
             }
         case .직행좌석, .간선급행, .광역, .급행, .시외, .시외버스, .고속버스: // widearea
             if isCurrentStation {
                 if isTurnPoint {
-                    // 2. 현재 정류장이면서 회차 정류장 → mainline-long-turn
-                    routeLineImageView.image = UIImage.mainlineLongTurn
+                    routeLineImageView.image = UIImage.wideareaLongTurn
                 } else if isAfterTurnPoint {
-                    // 3. 현재 정류장이면서 회차 이후 정류장 → mainline-long-opacity
-                    routeLineImageView.image = UIImage.mainlineLongOpacity
+                    routeLineImageView.image = UIImage.wideareaLongOpacity
                 } else {
-                    // 1. 현재 정류장이면서 회차 아님 → mainline-long
-                    routeLineImageView.image = UIImage.mainlineLong
+                    routeLineImageView.image = UIImage.wideareaLong
                 }
             } else {
                 if isTurnPoint {
-                    // 5. 현재X, 회차 정류장 → mainline-short-turn
-                    routeLineImageView.image = UIImage.mainlineShortTurn
+                    routeLineImageView.image = UIImage.wideareaShortTurn
                 } else if isAfterTurnPoint {
-                    // 6. 현재X, 회차 이후 → mainline-short-opacity
-                    routeLineImageView.image = UIImage.mainlineShortOpacity
+                    routeLineImageView.image = UIImage.wideareaShortOpacity
                 } else {
-                    // 4. 현재X, 회차 아님 → mainline-short
-                    routeLineImageView.image = UIImage.mainlineShort
+                    routeLineImageView.image = UIImage.wideareaShort
                 }
             }
         case .공항, .리무진: // airport
             if isCurrentStation {
                 if isTurnPoint {
-                    // 2. 현재 정류장이면서 회차 정류장 → mainline-long-turn
-                    routeLineImageView.image = UIImage.mainlineLongTurn
+                    routeLineImageView.image = UIImage.airportLongTurn
                 } else if isAfterTurnPoint {
-                    // 3. 현재 정류장이면서 회차 이후 정류장 → mainline-long-opacity
-                    routeLineImageView.image = UIImage.mainlineLongOpacity
+                    routeLineImageView.image = UIImage.airportLongOpacity
                 } else {
-                    // 1. 현재 정류장이면서 회차 아님 → mainline-long
-                    routeLineImageView.image = UIImage.mainlineLong
+                    routeLineImageView.image = UIImage.airportLong
                 }
             } else {
                 if isTurnPoint {
-                    // 5. 현재X, 회차 정류장 → mainline-short-turn
-                    routeLineImageView.image = UIImage.mainlineShortTurn
+                    routeLineImageView.image = UIImage.airportShortTurn
                 } else if isAfterTurnPoint {
-                    // 6. 현재X, 회차 이후 → mainline-short-opacity
-                    routeLineImageView.image = UIImage.mainlineShortOpacity
+                    routeLineImageView.image = UIImage.airportShortOpacity
                 } else {
-                    // 4. 현재X, 회차 아님 → mainline-short
-                    routeLineImageView.image = UIImage.mainlineShort
+                    routeLineImageView.image = UIImage.airportShort
                 }
             }
-        case .unknown: // defualt
+        case .unknown: // default
             if isCurrentStation {
                 if isTurnPoint {
-                    // 2. 현재 정류장이면서 회차 정류장 → mainline-long-turn
-                    routeLineImageView.image = UIImage.mainlineLongTurn
+                    routeLineImageView.image = UIImage.defaultLongTurn
                 } else if isAfterTurnPoint {
-                    // 3. 현재 정류장이면서 회차 이후 정류장 → mainline-long-opacity
-                    routeLineImageView.image = UIImage.mainlineLongOpacity
+                    routeLineImageView.image = UIImage.defaultLongOpacity
                 } else {
-                    // 1. 현재 정류장이면서 회차 아님 → mainline-long
-                    routeLineImageView.image = UIImage.mainlineLong
+                    routeLineImageView.image = UIImage.defaultLong
                 }
             } else {
                 if isTurnPoint {
-                    // 5. 현재X, 회차 정류장 → mainline-short-turn
-                    routeLineImageView.image = UIImage.mainlineShortTurn
+                    routeLineImageView.image = UIImage.defaultShortTurn
                 } else if isAfterTurnPoint {
-                    // 6. 현재X, 회차 이후 → mainline-short-opacity
-                    routeLineImageView.image = UIImage.mainlineShortOpacity
+                    routeLineImageView.image = UIImage.defaultShortOpacity
                 } else {
-                    // 4. 현재X, 회차 아님 → mainline-short
-                    routeLineImageView.image = UIImage.mainlineShort
+                    routeLineImageView.image = UIImage.defaultShort
                 }
             }
         }
