@@ -128,14 +128,14 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         let busType = viewModel.busType
         let busesAtStation = viewModel.busRealTimeInfo?.realTimeBusArrival ?? []
         let busPosition = viewModel.busPositionInfo?.busPositions ?? []
-
+        
         
         let order = station.order ?? 0
         let turnPoint = viewModel.busPositionInfo?.turnPoint ?? 9999
         
         let isTurnPoint = (order == turnPoint)
         let isCurrentStation = (station.busStationName == viewModel.busDetailInfo.start?.name)
-        let isAfterTurnPoint = (order > turnPoint) 
+        let isAfterTurnPoint = (order > turnPoint)
         
         cell.configure(
             with: station,
@@ -159,6 +159,23 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
             snapshot.appendItems(stations, toSection: .busRouteList)
         }
         dataSource.apply(snapshot, animatingDifferences: true)
+        
+        // 📌 현재 정류장 스크롤 위치 맞추기
+        if let stations = busRoute.busRouteStationList,
+           let currentName = viewModel.busDetailInfo.start?.name,
+           let currentIndex = stations.firstIndex(where: { $0.busStationName == currentName }) {
+            
+            let indexPath = IndexPath(item: currentIndex, section: 0)
+            
+            // snapshot 적용 후 performBatchUpdates 안에서 스크롤 실행
+            busRouteCollectionView.performBatchUpdates(nil) { [weak self] _ in
+                self?.busRouteCollectionView.scrollToItem(
+                    at: indexPath,
+                    at: .centeredVertically,
+                    animated: false
+                )
+            }
+        }
     }
 }
 
