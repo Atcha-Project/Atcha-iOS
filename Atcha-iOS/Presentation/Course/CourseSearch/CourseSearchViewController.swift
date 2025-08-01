@@ -108,7 +108,8 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
                 self.applySnapshot(courses: courses)
                 
                 if !self.viewModel.isLoading {
-                    if courses.isEmpty && !self.viewModel.isServerError {
+                    guard !self.viewModel.isServerError else { return }
+                    if courses.isEmpty {
                         self.noSearchLabel.attributedText = AtchaFont.B4_R_15("앗! 시간이 늦어서 더이상 막차가 없어요.", color: AtchaColor.gray400)
                         self.noSearchStack.isHidden = false
                     } else {

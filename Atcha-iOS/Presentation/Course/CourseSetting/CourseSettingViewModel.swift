@@ -42,7 +42,6 @@ final class CourseSettingViewModel: BaseViewModel {
         self.locationStateHolder = locationStateHolder
 
         super.init()
-        self.bindView()
     }
     
     func bindView() {

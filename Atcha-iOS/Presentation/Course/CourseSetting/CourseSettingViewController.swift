@@ -91,7 +91,7 @@ final class CourseSettingViewController: BaseViewController<CourseSettingViewMod
         
         settingBottomView.snp.makeConstraints { make in
             make.horizontalEdges.equalToSuperview()
-            make.bottom.equalToSuperview()
+            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
             make.height.equalTo(170)
         }
         
