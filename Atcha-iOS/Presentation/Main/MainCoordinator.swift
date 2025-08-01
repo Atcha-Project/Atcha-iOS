@@ -13,7 +13,6 @@ final class MainCoordinator {
     private let navigationController: UINavigationController
     private let diContainer: MainDIContainer
     private var myPageCoordinator: MyPageCoordinator?
-    private var courseModifyCoordinator: CourseModifyCoordinator?
     
     private var mainViewModel: MainViewModel?
     
@@ -71,11 +70,50 @@ final class MainCoordinator {
             self.navigationController.pushViewController(vc, animated: true)
         case .changeCourse:
             let courseDI = diContainer.makeCourseDIContainer()
-            let courseModifyCoordinator = CourseModifyCoordinator(
-                navigationController: navigationController,
-                diContainer: courseDI)
-            self.courseModifyCoordinator = courseModifyCoordinator
-            courseModifyCoordinator.start()
+            let modifyVM = courseDI.makeCourseModifyViewModel()
+            
+            modifyVM.onLocationSelected = { [weak self] location in
+                guard let self else { return }
+                let settingVM = courseDI.makeCourseSettingViewModel(location: location)
+                
+                settingVM.onTapLocationButton = { [weak self] locationInfo, coordinate in
+                    guard let self else { return }
+                    self.navigationController.popViewController(animated: true)
+                    
+                    if let modifyVC = self.navigationController.viewControllers
+                        .compactMap({ $0 as? CourseModifyViewController }).last {
+                        modifyVC.didReceiveLocation(locationInfo: locationInfo, coordinate: coordinate)
+                    }
+                }
+                
+                let settingVC = courseDI.makeCourseSettingViewController(viewModel: settingVM)
+                self.navigationController.pushViewController(settingVC, animated: true)
+            }
+            
+            modifyVM.onLocationConfirmed = { [weak self] locationInfo, coordinate in
+                guard let self else { return }
+                let searchVM = courseDI.makeCourseSearchViewModel(
+                    startLat: "\(coordinate.latitude)",
+                    startLon: "\(coordinate.longitude)",
+                    startAddress: locationInfo.name ?? "주소 없음"
+                )
+                
+                searchVM.getAlarmTapped = { [weak self] infos in
+                    guard let self else { return }
+                    self.mainViewModel?.courseSearchResultHandler?(infos)
+                    self.navigationController.popViewController(animated: true)
+                }
+                searchVM.getDetailTapped = { [weak self] infos in
+                    guard let self else { return }
+                    self.handle(route: .detailRoute(infos: infos))
+                }
+                
+                let searchVC = courseDI.makeCourseSearchViewController(viewModel: searchVM)
+                self.navigationController.pushViewController(searchVC, animated: true)
+            }
+            
+            let modifyVC = CourseModifyViewController(viewModel: modifyVM)
+            self.navigationController.pushViewController(modifyVC, animated: true)
             
         case .detailRoute(let infos):
             let routeDI = diContainer.makeRouteDIContainer()

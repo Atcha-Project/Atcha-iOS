@@ -58,8 +58,6 @@ final class CourseModifyViewModel: BaseViewModel {
             let accessToken = AppDIContainer.shared.tokenStorage.accessToken
             let refreshToken = AppDIContainer.shared.tokenStorage.refreshToken
 
-            print("✅ Access Token: \(accessToken)")
-            print("✅ Refresh Token: \(refreshToken)")
             do {
                 let request = FetchRecentSearchRequest(lat: currentLocation?.latitude, lon: currentLocation?.longitude)
                 let response = try await searchAddressUseCase.fetchRecentSearchHistories(request)
@@ -102,7 +100,7 @@ final class CourseModifyViewModel: BaseViewModel {
     func deleteSearchHistory(request: RecentSearchRequest) {
         Task {
             do {
-                let response = try await searchAddressUseCase.deleteSearchHistory(request)
+                let _ = try await searchAddressUseCase.deleteSearchHistory(request)
                 recentSearchLocation()
             } catch {
                 print("최근 장소 삭제 실패")

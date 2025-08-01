@@ -43,7 +43,7 @@ final class CourseModifyViewController: BaseViewController<CourseModifyViewModel
         super.viewWillAppear(animated)
         
         guard !isFromSetting else {
-            isFromSetting = false  // ✅ 한 번만 사용되도록 초기화
+            isFromSetting = false
             return
         }
         
