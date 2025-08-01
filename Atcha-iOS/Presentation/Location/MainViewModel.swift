@@ -26,7 +26,7 @@ final class MainViewModel: BaseViewModel {
     private var streamTask: Task<Void, Never>?
     
     var routeHandler: ((MainRoute) -> Void)?
-    var courseSearchResultHandler: ((LegInfo) -> Void)?
+    var courseSearchResultHandler: ((String, LegInfo) -> Void)?
     
     init(authorizationUseCase: RequestLocationAuthorizationUseCase,
          streamUseCase: ObserveLocationStreamUseCase,
@@ -53,7 +53,8 @@ final class MainViewModel: BaseViewModel {
             .store(in: &cancellables)
     }
     
-    func drawRoute(infos: LegInfo) {
+    func drawRoute(address: String, infos: LegInfo) {
+        self.address = address
         legPathInfos = infos.pathInfo
         legTrafficInfos = infos.trafficInfo
     }
@@ -96,7 +97,8 @@ final class MainViewModel: BaseViewModel {
             routeHandler?(.myPage)
             
         case .detailRoute:
-            routeHandler?(.detailRoute(infos: LegInfo(pathInfo: legPathInfos,
+            routeHandler?(.detailRoute(address: self.address ?? "",
+                                       infos: LegInfo(pathInfo: legPathInfos,
                                                       trafficInfo: legTrafficInfos)))
         }
     }
@@ -118,7 +120,8 @@ final class MainViewModel: BaseViewModel {
 // MARK: - Bindigs
 extension MainViewModel {
     private func handleLocationUpdate(_ location: CLLocationCoordinate2D?) {
-        guard let location, legPathInfos.isEmpty else {
+        guard let location else {
+//        guard let location, legPathInfos.isEmpty else {
             print("⛔️ 위치 무효 또는 경로 이미 존재")
             return
         }
@@ -159,75 +162,3 @@ extension MainViewModel {
         return try await fetchTaxiFareUseCase.fetchTaxiFare(request: request)
     }
 }
-
-
-//    func bindView() {
-//        $currentLocation
-//            .removeDuplicates()
-//            .debounce(for: .seconds(0.3), scheduler: RunLoop.main)
-//            .sink { [weak self] location in
-//                guard let self, let location else { return }
-//                currentLocation = location
-//                Task {
-//                    let info = try? await self.fetchCurrentAddress(lat: location.latitude,
-//                                                                   lon: location.longitude)
-//
-//                    if let address = info?.name, !address.isEmpty {
-//                        self.address = address
-//                    } else if let address = info?.address {
-//                        self.address = address
-//                    }
-//
-//                    let request = FetchTaxiFareRequest(originLat: info?.lat,
-//                                                       originLon: info?.lon,
-//                                                       destinationLat: UserDefaultsWrapper().double(forKey: UserDefaultsWrapper.Key.lat.rawValue),
-//                                                       destinationLon: UserDefaultsWrapper().double(forKey: UserDefaultsWrapper.Key.lon.rawValue))
-//
-//                    self.taxiFare = try? await self.fetchTaxiFare(request: request)
-//                }
-//
-//            }
-//            .store(in: &cancellables)
-//    }
-    
-//    func bindView() {
-//        $currentLocation
-//            .removeDuplicates()
-//            .debounce(for: .seconds(0.3), scheduler: RunLoop.main)
-//            .sink { [weak self] location in
-//                guard let self, let location else { return }
-//
-//                // ✅ 경로가 있을 경우 업데이트 중단
-//                guard self.legPathInfos.isEmpty else {
-//                    print("⛔️ 경로가 존재하므로 currentLocation 업데이트 중단")
-//                    return
-//                }
-//
-//                self.currentLocation = location
-//
-//                Task {
-//                    do {
-//                        let info = try await self.fetchCurrentAddress(lat: location.latitude, lon: location.longitude)
-//
-//                        if let name = info?.name, !name.isEmpty {
-//                            self.address = name
-//                        } else if let fallback = info?.address {
-//                            self.address = fallback
-//                        }
-//
-//                        let request = FetchTaxiFareRequest(
-//                            originLat: info?.lat,
-//                            originLon: info?.lon,
-//                            destinationLat: UserDefaultsWrapper().double(forKey: UserDefaultsWrapper.Key.lat.rawValue),
-//                            destinationLon: UserDefaultsWrapper().double(forKey: UserDefaultsWrapper.Key.lon.rawValue)
-//                        )
-//
-//                        self.taxiFare = try? await self.fetchTaxiFare(request: request)
-//
-//                    } catch {
-//                        print("❌ 주소 또는 택시요금 가져오기 실패: \(error)")
-//                    }
-//                }
-//            }
-//            .store(in: &cancellables)
-//    }

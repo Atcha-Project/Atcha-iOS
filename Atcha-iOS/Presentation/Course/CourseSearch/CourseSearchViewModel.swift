@@ -37,8 +37,8 @@ final class CourseSearchViewModel: BaseViewModel {
     public private(set) var startAddress: String
     private var courseStreamTask: Task<Void, Never>?
     
-    var getAlarmTapped: ((LegInfo) -> Void)?
-    var getDetailTapped: ((LegInfo) -> Void)?
+    var getAlarmTapped: ((String, LegInfo) -> Void)?
+    var getDetailTapped: ((String, LegInfo) -> Void)?
     
     init(
         courseUseCase: CourseUseCase,

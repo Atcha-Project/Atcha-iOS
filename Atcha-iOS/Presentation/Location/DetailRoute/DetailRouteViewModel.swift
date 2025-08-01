@@ -9,12 +9,14 @@ import Foundation
 import UIKit
 
 final class DetailRouteViewModel: BaseViewModel {
+    @Published var address: String
     private let infos: LegInfo
     @Published var legtPathInfo: [LegPathInfo] = []
     @Published var legTrafficInfo: [LegTrafficInfo] = []
     
-    init(infos: LegInfo) {
+    init(address: String, infos: LegInfo) {
         self.infos = infos
+        self.address = address
         
         super.init()
         self.bind()

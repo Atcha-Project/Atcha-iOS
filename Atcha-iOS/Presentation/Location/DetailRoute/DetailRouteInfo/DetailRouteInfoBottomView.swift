@@ -43,6 +43,8 @@ final class DetailRouteInfoBottomView: UIView {
     private let progressView: DetailRouteProgressView = DetailRouteProgressView()
     private let dividerView: UIView = UIView()
     
+    private var startAddress: String = ""
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupView()
@@ -125,6 +127,11 @@ final class DetailRouteInfoBottomView: UIView {
         }
         
         applySnapshot()
+    }
+    
+    func setupStartAddress(_ address: String) {
+        startAddress = address
+        collectionView.reloadData()
     }
     
     private func applySnapshot(animatingDifferences: Bool = true) {
@@ -313,7 +320,7 @@ extension DetailRouteInfoBottomView {
                     for: indexPath
                 ) as! DetailRouteStartCell
                 
-                headerView.configure(info: item)
+                headerView.configure(address: self.startAddress, info: item)
                 return headerView
                 
             } else if kind == UICollectionView.elementKindSectionFooter {

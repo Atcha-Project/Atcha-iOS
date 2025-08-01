@@ -61,6 +61,12 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             .compactMap { $0 }
             .sink { [weak self] infos in self?.bottomSheet.setupRouteInfo(infos) }
             .store(in: &cancellables)
+        
+        viewModel.$address
+            .receive(on: RunLoop.main)
+            .compactMap { $0 }
+            .sink { [weak self] address in self?.bottomSheet.setupStartAddress(address) }
+            .store(in: &cancellables)
     }
     
     private func addRouteLine(infos: [LegPathInfo]) {
