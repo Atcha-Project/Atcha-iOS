@@ -56,12 +56,6 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
     }
     
     private func bindView() {
-        viewModel.$legtPathInfo
-            .filter { !$0.isEmpty }
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] in self?.addRouteLine(infos: $0) }
-            .store(in: &cancellables)
-        
         viewModel.$legTrafficInfo
             .receive(on: RunLoop.main)
             .compactMap { $0 }
@@ -146,6 +140,12 @@ extension DetailRouteViewController {
     func mapView(_ mapView: TMapWrapper, didSelectLocation coordinate: CLLocationCoordinate2D) {}
     
     func didFinishLoadingMap(_ mapView: TMapWrapper) {
+        viewModel.$legtPathInfo
+            .filter { !$0.isEmpty }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] in self?.addRouteLine(infos: $0) }
+            .store(in: &cancellables)
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
             self.hideLoading()
         }

@@ -124,7 +124,7 @@ final class TMapWrapper: NSObject, MapRendering {
         let rawCenterLat = (minLat + maxLat) / 2.0
         let centerLon = (minLon + maxLon) / 2.0
 
-        let mapViewHeight = mapView.bounds.height
+        let mapViewHeight = mapView.bounds.height * 0.55
         let screenHeight = UIScreen.main.bounds.height
         let mapRatio = mapViewHeight / screenHeight
 
@@ -137,7 +137,7 @@ final class TMapWrapper: NSObject, MapRendering {
         let paddedLatSpan = latSpan + 0.01
         let paddedLonSpan = (maxLon - minLon) + 0.003
 
-        let aspectRatio = mapView.bounds.width / mapView.bounds.height
+        let aspectRatio = mapView.bounds.width / mapView.bounds.height * 0.55
         let adjustedSpan = max(paddedLatSpan, paddedLonSpan * aspectRatio)
 
         let center = CLLocationCoordinate2D(latitude: adjustedCenterLat, longitude: centerLon)
@@ -147,18 +147,19 @@ final class TMapWrapper: NSObject, MapRendering {
         mapView.setZoom(zoomLevel)
     }
     
-    // ✅ 줌 계산 함수 (span 기반)
     func calculateZoomLevelBySpan(span: Double) -> Int {
-        print("span : \(span)")
         switch span {
+        case 0..<0.001: return 18
         case 0..<0.003: return 17
-        case 0..<0.005: return 16
+        case 0..<0.006: return 16
         case 0..<0.01:  return 15
         case 0..<0.02:  return 14
-        case 0..<0.05:  return 12
+        case 0..<0.04:  return 13
+        case 0..<0.07:  return 12
         case 0..<0.1:   return 11
         case 0..<0.2:   return 10
-        default:        return 16
+        case 0..<0.4:   return 9
+        default:        return 8
         }
     }
     

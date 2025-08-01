@@ -23,35 +23,5 @@ final class DetailRouteViewModel: BaseViewModel {
     private func bind() {
         self.legtPathInfo = infos.pathInfo
         self.legTrafficInfo = infos.trafficInfo
-        
-        
-        // 시간
-//        let time = legTrafficInfo.first?.departureDateTime //  Optional("2025-08-01T00:31:19")
-//        let totalTime = legTrafficInfo.first?.totalTime // Optional("5분 15초")
-        
-        let infos = legTrafficInfo.forEach { info in
-            switch info.mode {
-            case .bus:
-                print("busStart : =================================")
-                let stations = info.passStopList?.compactMap { $0.stationName }
-                print("\(info.sectionTime)분, \(stations?.count)개 정류장 이동")
-                print("busName: \(info.busName)")
-                print("\(stations?.first) 승차")
-                print("\(stations?.last) 하차")
-            case .subway:
-                print("subwayStart : =================================")
-                let stations = info.passStopList?.compactMap { $0.stationName }
-                print("passStopList : \(info.passStopList)")
-                
-                print("\(info.sectionTime)분, \(stations?.count)개 정류장 이동")
-                print("\(stations?.first) 승차")
-                print("\(stations?.last) 하차")
-            case .walk: do {}
-            default: do {}
-            }
-//            sectionTime : Optional("6분")
-//            sectionTime : Optional("3분")
-//            sectionTime : Optional("2분")
-        }
     }
 }

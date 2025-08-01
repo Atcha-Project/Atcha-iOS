@@ -25,7 +25,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
     private let ballonView: AtchaBallon = AtchaBallon()
     
     private var firstAddress: String?
-    private var atchaImageBottomConstraint: Constraint?
+//    private var atchaImageBottomConstraint: Constraint?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -105,7 +105,8 @@ extension MainViewController {
         atchaImageView.snp.makeConstraints { make in
             make.width.height.equalTo(64)
             make.leading.equalToSuperview().inset(8)
-            atchaImageBottomConstraint = make.bottom.equalTo(lastTrainView.snp.top).inset(24).constraint
+            make.bottom.equalTo(lastTrainView.snp.top).inset(24)
+//            atchaImageBottomConstraint = make.bottom.equalTo(lastTrainView.snp.top).inset(24).constraint
         }
         mapContainerView.snp.makeConstraints { make in
             make.horizontalEdges.equalToSuperview()
@@ -286,52 +287,6 @@ extension MainViewController {
         }
     }
     
-//    private func addRouteLine(infos: [LegPathInfo]) {
-//        var shapeStrings: [String] = []
-//        var colors: [UIColor] = []
-//        var images: [UIImage] = []
-//
-//        infos.forEach { info in
-//            switch info.mode {
-//            case .bus, .subway:
-//                if let shape = info.passShape, !shape.isEmpty {
-//                    shapeStrings.append(shape)
-//                    colors.append(info.mode?.getColor(for: info.type ?? "") ?? .magenta)
-//                    if let icon = info.mode?.icon {
-//                        images.append(icon)
-//                    }
-//                }
-//
-//            case .walk:
-//                let walkShapes = info.step?.compactMap { $0.linestring }.filter { !$0.isEmpty } ?? []
-//                let merged = walkShapes.joined(separator: " ")
-//                if !merged.isEmpty {
-//                    shapeStrings.append(merged)
-//                    colors.append(.gray200)
-//                    if let icon = info.mode?.icon {
-//                        images.append(icon)
-//                    }
-//                }
-//
-//            default:
-//                break
-//            }
-//        }
-//
-//        for (index, (shape, color, image)) in zip3(shapeStrings, colors, images).enumerated() {
-//            let isFirst = index == 0
-//            let isLast = index == shapeStrings.count - 1
-//
-//            mapContainerView.addTrafficLine(
-//                passShape: shape,
-//                color: color,
-//                markerImage: image,
-//                isFirst: isFirst,
-//                isLast: isLast
-//            )
-//        }
-//    }
-    
     private func zip3<A, B, C>(_ a: [A], _ b: [B], _ c: [C]) -> [(A, B, C)] {
         let count = min(a.count, b.count, c.count)
         return (0..<count).map { (a[$0], b[$0], c[$0]) }
@@ -352,14 +307,17 @@ extension MainViewController {
     }
     
     // MARK: - Constraint Helper
-    private func updateAtchaImageConstraint(relativeTo view: UIView, inset: CGFloat = 24) {
-        atchaImageBottomConstraint?.deactivate()
-        atchaImageView.snp.makeConstraints {
-            self.atchaImageBottomConstraint = $0
-                .bottom
-                .equalTo(view.snp.top)
-                .inset(inset)
-                .constraint
+    private func updateAtchaImageConstraint(relativeTo view: UIView) {
+        loactionButton.snp.remakeConstraints { make in
+            make.trailing.equalToSuperview().inset(16)
+            make.width.height.equalTo(40)
+            make.bottom.equalTo(view.snp.top).inset(-16)
+        }
+        
+        atchaImageView.snp.remakeConstraints { make in
+            make.width.height.equalTo(64)
+            make.leading.equalToSuperview().inset(8)
+            make.bottom.equalTo(view.snp.top).inset(24)
         }
     }
 }
