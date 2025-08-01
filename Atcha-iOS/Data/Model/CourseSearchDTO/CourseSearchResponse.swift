@@ -81,8 +81,8 @@ struct PassStopResponse: Codable {
     let lon: String?
     let lat: String?
     
-    func toEntity() -> passStopList {
-        return passStopList(index: index, stationName: stationName, lon: lon, lat: lat)
+    func toEntity() -> PassStopList {
+        return PassStopList(index: index, stationName: stationName, lon: lon, lat: lat)
     }
 }
 

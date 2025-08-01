@@ -16,12 +16,7 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
     private let loactionButton: UIButton = UIButton()
     private let backButton: UIButton = UIButton()
     private var activityIndicator: UIActivityIndicatorView?
-    private lazy var bottomSheet: DetailRouteInfoBottomView = DetailRouteInfoBottomView(frame: CGRect(
-        x: 0,
-        y: view.frame.height * (1 - 0.45),
-        width: view.frame.width,
-        height: view.frame.height * 0.8
-    ))
+    private lazy var bottomSheet: DetailRouteInfoBottomView = DetailRouteInfoBottomView()
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -54,25 +49,25 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(12)
             make.width.height.equalTo(36)
         }
+        bottomSheet.snp.makeConstraints {
+            $0.leading.trailing.bottom.equalToSuperview()
+            $0.height.equalTo(view.frame.height * 0.5) 
+        }
     }
     
     private func bindView() {
-        viewModel.$legtPathInfo
-            .filter { !$0.isEmpty }
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] in self?.addRouteLine(infos: $0) }
+        viewModel.$legTrafficInfo
+            .receive(on: RunLoop.main)
+            .compactMap { $0 }
+            .sink { [weak self] infos in self?.bottomSheet.setupRouteInfo(infos) }
             .store(in: &cancellables)
-    }
-    
-    @objc private func didTapClose() {
-        navigationController?.popViewController(animated: true)
     }
     
     private func addRouteLine(infos: [LegPathInfo]) {
         var shapeStrings: [String] = []
         var colors: [UIColor] = []
         var images: [UIImage] = []
-        var allCoordinates: [CLLocationCoordinate2D] = []  // ✅ 전체 좌표 수집
+        var allCoordinates: [CLLocationCoordinate2D] = [] 
 
         infos.forEach { info in
             switch info.mode {
@@ -131,12 +126,26 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
     }
 }
 
+// MARK: - Touch Event
+extension DetailRouteViewController {
+    @objc private func didTapClose() {
+        navigationController?.popViewController(animated: true)
+    }
+}
+
+// MARK: - Map Delegate
 extension DetailRouteViewController {
     func mapView(_ mapView: TMapWrapper, didUpdateLocation coordinate: CLLocationCoordinate2D) {}
     
     func mapView(_ mapView: TMapWrapper, didSelectLocation coordinate: CLLocationCoordinate2D) {}
     
     func didFinishLoadingMap(_ mapView: TMapWrapper) {
+        viewModel.$legtPathInfo
+            .filter { !$0.isEmpty }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] in self?.addRouteLine(infos: $0) }
+            .store(in: &cancellables)
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
             self.hideLoading()
         }
