@@ -22,6 +22,7 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
     }()
     private let headerView: BusDetailHeaderView = BusDetailHeaderView()
     private let refreshImageView: UIImageView = UIImageView()
+    private var didScrollToCurrentStation = false
     private lazy var busRouteCollectionView: UICollectionView = {
         let layout = layout()
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
@@ -94,7 +95,7 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         refreshImageView.snp.makeConstraints { make in
             make.size.equalTo(48)
             make.trailing.equalToSuperview().inset(16)
-            make.bottom.equalToSuperview().inset(16)
+            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).inset(16)
         }
     }
     
@@ -165,7 +166,7 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         return cell
     }
     
-    // MARK: - Course Snapshot 갱신
+    // MARK: - snapshot 갱신
     private func applySnapshot(busRoute: BusPositionInfo) {
         var snapshot = Snapshot()
         
@@ -175,26 +176,26 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         }
         dataSource.apply(snapshot, animatingDifferences: true)
         
-        // 📌 현재 정류장 스크롤 위치 맞추기
-        if let stations = busRoute.busRouteStationList,
+        if !didScrollToCurrentStation,
+           let stations = busRoute.busRouteStationList,
            let currentName = viewModel.busDetailInfo.start?.name,
            let currentIndex = stations.firstIndex(where: { $0.busStationName == currentName }) {
             
             let indexPath = IndexPath(item: currentIndex, section: 0)
             
-            // snapshot 적용 후 performBatchUpdates 안에서 스크롤 실행
             busRouteCollectionView.performBatchUpdates(nil) { [weak self] _ in
                 self?.busRouteCollectionView.scrollToItem(
                     at: indexPath,
                     at: .centeredVertically,
                     animated: false
                 )
+                self?.didScrollToCurrentStation = true
             }
         }
     }
     
     @objc private func onRefreshTapped() {
-        viewModel.refresh()  
+        viewModel.refresh()
     }
 }
 

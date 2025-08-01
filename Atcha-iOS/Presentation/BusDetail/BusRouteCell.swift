@@ -45,6 +45,15 @@ class BusRouteCell: UICollectionViewCell {
     
     private let routeLineImageView: UIImageView = UIImageView()
     private let realTimeBusImageView: UIImageView = UIImageView()
+    private let realTimeBusStack: UIStackView = UIStackView()
+    private let remainSeatLabel: PaddingLabel = {
+        let label = PaddingLabel(top: 3, left: 4, bottom: 3, right: 2) // 패딩을 가진 커스텀 UILabel
+        label.backgroundColor = AtchaColor.Etc.paddingLabel
+        label.layer.cornerRadius = 4
+        label.layer.masksToBounds = true
+        return label
+    }()
+    
     private var currentBusProgress: Double? = nil
     private var busYConstraint: Constraint?
     
@@ -72,7 +81,7 @@ class BusRouteCell: UICollectionViewCell {
         
         let baseHeight: CGFloat = isCurrentStationFlag ? 107 : 68
         let yPosition = baseHeight * CGFloat(progress)
-        busYConstraint?.update(offset: yPosition + 10)
+        busYConstraint?.update(offset: yPosition + 12)
         contentView.bringSubviewToFront(realTimeBusImageView)
     }
     
@@ -101,11 +110,17 @@ class BusRouteCell: UICollectionViewCell {
         routeStack.spacing = 10
         routeStack.alignment = .center
         
-        realTimeBusImageView.image = UIImage.airportBus
+        realTimeBusImageView.image = UIImage.busDefualt20Px
         realTimeBusImageView.contentMode = .scaleAspectFit
         
+        realTimeBusStack.axis = .horizontal
+        realTimeBusStack.spacing = 5
+        realTimeBusStack.addArrangedSubview(remainSeatLabel)
+        realTimeBusStack.addArrangedSubview(realTimeBusImageView)
+        
+        
         contentView.addSubview(routeStack)
-        contentView.addSubview(realTimeBusImageView)
+        contentView.addSubview(realTimeBusStack)
     }
     
     private func setupAutoLayout() {
@@ -113,9 +128,9 @@ class BusRouteCell: UICollectionViewCell {
             make.top.bottom.equalToSuperview()
             self.leadingConstraint = make.leading.equalToSuperview().offset(76).constraint
         }
-        
-        realTimeBusImageView.snp.makeConstraints { make in
-            make.size.equalTo(20)
+
+        realTimeBusStack.snp.makeConstraints { make in
+            make.height.equalTo(20)
             make.trailing.equalTo(routeLineImageView.snp.trailing).offset(3)
             self.busYConstraint = make.top.equalTo(routeLineImageView.snp.top).offset(0).constraint
         }
@@ -206,6 +221,7 @@ class BusRouteCell: UICollectionViewCell {
         
         switch busType {
         case .좌석, .간선: // mainline
+            realTimeBusImageView.image = UIImage.busMainline20Px
             if isCurrentStation {
                 if isTurnPoint {
                     // 2. 현재 정류장이면서 회차 정류장 → mainline-long-turn
@@ -230,6 +246,7 @@ class BusRouteCell: UICollectionViewCell {
                 }
             }
         case .일반, .외곽, .지선: // regular
+            realTimeBusImageView.image = UIImage.busRegular20Px
             if isCurrentStation {
                 if isTurnPoint {
                     routeLineImageView.image = UIImage.regularLongTurn
@@ -248,6 +265,7 @@ class BusRouteCell: UICollectionViewCell {
                 }
             }
         case .마을, .순환, .농어촌: // town
+            realTimeBusImageView.image = UIImage.busTown20Px
             if isCurrentStation {
                 if isTurnPoint {
                     routeLineImageView.image = UIImage.townLongTurn
@@ -266,6 +284,7 @@ class BusRouteCell: UICollectionViewCell {
                 }
             }
         case .직행좌석, .간선급행, .광역, .급행, .시외, .시외버스, .고속버스: // widearea
+            realTimeBusImageView.image = UIImage.busWidearea20Px
             if isCurrentStation {
                 if isTurnPoint {
                     routeLineImageView.image = UIImage.wideareaLongTurn
@@ -284,6 +303,7 @@ class BusRouteCell: UICollectionViewCell {
                 }
             }
         case .공항, .리무진: // airport
+            realTimeBusImageView.image = UIImage.busAirport20Px
             if isCurrentStation {
                 if isTurnPoint {
                     routeLineImageView.image = UIImage.airportLongTurn
@@ -302,6 +322,7 @@ class BusRouteCell: UICollectionViewCell {
                 }
             }
         case .unknown: // default
+            realTimeBusImageView.image = UIImage.busDefualt20Px
             if isCurrentStation {
                 if isTurnPoint {
                     routeLineImageView.image = UIImage.defaultLongTurn
@@ -325,10 +346,51 @@ class BusRouteCell: UICollectionViewCell {
         if let matchedBus = bus.first(where: { $0.sectionOrder == station.order }),
            let progress = matchedBus.sectionProgress {
             self.currentBusProgress = progress // 0 ~ 1 값 저장
-            realTimeBusImageView.isHidden = false
+            realTimeBusStack.isHidden = false
+            
+            let combined = NSMutableAttributedString()
+            
+            if let vehicleNumber = matchedBus.vehicleNumber {
+                let vehicleNumberAttr = AtchaFont.M_11(
+                    lineHeight: 0,
+                    "\(vehicleNumber) ",
+                    color: AtchaColor.gray200
+                )
+                combined.append(vehicleNumberAttr)
+            }
+            
+            if busType == .광역, let remainSeats = matchedBus.remainSeats {
+                let remainAttr = AtchaFont.B7_M_13(
+                    lineHeight: 0,
+                    "(\(remainSeats)석)",
+                    color: AtchaColor.Bus.widearea
+                )
+                combined.append(remainAttr)
+            } else if let congestionRaw = matchedBus.busCongestion,
+                      let congestion = BusCongestion(rawValue: congestionRaw),
+                      let text = congestion.displayText {
+                
+                let color: UIColor
+                switch congestion {
+                case .low: color = AtchaColor.Bus.regular
+                case .medium: color = AtchaColor.Bus.mainline
+                case .high, .veryHigh: color = AtchaColor.Bus.widearea
+                case .unknown: color = AtchaColor.gray200
+                }
+                
+                let congestionAttr = AtchaFont.M_11(
+                    lineHeight: 0,
+                    "\(text) ",
+                    color: color
+                )
+                combined.append(congestionAttr)
+            }
+            
+            remainSeatLabel.attributedText = combined
+            
         } else {
             self.currentBusProgress = nil
-            realTimeBusImageView.isHidden = true
+            realTimeBusStack.isHidden = true
         }
         
         setNeedsLayout()

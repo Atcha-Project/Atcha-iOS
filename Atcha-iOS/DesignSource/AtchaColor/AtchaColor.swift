@@ -78,6 +78,7 @@ enum AtchaColor{
         static let kakao = UIColor(named: "kakao")!
         static let kakaoLogo = UIColor(named: "kakaoLogo")!
         static let remainTime = UIColor(named: "remainTime")!
+        static let paddingLabel = UIColor(named: "paddingLabel")!
     }
     // MARK: - 사용 예시
     //
