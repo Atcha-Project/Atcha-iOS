@@ -21,6 +21,7 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         }
     }()
     private let headerView: BusDetailHeaderView = BusDetailHeaderView()
+    private let refreshImageView: UIImageView = UIImageView()
     private lazy var busRouteCollectionView: UICollectionView = {
         let layout = layout()
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
@@ -62,8 +63,14 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
     
     private func setupUI() {
         view.backgroundColor = AtchaColor.gray950
+        refreshImageView.image = UIImage.refreshGray
+        refreshImageView.contentMode = .scaleAspectFit
+        refreshImageView.isUserInteractionEnabled = true   // ✅ 터치 허용
         
-        view.addSubViews(topNavigationBar, headerView, busRouteCollectionView)
+        let tap = UITapGestureRecognizer(target: self, action: #selector(onRefreshTapped))
+        refreshImageView.addGestureRecognizer(tap)
+        
+        view.addSubViews(topNavigationBar, headerView, busRouteCollectionView, refreshImageView)
     }
     
     private func setupAutoLayout() {
@@ -82,6 +89,12 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         busRouteCollectionView.snp.makeConstraints { make in
             make.top.equalTo(headerView.snp.bottom)
             make.leading.trailing.bottom.equalToSuperview()
+        }
+        
+        refreshImageView.snp.makeConstraints { make in
+            make.size.equalTo(48)
+            make.trailing.equalToSuperview().inset(16)
+            make.bottom.equalToSuperview().inset(16)
         }
     }
     
@@ -178,6 +191,10 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
                 )
             }
         }
+    }
+    
+    @objc private func onRefreshTapped() {
+        viewModel.refresh()  
     }
 }
 

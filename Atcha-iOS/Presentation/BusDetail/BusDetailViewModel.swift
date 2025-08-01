@@ -26,6 +26,7 @@ final class BusDetailViewModel: BaseViewModel {
     @Published var busRealTimeInfo: BusRealTimeInfo?
     
     private var refreshTimer: Timer?
+    private var lastRequest: BusRealTimeInfoRequest?
     
     init(
         busInfoUseCase: BusInfoUseCase,
@@ -48,6 +49,8 @@ final class BusDetailViewModel: BaseViewModel {
             lat: busDetailInfo.start?.lat,
             lon: busDetailInfo.start?.lon,
             passStations: busDetailInfo.passStations)
+        
+        self.lastRequest = request
         
         Task { [weak self] in
             await self?.busRealTimeInfo(request: request)
@@ -96,12 +99,22 @@ final class BusDetailViewModel: BaseViewModel {
     
     private func startAutoRefresh(request: BusRealTimeInfoRequest) {
         refreshTimer?.invalidate()
-        refreshTimer = Timer.scheduledTimer(withTimeInterval: 20, repeats: true) { [weak self] _ in
+        refreshTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
             Task { [weak self] in
                 await self?.busRealTimeInfo(request: request)
             }
         }
         RunLoop.main.add(refreshTimer!, forMode: .common)
+    }
+    
+    
+    // MARK: - 수동 새로고침
+    @MainActor
+    func refresh() {
+        guard let request = lastRequest else { return }
+        Task {
+            self.busRealTimeInfo(request: request)
+        }
     }
     
     deinit {

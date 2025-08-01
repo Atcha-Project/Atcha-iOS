@@ -32,6 +32,7 @@ class BusRouteCell: UICollectionViewCell {
     private let stationLabel: UILabel = UILabel()
     private let stationNumberLabel: UILabel = UILabel()
     private let stationStack: UIStackView = UIStackView()
+    private var isCurrentStationFlag: Bool = false
     
     private let remainTimeStack: UIStackView = {
         let stack = UIStackView()
@@ -69,9 +70,10 @@ class BusRouteCell: UICollectionViewCell {
         super.layoutSubviews()
         guard let progress = currentBusProgress else { return }
         
-        let lineHeight = routeLineImageView.bounds.height
-        let yPosition = lineHeight * CGFloat(progress)
-        busYConstraint?.update(offset: yPosition - 10)
+        let baseHeight: CGFloat = isCurrentStationFlag ? 107 : 68
+        let yPosition = baseHeight * CGFloat(progress)
+        busYConstraint?.update(offset: yPosition + 10)
+        contentView.bringSubviewToFront(realTimeBusImageView)
     }
     
     
@@ -102,7 +104,8 @@ class BusRouteCell: UICollectionViewCell {
         realTimeBusImageView.image = UIImage.airportBus
         realTimeBusImageView.contentMode = .scaleAspectFit
         
-        contentView.addSubViews(routeStack, realTimeBusImageView)
+        contentView.addSubview(routeStack)
+        contentView.addSubview(realTimeBusImageView)
     }
     
     private func setupAutoLayout() {
@@ -136,6 +139,7 @@ class BusRouteCell: UICollectionViewCell {
         countdownTimers.forEach { $0.invalidate() }
         countdownTimers.removeAll()
         remainSeconds.removeAll()
+        self.isCurrentStationFlag = isCurrentStation
         
         if isCurrentStation {
             for info in remainInfo {
@@ -343,5 +347,14 @@ extension BusRouteCell{
         let section = NSCollectionLayoutSection(group: group)
         
         return section
+    }
+    
+    override func apply(_ layoutAttributes: UICollectionViewLayoutAttributes) {
+        super.apply(layoutAttributes)
+        if currentBusProgress != nil {
+            self.layer.zPosition = 10
+        } else {
+            self.layer.zPosition = 0
+        }
     }
 }
