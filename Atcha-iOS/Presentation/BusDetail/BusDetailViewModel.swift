@@ -22,6 +22,12 @@ final class BusDetailViewModel: BaseViewModel {
     var busRouteInfo = BusRouteInfo(busRouteId: "", routeName: "", serviceRegion: "")
     var onInfoTap: (() -> Void)?
     
+    @Published var busPositionInfo: BusPositionInfo?
+    @Published var busRealTimeInfo: BusRealTimeInfo?
+    
+    private var refreshTimer: Timer?
+    private var lastRequest: BusRealTimeInfoRequest?
+    
     init(
         busInfoUseCase: BusInfoUseCase,
         busDetailInfo: BusDetailInfo
@@ -39,14 +45,18 @@ final class BusDetailViewModel: BaseViewModel {
         
         let request = BusRealTimeInfoRequest(
             routeName: busDetailInfo.routeName,
-            stationName: busDetailInfo.stationName,
-            lat: busDetailInfo.lat,
-            lon: busDetailInfo.lon,
+            stationName: busDetailInfo.start?.name,
+            lat: busDetailInfo.start?.lat,
+            lon: busDetailInfo.start?.lon,
             passStations: busDetailInfo.passStations)
+        
+        self.lastRequest = request
         
         Task { [weak self] in
             await self?.busRealTimeInfo(request: request)
         }
+        
+        startAutoRefresh(request: request)
     }
     
     var icon: UIImage {
@@ -61,10 +71,53 @@ final class BusDetailViewModel: BaseViewModel {
                 let response = try await busInfoUseCase.busRealTimeInfo(request)
                 self.busRouteInfo = response.toBusRouteInfo()
                 
-                print("실시간 버스 조회: \(response)")
+                let positionRequest = BusPositionInfoRequest(
+                    busRouteId: busRouteInfo.busRouteId,
+                    routeName: busRouteInfo.routeName,
+                    serviceRegion: busRouteInfo.serviceRegion
+                )
+                self.busPositionInfo(request: positionRequest)
+                self.busRealTimeInfo = response
             } catch {
                 print("실시간 버스 조회 실패")
             }
         }
+    }
+    
+    // MARK: - 버스 위치 정보 조회
+    @MainActor
+    func busPositionInfo(request: BusPositionInfoRequest) {
+        Task {
+            do {
+                let response = try await busInfoUseCase.busPositionInfo(request)
+                self.busPositionInfo = response
+            } catch {
+                print("버스 위치 정보 실패")
+            }
+        }
+    }
+    
+    private func startAutoRefresh(request: BusRealTimeInfoRequest) {
+        refreshTimer?.invalidate()
+        refreshTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
+            Task { [weak self] in
+                await self?.busRealTimeInfo(request: request)
+            }
+        }
+        RunLoop.main.add(refreshTimer!, forMode: .common)
+    }
+    
+    
+    // MARK: - 수동 새로고침
+    @MainActor
+    func refresh() {
+        guard let request = lastRequest else { return }
+        Task {
+            self.busRealTimeInfo(request: request)
+        }
+    }
+    
+    deinit {
+        refreshTimer?.invalidate()
     }
 }

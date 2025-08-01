@@ -35,18 +35,10 @@ struct BusPositionsResponse: Codable {
 
 extension BusPositionInfoResponse {
     func toEntity() -> BusPositionInfo? {
-        guard
-            let busRouteStationList = busRouteStationList,
-            let turnPoint = turnPoint,
-            let busPositions = busPositions
-        else {
-            return nil
-        }
-        
         return BusPositionInfo(
-            busRouteStationList: busRouteStationList.compactMap { $0.toEntity() },
+            busRouteStationList: busRouteStationList?.compactMap { $0.toEntity() },
             turnPoint: turnPoint,
-            busPositions: busPositions.compactMap { $0.toEntity() }
+            busPositions: busPositions?.compactMap { $0.toEntity() }
         )
     }
 }
@@ -80,18 +72,7 @@ extension BusRouteStationListResponse {
 }
 
 extension BusPositionsResponse {
-    func toEntity() -> BusPositions? {
-        guard
-            let vehicleId = vehicleId,
-            let sectionOrder = sectionOrder,
-            let vehicleNumber = vehicleNumber,
-            let sectionProgress = sectionProgress,
-            let busCongestion = busCongestion,
-            let remainSeats = remainSeats
-        else {
-            return nil
-        }
-        
+    func toEntity() -> BusPositions {
         return BusPositions(
             vehicleId: vehicleId,
             sectionOrder: sectionOrder,

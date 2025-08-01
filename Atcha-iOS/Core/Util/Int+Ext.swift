@@ -29,3 +29,20 @@ extension Int {
         }
     }
 }
+
+extension Int {
+    var toHourMinuteSecondString: String {
+        if self <= 0 { return "0초" }
+        let hours = self / 3600
+        let minutes = (self % 3600) / 60
+        let seconds = self % 60
+        
+        if hours > 0 {
+            return "\(hours)시간 \(minutes)분"
+        } else if minutes > 0 {
+            return "\(minutes)분 \(seconds)초"
+        } else {
+            return "\(seconds)초"
+        }
+    }
+}

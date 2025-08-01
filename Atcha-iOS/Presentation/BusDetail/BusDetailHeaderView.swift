@@ -79,4 +79,12 @@ final class BusDetailHeaderView: UIView {
     @objc private func infoTapped() {
         onInfoTap?()
     }
+    
+    func updateBusCount(_ count: Int) {
+        busCountLabel.attributedText = AtchaFont.B6_R_14(
+            lineHeight: 0,
+            "\(count)",
+            color: AtchaColor.white
+        )
+    }
 }

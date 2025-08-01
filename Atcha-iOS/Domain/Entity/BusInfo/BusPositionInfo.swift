@@ -7,13 +7,13 @@
 
 import Foundation
 
-struct BusPositionInfo: Codable {
+struct BusPositionInfo: Codable, Hashable {
     let busRouteStationList: [BusRouteStationList]?
     let turnPoint: Int?
     let busPositions: [BusPositions]?
 }
 
-struct BusRouteStationList: Codable {
+struct BusRouteStationList: Codable, Hashable {
     let busRouteId: String?
     let busRouteName: String?
     let busStationId: String?
@@ -24,7 +24,7 @@ struct BusRouteStationList: Codable {
     let order: Int?
 }
 
-struct BusPositions: Codable {
+struct BusPositions: Codable, Hashable {
     let vehicleId: String?
     let sectionOrder: Int?
     let vehicleNumber: String?

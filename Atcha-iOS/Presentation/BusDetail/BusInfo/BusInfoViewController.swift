@@ -42,6 +42,15 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
         return stack
     }()
     
+    private let bottomNoticeStack: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .horizontal
+        stack.spacing = 4
+        return stack
+    }()
+    private let bottomNoticeImageView: UIImageView = UIImageView()
+    private let bottomNoticeLabel: UILabel = UILabel()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -85,6 +94,13 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
         operationTimeTitleLabel.attributedText = AtchaFont.B3_M_15("운행시간", color: AtchaColor.white)
         dispatchTitleLabel.attributedText = AtchaFont.B3_M_15("배차간격", color: AtchaColor.white)
         
+        bottomNoticeImageView.image = UIImage.infoOutlined
+        bottomNoticeImageView.contentMode = .scaleAspectFit
+        bottomNoticeImageView.tintColor = AtchaColor.gray200
+        bottomNoticeLabel.attributedText = AtchaFont.R_12("운행상황 및 운수사의 정책에 따라 실제와 다를 수 있습니다.", color: AtchaColor.gray200)
+        bottomNoticeStack.addArrangedSubview(bottomNoticeImageView)
+        bottomNoticeStack.addArrangedSubview(bottomNoticeLabel)
+        
         view.addSubViews(
             topNavigationBar,
             operationStationTitleLabel,
@@ -93,7 +109,8 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
             operationTimeTitleLabel,
             operationTimeStack,
             dispatchTitleLabel,
-            dispatchStack
+            dispatchStack,
+            bottomNoticeStack
         )
     }
     
@@ -138,6 +155,16 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
         dispatchStack.snp.makeConstraints { make in
             make.top.equalTo(dispatchTitleLabel.snp.bottom).offset(6)
             make.leading.equalToSuperview().offset(16)
+        }
+        
+        bottomNoticeImageView.snp.makeConstraints { make in
+            make.size.equalTo(12)
+        }
+        
+        bottomNoticeStack.snp.makeConstraints { make in
+            make.top.equalTo(dispatchStack.snp.bottom).offset(26)
+            make.leading.equalToSuperview().offset(16)
+            make.height.equalTo(14)
         }
     }
     
