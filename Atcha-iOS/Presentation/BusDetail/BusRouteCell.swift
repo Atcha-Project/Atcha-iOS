@@ -43,6 +43,10 @@ class BusRouteCell: UICollectionViewCell {
     private let busInfoStack: UIStackView = UIStackView()
     
     private let routeLineImageView: UIImageView = UIImageView()
+    private let realTimeBusImageView: UIImageView = UIImageView()
+    private var currentBusProgress: Double? = nil
+    private var busYConstraint: Constraint?
+    
     private let routeStack: UIStackView = UIStackView()
     private var leadingConstraint: Constraint?
     
@@ -59,6 +63,15 @@ class BusRouteCell: UICollectionViewCell {
         countdownTimers.removeAll()
         remainSeconds.removeAll()
         remainTimeStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        guard let progress = currentBusProgress else { return }
+        
+        let lineHeight = routeLineImageView.bounds.height
+        let yPosition = lineHeight * CGFloat(progress)
+        busYConstraint?.update(offset: yPosition - 10)
     }
     
     
@@ -86,13 +99,22 @@ class BusRouteCell: UICollectionViewCell {
         routeStack.spacing = 10
         routeStack.alignment = .center
         
-        contentView.addSubview(routeStack)
+        realTimeBusImageView.image = UIImage.airportBus
+        realTimeBusImageView.contentMode = .scaleAspectFit
+        
+        contentView.addSubViews(routeStack, realTimeBusImageView)
     }
     
     private func setupAutoLayout() {
         routeStack.snp.makeConstraints { make in
             make.top.bottom.equalToSuperview()
             self.leadingConstraint = make.leading.equalToSuperview().offset(76).constraint
+        }
+        
+        realTimeBusImageView.snp.makeConstraints { make in
+            make.size.equalTo(20)
+            make.trailing.equalTo(routeLineImageView.snp.trailing).offset(3)
+            self.busYConstraint = make.top.equalTo(routeLineImageView.snp.top).offset(0).constraint
         }
     }
     
@@ -119,15 +141,13 @@ class BusRouteCell: UICollectionViewCell {
             for info in remainInfo {
                 guard let vehicleId = info.vehicleId else { continue }
                 
-                print("도착전 버스 : \(info.remainingStations)")
-                // busPositions에서 같은 vehicleId를 가진 버스 찾기
                 let matchedBus = bus.first(where: { $0.vehicleId == vehicleId })
                 
                 var remainStation = 0
                 if let matchedBus = matchedBus,
                    let busSection = matchedBus.sectionOrder,
                    let currentOrder = station.order {
-                   remainStation = currentOrder - busSection
+                    remainStation = currentOrder - busSection
                 }
                 
                 let congestion = BusCongestion(rawValue: info.busCongestion ?? "")
@@ -296,6 +316,18 @@ class BusRouteCell: UICollectionViewCell {
                 }
             }
         }
+        
+        // 실시간 버스 위치 잡기
+        if let matchedBus = bus.first(where: { $0.sectionOrder == station.order }),
+           let progress = matchedBus.sectionProgress {
+            self.currentBusProgress = progress // 0 ~ 1 값 저장
+            realTimeBusImageView.isHidden = false
+        } else {
+            self.currentBusProgress = nil
+            realTimeBusImageView.isHidden = true
+        }
+        
+        setNeedsLayout()
     }
 }
 

@@ -54,6 +54,8 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] busInfo in
                 self?.applySnapshot(busRoute: busInfo)
+                let busCount = busInfo.busPositions?.count ?? 0
+                self?.headerView.updateBusCount(busCount)
             }
             .store(in: &cancellables)
     }

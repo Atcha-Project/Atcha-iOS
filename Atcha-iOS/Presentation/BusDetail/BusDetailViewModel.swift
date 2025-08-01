@@ -96,7 +96,7 @@ final class BusDetailViewModel: BaseViewModel {
     
     private func startAutoRefresh(request: BusRealTimeInfoRequest) {
         refreshTimer?.invalidate()
-        refreshTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
+        refreshTimer = Timer.scheduledTimer(withTimeInterval: 20, repeats: true) { [weak self] _ in
             Task { [weak self] in
                 await self?.busRealTimeInfo(request: request)
             }
