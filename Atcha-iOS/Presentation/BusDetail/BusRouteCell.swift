@@ -192,7 +192,7 @@ class BusRouteCell: UICollectionViewCell {
                         self.remainSeconds[index] = max(0, self.remainSeconds[index] - 1)
                         let updated = self.remainSeconds[index]
                         
-                        if updated > 180 { // 3분 초과 → 일반 시간 표시
+                        if updated > 120 { 
                             label.attributedText = AtchaFont.B7_M_13(
                                 lineHeight: 0,
                                 "\(updated.toHourMinuteSecondString) (\(remainStation)번째 전, \(congestion?.displayText ?? ""))",
