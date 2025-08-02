@@ -90,7 +90,7 @@ struct Course: Codable, Hashable {
 }
 
 struct Legs: Codable, Hashable {
-    let distance: Int?
+    let distance: Int? // 거리체크
     let sectionTime: Int?
     let mode: TransportMode?
     let departureDateTime: String?
@@ -101,7 +101,7 @@ struct Legs: Codable, Hashable {
     let end: addressInfo?
     let passStopList: [PassStopList]?
     let step: [Step]?
-    let passShape: String?
+    let passShape: String? // 경로그리기 
     
     var formattedSectionTimeRounded: String {
         guard let totalTime = sectionTime else { return "N/A" }

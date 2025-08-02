@@ -68,38 +68,40 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             .sink { [weak self] address in self?.bottomSheet.setupStartAddress(address) }
             .store(in: &cancellables)
     }
-    
     private func addRouteLine(infos: [LegPathInfo]) {
         var shapeStrings: [String] = []
         var colors: [UIColor] = []
         var images: [UIImage] = []
-        var allCoordinates: [CLLocationCoordinate2D] = [] 
+        var allCoordinates: [CLLocationCoordinate2D] = []  // ✅ 전체 좌표 수집
 
         infos.forEach { info in
-            switch info.mode {
-            case .bus, .subway:
-                if let shape = info.passShape, !shape.isEmpty {
-                    shapeStrings.append(shape)
-                    colors.append(info.mode?.getColor(for: info.type ?? "") ?? .magenta)
-                    if let icon = info.mode?.icon {
-                        images.append(icon)
-                    }
-                    allCoordinates.append(contentsOf: convertShapeToCoords(shape))
-                }
-
-            case .walk:
-                let walkShapes = info.step?.compactMap { $0.linestring }.filter { !$0.isEmpty } ?? []
+            var shapeToUse: String?
+            if info.mode == .walk,
+               let steps = info.step, !steps.isEmpty {
+                let walkShapes = steps.compactMap { $0.linestring }.filter { !$0.isEmpty }
                 let merged = walkShapes.joined(separator: " ")
                 if !merged.isEmpty {
-                    shapeStrings.append(merged)
+                    shapeToUse = merged
+                }
+            }
+
+            if shapeToUse == nil, let shape = info.passShape, !shape.isEmpty {
+                shapeToUse = shape
+            }
+
+            if let shape = shapeToUse {
+                shapeStrings.append(shape)
+                if info.mode == .bus || info.mode == .subway {
+                    colors.append(info.mode?.getColor(for: info.type ?? "") ?? .magenta)
+                } else {
                     colors.append(.gray200)
-                    if let icon = info.mode?.icon {
-                        images.append(icon)
-                    }
-                    allCoordinates.append(contentsOf: convertShapeToCoords(merged))
                 }
 
-            default: break
+                if let icon = info.mode?.icon {
+                    images.append(icon)
+                }
+
+                allCoordinates.append(contentsOf: convertShapeToCoords(shape))
             }
         }
 

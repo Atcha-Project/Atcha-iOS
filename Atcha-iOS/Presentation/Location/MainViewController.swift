@@ -30,6 +30,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        viewModel.setLoading(true)
         setupUI()
         setupAutoLayout()
         bindView()
@@ -158,12 +159,17 @@ extension MainViewController {
         switch action {
         case .exitTapped:
             viewModel.requestPermissionAndStartTracking()
-            view.showToast(message: "알림이 종료되었어요")
             lastTrainView.isHidden = false
             flagImageView.isHidden = false
             lastTrainDepartView.isHidden = true
             updateAtchaImageConstraint(relativeTo: lastTrainView)
             mapContainerView.clearMapView()
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+                guard let self else { return }
+                view.showToast(message: "알림이 종료되었어요")
+            }
+            
         case .detailRoadMapTapped:
             viewModel.handleRoute(route: .detailRoute(address: "", infos: LegInfo(pathInfo: [], trafficInfo: [])))
             print("detailRoadMapTapped 누르기")
@@ -220,7 +226,6 @@ extension MainViewController {
     }
     
     private func handleLegPathInfos(_ infos: [LegPathInfo]) {
-        view.showToast(message: "알림이 등록되었어요.")
         lastTrainView.isHidden = true
         lastTrainDepartView.isHidden = false
         flagImageView.isHidden = true
@@ -234,6 +239,11 @@ extension MainViewController {
         
         lastTrainDepartView.setupLoaction(location: viewModel.address)
         addRouteLine(infos: infos)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            guard let self else { return }
+            view.showToast(message: "알림이 등록되었어요.")
+        }
     }
     
     private func addRouteLine(infos: [LegPathInfo]) {
@@ -243,30 +253,33 @@ extension MainViewController {
         var allCoordinates: [CLLocationCoordinate2D] = []  // ✅ 전체 좌표 수집
 
         infos.forEach { info in
-            switch info.mode {
-            case .bus, .subway:
-                if let shape = info.passShape, !shape.isEmpty {
-                    shapeStrings.append(shape)
-                    colors.append(info.mode?.getColor(for: info.type ?? "") ?? .magenta)
-                    if let icon = info.mode?.icon {
-                        images.append(icon)
-                    }
-                    allCoordinates.append(contentsOf: convertShapeToCoords(shape))
-                }
-
-            case .walk:
-                let walkShapes = info.step?.compactMap { $0.linestring }.filter { !$0.isEmpty } ?? []
+            var shapeToUse: String?
+            if info.mode == .walk,
+               let steps = info.step, !steps.isEmpty {
+                let walkShapes = steps.compactMap { $0.linestring }.filter { !$0.isEmpty }
                 let merged = walkShapes.joined(separator: " ")
                 if !merged.isEmpty {
-                    shapeStrings.append(merged)
+                    shapeToUse = merged
+                }
+            }
+
+            if shapeToUse == nil, let shape = info.passShape, !shape.isEmpty {
+                shapeToUse = shape
+            }
+
+            if let shape = shapeToUse {
+                shapeStrings.append(shape)
+                if info.mode == .bus || info.mode == .subway {
+                    colors.append(info.mode?.getColor(for: info.type ?? "") ?? .magenta)
+                } else {
                     colors.append(.gray200)
-                    if let icon = info.mode?.icon {
-                        images.append(icon)
-                    }
-                    allCoordinates.append(contentsOf: convertShapeToCoords(merged))
                 }
 
-            default: break
+                if let icon = info.mode?.icon {
+                    images.append(icon)
+                }
+
+                allCoordinates.append(contentsOf: convertShapeToCoords(shape))
             }
         }
 
@@ -325,7 +338,10 @@ extension MainViewController {
 
 extension MainViewController {
     func didFinishLoadingMap(_ mapView: TMapWrapper) {
-        viewModel.setupLocation()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+            self.viewModel.setupLocation()
+            self.hideLoading()
+        }
     }
     
     @objc private func didTapMyPageButton() {
