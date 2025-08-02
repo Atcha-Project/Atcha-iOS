@@ -30,6 +30,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        viewModel.setLoading(true)
         setupUI()
         setupAutoLayout()
         bindView()
@@ -158,12 +159,17 @@ extension MainViewController {
         switch action {
         case .exitTapped:
             viewModel.requestPermissionAndStartTracking()
-            view.showToast(message: "알림이 종료되었어요")
             lastTrainView.isHidden = false
             flagImageView.isHidden = false
             lastTrainDepartView.isHidden = true
             updateAtchaImageConstraint(relativeTo: lastTrainView)
             mapContainerView.clearMapView()
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+                guard let self else { return }
+                view.showToast(message: "알림이 종료되었어요")
+            }
+            
         case .detailRoadMapTapped:
             viewModel.handleRoute(route: .detailRoute(address: "", infos: LegInfo(pathInfo: [], trafficInfo: [])))
             print("detailRoadMapTapped 누르기")
@@ -220,7 +226,6 @@ extension MainViewController {
     }
     
     private func handleLegPathInfos(_ infos: [LegPathInfo]) {
-        view.showToast(message: "알림이 등록되었어요.")
         lastTrainView.isHidden = true
         lastTrainDepartView.isHidden = false
         flagImageView.isHidden = true
@@ -234,6 +239,11 @@ extension MainViewController {
         
         lastTrainDepartView.setupLoaction(location: viewModel.address)
         addRouteLine(infos: infos)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            guard let self else { return }
+            view.showToast(message: "알림이 등록되었어요.")
+        }
     }
     
     private func addRouteLine(infos: [LegPathInfo]) {
@@ -248,28 +258,33 @@ extension MainViewController {
                 if let shape = info.passShape, !shape.isEmpty {
                     shapeStrings.append(shape)
                     colors.append(info.mode?.getColor(for: info.type ?? "") ?? .magenta)
-                    if let icon = info.mode?.icon {
+                    if let icon = info.mode?.getBorderIcon(for: info.type ?? "") {
                         images.append(icon)
                     }
                     allCoordinates.append(contentsOf: convertShapeToCoords(shape))
                 }
-
             case .walk:
-                let walkShapes = info.step?.compactMap { $0.linestring }.filter { !$0.isEmpty } ?? []
-                let merged = walkShapes.joined(separator: " ")
-                if !merged.isEmpty {
-                    shapeStrings.append(merged)
-                    colors.append(.gray200)
-                    if let icon = info.mode?.icon {
-                        images.append(icon)
+                if let steps = info.step, !steps.isEmpty {
+                    let walkShapes = steps.compactMap { $0.linestring }.filter { !$0.isEmpty }
+                    let merged = walkShapes.joined(separator: " ")
+                    if !merged.isEmpty {
+                        shapeStrings.append(merged)
+                        colors.append(.gray200)
+                        images.append(UIImage.routeCircleLineWalk)
+                        allCoordinates.append(contentsOf: convertShapeToCoords(merged))
                     }
-                    allCoordinates.append(contentsOf: convertShapeToCoords(merged))
+                } else if let shape = info.passShape, !shape.isEmpty {
+                    shapeStrings.append(shape)
+                    colors.append(.gray200)
+                    images.append(UIImage.routeCircleLineWalk)
+                    allCoordinates.append(contentsOf: convertShapeToCoords(shape))
                 }
-
-            default: break
+                
+            default:
+                break
             }
         }
-
+        
         for (index, (shape, color, image)) in zip3(shapeStrings, colors, images).enumerated() {
             let isFirst = index == 0
             let isLast = index == shapeStrings.count - 1
@@ -325,7 +340,10 @@ extension MainViewController {
 
 extension MainViewController {
     func didFinishLoadingMap(_ mapView: TMapWrapper) {
-        viewModel.setupLocation()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+            self.viewModel.setupLocation()
+            self.hideLoading()
+        }
     }
     
     @objc private func didTapMyPageButton() {

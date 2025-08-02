@@ -1,17 +1,15 @@
 {
   "images" : [
     {
-      "filename" : "name=walk.png",
+      "filename" : "airport_border.svg",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "name=walk@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "name=walk@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }
