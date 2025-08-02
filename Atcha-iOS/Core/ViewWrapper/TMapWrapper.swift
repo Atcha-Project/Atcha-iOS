@@ -101,15 +101,22 @@ final class TMapWrapper: NSObject, MapRendering {
             marker.map = mapView
             trafficMarkers.append(marker)
         }
-
-        // 5. 중간 마커
-        if !isFirst && !isLast, let start = vertices.first,
-           let image = markerImage?.withRenderingMode(.alwaysTemplate) {
-            let marker = TMapMarker(position: CLLocationCoordinate2D(latitude: start.latitude, longitude: start.longitude))
-            marker.icon = image.withTintColor(color)
+        
+        if let markerImage, let point = vertices.first {
+            let marker = TMapMarker(position: CLLocationCoordinate2D(latitude: point.latitude, longitude: point.longitude))
+            marker.icon = markerImage
             marker.map = mapView
             trafficMarkers.append(marker)
         }
+
+        // 5. 중간 마커
+//        if !isFirst && !isLast, let start = vertices.first,
+//           let image = markerImage?.withRenderingMode(.alwaysTemplate) {
+//            let marker = TMapMarker(position: CLLocationCoordinate2D(latitude: start.latitude, longitude: start.longitude))
+//            marker.icon = image.withTintColor(color)
+//            marker.map = mapView
+//            trafficMarkers.append(marker)
+//        }
     }
 
     func adjustMapToFit(coordinates: [CLLocationCoordinate2D]) {

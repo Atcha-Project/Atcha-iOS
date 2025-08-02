@@ -203,23 +203,23 @@ enum TransportMode: String, Codable {
     case subway = "SUBWAY"
     case unknown
     
-    var icon: UIImage? {
-        switch self {
-            //        case .bus: return UIImage.routeCircleLineBus
-            //        case .subway: return UIImage.routeCircleLineSubway
-            //        default: return UIImage.routeCircleLineWalk
-        case .bus: return UIImage.routeBusWhite
-        case .subway: return UIImage.routeCircleSubway
-        default: return UIImage.routeCircleWalk
-        }
-    }
-    
     func getIcon(for routeType: String) -> UIImage? {
         switch self {
         case .bus:
             return TransportMode.busIcon[routeType]
         case .subway:
             return TransportMode.subwayIcon[routeType]
+        default:
+            return nil
+        }
+    }
+    
+    func getBorderIcon(for routeType: String) -> UIImage? {
+        switch self {
+        case .bus:
+            return TransportMode.busBorderIcon[routeType]
+        case .subway:
+            return TransportMode.subwayBorderIcon[routeType]
         default:
             return nil
         }

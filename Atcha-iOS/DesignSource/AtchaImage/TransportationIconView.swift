@@ -184,6 +184,29 @@ extension TransportMode {
         "125": .GTX_A
     ]
     
+    static let subwayBorderIcon: [String: UIImage] = [
+        "1": .line1Border, "117": .line1Border, "118": .line1Border,
+        "2": .line2Border, "10": .line2Border, "11": .line2Border,
+        "3": .line3Border,
+        "4": .line4Border, "119": .line4Border,
+        "5": .line5Border, "6": .line6Border, "7": .line7Border, "8": .line8Border,
+        "9": .line9Border, "120": .line9Border,
+        "21": .incheon1Border, "22": .incheon2Border,
+        "100": .suinBundangBorder, "121": .suinBundangBorder,
+        "101": .airportBorder, "124": .airportBorder,
+        "104": .gyeonguiJungangBorder, "122": .gyeonguiJungangBorder,
+        "107": .everlineBorder,
+        "108": .gyeongchunBorder, "123": .gyeongchunBorder,
+        "109": .shinbundangBorder,
+        "110": .uijeongbuBorder,
+        "112": .gyeonggangBorder,
+        "113": .uiSinseolBorder,
+        "114": .seohaeBorder,
+        "115": .gimpoBorder,
+        "116": .slilimBorder,
+        "125": .gtxABorder
+    ]
+    
     static let subwayGetOffIcon: [String: String] = [
         "1": "line1-getOff", "117": "line1-getOff", "118": "line1-getOff",
         "2": "line2-getOff", "10": "line2-getOff", "11": "line2-getOff",
@@ -214,6 +237,15 @@ extension TransportMode {
         "4": .widearea, "6": .widearea, "14": .widearea,
         "15": .widearea, "16": .widearea, "22": .widearea, "23": .widearea,
         "5": .airportBus, "17": .airportBus
+    ]
+    
+    static let busBorderIcon: [String: UIImage] = [
+        "1": .regularBorder, "10": .regularBorder, "12": .regularBorder,
+        "3": .townBorder, "13": .townBorder, "21": .townBorder,
+        "2": .mainlineBorder, "11": .mainlineBorder,
+        "4": .wideareaBorder, "6": .wideareaBorder, "14": .wideareaBorder,
+        "15": .wideareaBorder, "16": .wideareaBorder, "22": .wideareaBorder, "23": .wideareaBorder,
+        "5": .airportBorder, "17": .airportBorder
     ]
     
     static let busGetOffIcon: [String: String] = [

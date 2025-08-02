@@ -51,7 +51,7 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         }
         bottomSheet.snp.makeConstraints {
             $0.leading.trailing.bottom.equalToSuperview()
-            $0.height.equalTo(view.frame.height * 0.5) 
+            $0.height.equalTo(view.frame.height * 0.5)
         }
     }
     
@@ -68,6 +68,7 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             .sink { [weak self] address in self?.bottomSheet.setupStartAddress(address) }
             .store(in: &cancellables)
     }
+    
     private func addRouteLine(infos: [LegPathInfo]) {
         var shapeStrings: [String] = []
         var colors: [UIColor] = []
@@ -75,36 +76,38 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         var allCoordinates: [CLLocationCoordinate2D] = []  // ✅ 전체 좌표 수집
 
         infos.forEach { info in
-            var shapeToUse: String?
-            if info.mode == .walk,
-               let steps = info.step, !steps.isEmpty {
-                let walkShapes = steps.compactMap { $0.linestring }.filter { !$0.isEmpty }
-                let merged = walkShapes.joined(separator: " ")
-                if !merged.isEmpty {
-                    shapeToUse = merged
-                }
-            }
-
-            if shapeToUse == nil, let shape = info.passShape, !shape.isEmpty {
-                shapeToUse = shape
-            }
-
-            if let shape = shapeToUse {
-                shapeStrings.append(shape)
-                if info.mode == .bus || info.mode == .subway {
+            switch info.mode {
+            case .bus, .subway:
+                if let shape = info.passShape, !shape.isEmpty {
+                    shapeStrings.append(shape)
                     colors.append(info.mode?.getColor(for: info.type ?? "") ?? .magenta)
-                } else {
+                    if let icon = info.mode?.getBorderIcon(for: info.type ?? "") {
+                        images.append(icon)
+                    }
+                    allCoordinates.append(contentsOf: convertShapeToCoords(shape))
+                }
+            case .walk:
+                if let steps = info.step, !steps.isEmpty {
+                    let walkShapes = steps.compactMap { $0.linestring }.filter { !$0.isEmpty }
+                    let merged = walkShapes.joined(separator: " ")
+                    if !merged.isEmpty {
+                        shapeStrings.append(merged)
+                        colors.append(.gray200)
+                        images.append(UIImage.routeCircleLineWalk)
+                        allCoordinates.append(contentsOf: convertShapeToCoords(merged))
+                    }
+                } else if let shape = info.passShape, !shape.isEmpty {
+                    shapeStrings.append(shape)
                     colors.append(.gray200)
+                    images.append(UIImage.routeCircleLineWalk)
+                    allCoordinates.append(contentsOf: convertShapeToCoords(shape))
                 }
-
-                if let icon = info.mode?.icon {
-                    images.append(icon)
-                }
-
-                allCoordinates.append(contentsOf: convertShapeToCoords(shape))
+                
+            default:
+                break
             }
         }
-
+        
         for (index, (shape, color, image)) in zip3(shapeStrings, colors, images).enumerated() {
             let isFirst = index == 0
             let isLast = index == shapeStrings.count - 1
