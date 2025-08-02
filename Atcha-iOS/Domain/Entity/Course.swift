@@ -56,35 +56,35 @@ struct Course: Codable, Hashable {
             let departure = departure,
             let totalTime = totalTime
         else { return nil }
-
+        
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
         formatter.locale = Locale(identifier: "ko_KR")
-
+        
         guard let departureDate = formatter.date(from: departure) else { return nil }
-
+        
         let minutes = parseTotalTimeToMinutes(totalTime)
         let arrivalDate = departureDate.addingTimeInterval(TimeInterval(minutes * 60))
-
+        
         let displayFormatter = DateFormatter()
         displayFormatter.dateFormat = "HH:mm"
-
+        
         return "\(displayFormatter.string(from: departureDate)) ~ \(displayFormatter.string(from: arrivalDate))"
     }
-
+    
     private func parseTotalTimeToMinutes(_ time: String) -> Int {
         var totalMinutes = 0
-
+        
         if let hourMatch = time.range(of: "\\d+(?=시간)", options: .regularExpression),
            let hour = Int(time[hourMatch]) {
             totalMinutes += hour * 60
         }
-
+        
         if let minuteMatch = time.range(of: "\\d+(?=분)", options: .regularExpression),
            let minute = Int(time[minuteMatch]) {
             totalMinutes += minute
         }
-
+        
         return totalMinutes
     }
 }
@@ -101,7 +101,7 @@ struct Legs: Codable, Hashable {
     let end: addressInfo?
     let passStopList: [PassStopList]?
     let step: [Step]?
-    let passShape: String? // 경로그리기 
+    let passShape: String? // 경로그리기
     
     var formattedSectionTimeRounded: String {
         guard let totalTime = sectionTime else { return "N/A" }
@@ -130,6 +130,7 @@ struct LegInfo {
 
 struct LegTrafficInfo: Hashable {
     let id: UUID = UUID()
+    let distance: Int?
     let departureDateTime: String?
     let totalTime: String?
     let sectionTime: String?
@@ -145,9 +146,10 @@ extension Course {
     func toLegTrafficInfos() -> [LegTrafficInfo] {
         let timeText = makeStartEndTime(departure: departureDateTime,
                                         totalTime: formattedTotalTime)
-
+        
         return legs.map { leg in
-            LegTrafficInfo(departureDateTime: departureDateTime,
+            LegTrafficInfo(distance: leg.distance,
+                           departureDateTime: departureDateTime,
                            totalTime: formattedTotalTime,
                            sectionTime: leg.formattedSectionTimeRounded,
                            mode: leg.mode,
