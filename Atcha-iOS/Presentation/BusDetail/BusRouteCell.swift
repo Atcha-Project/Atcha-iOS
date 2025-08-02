@@ -43,7 +43,13 @@ class BusRouteCell: UICollectionViewCell {
     }()
     private let busInfoStack: UIStackView = UIStackView()
     
-    private let routeLineImageView: UIImageView = UIImageView()
+    private let routeLineView: RouteLineView = RouteLineView(
+        heightType: .short,
+        circleType: .circle,
+        lineColor: .regular,
+        lineOpacity: .none
+    )
+    
     private let realTimeBusImageView: UIImageView = UIImageView()
     private let realTimeBusStack: UIStackView = UIStackView()
     private let remainSeatLabel: PaddingLabel = {
@@ -58,7 +64,6 @@ class BusRouteCell: UICollectionViewCell {
     private var busYConstraint: Constraint?
     
     private let routeStack: UIStackView = UIStackView()
-    private var leadingConstraint: Constraint?
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -79,10 +84,10 @@ class BusRouteCell: UICollectionViewCell {
         super.layoutSubviews()
         guard let progress = currentBusProgress else { return }
         
-        let baseHeight: CGFloat = isCurrentStationFlag ? 107 : 68
+        let baseHeight: CGFloat = isCurrentStationFlag ? 108 : 68
         let yPosition = baseHeight * CGFloat(progress)
         busYConstraint?.update(offset: yPosition + 12)
-        contentView.bringSubviewToFront(realTimeBusImageView)
+        contentView.bringSubviewToFront(realTimeBusStack)
     }
     
     
@@ -103,8 +108,7 @@ class BusRouteCell: UICollectionViewCell {
         busInfoStack.spacing = 5
         busInfoStack.alignment = .leading
         
-        routeLineImageView.contentMode = .scaleAspectFill
-        routeStack.addArrangedSubview(routeLineImageView)
+        routeStack.addArrangedSubview(routeLineView)
         routeStack.addArrangedSubview(busInfoStack)
         routeStack.axis = .horizontal
         routeStack.spacing = 10
@@ -121,19 +125,22 @@ class BusRouteCell: UICollectionViewCell {
         
         contentView.addSubview(routeStack)
         contentView.addSubview(realTimeBusStack)
+        contentView.bringSubviewToFront(realTimeBusStack)
     }
     
     private func setupAutoLayout() {
         routeStack.snp.makeConstraints { make in
             make.top.bottom.equalToSuperview()
-            self.leadingConstraint = make.leading.equalToSuperview().offset(76).constraint
+            make.leading.equalToSuperview().offset(76)
         }
-
+        
         realTimeBusStack.snp.makeConstraints { make in
             make.height.equalTo(20)
-            make.trailing.equalTo(routeLineImageView.snp.trailing).offset(3)
-            self.busYConstraint = make.top.equalTo(routeLineImageView.snp.top).offset(0).constraint
+            make.trailing.equalTo(routeLineView.snp.trailing).offset(10)
+            self.busYConstraint = make.top.equalTo(routeLineView.snp.top).offset(0).constraint
         }
+        routeStack.layer.zPosition = 0
+        realTimeBusStack.layer.zPosition = 10
     }
     
     func configure(
@@ -143,12 +150,13 @@ class BusRouteCell: UICollectionViewCell {
         busType: BusType,
         remainInfo: [RealTimeBusArrival],
         bus: [BusPositions],
-        isAfterTurnPoint: Bool
+        isAfterTurnPoint: Bool,
+        isFirstStation: Bool,  
+        isLastStation: Bool
     ) {
+    
         stationLabel.attributedText = AtchaFont.B6_R_14(lineHeight: 0, station.busStationName ?? "", color: AtchaColor.white)
         stationNumberLabel.attributedText = AtchaFont.B7_M_13(lineHeight: 0, station.busStationNumber ?? "", color: AtchaColor.gray200)
-        
-        leadingConstraint?.update(offset: isTurnPoint ? 52 : 76)
         
         remainTimeStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         countdownTimers.forEach { $0.invalidate() }
@@ -192,7 +200,7 @@ class BusRouteCell: UICollectionViewCell {
                         self.remainSeconds[index] = max(0, self.remainSeconds[index] - 1)
                         let updated = self.remainSeconds[index]
                         
-                        if updated > 120 { 
+                        if updated > 120 {
                             label.attributedText = AtchaFont.B7_M_13(
                                 lineHeight: 0,
                                 "\(updated.toHourMinuteSecondString) (\(remainStation)번째 전, \(congestion?.displayText ?? ""))",
@@ -222,124 +230,64 @@ class BusRouteCell: UICollectionViewCell {
         switch busType {
         case .좌석, .간선: // mainline
             realTimeBusImageView.image = UIImage.busMainline20Px
-            if isCurrentStation {
-                if isTurnPoint {
-                    // 2. 현재 정류장이면서 회차 정류장 → mainline-long-turn
-                    routeLineImageView.image = UIImage.mainlineLongTurn
-                } else if isAfterTurnPoint {
-                    // 3. 현재 정류장이면서 회차 이후 정류장 → mainline-long-opacity
-                    routeLineImageView.image = UIImage.mainlineLongOpacity
-                } else {
-                    // 1. 현재 정류장이면서 회차 아님 → mainline-long
-                    routeLineImageView.image = UIImage.mainlineLong
-                }
-            } else {
-                if isTurnPoint {
-                    // 5. 현재X, 회차 정류장 → mainline-short-turn
-                    routeLineImageView.image = UIImage.mainlineShortTurn
-                } else if isAfterTurnPoint {
-                    // 6. 현재X, 회차 이후 → mainline-short-opacity
-                    routeLineImageView.image = UIImage.mainlineShortOpacity
-                } else {
-                    // 4. 현재X, 회차 아님 → mainline-short
-                    routeLineImageView.image = UIImage.mainlineShort
-                }
-            }
+            configureRouteLine(
+                isCurrentStation: isCurrentStation,
+                isTurnPoint: isTurnPoint,
+                isAfterTurnPoint: isAfterTurnPoint,
+                isFirstStation: isFirstStation,
+                isLastStation: isLastStation,
+                color: .mainline
+            )
         case .일반, .외곽, .지선: // regular
             realTimeBusImageView.image = UIImage.busRegular20Px
-            if isCurrentStation {
-                if isTurnPoint {
-                    routeLineImageView.image = UIImage.regularLongTurn
-                } else if isAfterTurnPoint {
-                    routeLineImageView.image = UIImage.regularLongOpacity
-                } else {
-                    routeLineImageView.image = UIImage.regularLong
-                }
-            } else {
-                if isTurnPoint {
-                    routeLineImageView.image = UIImage.regularShortTurn
-                } else if isAfterTurnPoint {
-                    routeLineImageView.image = UIImage.regularShortOpacity
-                } else {
-                    routeLineImageView.image = UIImage.regularShort
-                }
-            }
+            configureRouteLine(
+                isCurrentStation: isCurrentStation,
+                isTurnPoint: isTurnPoint,
+                isAfterTurnPoint: isAfterTurnPoint,
+                isFirstStation: isFirstStation,
+                isLastStation: isLastStation,
+                color: .regular
+            )
         case .마을, .순환, .농어촌: // town
             realTimeBusImageView.image = UIImage.busTown20Px
-            if isCurrentStation {
-                if isTurnPoint {
-                    routeLineImageView.image = UIImage.townLongTurn
-                } else if isAfterTurnPoint {
-                    routeLineImageView.image = UIImage.townLongOpacity
-                } else {
-                    routeLineImageView.image = UIImage.townLong
-                }
-            } else {
-                if isTurnPoint {
-                    routeLineImageView.image = UIImage.townShortTurn
-                } else if isAfterTurnPoint {
-                    routeLineImageView.image = UIImage.townShortOpacity
-                } else {
-                    routeLineImageView.image = UIImage.townShort
-                }
-            }
+            configureRouteLine(
+                isCurrentStation: isCurrentStation,
+                isTurnPoint: isTurnPoint,
+                isAfterTurnPoint: isAfterTurnPoint,
+                isFirstStation: isFirstStation,
+                isLastStation: isLastStation,
+                color: .town
+            )
         case .직행좌석, .간선급행, .광역, .급행, .시외, .시외버스, .고속버스: // widearea
             realTimeBusImageView.image = UIImage.busWidearea20Px
-            if isCurrentStation {
-                if isTurnPoint {
-                    routeLineImageView.image = UIImage.wideareaLongTurn
-                } else if isAfterTurnPoint {
-                    routeLineImageView.image = UIImage.wideareaLongOpacity
-                } else {
-                    routeLineImageView.image = UIImage.wideareaLong
-                }
-            } else {
-                if isTurnPoint {
-                    routeLineImageView.image = UIImage.wideareaShortTurn
-                } else if isAfterTurnPoint {
-                    routeLineImageView.image = UIImage.wideareaShortOpacity
-                } else {
-                    routeLineImageView.image = UIImage.wideareaShort
-                }
-            }
+            configureRouteLine(
+                isCurrentStation: isCurrentStation,
+                isTurnPoint: isTurnPoint,
+                isAfterTurnPoint: isAfterTurnPoint,
+                isFirstStation: isFirstStation,
+                isLastStation: isLastStation,
+                color: .widearea
+            )
         case .공항, .리무진: // airport
             realTimeBusImageView.image = UIImage.busAirport20Px
-            if isCurrentStation {
-                if isTurnPoint {
-                    routeLineImageView.image = UIImage.airportLongTurn
-                } else if isAfterTurnPoint {
-                    routeLineImageView.image = UIImage.airportLongOpacity
-                } else {
-                    routeLineImageView.image = UIImage.airportLong
-                }
-            } else {
-                if isTurnPoint {
-                    routeLineImageView.image = UIImage.airportShortTurn
-                } else if isAfterTurnPoint {
-                    routeLineImageView.image = UIImage.airportShortOpacity
-                } else {
-                    routeLineImageView.image = UIImage.airportShort
-                }
-            }
+            configureRouteLine(
+                isCurrentStation: isCurrentStation,
+                isTurnPoint: isTurnPoint,
+                isAfterTurnPoint: isAfterTurnPoint,
+                isFirstStation: isFirstStation,
+                isLastStation: isLastStation,
+                color: .airport
+            )
         case .unknown: // default
             realTimeBusImageView.image = UIImage.busDefualt20Px
-            if isCurrentStation {
-                if isTurnPoint {
-                    routeLineImageView.image = UIImage.defaultLongTurn
-                } else if isAfterTurnPoint {
-                    routeLineImageView.image = UIImage.defaultLongOpacity
-                } else {
-                    routeLineImageView.image = UIImage.defaultLong
-                }
-            } else {
-                if isTurnPoint {
-                    routeLineImageView.image = UIImage.defaultShortTurn
-                } else if isAfterTurnPoint {
-                    routeLineImageView.image = UIImage.defaultShortOpacity
-                } else {
-                    routeLineImageView.image = UIImage.defaultShort
-                }
-            }
+            configureRouteLine(
+                isCurrentStation: isCurrentStation,
+                isTurnPoint: isTurnPoint,
+                isAfterTurnPoint: isAfterTurnPoint,
+                isFirstStation: isFirstStation,
+                isLastStation: isLastStation,
+                color: .gray200
+            )
         }
         
         // 실시간 버스 위치 잡기
@@ -395,6 +343,140 @@ class BusRouteCell: UICollectionViewCell {
         
         setNeedsLayout()
     }
+    
+    private func configureRouteLine(
+        isCurrentStation: Bool,
+        isTurnPoint: Bool,
+        isAfterTurnPoint: Bool,
+        isFirstStation: Bool,
+        isLastStation: Bool,
+        color: UIColor
+    ) {
+        let circle: RouteCircleType = isTurnPoint ? .회차 : .circle
+        let height: RouteHeightType = isCurrentStation ? .long : .short
+        
+        if isCurrentStation {
+            if isTurnPoint {
+                // 4. 현재 정류장이면서 회차 정류장(회차 정류장은 무조건 가운데 정류장)
+                routeLineView.configure(
+                    heightType: height,
+                    circleType: circle,
+                    lineColor: color,
+                    lineOpacity: .bottom(0.3),
+                    linePosition: .both
+                )
+            } else if isAfterTurnPoint {
+                if isLastStation {
+                    // 5. 현재 정류장이면서 회차 이후 정류장이면서 마지막 정류장
+                    routeLineView.configure(
+                        heightType: height,
+                        circleType: circle,
+                        lineColor: color,
+                        lineOpacity: .all(0.3),
+                        linePosition: .topOnly
+                    )
+                } else {
+                    // 6. 현재 정류장이면서 회차 이후 정류장이면서 가운데 정류장
+                    routeLineView.configure(
+                        heightType: height,
+                        circleType: circle,
+                        lineColor: color,
+                        lineOpacity: .all(0.3),
+                        linePosition: .both
+                    )
+                }
+            } else {
+                if isFirstStation {
+                    // 1. 현재 정류장이면서 회차아니면서 첫번째 정류장
+                    routeLineView.configure(
+                        heightType: height,
+                        circleType: circle,
+                        lineColor: color,
+                        lineOpacity: .none,
+                        linePosition: .bottomOnly
+                    )
+                } else if isLastStation {
+                    // 2. 현재 정류장이면서 회차아니면서 마지막 정류장
+                    routeLineView.configure(
+                        heightType: height,
+                        circleType: circle,
+                        lineColor: color,
+                        lineOpacity: .none,
+                        linePosition: .topOnly
+                    )
+                } else {
+                    // 3. 현재 정류장이면서 회차아니면서 가운데 정류장
+                    routeLineView.configure(
+                        heightType: height,
+                        circleType: circle,
+                        lineColor: color,
+                        lineOpacity: .none,
+                        linePosition: .both
+                    )
+                }
+            }
+        } else {
+            if isTurnPoint {
+                // 10. 현재 정류장이 아니면서 회차 정류장
+                routeLineView.configure(
+                    heightType: height,
+                    circleType: circle,
+                    lineColor: color,
+                    lineOpacity: .bottom(0.3),
+                    linePosition: .both
+                )
+            } else if isAfterTurnPoint {
+                if isLastStation {
+                    // 11. 현재 정류장이 아니면서 회차 이후 정류장이면서 마지막 정류장
+                    routeLineView.configure(
+                        heightType: height,
+                        circleType: circle,
+                        lineColor: color,
+                        lineOpacity: .all(0.3),
+                        linePosition: .topOnly
+                    )
+                } else {
+                    // 12. 현재 정류장이 아니면서 회차 이후 정류장이면서 가운데 정류장
+                    routeLineView.configure(
+                        heightType: height,
+                        circleType: circle,
+                        lineColor: color,
+                        lineOpacity: .all(0.3),
+                        linePosition: .both
+                    )
+                }
+            } else {
+                if isFirstStation {
+                    // 7. 현재 정류장이 아니면서 회차 아니면서 첫번째 정류장
+                    routeLineView.configure(
+                        heightType: height,
+                        circleType: circle,
+                        lineColor: color,
+                        lineOpacity: .none,
+                        linePosition: .bottomOnly
+                    )
+                } else if isLastStation {
+                    // 8. 현재 정류장이 아니면서 회차 아니면서 마지막 정류장
+                    routeLineView.configure(
+                        heightType: height,
+                        circleType: circle,
+                        lineColor: color,
+                        lineOpacity: .none,
+                        linePosition: .topOnly
+                    )
+                } else {
+                    // 9. 현재 정류장이 아니면서 회차 아니면서 가운데 정류장
+                    routeLineView.configure(
+                        heightType: height,
+                        circleType: circle,
+                        lineColor: color,
+                        lineOpacity: .none,
+                        linePosition: .both
+                    )
+                }
+            }
+        }
+    }
 }
 
 extension BusRouteCell{
@@ -409,14 +491,5 @@ extension BusRouteCell{
         let section = NSCollectionLayoutSection(group: group)
         
         return section
-    }
-    
-    override func apply(_ layoutAttributes: UICollectionViewLayoutAttributes) {
-        super.apply(layoutAttributes)
-        if currentBusProgress != nil {
-            self.layer.zPosition = 10
-        } else {
-            self.layer.zPosition = 0
-        }
     }
 }
