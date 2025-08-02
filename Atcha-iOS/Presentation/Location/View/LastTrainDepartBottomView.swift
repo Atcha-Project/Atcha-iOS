@@ -88,10 +88,6 @@ final class LastTrainDepartBottomView: UIView {
         
         detailRoadMapButton.setContentHuggingPriority(.defaultLow, for: .horizontal)
         detailRoadMapButton.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-        
-        hourTimeLabel.attributedText = AtchaFont.D2_EB_48("22", color: .white)
-        minuteTimeLabel.attributedText = AtchaFont.D2_EB_48("28", color: .white)
-        locationLabel.attributedText = AtchaFont.B4_R_15("앗차 강남점 -> 우리집", color: .gray300)
     }
     
     private func setupAutoLayout() {
@@ -170,9 +166,9 @@ final class LastTrainDepartBottomView: UIView {
         locationLabel.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleLocationTapped)))
     }
     
-    func setupTime(hour: Int, minute: Int) {
-        hourTimeLabel.attributedText = AtchaFont.D2_EB_48(String(hour), color: .white)
-        minuteTimeLabel.attributedText = AtchaFont.D2_EB_48(String(minute), color: .white)
+    func setupTime(hour: String, minute: String) {
+        hourTimeLabel.attributedText = AtchaFont.D2_EB_48(hour, color: .white)
+        minuteTimeLabel.attributedText = AtchaFont.D2_EB_48(minute, color: .white)
     }
     
     func setupLoaction(location: String?) {
