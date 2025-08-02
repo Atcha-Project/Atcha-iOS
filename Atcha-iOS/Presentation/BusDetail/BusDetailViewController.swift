@@ -153,6 +153,10 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         let isCurrentStation = (station.busStationName == viewModel.busDetailInfo.start?.name)
         let isAfterTurnPoint = (order > turnPoint)
         
+        let stations = viewModel.busPositionInfo?.busRouteStationList ?? []
+        let isFirstStation = (station.order == stations.first?.order)
+        let isLastStation  = (station.order == stations.last?.order)
+        
         cell.configure(
             with: station,
             isTurnPoint: isTurnPoint,
@@ -160,7 +164,9 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
             busType: busType,
             remainInfo: busesAtStation,
             bus: busPosition,
-            isAfterTurnPoint: isAfterTurnPoint
+            isAfterTurnPoint: isAfterTurnPoint,
+            isFirstStation: isFirstStation,
+            isLastStation: isLastStation
         )
         
         return cell
@@ -210,6 +216,6 @@ extension BusDetailViewController: UICollectionViewDelegate {
         let station = viewModel.busPositionInfo?.busRouteStationList?[indexPath.item]
         let isCurrent = (station?.busStationName == viewModel.busDetailInfo.start?.name)
         return CGSize(width: collectionView.bounds.width,
-                      height: isCurrent ? 107 : 68)
+                      height: isCurrent ? 108 : 68)
     }
 }
