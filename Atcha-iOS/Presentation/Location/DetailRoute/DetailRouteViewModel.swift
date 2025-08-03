@@ -25,10 +25,10 @@ final class DetailRouteViewModel: BaseViewModel {
         self.busInfoUseCase = busInfoUseCase
         
         super.init()
-        self.bind()
+        self.fetchInfo()
     }
     
-    private func bind() {
+    func fetchInfo() {
         self.legtPathInfo = infos.pathInfo
         self.legTrafficInfo = infos.trafficInfo
         

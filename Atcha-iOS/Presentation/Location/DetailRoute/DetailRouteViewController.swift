@@ -17,6 +17,8 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
     private let backButton: UIButton = UIButton()
     private var activityIndicator: UIActivityIndicatorView?
     private lazy var bottomSheet: DetailRouteInfoBottomView = DetailRouteInfoBottomView()
+    private let relaodButton: UIButton = UIButton()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -27,7 +29,7 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
     }
     
     private func setupUI() {
-        view.addSubViews(mapContainerView, bottomSheet, backButton)
+        view.addSubViews(mapContainerView, bottomSheet, backButton, relaodButton)
         mapContainerView.delegate = self
         
         backButton.setImage(UIImage.chevronLeft, for: .normal)
@@ -36,6 +38,13 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         backButton.clipsToBounds = true
         backButton.setCornerRadius(18)
         backButton.addTarget(self, action: #selector(didTapClose), for: .touchUpInside)
+        
+        relaodButton.setImage(UIImage.refreshOutlined, for: .normal)
+        relaodButton.tintColor = .white
+        relaodButton.backgroundColor = .gray600
+        relaodButton.clipsToBounds = true
+        relaodButton.setCornerRadius(24)
+        relaodButton.addTarget(self, action: #selector(didTapReload), for: .touchUpInside)
     }
     
     private func setupAutoLayout() {
@@ -52,6 +61,11 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         bottomSheet.snp.makeConstraints {
             $0.leading.trailing.bottom.equalToSuperview()
             $0.height.equalTo(view.frame.height * 0.5)
+        }
+        relaodButton.snp.makeConstraints { make in
+            make.size.equalTo(48)
+            make.trailing.equalToSuperview().inset(16)
+            make.bottom.equalTo(view.snp.bottom).inset(40)
         }
     }
     
@@ -147,6 +161,10 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
 extension DetailRouteViewController {
     @objc private func didTapClose() {
         navigationController?.popViewController(animated: true)
+    }
+    
+    @objc private func didTapReload() {
+        viewModel.fetchInfo()
     }
 }
 
