@@ -70,8 +70,8 @@ struct AddressInfoResponse: Codable {
     let lon: Double?
     let lat: Double?
     
-    func toEntity() -> addressInfo {
-        return addressInfo(name: name, lon: lon, lat: lat)
+    func toEntity() -> AddressInfo {
+        return AddressInfo(name: name, lon: lon, lat: lat)
     }
 }
 

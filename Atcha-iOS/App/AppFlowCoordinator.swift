@@ -37,13 +37,17 @@ class AppFlowCoordinator {
                 showMainFlow()
             case .onboarding:
                 showOnboardingFlow()
+            case .alarm(let info, let address):
+                showMainFlow(info: info, address: address)
+            case .lockScreen: print("잠금 화면 연동")
             }
         }
         splashCoordinator.start()
         self.splashCoordinator = splashCoordinator
     }
     
-    private func showMainFlow() {
+    private func showMainFlow(info: LegInfo? = nil,
+                              address: String? = nil) {
         let navigationController = UINavigationController()
         window.rootViewController = navigationController
         mainCoordinator = container.makeMainCoordinator(navigationController: navigationController)
@@ -52,7 +56,7 @@ class AppFlowCoordinator {
                 self?.showLoginFlow()
             }
         }
-        mainCoordinator?.start()
+        mainCoordinator?.start(info: info, address: address)
     }
     
     private func showLoginFlow() {

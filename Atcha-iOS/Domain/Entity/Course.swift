@@ -40,7 +40,7 @@ struct Course: Codable, Hashable {
         return BusDetailInfo(
             routeName: leg.route,
             start: leg.start,
-            passStations:leg.passStopList?.map {
+            passStations: leg.passStopList?.map {
                 PassStations(
                     index: $0.index,
                     stationName: $0.stationName,
@@ -97,8 +97,8 @@ struct Legs: Codable, Hashable {
     let route: String?
     let type: String?
     let service: String?
-    let start: addressInfo?
-    let end: addressInfo?
+    let start: AddressInfo?
+    let end: AddressInfo?
     let passStopList: [PassStopList]?
     let step: [Step]?
     let passShape: String? // 경로그리기
@@ -123,13 +123,14 @@ struct Legs: Codable, Hashable {
     }
 }
 
-struct LegInfo {
+struct LegInfo: Codable {
     let pathInfo: [LegPathInfo]
     let trafficInfo: [LegTrafficInfo]
+    let busInfo: [BusDetailInfo]
 }
 
-struct LegTrafficInfo: Hashable {
-    let id: UUID = UUID()
+struct LegTrafficInfo: Hashable, Codable {
+    var id: UUID = UUID()
     let distance: Int?
     let departureDateTime: String?
     let totalTime: String?
@@ -139,6 +140,7 @@ struct LegTrafficInfo: Hashable {
     let passStopList: [PassStopList]?
     let steps: [Step]? // 보행자 이동 거리 (미터)
     let busName: String?
+    let route: String?
     var timeText: String?
 }
 
@@ -157,7 +159,25 @@ extension Course {
                            passStopList: leg.passStopList,
                            steps: leg.step,
                            busName: leg.busName,
+                           route: leg.route,
                            timeText: timeText)
+        }
+    }
+    
+    func toBusInfos() -> [BusDetailInfo] {
+        return legs.map { leg in
+            return BusDetailInfo(
+                routeName: leg.route,
+                start: leg.start,
+                passStations: leg.passStopList?.map {
+                    PassStations(
+                        index: $0.index,
+                        stationName: $0.stationName,
+                        lat: $0.lat,
+                        lon: $0.lon
+                    )
+                }
+            )
         }
     }
 }
@@ -177,7 +197,7 @@ extension Course {
     }
 }
 
-struct addressInfo: Codable, Hashable{
+struct AddressInfo: Codable, Equatable, Hashable {
     let name: String?
     let lon: Double?
     let lat: Double?
@@ -263,7 +283,7 @@ enum TransportMode: String, Codable {
     }
 }
 
-struct LegPathInfo {
+struct LegPathInfo: Codable {
     let routeId: String?
     let departureDateTime: String?
     let mode: TransportMode?
@@ -272,8 +292,8 @@ struct LegPathInfo {
     let passShape: String?
 }
 
-struct BusDetailInfo {
+struct BusDetailInfo: Codable {
     let routeName: String?
-    let start: addressInfo?
+    let start: AddressInfo?
     let passStations: [PassStations]?
 }

@@ -44,6 +44,7 @@ final class DetailRouteInfoBottomView: UIView {
     private let dividerView: UIView = UIView()
     
     private var startAddress: String = ""
+    private var busRealTimeInfo: [BusRealTimeInfo] = []
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -127,6 +128,11 @@ final class DetailRouteInfoBottomView: UIView {
         }
         
         applySnapshot()
+    }
+    
+    func setupBusTimerLabel(_ time: [BusRealTimeInfo]) {
+        busRealTimeInfo = time
+        collectionView.reloadData()
     }
     
     func setupStartAddress(_ address: String) {
@@ -281,7 +287,7 @@ extension DetailRouteInfoBottomView {
                 cell.didTapSummary = { [weak self] in
                     self?.applySnapshot()
                 }
-                cell.configure(info: item)
+                cell.configure(info: item, busInfo: self.busRealTimeInfo)
                 return cell
                 
             case .subway:

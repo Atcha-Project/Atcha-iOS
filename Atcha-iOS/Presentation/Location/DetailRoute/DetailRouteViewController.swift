@@ -17,6 +17,9 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
     private let backButton: UIButton = UIButton()
     private var activityIndicator: UIActivityIndicatorView?
     private lazy var bottomSheet: DetailRouteInfoBottomView = DetailRouteInfoBottomView()
+    private let relaodButton: UIButton = UIButton()
+    private var allCoordinates: [CLLocationCoordinate2D] = []
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -27,7 +30,7 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
     }
     
     private func setupUI() {
-        view.addSubViews(mapContainerView, bottomSheet, backButton)
+        view.addSubViews(mapContainerView, loactionButton, bottomSheet, backButton, relaodButton)
         mapContainerView.delegate = self
         
         backButton.setImage(UIImage.chevronLeft, for: .normal)
@@ -36,6 +39,24 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         backButton.clipsToBounds = true
         backButton.setCornerRadius(18)
         backButton.addTarget(self, action: #selector(didTapClose), for: .touchUpInside)
+        
+        relaodButton.setImage(UIImage.refreshOutlined, for: .normal)
+        relaodButton.tintColor = .white
+        relaodButton.backgroundColor = .gray600
+        relaodButton.clipsToBounds = true
+        relaodButton.setCornerRadius(24)
+        relaodButton.addTarget(self, action: #selector(didTapReload), for: .touchUpInside)
+        
+        configureButton(loactionButton,
+                                imageName: "mylocation-filled",
+                                action: #selector(didTapLocationButton))
+    }
+    
+    private func configureButton(_ button: UIButton, imageName: String, action: Selector) {
+        button.setImage(UIImage(named: imageName)?.withRenderingMode(.alwaysOriginal), for: .normal)
+        button.contentHorizontalAlignment = .fill
+        button.contentVerticalAlignment = .fill
+        button.addTarget(self, action: action, for: .touchUpInside)
     }
     
     private func setupAutoLayout() {
@@ -53,6 +74,16 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             $0.leading.trailing.bottom.equalToSuperview()
             $0.height.equalTo(view.frame.height * 0.5)
         }
+        loactionButton.snp.makeConstraints { make in
+            make.centerY.equalToSuperview().offset(-34)
+            make.trailing.equalToSuperview().inset(16)
+            make.width.height.equalTo(40)
+        }
+        relaodButton.snp.makeConstraints { make in
+            make.size.equalTo(48)
+            make.trailing.equalToSuperview().inset(16)
+            make.bottom.equalTo(view.snp.bottom).inset(40)
+        }
     }
     
     private func bindView() {
@@ -62,10 +93,26 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             .sink { [weak self] infos in self?.bottomSheet.setupRouteInfo(infos) }
             .store(in: &cancellables)
         
+        viewModel.$busRealTimeInfos
+            .filter { $0.count > 0 }
+            .receive(on: RunLoop.main)
+            .sink { [weak self] info in self?.bottomSheet.setupBusTimerLabel(info) }
+            .store(in: &cancellables)
+        
         viewModel.$address
             .receive(on: RunLoop.main)
             .compactMap { $0 }
             .sink { [weak self] address in self?.bottomSheet.setupStartAddress(address) }
+            .store(in: &cancellables)
+        
+        viewModel.$currentLocation
+            .compactMap { $0 }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] location in
+                guard let self else { return }
+                mapContainerView.adjustMapToFit(coordinates: allCoordinates)
+//                mapContainerView.setupCenter(location: location)
+            }
             .store(in: &cancellables)
     }
     
@@ -73,7 +120,6 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         var shapeStrings: [String] = []
         var colors: [UIColor] = []
         var images: [UIImage] = []
-        var allCoordinates: [CLLocationCoordinate2D] = []  // ✅ 전체 좌표 수집
 
         infos.forEach { info in
             switch info.mode {
@@ -141,6 +187,14 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
 extension DetailRouteViewController {
     @objc private func didTapClose() {
         navigationController?.popViewController(animated: true)
+    }
+    
+    @objc private func didTapLocationButton() {
+        viewModel.setupLocation()
+    }
+    
+    @objc private func didTapReload() {
+        viewModel.fetchInfo()
     }
 }
 

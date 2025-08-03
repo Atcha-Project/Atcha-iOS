@@ -25,7 +25,6 @@ final class MainViewController: BaseViewController<MainViewModel>,
     private let ballonView: AtchaBallon = AtchaBallon()
     
     private var firstAddress: String?
-//    private var atchaImageBottomConstraint: Constraint?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -107,7 +106,6 @@ extension MainViewController {
             make.width.height.equalTo(64)
             make.leading.equalToSuperview().inset(8)
             make.bottom.equalTo(lastTrainView.snp.top).inset(24)
-//            atchaImageBottomConstraint = make.bottom.equalTo(lastTrainView.snp.top).inset(24).constraint
         }
         mapContainerView.snp.makeConstraints { make in
             make.horizontalEdges.equalToSuperview()
@@ -159,6 +157,8 @@ extension MainViewController {
         switch action {
         case .exitTapped:
             viewModel.requestPermissionAndStartTracking()
+            viewModel.removeLegInfoAndAddress()
+            
             lastTrainView.isHidden = false
             flagImageView.isHidden = false
             lastTrainDepartView.isHidden = true
@@ -171,7 +171,7 @@ extension MainViewController {
             }
             
         case .detailRoadMapTapped:
-            viewModel.handleRoute(route: .detailRoute(address: "", infos: LegInfo(pathInfo: [], trafficInfo: [])))
+            viewModel.handleRoute(route: .detailRoute(address: "", infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: [])))
             print("detailRoadMapTapped 누르기")
         case .locationTapped:
             ballonView.setupTitle(bottomMessage: "위치를 변경하려면 알림을 종료해야 해요")
@@ -223,6 +223,12 @@ extension MainViewController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in self?.handleLegPathInfos($0) }
             .store(in: &cancellables)
+        
+        viewModel.$legTrafficInfos
+            .compactMap { $0 }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] in self?.lastTrainDepartView.setupTimeAfterAlarm(infos: $0) }
+            .store(in: &cancellables)
     }
     
     private func handleLegPathInfos(_ infos: [LegPathInfo]) {
@@ -251,7 +257,7 @@ extension MainViewController {
         var colors: [UIColor] = []
         var images: [UIImage] = []
         var allCoordinates: [CLLocationCoordinate2D] = []  // ✅ 전체 좌표 수집
-
+        
         infos.forEach { info in
             switch info.mode {
             case .bus, .subway:
@@ -343,6 +349,13 @@ extension MainViewController {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
             self.viewModel.setupLocation()
             self.hideLoading()
+            
+            let wrapper = UserDefaultsWrapper()
+            if let legInfo: LegInfo = wrapper.object(forKey: UserDefaultsWrapper.Key.legInfo.rawValue, of: LegInfo.self),
+               let address: String = wrapper.string(forKey: UserDefaultsWrapper.Key.address.rawValue) {
+                self.viewModel.drawRoute(address: address, infos: legInfo)
+                return
+            }
         }
     }
     

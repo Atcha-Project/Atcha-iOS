@@ -17,6 +17,7 @@ final class MainViewModel: BaseViewModel {
     @Published var taxiFare: Double?
     @Published var legPathInfos: [LegPathInfo] = []
     @Published var legTrafficInfos: [LegTrafficInfo] = []
+    @Published var busInfos: [BusDetailInfo] = []
     
     private let searchAddressUseCase: SearchAddressUseCase
     private let authorizationUseCase: RequestLocationAuthorizationUseCase
@@ -53,10 +54,22 @@ final class MainViewModel: BaseViewModel {
             .store(in: &cancellables)
     }
     
-    func drawRoute(address: String, infos: LegInfo) {
+    func drawRoute(address: String?, infos: LegInfo?) {
+        guard let address, let infos else { return }
         self.address = address
         legPathInfos = infos.pathInfo
         legTrafficInfos = infos.trafficInfo
+        busInfos = infos.busInfo
+        
+        let wrapper = UserDefaultsWrapper()
+        wrapper.set(infos, forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
+        wrapper.set(address, forKey: UserDefaultsWrapper.Key.address.rawValue)
+    }
+    
+    func removeLegInfoAndAddress() {
+        let wrapper = UserDefaultsWrapper()
+        wrapper.remove(forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
+        wrapper.remove(forKey: UserDefaultsWrapper.Key.address.rawValue)
     }
     
     func requestPermissionAndStartTracking() {
@@ -99,7 +112,8 @@ final class MainViewModel: BaseViewModel {
         case .detailRoute:
             routeHandler?(.detailRoute(address: self.address ?? "",
                                        infos: LegInfo(pathInfo: legPathInfos,
-                                                      trafficInfo: legTrafficInfos)))
+                                                      trafficInfo: legTrafficInfos,
+                                                      busInfo: busInfos)))
         }
     }
     

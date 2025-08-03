@@ -29,6 +29,10 @@ final class MainDIContainer {
         RouteDIContainer(apiService: apiService)
     }()
     
+    private lazy var busInfoDI: BusInfoDIContainer = {
+        BusInfoDIContainer(apiService: apiService)
+    }()
+    
     init(apiService: APIService, locationStateHolder: LocationStateHolder) {
         self.apiService = apiService
         self.locationStateHolder = locationStateHolder
@@ -103,5 +107,12 @@ extension MainDIContainer {
     
     func makeCourseDIContainer() -> CourseDIContainer {
         return courseDI
+    }
+}
+
+// MARK: - BusInfo
+extension MainDIContainer {
+    func makeBusInfoDIContainer() -> BusInfoDIContainer {
+        return busInfoDI
     }
 }

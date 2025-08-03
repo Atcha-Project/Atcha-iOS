@@ -23,6 +23,8 @@ final class DetailRouteBusCell: UICollectionViewCell {
     private let busBackView: UIView = UIView()
     private let busLabel: UILabel = UILabel()
     private let busDetailArrowImageView: UIImageView = UIImageView(image: UIImage.chevronRight)
+    
+    private let busTimerLabel: UILabel = UILabel()
     private let stationListStackView = UIStackView()
     
     // MARK: - Summary
@@ -54,7 +56,7 @@ final class DetailRouteBusCell: UICollectionViewCell {
     
     private func setupUI() {
         contentView.addSubViews(iconImageView, stickView, circleView,
-                                startLabel, busBackView,
+                                startLabel, busBackView, busTimerLabel,
                                 summaryLabel, summaryButton, stationListStackView,
                                 endLabel)
         
@@ -116,6 +118,12 @@ final class DetailRouteBusCell: UICollectionViewCell {
             $0.size.equalTo(12)
         }
         
+        busTimerLabel.snp.makeConstraints { make in
+            make.centerY.equalTo(busBackView.snp.centerY)
+            make.leading.equalTo(busBackView.snp.trailing).offset(6)
+            make.height.equalTo(18)
+        }
+        
         summaryLabel.snp.makeConstraints {
             $0.top.equalTo(busBackView.snp.bottom).offset(16)
             $0.leading.equalTo(busBackView)
@@ -132,7 +140,7 @@ final class DetailRouteBusCell: UICollectionViewCell {
             stationListStackViewTopConstraint = $0.top.equalTo(summaryLabel.snp.bottom).offset(16).constraint
             stationListStackViewBottomConstraint = $0.bottom.equalTo(endLabel.snp.top).offset(-12).constraint
         }
-
+        
         endLabel.snp.makeConstraints {
             endLabelTopConstraintWithoutStack = $0.top.equalTo(summaryLabel.snp.bottom).offset(36).constraint
             $0.leading.trailing.equalTo(stationListStackView)
@@ -153,19 +161,19 @@ final class DetailRouteBusCell: UICollectionViewCell {
     @objc private func handleSummaryButton() {
         isExpanded.toggle()
         stationListStackView.isHidden = !isExpanded
-
+        
         stationListStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         addStationNameLabel(info: stationInfos)
-
+        
         stationListStackViewTopConstraint?.isActive = isExpanded
         stationListStackViewBottomConstraint?.isActive = isExpanded
         endLabelTopConstraintWithoutStack?.isActive = !isExpanded
-
+        
         UIView.animate(withDuration: 0.3) { self.layoutIfNeeded() }
         didTapSummary?()
     }
     
-    func configure(info: LegTrafficInfo) {
+    func configure(info: LegTrafficInfo, busInfo: [BusRealTimeInfo]) {
         stationInfos = []
         guard let passStopList = info.passStopList,
               let firstStation = passStopList.first,
@@ -195,6 +203,26 @@ final class DetailRouteBusCell: UICollectionViewCell {
         
         summaryLabel.attributedText = AtchaFont.B7_M_13("\(sectionTime), \(passStopList.count)개 정류장 이동", color: .white)
         addStationNameLabel(info: stationInfos)
+        
+        busInfo.forEach { busInfo in
+            if doesIncludeBus(route1: info.route,
+                              route2: busInfo.routeName) {
+                if let time = busInfo.realTimeBusArrival?.first?.remainingTime?.toHourMinuteSecondString {
+                    busTimerLabel.attributedText = AtchaFont.B6_R_14("\(time)", color: .red)
+                }
+            }
+        }
+    }
+    
+    func cleanRouteName(_ fullName: String?) -> String? {
+        guard let fullName = fullName else { return nil }
+        return fullName.components(separatedBy: ":").last
+    }
+    
+    func doesIncludeBus(route1: String?, route2: String?) -> Bool {
+        guard let cleaned1 = cleanRouteName(route1),
+              let cleaned2 = cleanRouteName(route2) else { return false }
+        return cleaned1 == cleaned2
     }
     
     private func addStationNameLabel(info: [PassStopList]) {

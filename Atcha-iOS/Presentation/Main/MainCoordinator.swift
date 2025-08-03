@@ -25,9 +25,11 @@ final class MainCoordinator {
         self.diContainer = diContainer
     }
     
-    func start() {
+    func start(info: LegInfo? = nil,
+               address: String? = nil) {
         let viewModel = diContainer.makeMainiewModel()
         self.mainViewModel = viewModel
+        viewModel.drawRoute(address: address, infos: info)
         
         viewModel.routeHandler = { [weak self] route in
             guard let self else { return }

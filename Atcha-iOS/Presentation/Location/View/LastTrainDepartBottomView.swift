@@ -45,7 +45,7 @@ final class LastTrainDepartBottomView: UIView {
                                                       style: .line(.line))
     private let detailRoadMapButton: AtchaButton = AtchaButton(text: "상세 경로",
                                                                size: .h48,
-                                                               style: .filled(.opacity),
+                                                               style: .filled(.defaultGray),
                                                                image: UIImage.home16Px)
     
     
@@ -70,8 +70,6 @@ final class LastTrainDepartBottomView: UIView {
         timeView.addSubViews(hourLabel, hourTimeLabel, miniuteLabel, minuteTimeLabel)
         addSubViews(titleView, timeView, locationLabel, buttonStackView)
         
-        departTimeLabel.attributedText = AtchaFont.B4_R_15("출발시간", color: .white)
-        
         departIconImageView.image = UIImage.infoOutlined
         departIconImageView.contentMode = .scaleAspectFit
         departIconImageView.tintColor = .gray500
@@ -80,6 +78,7 @@ final class LastTrainDepartBottomView: UIView {
         reloadImageView.contentMode = .scaleAspectFit
         reloadImageView.tintColor = .white
         
+        departTimeLabel.attributedText = AtchaFont.B4_R_15("출발시간", color: .white)
         hourLabel.attributedText = AtchaFont.B1_R_17("시", color: .white)
         miniuteLabel.attributedText = AtchaFont.B1_R_17("분", color: .white)
         
@@ -171,10 +170,25 @@ final class LastTrainDepartBottomView: UIView {
         minuteTimeLabel.attributedText = AtchaFont.D2_EB_48(minute, color: .white)
     }
     
+    func setupTimeAfterAlarm(infos: [LegTrafficInfo]) {
+        if let firstStop = findFirstPassStop(from: infos) {
+            print("첫 번째 정류장: \(firstStop.stationName ?? "알 수 없음")")
+        }
+    }
+    
     func setupLoaction(location: String?) {
         guard let location else { return }
         let title: String = "\(location) -> 우리집"
         locationLabel.attributedText = AtchaFont.B4_R_15(title, color: .gray300)
+    }
+    
+    private func findFirstPassStop(from legs: [LegTrafficInfo]) -> PassStopList? {
+        for leg in legs {
+            if let passStops = leg.passStopList, !passStops.isEmpty {
+                return passStops.first
+            }
+        }
+        return nil
     }
 }
 
