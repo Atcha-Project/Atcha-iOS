@@ -140,6 +140,7 @@ struct LegTrafficInfo: Hashable {
     let passStopList: [PassStopList]?
     let steps: [Step]? // 보행자 이동 거리 (미터)
     let busName: String?
+    let route: String?
     var timeText: String?
 }
 
@@ -158,6 +159,7 @@ extension Course {
                            passStopList: leg.passStopList,
                            steps: leg.step,
                            busName: leg.busName,
+                           route: leg.route,
                            timeText: timeText)
         }
     }
@@ -195,7 +197,7 @@ extension Course {
     }
 }
 
-struct AddressInfo: Codable, Hashable{
+struct AddressInfo: Codable, Equatable, Hashable {
     let name: String?
     let lon: Double?
     let lat: Double?
