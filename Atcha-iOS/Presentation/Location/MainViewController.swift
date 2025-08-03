@@ -257,7 +257,7 @@ extension MainViewController {
         var colors: [UIColor] = []
         var images: [UIImage] = []
         var allCoordinates: [CLLocationCoordinate2D] = []  // ✅ 전체 좌표 수집
-
+        
         infos.forEach { info in
             switch info.mode {
             case .bus, .subway:
@@ -349,6 +349,13 @@ extension MainViewController {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
             self.viewModel.setupLocation()
             self.hideLoading()
+            
+            let wrapper = UserDefaultsWrapper()
+            if let legInfo: LegInfo = wrapper.object(forKey: UserDefaultsWrapper.Key.legInfo.rawValue, of: LegInfo.self),
+               let address: String = wrapper.string(forKey: UserDefaultsWrapper.Key.address.rawValue) {
+                self.viewModel.drawRoute(address: address, infos: legInfo)
+                return
+            }
         }
     }
     
