@@ -47,7 +47,14 @@ final class SplashViewModel: BaseViewModel {
     }
     
     func makeInitialFlow() {
-        if let _ = UserDefaultsWrapper().string(forKey: UserDefaultsWrapper.Key.providerToken.rawValue) {
+        let wrapper = UserDefaultsWrapper()
+        if let legInfo: LegInfo = wrapper.object(forKey: UserDefaultsWrapper.Key.legInfo.rawValue, of: LegInfo.self),
+           let address: String = wrapper.string(forKey: UserDefaultsWrapper.Key.address.rawValue) {
+            routerHandler?(.alarm(info: legInfo, address: address))
+            return
+        }
+        
+        if let _ = wrapper.string(forKey: UserDefaultsWrapper.Key.providerToken.rawValue) {
             if let _ = AppDIContainer.shared.tokenStorage.accessToken {
                 fetchUserInfo()
                 routerHandler?(.main)

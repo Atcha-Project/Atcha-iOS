@@ -18,4 +18,7 @@ public extension UserDefaultsWrapper.Key {
     static let buildingName: UserDefaultsWrapper.Key = "buildingName"
     
     static let soundType: UserDefaultsWrapper.Key = "soundType"
+    
+    static let legInfo: UserDefaultsWrapper.Key = "legInfo"
+    static let startAddress: UserDefaultsWrapper.Key = "startAddress"
 }

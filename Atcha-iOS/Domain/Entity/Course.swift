@@ -123,14 +123,14 @@ struct Legs: Codable, Hashable {
     }
 }
 
-struct LegInfo {
+struct LegInfo: Codable {
     let pathInfo: [LegPathInfo]
     let trafficInfo: [LegTrafficInfo]
     let busInfo: [BusDetailInfo]
 }
 
-struct LegTrafficInfo: Hashable {
-    let id: UUID = UUID()
+struct LegTrafficInfo: Hashable, Codable {
+    var id: UUID = UUID()
     let distance: Int?
     let departureDateTime: String?
     let totalTime: String?
@@ -283,7 +283,7 @@ enum TransportMode: String, Codable {
     }
 }
 
-struct LegPathInfo {
+struct LegPathInfo: Codable {
     let routeId: String?
     let departureDateTime: String?
     let mode: TransportMode?
@@ -292,7 +292,7 @@ struct LegPathInfo {
     let passShape: String?
 }
 
-struct BusDetailInfo {
+struct BusDetailInfo: Codable {
     let routeName: String?
     let start: AddressInfo?
     let passStations: [PassStations]?

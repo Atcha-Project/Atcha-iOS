@@ -106,7 +106,6 @@ extension MainViewController {
             make.width.height.equalTo(64)
             make.leading.equalToSuperview().inset(8)
             make.bottom.equalTo(lastTrainView.snp.top).inset(24)
-//            atchaImageBottomConstraint = make.bottom.equalTo(lastTrainView.snp.top).inset(24).constraint
         }
         mapContainerView.snp.makeConstraints { make in
             make.horizontalEdges.equalToSuperview()
@@ -158,6 +157,8 @@ extension MainViewController {
         switch action {
         case .exitTapped:
             viewModel.requestPermissionAndStartTracking()
+            viewModel.removeLegInfoAndAddress()
+            
             lastTrainView.isHidden = false
             flagImageView.isHidden = false
             lastTrainDepartView.isHidden = true
