@@ -15,7 +15,8 @@ final class RouteDIContainer {
     }
     
     func makeDetailRouteViewModel(address: String, infos: LegInfo) -> DetailRouteViewModel {
-        return DetailRouteViewModel(address: address, infos: infos)
+        let busInfoUseCase = BusInfoUseCaseImpl(repository: BusInfoRepositoryImpl(apiService: apiService))
+        return DetailRouteViewModel(address: address, infos: infos, busInfoUseCase: busInfoUseCase)
     }
     
     func makeDetailRouteViewController(viewModel: DetailRouteViewModel) -> DetailRouteViewController {

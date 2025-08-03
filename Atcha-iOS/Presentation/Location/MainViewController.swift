@@ -25,7 +25,6 @@ final class MainViewController: BaseViewController<MainViewModel>,
     private let ballonView: AtchaBallon = AtchaBallon()
     
     private var firstAddress: String?
-//    private var atchaImageBottomConstraint: Constraint?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -171,7 +170,7 @@ extension MainViewController {
             }
             
         case .detailRoadMapTapped:
-            viewModel.handleRoute(route: .detailRoute(address: "", infos: LegInfo(pathInfo: [], trafficInfo: [])))
+            viewModel.handleRoute(route: .detailRoute(address: "", infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: [])))
             print("detailRoadMapTapped 누르기")
         case .locationTapped:
             ballonView.setupTitle(bottomMessage: "위치를 변경하려면 알림을 종료해야 해요")
@@ -222,6 +221,12 @@ extension MainViewController {
             .filter { !$0.isEmpty }
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in self?.handleLegPathInfos($0) }
+            .store(in: &cancellables)
+        
+        viewModel.$legTrafficInfos
+            .compactMap { $0 }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] in self?.lastTrainDepartView.setupTimeAfterAlarm(infos: $0) }
             .store(in: &cancellables)
     }
     

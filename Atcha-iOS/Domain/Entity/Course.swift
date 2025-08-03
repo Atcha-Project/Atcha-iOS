@@ -40,7 +40,7 @@ struct Course: Codable, Hashable {
         return BusDetailInfo(
             routeName: leg.route,
             start: leg.start,
-            passStations:leg.passStopList?.map {
+            passStations: leg.passStopList?.map {
                 PassStations(
                     index: $0.index,
                     stationName: $0.stationName,
@@ -97,8 +97,8 @@ struct Legs: Codable, Hashable {
     let route: String?
     let type: String?
     let service: String?
-    let start: addressInfo?
-    let end: addressInfo?
+    let start: AddressInfo?
+    let end: AddressInfo?
     let passStopList: [PassStopList]?
     let step: [Step]?
     let passShape: String? // 경로그리기
@@ -126,6 +126,7 @@ struct Legs: Codable, Hashable {
 struct LegInfo {
     let pathInfo: [LegPathInfo]
     let trafficInfo: [LegTrafficInfo]
+    let busInfo: [BusDetailInfo]
 }
 
 struct LegTrafficInfo: Hashable {
@@ -160,6 +161,23 @@ extension Course {
                            timeText: timeText)
         }
     }
+    
+    func toBusInfos() -> [BusDetailInfo] {
+        return legs.map { leg in
+            return BusDetailInfo(
+                routeName: leg.route,
+                start: leg.start,
+                passStations: leg.passStopList?.map {
+                    PassStations(
+                        index: $0.index,
+                        stationName: $0.stationName,
+                        lat: $0.lat,
+                        lon: $0.lon
+                    )
+                }
+            )
+        }
+    }
 }
 
 extension Course {
@@ -177,7 +195,7 @@ extension Course {
     }
 }
 
-struct addressInfo: Codable, Hashable{
+struct AddressInfo: Codable, Hashable{
     let name: String?
     let lon: Double?
     let lat: Double?
@@ -274,6 +292,6 @@ struct LegPathInfo {
 
 struct BusDetailInfo {
     let routeName: String?
-    let start: addressInfo?
+    let start: AddressInfo?
     let passStations: [PassStations]?
 }
