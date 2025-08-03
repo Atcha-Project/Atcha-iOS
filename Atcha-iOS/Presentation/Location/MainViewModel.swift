@@ -64,6 +64,12 @@ final class MainViewModel: BaseViewModel {
         let wrapper = UserDefaultsWrapper()
         wrapper.set(infos, forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
         wrapper.set(address, forKey: UserDefaultsWrapper.Key.address.rawValue)
+        
+        guard let time = legPathInfos.first?.departureDateTime else {
+            return
+        }
+        print("time : \(time)")
+        AlarmManager.shared.startAlarm(after: time, title: "집에 가자", body: "집에 가자")
     }
     
     func removeLegInfoAndAddress() {

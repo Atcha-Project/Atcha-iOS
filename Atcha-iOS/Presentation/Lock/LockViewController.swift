@@ -10,7 +10,6 @@ import SnapKit
 import Lottie
 
 final class LockViewController: BaseViewController<LockViewModel> {
-
     private let backgroundImageView: UIImageView = UIImageView()
     private let logoImageView: UIImageView = UIImageView()
     private let titleLabel: UILabel = UILabel()

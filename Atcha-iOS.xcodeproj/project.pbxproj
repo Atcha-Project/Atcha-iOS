@@ -109,6 +109,9 @@
 		6DFF29B42E0CDA0E0039399F /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFF29B32E0CDA0E0039399F /* LocationService.swift */; };
 		6DFF29F02E0F23840039399F /* UIImage+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFF29EF2E0F23840039399F /* UIImage+Ext.swift */; };
 		B600CA132E07FD29008B0D87 /* MyPageCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C13472E07A10F0016D2F0 /* MyPageCoordinator.swift */; };
+		B61C448E2E3F57B600285A4B /* AlarmManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B61C448D2E3F57B600285A4B /* AlarmManager.swift */; };
+		B61C44902E3F750B00285A4B /* silent.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = B61C448F2E3F750B00285A4B /* silent.mp3 */; };
+		B61C44922E3F77DA00285A4B /* siren.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = B61C44912E3F77DA00285A4B /* siren.mp3 */; };
 		B655AFBA2E3C26A9008BFDE4 /* DetailRouteEndCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B655AFB92E3C26A9008BFDE4 /* DetailRouteEndCell.swift */; };
 		B65C12D72E0429B30016D2F0 /* AppFlowCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C12D62E0429B30016D2F0 /* AppFlowCoordinator.swift */; };
 		B65C12DA2E042A740016D2F0 /* AppDIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C12D92E042A740016D2F0 /* AppDIContainer.swift */; };
@@ -357,6 +360,9 @@
 		6DFF29922E0CBE8A0039399F /* RegisterLocationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterLocationViewModel.swift; sourceTree = "<group>"; };
 		6DFF29B32E0CDA0E0039399F /* LocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationService.swift; sourceTree = "<group>"; };
 		6DFF29EF2E0F23840039399F /* UIImage+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Ext.swift"; sourceTree = "<group>"; };
+		B61C448D2E3F57B600285A4B /* AlarmManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmManager.swift; sourceTree = "<group>"; };
+		B61C448F2E3F750B00285A4B /* silent.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = silent.mp3; sourceTree = "<group>"; };
+		B61C44912E3F77DA00285A4B /* siren.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = siren.mp3; sourceTree = "<group>"; };
 		B655AFB92E3C26A9008BFDE4 /* DetailRouteEndCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailRouteEndCell.swift; sourceTree = "<group>"; };
 		B65C12D62E0429B30016D2F0 /* AppFlowCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFlowCoordinator.swift; sourceTree = "<group>"; };
 		B65C12D92E042A740016D2F0 /* AppDIContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDIContainer.swift; sourceTree = "<group>"; };
@@ -861,6 +867,14 @@
 			path = RegisterLocation;
 			sourceTree = "<group>";
 		};
+		B61C448A2E3F57A900285A4B /* Manager */ = {
+			isa = PBXGroup;
+			children = (
+				B61C448D2E3F57B600285A4B /* AlarmManager.swift */,
+			);
+			path = Manager;
+			sourceTree = "<group>";
+		};
 		B65C12CE2E0429250016D2F0 /* Domain */ = {
 			isa = PBXGroup;
 			children = (
@@ -1302,6 +1316,8 @@
 				B683094B2E005A3600E2D029 /* DesignSource */,
 				6D8157452E127BDB003688A6 /* GoogleService-Info.plist */,
 				B683094C2E005A3600E2D029 /* Info.plist */,
+				B61C44912E3F77DA00285A4B /* siren.mp3 */,
+				B61C448F2E3F750B00285A4B /* silent.mp3 */,
 				B683094E2E005A3600E2D029 /* LaunchScreen.storyboard */,
 				B68309502E005A3600E2D029 /* Main.storyboard */,
 				B68309512E005A3600E2D029 /* ViewController.swift */,
@@ -1312,6 +1328,7 @@
 		B68309642E005B3C00E2D029 /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				B61C448A2E3F57A900285A4B /* Manager */,
 				B6FB209F2E1E8EE80032751B /* Share */,
 				B6713CC32E129CD000AF8486 /* ViewWrapper */,
 				B67E3E562E0980810056EEB3 /* Wrapper */,
@@ -1644,11 +1661,13 @@
 				B683095A2E005A3600E2D029 /* Pretendard-ExtraBold.otf in Resources */,
 				B683095B2E005A3600E2D029 /* Pretendard-Medium.otf in Resources */,
 				B683095C2E005A3600E2D029 /* Pretendard-Regular.otf in Resources */,
+				B61C44902E3F750B00285A4B /* silent.mp3 in Resources */,
 				6D8157462E127BDB003688A6 /* GoogleService-Info.plist in Resources */,
 				B683095D2E005A3600E2D029 /* Pretendard-SemiBold.otf in Resources */,
 				6D81574C2E129B52003688A6 /* 잠금화면.json in Resources */,
 				B683095E2E005A3600E2D029 /* Icon.xcassets in Resources */,
 				B683095F2E005A3600E2D029 /* Assets.xcassets in Resources */,
+				B61C44922E3F77DA00285A4B /* siren.mp3 in Resources */,
 				B68309612E005A3600E2D029 /* LaunchScreen.storyboard in Resources */,
 				B68309622E005A3600E2D029 /* Main.storyboard in Resources */,
 				6D91A8FF2E33E2FA0081BAFC /* Loading.json in Resources */,
@@ -1719,6 +1738,7 @@
 				6D368BA42E02D5E200144EE7 /* IconTitleNavigationBar.swift in Sources */,
 				B6793D492E347464001BE9F5 /* AtchaBallon.swift in Sources */,
 				B69E31B12E276713001040F4 /* PermissionDIContainer.swift in Sources */,
+				B61C448E2E3F57B600285A4B /* AlarmManager.swift in Sources */,
 				B6AC8BEA2E2BC5FF00410ECD /* AlarmSoundTypeViewController.swift in Sources */,
 				B6793D652E3B0456001BE9F5 /* DetailRouteWalkCell.swift in Sources */,
 				B6CF46F82E096CB100304A85 /* LoginResult.swift in Sources */,

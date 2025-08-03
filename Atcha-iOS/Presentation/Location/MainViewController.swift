@@ -158,6 +158,7 @@ extension MainViewController {
         case .exitTapped:
             viewModel.requestPermissionAndStartTracking()
             viewModel.removeLegInfoAndAddress()
+            AlarmManager.shared.stopAlarm()
             
             lastTrainView.isHidden = false
             flagImageView.isHidden = false

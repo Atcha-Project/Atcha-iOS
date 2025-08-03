@@ -25,7 +25,6 @@ final class SplashViewController: BaseViewController<SplashViewModel> {
         super.viewDidLoad()
         
         setupUI()
-//        viewModel.checkAppVersion()
         viewModel.makeInitialFlow()
     }
     
