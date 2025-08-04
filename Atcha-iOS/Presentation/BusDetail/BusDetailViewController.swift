@@ -21,7 +21,8 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         }
     }()
     private let headerView: BusDetailHeaderView = BusDetailHeaderView()
-    private let refreshImageView: UIImageView = UIImageView()
+    private let refreshButton: RefreshView = RefreshView()
+    private let loadingView: LoadingView = LoadingView()
     private var didScrollToCurrentStation = false
     private lazy var busRouteCollectionView: UICollectionView = {
         let layout = layout()
@@ -50,6 +51,12 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         bindActions()
     }
     
+    override func viewDidDisappear(_ animated: Bool) {
+        refreshButton.stop()
+        loadingView.stop()
+    }
+    
+    // MARK: - ViewModel 바인딩
     private func bind() {
         viewModel.$busPositionInfo
             .compactMap { $0 }
@@ -58,24 +65,27 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
                 self?.applySnapshot(busRoute: busInfo)
                 let busCount = busInfo.busPositions?.count ?? 0
                 self?.headerView.updateBusCount(busCount)
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                    self?.loadingView.isHidden = true
+                }
             }
             .store(in: &cancellables)
     }
     
+    // MARK: - 버스 상세 노선 UI
     private func setupUI() {
         view.backgroundColor = AtchaColor.gray950
-        refreshImageView.image = UIImage.refreshGray
-        refreshImageView.contentMode = .scaleAspectFit
-        refreshImageView.isUserInteractionEnabled = true   // ✅ 터치 허용
         
+        refreshButton.isUserInteractionEnabled = true
         let tap = UITapGestureRecognizer(target: self, action: #selector(onRefreshTapped))
-        refreshImageView.addGestureRecognizer(tap)
-        
-        view.addSubViews(topNavigationBar, headerView, busRouteCollectionView, refreshImageView)
+        refreshButton.addGestureRecognizer(tap)
+        loadingView.isHidden = true
+        view.addSubViews(topNavigationBar, headerView, busRouteCollectionView, refreshButton, loadingView)
     }
     
+    // MARK: - 버스 상세 노선 AutoLayout
     private func setupAutoLayout() {
-        
         topNavigationBar.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
             make.trailing.leading.equalToSuperview()
@@ -92,20 +102,25 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
             make.leading.trailing.bottom.equalToSuperview()
         }
         
-        refreshImageView.snp.makeConstraints { make in
+        refreshButton.snp.makeConstraints { make in
             make.size.equalTo(48)
             make.trailing.equalToSuperview().inset(16)
             make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).inset(16)
         }
+        
+        loadingView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
     }
     
+    // MARK: - Action
     private func bindActions() {
         headerView.onInfoTap = { [weak self] in
             self?.viewModel.onInfoTap?()
         }
     }
     
-    // MARK: - Course CollectionView DataSource & Cell 바인딩
+    // MARK: - BusRoute CollectionView DataSource & Cell 바인딩
     private func setDataSource() -> DataSource {
         let dataSource: DataSource = UICollectionViewDiffableDataSource(collectionView: busRouteCollectionView)
         { [weak self] collectionView, indexPath, busInfo in
@@ -120,7 +135,7 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         return dataSource
     }
     
-    // MARK: - Course CollectionView Layout
+    // MARK: - BusRoute CollectionView Layout
     private func layout() -> UICollectionViewCompositionalLayout {
         UICollectionViewCompositionalLayout{ [weak self] section, _ in
             switch self?.currentSection[section] {
@@ -132,7 +147,7 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         }
     }
     
-    // MARK: - Course CollectionView Cell 설정
+    // MARK: - BusRoute CollectionView Cell 설정
     private func busRouteCell(_ collectionView: UICollectionView, _ indexPath: IndexPath, _ station: BusRouteStationList) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(
             withReuseIdentifier: BusRouteCell.reusableId,
@@ -200,7 +215,11 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         }
     }
     
+    // MARK: - 리프레쉬 버튼 함수
     @objc private func onRefreshTapped() {
+        refreshButton.start()
+        loadingView.isHidden = false
+        loadingView.startOnce()
         viewModel.refresh()
     }
 }

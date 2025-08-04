@@ -97,6 +97,7 @@ final class BusDetailViewModel: BaseViewModel {
         }
     }
     
+    // MARK: - 자동 새로고침
     private func startAutoRefresh(request: BusRealTimeInfoRequest) {
         refreshTimer?.invalidate()
         refreshTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in

@@ -11,7 +11,7 @@ import SnapKit
 
 enum RouteCircleType {
     case circle      // 원
-    case 회차        // 회차 이미지
+    case rotation        // 회차 이미지
 }
 
 enum RouteHeightType {
@@ -35,12 +35,12 @@ enum RouteLinePosition {
 
 final class RouteLineView: UIView {
     
-    // MARK: - Subviews
+    // MARK: - 버스 노선 기본 세팅
     private let topLine = UIView()
     private let bottomLine = UIView()
     private let circleImageView = UIImageView()
     
-    // MARK: - States
+    // MARK: - 버스 노선 상태
     private var heightType: RouteHeightType = .short
     private var circleType: RouteCircleType = .circle
     private var lineColor: UIColor = .gray
@@ -67,7 +67,7 @@ final class RouteLineView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    // MARK: - Configure (외부에서 호출)
+    // MARK: - 버스 노선 하나의 Cell Configure
     func configure(
         heightType: RouteHeightType,
         circleType: RouteCircleType,
@@ -99,7 +99,7 @@ final class RouteLineView: UIView {
         applyConfiguration()
     }
     
-    // MARK: - Setup UI (최초 1회만 실행)
+    // MARK: - Bus Route 하나의 Cell UI
     private func setupUI() {
         backgroundColor = .clear
         
@@ -132,7 +132,7 @@ final class RouteLineView: UIView {
         }
     }
     
-    // MARK: - Apply Configuration (상태 업데이트)
+    // MARK: - Bus Route 하나의 Cell Apply Configuration
     private func applyConfiguration() {
         // 라인 색상 적용
         [topLine, bottomLine].forEach { $0.backgroundColor = lineColor }
@@ -186,7 +186,7 @@ final class RouteLineView: UIView {
                 make.size.equalTo(circleSize)
             }
             
-        case .회차:
+        case .rotation:
             circleImageView.image = .rotation
             circleImageView.contentMode = .scaleAspectFit
             
