@@ -62,8 +62,8 @@ extension LoginViewModel {
                 
                 if let lat = response.latitude,
                    let lon = response.longitude {
-                    UserDefaultsWrapper().set(lat, forKey: UserDefaultsWrapper.Key.lat.rawValue)
-                    UserDefaultsWrapper().set(lon, forKey: UserDefaultsWrapper.Key.lon.rawValue)
+                    UserDefaultsWrapper().set(lat, forKey: UserDefaultsWrapper.Key.homeLat.rawValue)
+                    UserDefaultsWrapper().set(lon, forKey: UserDefaultsWrapper.Key.homeLon.rawValue)
                 }
                 
                 print("로그인 완료")

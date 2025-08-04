@@ -12,13 +12,17 @@ public extension UserDefaultsWrapper.Key {
     static let providerToken: UserDefaultsWrapper.Key = "providerToken"
     static let userId: UserDefaultsWrapper.Key = "userId"
     
-    static let lat: UserDefaultsWrapper.Key = "lat"
-    static let lon: UserDefaultsWrapper.Key = "lon"
-    static let address: UserDefaultsWrapper.Key = "address"
+    static let homeLat: UserDefaultsWrapper.Key = "homeLat"
+    static let homeLon: UserDefaultsWrapper.Key = "homeLon"
+    static let homeAddress: UserDefaultsWrapper.Key = "homeAddress"
     static let buildingName: UserDefaultsWrapper.Key = "buildingName"
     
     static let soundType: UserDefaultsWrapper.Key = "soundType"
     
     static let legInfo: UserDefaultsWrapper.Key = "legInfo"
-    static let startAddress: UserDefaultsWrapper.Key = "startAddress"
+    static let addressDesc: UserDefaultsWrapper.Key = "addressDesc"
+    
+    static let startLat: UserDefaultsWrapper.Key = "startLat"
+    static let startLon: UserDefaultsWrapper.Key = "startLon"
+    static let startAddress: UserDefaultsWrapper.Key = "startAdress"
 }
