@@ -38,6 +38,7 @@ final class LoadingView: UIView {
     }
     
     func start() {
+        animationView.loopMode = .loop
         animationView.play()
     }
     
