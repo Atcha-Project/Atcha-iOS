@@ -283,7 +283,7 @@ enum TransportMode: String, Codable {
     }
 }
 
-struct LegPathInfo: Codable {
+struct LegPathInfo: Codable, Equatable {
     let routeId: String?
     let departureDateTime: String?
     let mode: TransportMode?
