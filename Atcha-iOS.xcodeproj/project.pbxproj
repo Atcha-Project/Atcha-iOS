@@ -54,6 +54,8 @@
 		6D5E03CD2E2882BB0065AFBE /* CourseSearchRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5E03CC2E2882BB0065AFBE /* CourseSearchRequest.swift */; };
 		6D5E03D02E28853E0065AFBE /* CourseSearchResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5E03CF2E28853E0065AFBE /* CourseSearchResponse.swift */; };
 		6D6879BC2E3E78E200E59C55 /* RouteLineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6879BB2E3E78E200E59C55 /* RouteLineView.swift */; };
+		6D6879BE2E4067B400E59C55 /* Refresh.json in Resources */ = {isa = PBXBuildFile; fileRef = 6D6879BD2E4067B400E59C55 /* Refresh.json */; };
+		6D6879C02E40684C00E59C55 /* RefreshView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6879BF2E40684C00E59C55 /* RefreshView.swift */; };
 		6D73EB5D2E1611F800F8DF8B /* CourseSearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D73EB5C2E1611F800F8DF8B /* CourseSearchViewController.swift */; };
 		6D73EB5F2E16120200F8DF8B /* CourseSearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D73EB5E2E16120200F8DF8B /* CourseSearchViewModel.swift */; };
 		6D73EB612E16120B00F8DF8B /* CourseModifyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D73EB602E16120B00F8DF8B /* CourseModifyViewController.swift */; };
@@ -312,6 +314,8 @@
 		6D5E03CC2E2882BB0065AFBE /* CourseSearchRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseSearchRequest.swift; sourceTree = "<group>"; };
 		6D5E03CF2E28853E0065AFBE /* CourseSearchResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseSearchResponse.swift; sourceTree = "<group>"; };
 		6D6879BB2E3E78E200E59C55 /* RouteLineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteLineView.swift; sourceTree = "<group>"; };
+		6D6879BD2E4067B400E59C55 /* Refresh.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = Refresh.json; sourceTree = "<group>"; };
+		6D6879BF2E40684C00E59C55 /* RefreshView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshView.swift; sourceTree = "<group>"; };
 		6D73EB5C2E1611F800F8DF8B /* CourseSearchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseSearchViewController.swift; sourceTree = "<group>"; };
 		6D73EB5E2E16120200F8DF8B /* CourseSearchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseSearchViewModel.swift; sourceTree = "<group>"; };
 		6D73EB602E16120B00F8DF8B /* CourseModifyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseModifyViewController.swift; sourceTree = "<group>"; };
@@ -725,9 +729,11 @@
 		6D81574A2E129B46003688A6 /* AtchaLottie */ = {
 			isa = PBXGroup;
 			children = (
+				6D6879BD2E4067B400E59C55 /* Refresh.json */,
 				6D91A8FE2E33E2FA0081BAFC /* Loading.json */,
 				6D81574B2E129B52003688A6 /* 잠금화면.json */,
 				6D91A9002E33E3620081BAFC /* LoadingView.swift */,
+				6D6879BF2E40684C00E59C55 /* RefreshView.swift */,
 			);
 			path = AtchaLottie;
 			sourceTree = "<group>";
@@ -1640,6 +1646,7 @@
 				B6FB20912E1D21760032751B /* Secrets.xcconfig in Resources */,
 				B68309582E005A3600E2D029 /* Colors.xcassets in Resources */,
 				B68309592E005A3600E2D029 /* Pretendard-Bold.otf in Resources */,
+				6D6879BE2E4067B400E59C55 /* Refresh.json in Resources */,
 				6D17A88C2E1CE5A600642D66 /* Secrets.xcconfig in Resources */,
 				B683095A2E005A3600E2D029 /* Pretendard-ExtraBold.otf in Resources */,
 				B683095B2E005A3600E2D029 /* Pretendard-Medium.otf in Resources */,
@@ -1808,6 +1815,7 @@
 				B6FB20882E1BE4F40032751B /* FetchTaxiFareRepository.swift in Sources */,
 				B655AFBA2E3C26A9008BFDE4 /* DetailRouteEndCell.swift in Sources */,
 				6D2B8CA22E39A74100608104 /* BusOperationInfo.swift in Sources */,
+				6D6879C02E40684C00E59C55 /* RefreshView.swift in Sources */,
 				6D2B8CB32E39AC4B00608104 /* BusPositionInfoRequest.swift in Sources */,
 				6D1EE2E02E090A6B00F7BBF1 /* SearchLocationViewModel.swift in Sources */,
 				6D5E03D02E28853E0065AFBE /* CourseSearchResponse.swift in Sources */,

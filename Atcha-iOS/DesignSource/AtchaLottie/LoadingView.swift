@@ -22,7 +22,6 @@ final class LoadingView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
-        animationView.play()
     }
     
     required init?(coder: NSCoder) {
@@ -39,6 +38,11 @@ final class LoadingView: UIView {
     }
     
     func start() {
+        animationView.play()
+    }
+    
+    func startOnce() {
+        animationView.loopMode = .playOnce
         animationView.play()
     }
     

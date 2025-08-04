@@ -65,6 +65,7 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
         setupUI()
         NoSearchCourseUI()
         bind()
+        setupAutoLayout()
         viewModel.startCourseStream()
     }
     
@@ -142,7 +143,10 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
         courseView.addSubview(routeLabelStack)
         
         view.addSubViews(topNavigationBar, courseView, tabCollectionView, courseCollectionView)
-        
+    }
+    
+    // MARK: - 경로탐색 AutoLayout
+    private func setupAutoLayout() {
         topNavigationBar.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
             make.trailing.leading.equalToSuperview()

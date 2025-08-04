@@ -107,6 +107,7 @@ class BaseViewController<VM: BaseViewModel>: UIViewController {
         if loadingView != nil { return }
         
         let loading = LoadingView(frame: view.bounds)
+        loading.start()
         loading.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(loading)
         

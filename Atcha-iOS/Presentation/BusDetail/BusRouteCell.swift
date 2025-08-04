@@ -80,6 +80,7 @@ class BusRouteCell: UICollectionViewCell {
         remainTimeStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
     }
     
+    // MARK: - 버스 노선 UI 업데이트
     override func layoutSubviews() {
         super.layoutSubviews()
         guard let progress = currentBusProgress else { return }
@@ -95,6 +96,7 @@ class BusRouteCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    // MARK: - 버스 노선 UI
     private func setupUI() {
         stationStack.addArrangedSubview(stationLabel)
         stationStack.addArrangedSubview(stationNumberLabel)
@@ -128,6 +130,7 @@ class BusRouteCell: UICollectionViewCell {
         contentView.bringSubviewToFront(realTimeBusStack)
     }
     
+    // MARK: - 버스 노선 AutoLayout
     private func setupAutoLayout() {
         routeStack.snp.makeConstraints { make in
             make.top.bottom.equalToSuperview()
@@ -344,6 +347,7 @@ class BusRouteCell: UICollectionViewCell {
         setNeedsLayout()
     }
     
+    // MARK: - 버스 노선 Configuration
     private func configureRouteLine(
         isCurrentStation: Bool,
         isTurnPoint: Bool,
@@ -352,7 +356,7 @@ class BusRouteCell: UICollectionViewCell {
         isLastStation: Bool,
         color: UIColor
     ) {
-        let circle: RouteCircleType = isTurnPoint ? .회차 : .circle
+        let circle: RouteCircleType = isTurnPoint ? .rotation : .circle
         let height: RouteHeightType = isCurrentStation ? .long : .short
         
         if isCurrentStation {

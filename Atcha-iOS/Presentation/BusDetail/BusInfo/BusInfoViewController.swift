@@ -59,6 +59,7 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
         bind()
     }
     
+    // MARK: ViewModel 바인딩
     private func bind() {
         viewModel.$operationInfo
             .receive(on: RunLoop.main)
@@ -75,6 +76,7 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
             .store(in: &cancellables)
     }
     
+    // MARK: 버스 운영 정보 UI
     private func setupUI() {
         view.backgroundColor = AtchaColor.gray950
         
@@ -114,6 +116,7 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
         )
     }
     
+    // MARK: 버스 운영 정보 AutoLayout
     private func setupAutoLayout() {
         
         topNavigationBar.snp.makeConstraints { make in
@@ -168,7 +171,7 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
         }
     }
     
-    // MARK: - 운행시간 세팅
+    // MARK: - 버스 운행시간 세팅
     private func setupOperationTime(_ serviceHours: [ServiceHours]) {
         operationTimeStack.arrangedSubviews.forEach { $0.removeFromSuperview() } // 초기화
         
@@ -213,6 +216,7 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
         }
     }
     
+    // MARK: - 버스 운행 간격 세팅
     private func setupDispatchTime(_ serviceHours: [ServiceHours]) {
         dispatchStack.arrangedSubviews.forEach { $0.removeFromSuperview() } // 초기화
         let grouped = Dictionary(grouping: serviceHours, by: { $0.dailyType })
