@@ -14,14 +14,10 @@ final class LockViewController: BaseViewController<LockViewModel> {
     private let logoImageView: UIImageView = UIImageView()
     private let titleLabel: UILabel = UILabel()
     private let taxiFareLabel: UILabel = UILabel()
-    private let startButton: AtchaButton = AtchaButton(text: "출발하기", size: .h52, style: .filled(.primary)) {
-        
-    }
-    private let detailRouteButton: AtchaButton = AtchaButton(text: "더 늦은 경로 확인하기", size: .h52, style: .filled(.opacity)) {
-        
-    }
+    private let startButton: AtchaButton = AtchaButton(text: "출발하기", size: .h52, style: .filled(.primary))
+    private let detailRouteButton: AtchaButton = AtchaButton(text: "더 늦은 경로 확인하기", size: .h52, style: .filled(.opacity))
     private let bottomStack: UIStackView = UIStackView()
-    private var lottieAnimationView: LottieAnimationView = LottieAnimationView()
+    private var lottieAnimationView: LottieAnimationView = LottieAnimationView(name: "잠금화면")
     private let gradientView: UIView = UIView()
     private let gradient: CAGradientLayer = CAGradientLayer()
     
@@ -31,6 +27,15 @@ final class LockViewController: BaseViewController<LockViewModel> {
 
         bind()
         setupUI()
+        setupAutoLayout()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        lottieAnimationView.contentMode = .scaleAspectFit
+        lottieAnimationView.loopMode = .loop
+        lottieAnimationView.play()
     }
     
     override func viewDidLayoutSubviews() {
@@ -51,12 +56,9 @@ final class LockViewController: BaseViewController<LockViewModel> {
     
     // MARK: - Lock UI
     private func setupUI() {
-        backgroundImageView.image = UIImage.lockBackground
-        lottieAnimationView = LottieAnimationView(name: "잠금화면")
-        lottieAnimationView.contentMode = .scaleAspectFit
-        lottieAnimationView.loopMode = .loop
-        lottieAnimationView.play()
+        view.addSubViews(backgroundImageView, lottieAnimationView, gradientView, logoImageView, titleLabel, taxiFareLabel, bottomStack)
         
+        backgroundImageView.image = UIImage.lockBackground
         gradient.colors = [
             UIColor.black.cgColor,
             UIColor.clear.cgColor
@@ -76,8 +78,16 @@ final class LockViewController: BaseViewController<LockViewModel> {
         bottomStack.axis = .vertical
         bottomStack.spacing = 12
         
-        view.addSubViews(backgroundImageView, lottieAnimationView, gradientView, logoImageView, titleLabel, taxiFareLabel, bottomStack)
+        startButton.addTarget(self,
+                              action: #selector(startTapped),
+                              for: .touchUpInside)
         
+        detailRouteButton.addTarget(self,
+                              action: #selector(detailRouteTapped),
+                              for: .touchUpInside)
+    }
+    
+    private func setupAutoLayout() {
         backgroundImageView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
@@ -112,5 +122,14 @@ final class LockViewController: BaseViewController<LockViewModel> {
             make.leading.equalToSuperview().offset(20)
             make.trailing.equalToSuperview().inset(20)
         }
+    }
+    
+    @objc private func startTapped() {
+        viewModel.routerHandler?(.main)
+    }
+    
+    @objc private func detailRouteTapped() {
+        // TODO: 로 변경 detailRoute
+        viewModel.routerHandler?(.onboarding)
     }
 }

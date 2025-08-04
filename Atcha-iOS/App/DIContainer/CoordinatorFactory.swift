@@ -21,15 +21,18 @@ protocol OnboardingCoordinatorFactory {
 }
 
 protocol MainCoordinatorFactory {
-    func makeMainCoordinator(navigationController: UINavigationController) ->
-    MainCoordinator
+    func makeMainCoordinator(navigationController: UINavigationController) -> MainCoordinator
+}
+
+protocol LockScreenCoordinatorFactory {
+    func makeLockScreenCoordinator(navigationController: UINavigationController) -> LockScreenCoordinator
 }
 
 extension AppDIContainer: SplashCoordinatorFactory,
                           LoginCoordinatorFactory,
                           OnboardingCoordinatorFactory,
-                          MainCoordinatorFactory{
-    
+                          MainCoordinatorFactory,
+                          LockScreenCoordinatorFactory {
     func makeSplashCoordinator(navigationController: UINavigationController) -> SplashCoordinator {
         return splashDIContainer.makeSplashCoordinator(navigationController: navigationController)
     }
@@ -44,5 +47,9 @@ extension AppDIContainer: SplashCoordinatorFactory,
     
     func makeMainCoordinator(navigationController: UINavigationController) -> MainCoordinator {
         return mainDIContainer.makeMainCoordinator(navigationController: navigationController)
+    }
+    
+    func makeLockScreenCoordinator(navigationController: UINavigationController) -> LockScreenCoordinator {
+        return lockScreenDIContainer.makeLockScreenCoordinator(navigationController: navigationController)
     }
 }

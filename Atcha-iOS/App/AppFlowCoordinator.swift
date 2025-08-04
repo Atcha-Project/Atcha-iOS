@@ -16,6 +16,7 @@ class AppFlowCoordinator {
     private var mainCoordinator: MainCoordinator?
     private var loginCoordinator: LoginCoordinator?
     private var onboardingCoordinator: OnboardingCoordinator?
+    private var lockScreenCoordinator: LockScreenCoordinator?
     
     init(window: UIWindow, container: AppDIContainer) {
         self.window = window
@@ -39,7 +40,8 @@ class AppFlowCoordinator {
                 showOnboardingFlow()
             case .alarm(let info, let address):
                 showMainFlow(info: info, address: address)
-            case .lockScreen: print("잠금 화면 연동")
+            case .lockScreen(let info, let address):
+                showLockScreenFlow(info: info, address: address)
             }
         }
         splashCoordinator.start()
@@ -57,6 +59,22 @@ class AppFlowCoordinator {
             }
         }
         mainCoordinator?.start(info: info, address: address)
+    }
+    
+    private func showLockScreenFlow(info: LegInfo? = nil,
+                                    address: String? = nil) {
+        let navigationController = UINavigationController()
+        window.rootViewController = navigationController
+        
+        let lockScreenCoordinator = container.makeLockScreenCoordinator(navigationController: navigationController)
+        lockScreenCoordinator.routerHandler = { [weak self] router in
+            DispatchQueue.main.async {
+                // TODO: Router에 따라 값 분기 하기
+                self?.showMainFlow(info: info, address: address)
+            }
+        }
+        lockScreenCoordinator.start()
+        self.lockScreenCoordinator = lockScreenCoordinator
     }
     
     private func showLoginFlow() {
