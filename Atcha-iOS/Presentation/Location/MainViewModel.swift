@@ -24,6 +24,7 @@ final class MainViewModel: BaseViewModel {
     private let fetchTaxiFareUseCase: FetchTaxiFareUseCase
     private let streamUseCase: ObserveLocationStreamUseCase
     private let locationStateHolder: LocationStateHolder
+    private let busInfoUseCase: BusInfoUseCase
     private var streamTask: Task<Void, Never>?
     
     var routeHandler: ((MainRoute) -> Void)?
@@ -33,12 +34,14 @@ final class MainViewModel: BaseViewModel {
          streamUseCase: ObserveLocationStreamUseCase,
          fetchTaxiFareUseCase: FetchTaxiFareUseCase,
          searchAddressUseCase: SearchAddressUseCase,
-         locationStateHolder: LocationStateHolder) {
+         locationStateHolder: LocationStateHolder,
+         busInfoUseCase: BusInfoUseCase) {
         self.authorizationUseCase = authorizationUseCase
         self.streamUseCase = streamUseCase
         self.fetchTaxiFareUseCase = fetchTaxiFareUseCase
         self.searchAddressUseCase = searchAddressUseCase
         self.locationStateHolder = locationStateHolder
+        self.busInfoUseCase = busInfoUseCase
         
         super.init()
         self.bindView()
@@ -60,6 +63,8 @@ final class MainViewModel: BaseViewModel {
         legPathInfos = infos.pathInfo
         legTrafficInfos = infos.trafficInfo
         busInfos = infos.busInfo
+        
+        getRemainTimeInfo()
         
         let wrapper = UserDefaultsWrapper()
         wrapper.set(infos, forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
@@ -98,6 +103,48 @@ final class MainViewModel: BaseViewModel {
                     
                     selectedLocation = currentLocation
                 }
+            }
+        }
+    }
+    
+    func getRemainTimeInfo() {
+        if let firstNonWalkMode = legPathInfos.first(where: { $0.mode != .walk }) {
+            print("최초의 walk 제외 mode: \(firstNonWalkMode.mode?.rawValue ?? "없음")")
+            switch firstNonWalkMode.mode {
+            case .bus:
+                let busDetailInfo = busInfos.filter { $0.routeName?.isEmpty == false }
+                if let firstValidInfo = busDetailInfo.first(where: { $0.routeName != nil }) {
+                    print("info.routeName : \(firstValidInfo.routeName ?? "없음")")
+                    
+                    let request = BusRealTimeInfoRequest(
+                        routeName: firstValidInfo.routeName,
+                        stationName: firstValidInfo.start?.name,
+                        lat: firstValidInfo.start?.lat,
+                        lon: firstValidInfo.start?.lon,
+                        passStations: firstValidInfo.passStations
+                    )
+                    
+                    let _ = busRealTimeInfo(request: request)
+                }
+            case .subway:
+                if let departureString = firstNonWalkMode.departureDateTime {
+                    let formatter = DateFormatter()
+                    formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+                    formatter.timeZone = .current
+                    
+                    if let departureDate = formatter.date(from: departureString) {
+                        let now = Date()
+                        let interval = departureDate.timeIntervalSince(now) // 초 단위
+                        
+                        let minutes = Int(interval / 60)
+                        let seconds = Int(interval.truncatingRemainder(dividingBy: 60))
+                        
+                        print("⏱ 출발까지 남은 시간: \(minutes)분 \(seconds)초")
+                    } else {
+                        print("❌ 날짜 변환 실패: \(departureString)")
+                    }
+                }
+            default: print("걷기만 해서 집에갈 수 있어!?")
             }
         }
     }
@@ -144,7 +191,7 @@ final class MainViewModel: BaseViewModel {
 extension MainViewModel {
     private func handleLocationUpdate(_ location: CLLocationCoordinate2D?) {
         guard let location else {
-//        guard let location, legPathInfos.isEmpty else {
+            //        guard let location, legPathInfos.isEmpty else {
             print("⛔️ 위치 무효 또는 경로 이미 존재")
             return
         }
@@ -153,7 +200,7 @@ extension MainViewModel {
             await updateAddressAndFare(for: location)
         }
     }
-
+    
     private func updateAddressAndFare(for location: CLLocationCoordinate2D) async {
         do {
             let info = try await fetchCurrentAddress(lat: location.latitude, lon: location.longitude)
@@ -170,6 +217,18 @@ extension MainViewModel {
             taxiFare = try? await fetchTaxiFare(request: request)
         } catch {
             print("❌ 주소 또는 요금 정보 업데이트 실패: \(error)")
+        }
+    }
+    
+    private func busRealTimeInfo(request: BusRealTimeInfoRequest) {
+        Task {
+            do {
+                let response = try await busInfoUseCase.busRealTimeInfo(request)
+                print("response : \(response)")
+                print("버스 남은 시간 : \(response.realTimeBusArrival?.first?.remainingTime?.toHourMinuteSecondString)")
+            } catch {
+                print("실시간 버스 조회 실패")
+            }
         }
     }
 }
