@@ -49,13 +49,16 @@ final class SplashViewModel: BaseViewModel {
     func makeInitialFlow() {
         let wrapper = UserDefaultsWrapper()
         if let legInfo: LegInfo = wrapper.object(forKey: UserDefaultsWrapper.Key.legInfo.rawValue, of: LegInfo.self),
-           let address: String = wrapper.string(forKey: UserDefaultsWrapper.Key.address.rawValue) {
+           let address: String = wrapper.string(forKey: UserDefaultsWrapper.Key.addressDesc.rawValue) {
+            
+            // TODO: 알람 값이 존재하고, 시간에 따라 분기 처리
             routerHandler?(.alarm(info: legInfo, address: address))
+//            routerHandler?(.lockScreen(info: legInfo, address: address))
             return
         }
         
-        if let _ = wrapper.string(forKey: UserDefaultsWrapper.Key.providerToken.rawValue) {
-            if let _ = AppDIContainer.shared.tokenStorage.accessToken {
+        if let _ = wrapper.string(forKey: UserDefaultsWrapper.Key.providerToken.rawValue) { // 로그인만 진행한 경우
+            if let _ = AppDIContainer.shared.tokenStorage.accessToken { // 토큰도 정상적으로 존재하는 경우
                 fetchUserInfo()
                 routerHandler?(.main)
             } else {
@@ -65,4 +68,44 @@ final class SplashViewModel: BaseViewModel {
             routerHandler?(.login)
         }
     }
+    
+    //    private func checkFutureTimeOver10Minutes(dateString: String) -> (isFuture: Bool, secondsUntil: TimeInterval, isOver10Minutes: Bool)? {
+    //        let formatter = DateFormatter()
+    //        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+    //        formatter.timeZone = .current
+    //
+    //        guard let inputDate = formatter.date(from: dateString) else {
+    //            print("날짜 파싱 실패")
+    //            return nil
+    //        }
+    //
+    //        let currentDate = Date()
+    //        let timeInterval = inputDate.timeIntervalSince(currentDate)
+    //        
+    //        let isFuture = timeInterval > 0
+    //        let secondsUntil = max(0, timeInterval) // 미래가 아니면 0초로 처리
+    //        let isOver10Minutes = isFuture && secondsUntil >= 600 // 600초 = 10분
+    //
+    //        return (isFuture, secondsUntil, isOver10Minutes)
+    //    }
+    
+    //    private func compareToCurrentTime(dateString: String) -> (isPast: Bool, secondsDifference: TimeInterval, isOver10Minutes: Bool)? {
+    //        let formatter = DateFormatter()
+    //        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+    //        formatter.timeZone = .current
+    //
+    //        guard let inputDate = formatter.date(from: dateString) else {
+    //            print("날짜 파싱 실패")
+    //            return nil
+    //        }
+    //
+    //        let currentDate = Date()
+    //        let timeInterval = currentDate.timeIntervalSince(inputDate)
+    //
+    //        let isPast = timeInterval > 0
+    //        let secondsDifference = abs(timeInterval)
+    //        let isOver10Minutes = secondsDifference >= 600 // 600초 = 10분
+    //
+    //        return (isPast, secondsDifference, isOver10Minutes)
+    //    }
 }

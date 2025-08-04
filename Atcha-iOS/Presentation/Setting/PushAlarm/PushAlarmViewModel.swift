@@ -50,8 +50,8 @@ final class PushAlarmViewModel: BaseViewModel {
                 AppDIContainer.shared.tokenStorage.refreshToken = response.refreshToken
                 
                 UserDefaultsWrapper().set(response.id, forKey: UserDefaultsWrapper.Key.userId.rawValue)
-                UserDefaultsWrapper().set(response.lat, forKey: UserDefaultsWrapper.Key.lat.rawValue)
-                UserDefaultsWrapper().set(response.lon, forKey: UserDefaultsWrapper.Key.lon.rawValue)
+                UserDefaultsWrapper().set(response.lat, forKey: UserDefaultsWrapper.Key.homeLat.rawValue)
+                UserDefaultsWrapper().set(response.lon, forKey: UserDefaultsWrapper.Key.homeLon.rawValue)
                 
                 onFinish?(true)
             } catch {

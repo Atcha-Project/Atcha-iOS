@@ -85,8 +85,8 @@ final class CourseSearchViewModel: BaseViewModel {
         Task {
             do {
                 let userDefaults = UserDefaultsWrapper()
-                let endLat = userDefaults.string(forKey: UserDefaultsWrapper.Key.lat.rawValue) ?? "37.554722"
-                let endLon = userDefaults.string(forKey: UserDefaultsWrapper.Key.lon.rawValue) ?? "126.970833"
+                let endLat = userDefaults.string(forKey: UserDefaultsWrapper.Key.homeLat.rawValue) ?? "37.554722"
+                let endLon = userDefaults.string(forKey: UserDefaultsWrapper.Key.homeLon.rawValue) ?? "126.970833"
                 
                 let request = CourseSearchRequest(startLat: startLat, startLon: startLon, endLat: endLat, endLon: endLon, sortType: 1)
                 
@@ -115,8 +115,8 @@ final class CourseSearchViewModel: BaseViewModel {
         courseStreamTask = Task {
             do {
                 let userDefaults = UserDefaultsWrapper()
-                let endLat = userDefaults.string(forKey: UserDefaultsWrapper.Key.lat.rawValue) ?? "37.554722"
-                let endLon = userDefaults.string(forKey: UserDefaultsWrapper.Key.lon.rawValue) ?? "126.970833"
+                let endLat = userDefaults.string(forKey: UserDefaultsWrapper.Key.homeLat.rawValue) ?? "37.554722"
+                let endLon = userDefaults.string(forKey: UserDefaultsWrapper.Key.homeLon.rawValue) ?? "126.970833"
                 
                 let request = CourseSearchRequest(
                     startLat: startLat,
@@ -157,6 +157,13 @@ final class CourseSearchViewModel: BaseViewModel {
                 self.courses = []
             }
         }
+    }
+    
+    func saveStartInfo() {
+        let wrapper = UserDefaultsWrapper()
+        wrapper.set(startLat, forKey: UserDefaultsWrapper.Key.startLat.rawValue)
+        wrapper.set(startLon, forKey: UserDefaultsWrapper.Key.startLon.rawValue)
+        wrapper.set(startAddress, forKey: UserDefaultsWrapper.Key.startAddress.rawValue)
     }
     
     func stopCourseStream() {

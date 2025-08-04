@@ -213,7 +213,7 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
             let pathInfo: [LegPathInfo] = model.course.toLegPathInfos()
             let tafficInfo: [LegTrafficInfo] = model.course.toLegTrafficInfos()
             let busInfo: [BusDetailInfo] = model.course.toBusInfos()
-            
+            viewModel.saveStartInfo()
             viewModel.getAlarmTapped?(viewModel.startAddress, LegInfo(pathInfo: pathInfo, trafficInfo: tafficInfo, busInfo: busInfo))
             navigationController?.popToRootViewController(animated: true)
         }

@@ -158,6 +158,7 @@ extension MainViewController {
         case .exitTapped:
             viewModel.requestPermissionAndStartTracking()
             viewModel.removeLegInfoAndAddress()
+            AlarmManager.shared.stopAlarm()
             
             lastTrainView.isHidden = false
             flagImageView.isHidden = false
@@ -352,7 +353,7 @@ extension MainViewController {
             
             let wrapper = UserDefaultsWrapper()
             if let legInfo: LegInfo = wrapper.object(forKey: UserDefaultsWrapper.Key.legInfo.rawValue, of: LegInfo.self),
-               let address: String = wrapper.string(forKey: UserDefaultsWrapper.Key.address.rawValue) {
+               let address: String = wrapper.string(forKey: UserDefaultsWrapper.Key.addressDesc.rawValue) {
                 self.viewModel.drawRoute(address: address, infos: legInfo)
                 return
             }

@@ -63,13 +63,22 @@ final class MainViewModel: BaseViewModel {
         
         let wrapper = UserDefaultsWrapper()
         wrapper.set(infos, forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
-        wrapper.set(address, forKey: UserDefaultsWrapper.Key.address.rawValue)
+        wrapper.set(address, forKey: UserDefaultsWrapper.Key.addressDesc.rawValue)
+        
+        guard let time = legPathInfos.first?.departureDateTime else {
+            return
+        }
+        print("time : \(time)")
+        AlarmManager.shared.startAlarm(after: time, title: "집에 가자", body: "집에 가자")
     }
     
     func removeLegInfoAndAddress() {
         let wrapper = UserDefaultsWrapper()
         wrapper.remove(forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
-        wrapper.remove(forKey: UserDefaultsWrapper.Key.address.rawValue)
+        wrapper.remove(forKey: UserDefaultsWrapper.Key.addressDesc.rawValue)
+        wrapper.remove(forKey: UserDefaultsWrapper.Key.startLat.rawValue)
+        wrapper.remove(forKey: UserDefaultsWrapper.Key.startLon.rawValue)
+        wrapper.remove(forKey: UserDefaultsWrapper.Key.startAddress.rawValue)
     }
     
     func requestPermissionAndStartTracking() {
@@ -154,8 +163,8 @@ extension MainViewModel {
             let request = FetchTaxiFareRequest(
                 originLat: info?.lat,
                 originLon: info?.lon,
-                destinationLat: UserDefaultsWrapper().double(forKey: UserDefaultsWrapper.Key.lat.rawValue),
-                destinationLon: UserDefaultsWrapper().double(forKey: UserDefaultsWrapper.Key.lon.rawValue)
+                destinationLat: UserDefaultsWrapper().double(forKey: UserDefaultsWrapper.Key.homeLat.rawValue),
+                destinationLon: UserDefaultsWrapper().double(forKey: UserDefaultsWrapper.Key.homeLon.rawValue)
             )
             
             taxiFare = try? await fetchTaxiFare(request: request)

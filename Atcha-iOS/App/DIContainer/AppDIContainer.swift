@@ -18,6 +18,7 @@ final class AppDIContainer {
     let loginDIContainer: LoginDIContainer
     let mainDIContainer: MainDIContainer
     let onboardingDIContainer: OnboardingDIContainer
+    let lockScreenDIContainer: LockScreenDIContainer
     
     private let locationStateHolder: LocationStateHolder = LocationStateHolder()
     
@@ -34,5 +35,6 @@ final class AppDIContainer {
                                                            locationStateHolder: locationStateHolder)
         self.mainDIContainer = MainDIContainer(apiService: apiServce,
                                                locationStateHolder: locationStateHolder)
+        self.lockScreenDIContainer = LockScreenDIContainer()
     }
 }
