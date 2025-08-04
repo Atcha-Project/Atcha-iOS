@@ -17,6 +17,8 @@ final class LastTrainDepartBottomView: UIView {
         case exitTapped
     }
     
+    private var countdownCancellable: AnyCancellable?
+    private var remainingTimeInSeconds: Int = 0
     let actionPublisher = PassthroughSubject<Action, Never>()
     
     private let titleView: UIView = UIView()
@@ -33,8 +35,6 @@ final class LastTrainDepartBottomView: UIView {
         return stackView
     }()
     
-    
-    
     private let timeView: UIView = UIView()
     private let hourTimeLabel: UILabel = UILabel()
     private let hourLabel: UILabel = UILabel()
@@ -47,6 +47,7 @@ final class LastTrainDepartBottomView: UIView {
         let stackView: UIStackView = UIStackView(arrangedSubviews: [exitButton, detailRoadMapButton])
         stackView.spacing = 12
         stackView.axis = .horizontal
+        stackView.distribution = .fill
         stackView.alignment = .center
         return stackView
     }()
@@ -82,12 +83,17 @@ final class LastTrainDepartBottomView: UIView {
         trainRigtImageView.image = UIImage.infoOutlined
         trainRigtImageView.contentMode = .scaleAspectFit
         trainRigtImageView.tintColor = .gray500
+        trainRigtImageView.setContentHuggingPriority(.required, for: .horizontal)
+        
+        trainRemainStationLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
         
         reloadImageView.image = UIImage.refreshOutlined
         reloadImageView.contentMode = .scaleAspectFit
         reloadImageView.tintColor = .white
         reloadImageView.setContentHuggingPriority(.required, for: .horizontal)
         
+        trainTimeLabel.setContentHuggingPriority(.required, for: .horizontal)
+        trainTimeLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
         trainTimeLabel.attributedText = AtchaFont.B4_R_15("출발시간", color: .white)
         
         exitButton.setContentHuggingPriority(.required, for: .horizontal)
@@ -103,6 +109,22 @@ final class LastTrainDepartBottomView: UIView {
             make.trailing.equalToSuperview().inset(20)
             make.top.equalToSuperview().inset(24)
             make.height.equalTo(28)
+        }
+        
+        trainTimeLabel.snp.makeConstraints { make in
+            make.width.greaterThanOrEqualTo(10)
+        }
+        
+        trainIconImageView.snp.makeConstraints { make in
+            make.width.height.equalTo(16)
+        }
+        
+        trainRigtImageView.snp.makeConstraints { make in
+            make.size.equalTo(14)
+        }
+        
+        reloadImageView.snp.makeConstraints { make in
+            make.size.equalTo(24)
         }
         
         timeView.snp.makeConstraints { make in
@@ -163,6 +185,50 @@ final class LastTrainDepartBottomView: UIView {
     }
 }
 
+// MARK: Timer
+extension LastTrainDepartBottomView {
+    private func startCountdownWithCombine(minutes: Int, seconds: Int) {
+        countdownCancellable?.cancel() // 기존 구독 해제
+        remainingTimeInSeconds = minutes * 60 + seconds
+        
+        updateCountdownLabels()
+        
+        countdownCancellable = Timer
+            .publish(every: 1.0, on: .main, in: .common)
+            .autoconnect()
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+                
+                self.remainingTimeInSeconds -= 1
+                
+                if self.remainingTimeInSeconds <= 60 {
+                    // 1분 이내: 곧 도착 처리
+                    self.countdownCancellable?.cancel()
+                    self.hourLabel.isHidden = true
+                    self.miniuteLabel.isHidden = true
+                    self.hourTimeLabel.isHidden = true
+                    self.minuteTimeLabel.isHidden = true
+//                    self.trainRemainStationLabel.attributedText = AtchaFont.B4_R_15("곧 도착", color: .red500)
+                } else {
+                    self.updateCountdownLabels()
+                }
+            }
+    }
+    
+    private func updateCountdownLabels() {
+        let minutes = remainingTimeInSeconds / 60
+        let seconds = remainingTimeInSeconds % 60
+        
+        hourTimeLabel.attributedText = AtchaFont.D2_EB_48("\(minutes)", color: .widearea)
+        minuteTimeLabel.attributedText = AtchaFont.D2_EB_48("\(seconds)", color: .widearea)
+    }
+    
+    private func cancelCountdownTimer() {
+        countdownCancellable?.cancel()
+        countdownCancellable = nil
+    }
+}
+
 // MARK: Binding Leg Info
 extension LastTrainDepartBottomView {
     func setupLegInfo(info: LegInfo) {
@@ -180,6 +246,9 @@ extension LastTrainDepartBottomView {
                     miniuteLabel.attributedText = AtchaFont.B1_R_17("분", color: .white)
                     hourTimeLabel.attributedText = AtchaFont.D2_EB_48(hour, color: .white)
                     minuteTimeLabel.attributedText = AtchaFont.D2_EB_48(minute, color: .white)
+                    trainRigtImageView.isHidden = false
+                    trainIconImageView.isHidden = true
+                    trainRemainStationLabel.isHidden = true
                 }
             } else {
                 if let firstNonWalkMode = info.pathInfo.first(where: { $0.mode != .walk }) {
@@ -210,6 +279,8 @@ extension LastTrainDepartBottomView {
                             hourTimeLabel.attributedText = AtchaFont.D2_EB_48("\(minutes)", color: .widearea)
                             minuteTimeLabel.attributedText = AtchaFont.D2_EB_48("\(seconds)", color: .widearea)
                             
+                            startCountdownWithCombine(minutes: minutes, seconds: seconds)
+                            
                             if let firstSubwayLeg = info.trafficInfo.first(where: { $0.mode == .subway }),
                                let firstStationName = firstSubwayLeg.passStopList?.first?.stationName {
                                 trainRigtImageView.isHidden = true
@@ -235,6 +306,8 @@ extension LastTrainDepartBottomView {
         hourTimeLabel.attributedText = AtchaFont.D2_EB_48("\(result.0)", color: .widearea)
         minuteTimeLabel.attributedText = AtchaFont.D2_EB_48("\(result.1)", color: .widearea)
         
+        startCountdownWithCombine(minutes: result.0, seconds: result.1)
+        
         trainRemainStationLabel.attributedText = AtchaFont.B4_R_15("· \(firstInfo.remainingStations ?? 0)정류장 전", color: .white)
     }
     
@@ -256,6 +329,7 @@ extension LastTrainDepartBottomView {
 
 extension LastTrainDepartBottomView {
     @objc private func handleExitTapped() {
+        cancelCountdownTimer()
         actionPublisher.send(.exitTapped)
     }
     
@@ -264,6 +338,7 @@ extension LastTrainDepartBottomView {
     }
     
     @objc private func handleReloadTapped() {
+        cancelCountdownTimer()
         actionPublisher.send(.reloadTapped)
     }
     
