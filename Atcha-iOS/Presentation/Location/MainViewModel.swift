@@ -8,7 +8,15 @@
 import Foundation
 import CoreLocation
 import Combine
+import UIKit
 import TMapSDK
+
+struct LastTrainInfo {
+    let name: String? // 147 or 강남역
+    let time: String? // 7분 5초
+    let icon: UIImage?
+    let remainingSeat: Int? // 몇자리 남았는지
+}
 
 final class MainViewModel: BaseViewModel {
     @Published var currentLocation: CLLocationCoordinate2D?
@@ -18,6 +26,8 @@ final class MainViewModel: BaseViewModel {
     @Published var legPathInfos: [LegPathInfo] = []
     @Published var legTrafficInfos: [LegTrafficInfo] = []
     @Published var busInfos: [BusDetailInfo] = []
+    
+    @Published var lastTrainInfo: LastTrainInfo?
     
     private let searchAddressUseCase: SearchAddressUseCase
     private let authorizationUseCase: RequestLocationAuthorizationUseCase
@@ -73,7 +83,6 @@ final class MainViewModel: BaseViewModel {
         guard let time = legPathInfos.first?.departureDateTime else {
             return
         }
-        print("time : \(time)")
         AlarmManager.shared.startAlarm(after: time, title: "집에 가자", body: "집에 가자")
     }
     
@@ -107,6 +116,22 @@ final class MainViewModel: BaseViewModel {
         }
     }
     
+    func setupLocation() {
+        requestPermissionAndStartTracking()
+    }
+    
+    func stopTracking() {
+        streamTask?.cancel()
+        streamUseCase.stopUpdate()
+    }
+    
+    deinit {
+        stopTracking()
+    }
+}
+
+// MARK: - Last Train
+extension MainViewModel {
     func getRemainTimeInfo() {
         if let firstNonWalkMode = legPathInfos.first(where: { $0.mode != .walk }) {
             print("최초의 walk 제외 mode: \(firstNonWalkMode.mode?.rawValue ?? "없음")")
@@ -114,8 +139,6 @@ final class MainViewModel: BaseViewModel {
             case .bus:
                 let busDetailInfo = busInfos.filter { $0.routeName?.isEmpty == false }
                 if let firstValidInfo = busDetailInfo.first(where: { $0.routeName != nil }) {
-                    print("info.routeName : \(firstValidInfo.routeName ?? "없음")")
-                    
                     let request = BusRealTimeInfoRequest(
                         routeName: firstValidInfo.routeName,
                         stationName: firstValidInfo.start?.name,
@@ -123,8 +146,6 @@ final class MainViewModel: BaseViewModel {
                         lon: firstValidInfo.start?.lon,
                         passStations: firstValidInfo.passStations
                     )
-                    
-                    let _ = busRealTimeInfo(request: request)
                 }
             case .subway:
                 if let departureString = firstNonWalkMode.departureDateTime {
@@ -139,7 +160,11 @@ final class MainViewModel: BaseViewModel {
                         let minutes = Int(interval / 60)
                         let seconds = Int(interval.truncatingRemainder(dividingBy: 60))
                         
-                        print("⏱ 출발까지 남은 시간: \(minutes)분 \(seconds)초")
+                        //                        firstNonWalkMode.mode?.getIcon(for: firstNonWalkMode.type ?? "")
+                        print("몇 호선 이야 : \(firstNonWalkMode.type)")
+                        print("출발까지 남은 시간: \(minutes)분 \(seconds)초")
+                        
+                        
                     } else {
                         print("❌ 날짜 변환 실패: \(departureString)")
                     }
@@ -148,7 +173,10 @@ final class MainViewModel: BaseViewModel {
             }
         }
     }
-    
+}
+
+// MARK: - Router
+extension MainViewModel {
     func handleRoute(route: MainRoute) {
         switch route {
         case .changeCourse:
@@ -172,26 +200,12 @@ final class MainViewModel: BaseViewModel {
                                                       busInfo: busInfos)))
         }
     }
-    
-    func setupLocation() {
-        requestPermissionAndStartTracking()
-    }
-    
-    func stopTracking() {
-        streamTask?.cancel()
-        streamUseCase.stopUpdate()
-    }
-    
-    deinit {
-        stopTracking()
-    }
 }
 
 // MARK: - Bindigs
 extension MainViewModel {
     private func handleLocationUpdate(_ location: CLLocationCoordinate2D?) {
         guard let location else {
-            //        guard let location, legPathInfos.isEmpty else {
             print("⛔️ 위치 무효 또는 경로 이미 존재")
             return
         }
@@ -219,21 +233,9 @@ extension MainViewModel {
             print("❌ 주소 또는 요금 정보 업데이트 실패: \(error)")
         }
     }
-    
-    private func busRealTimeInfo(request: BusRealTimeInfoRequest) {
-        Task {
-            do {
-                let response = try await busInfoUseCase.busRealTimeInfo(request)
-                print("response : \(response)")
-                print("버스 남은 시간 : \(response.realTimeBusArrival?.first?.remainingTime?.toHourMinuteSecondString)")
-            } catch {
-                print("실시간 버스 조회 실패")
-            }
-        }
-    }
 }
 
-// MARK: - Search Address
+// MARK: - Network
 extension MainViewModel {
     private func fetchCurrentAddress(lat: Double, lon: Double) async throws -> Location? {
         let request: ReverseGeocodeLocationRequest = ReverseGeocodeLocationRequest(lat: lat, lon: lon)
@@ -243,4 +245,16 @@ extension MainViewModel {
     private func fetchTaxiFare(request: FetchTaxiFareRequest) async throws -> Double {
         return try await fetchTaxiFareUseCase.fetchTaxiFare(request: request)
     }
+    
+    private func busRealTimeInfo(request: BusRealTimeInfoRequest) async throws -> BusRealTimeInfo {
+        return try await busInfoUseCase.busRealTimeInfo(request)
+    }
 }
+
+//                  = LastTrainInfo(name: response.routeName,
+//                                              time: response.realTimeBusArrival?.first?.remainingTime?.toHourMinuteSecondString,
+//                                              icon: ,
+//                                              remainingSeat: response.realTimeBusArrival?.first?.remainingStations)
+//                print("버스 번호 : \(response.routeName)")
+//                print("버스 남은 시간 : \(response.realTimeBusArrival?.first?.remainingTime?.toHourMinuteSecondString)")
+//                print("버스 남은 좌석 : \(response.realTimeBusArrival?.first?.remainingStations)")
