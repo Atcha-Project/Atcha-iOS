@@ -20,9 +20,21 @@ final class LastTrainDepartBottomView: UIView {
     let actionPublisher = PassthroughSubject<Action, Never>()
     
     private let titleView: UIView = UIView()
-    private let departTimeLabel: UILabel = UILabel()
-    private let departIconImageView: UIImageView = UIImageView()
+//    ·
+    private let trainIconImageView: UIImageView = UIImageView()
+    private let trainTimeLabel: UILabel = UILabel()
+    private let trainRigtImageView: UIImageView = UIImageView()
+    private let trainRemainStationLabel: UILabel = UILabel()
     private let reloadImageView: UIImageView = UIImageView()
+    private lazy var trainStackView: UIStackView = {
+        let stackView: UIStackView = UIStackView(arrangedSubviews: [trainIconImageView, trainTimeLabel, trainRemainStationLabel, trainRigtImageView, reloadImageView])
+        stackView.axis = .horizontal
+        stackView.spacing = 6
+        stackView.alignment = .center
+        return stackView
+    }()
+    
+    
     
     private let timeView: UIView = UIView()
     private let hourTimeLabel: UILabel = UILabel()
@@ -35,7 +47,6 @@ final class LastTrainDepartBottomView: UIView {
     private lazy var buttonStackView: UIStackView = {
         let stackView: UIStackView = UIStackView(arrangedSubviews: [exitButton, detailRoadMapButton])
         stackView.spacing = 12
-        stackView.distribution = .fill
         stackView.axis = .horizontal
         stackView.alignment = .center
         return stackView
@@ -66,19 +77,19 @@ final class LastTrainDepartBottomView: UIView {
     private func setupUI() {
         backgroundColor = .gray950
         layer.cornerRadius = 20
-        titleView.addSubViews(departTimeLabel, departIconImageView, reloadImageView)
         timeView.addSubViews(hourLabel, hourTimeLabel, miniuteLabel, minuteTimeLabel)
-        addSubViews(titleView, timeView, locationLabel, buttonStackView)
+        addSubViews(trainStackView, timeView, locationLabel, buttonStackView)
         
-        departIconImageView.image = UIImage.infoOutlined
-        departIconImageView.contentMode = .scaleAspectFit
-        departIconImageView.tintColor = .gray500
+        trainRigtImageView.image = UIImage.infoOutlined
+        trainRigtImageView.contentMode = .scaleAspectFit
+        trainRigtImageView.tintColor = .gray500
         
         reloadImageView.image = UIImage.refreshOutlined
         reloadImageView.contentMode = .scaleAspectFit
         reloadImageView.tintColor = .white
+        reloadImageView.setContentHuggingPriority(.required, for: .horizontal)
         
-        departTimeLabel.attributedText = AtchaFont.B4_R_15("출발시간", color: .white)
+        trainTimeLabel.attributedText = AtchaFont.B4_R_15("출발시간", color: .white)
         
         exitButton.setContentHuggingPriority(.required, for: .horizontal)
         exitButton.setContentCompressionResistancePriority(.required, for: .horizontal)
@@ -88,33 +99,16 @@ final class LastTrainDepartBottomView: UIView {
     }
     
     private func setupAutoLayout() {
-        titleView.snp.makeConstraints { make in
+        trainStackView.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(16)
             make.trailing.equalToSuperview().inset(20)
             make.top.equalToSuperview().inset(24)
             make.height.equalTo(28)
         }
         
-        departTimeLabel.snp.makeConstraints { make in
-            make.leading.equalToSuperview()
-            make.centerY.equalToSuperview()
-        }
-        
-        departIconImageView.snp.makeConstraints { make in
-            make.leading.equalTo(departTimeLabel.snp.trailing).offset(6)
-            make.centerY.equalTo(departTimeLabel.snp.centerY)
-            make.width.height.equalTo(14)
-        }
-        
-        reloadImageView.snp.makeConstraints { make in
-            make.trailing.equalToSuperview()
-            make.centerY.equalToSuperview()
-            make.width.height.equalTo(24)
-        }
-        
         timeView.snp.makeConstraints { make in
             make.height.equalTo(66)
-            make.top.equalTo(titleView.snp.bottom)
+            make.top.equalTo(trainStackView.snp.bottom)
             make.horizontalEdges.equalToSuperview().inset(16)
         }
         
@@ -180,7 +174,7 @@ extension LastTrainDepartBottomView {
         formatter.locale = .current
         
         if let departureDate = formatter.date(from: departureString) {
-//            if departureDate > Date() {
+            //            if departureDate > Date() {
             if departureDate <= Date() {
                 print("출발 시간이 미래입니다.")
                 if let (hour, minute) = departureString.toHourMinute() {
@@ -216,8 +210,16 @@ extension LastTrainDepartBottomView {
                             miniuteLabel.attributedText = AtchaFont.B1_R_17("초", color: .widearea)
                             hourTimeLabel.attributedText = AtchaFont.D2_EB_48("\(minutes)", color: .widearea)
                             minuteTimeLabel.attributedText = AtchaFont.D2_EB_48("\(seconds)", color: .widearea)
+                            
+                            if let firstSubwayLeg = info.trafficInfo.first(where: { $0.mode == .subway }),
+                               let firstStationName = firstSubwayLeg.passStopList?.first?.stationName {
+                                trainRigtImageView.isHidden = true
+                                trainIconImageView.image = UIImage.route16PxSubway
+                                trainIconImageView.tintColor = firstSubwayLeg.mode?.getColor(for: firstSubwayLeg.type ?? "")
+                                trainTimeLabel.attributedText = AtchaFont.B4_R_15("\(firstStationName)역", color: .white)
+                            }
                         }
-                    default: print("걷기만 해서 집에갈 수 있어!?")
+                    default: do {}
                     }
                 }
             }
