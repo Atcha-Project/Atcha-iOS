@@ -23,11 +23,9 @@ final class MainViewModel: BaseViewModel {
     @Published var selectedLocation: CLLocationCoordinate2D?
     @Published var address: String?
     @Published var taxiFare: Double?
-    @Published var legPathInfos: [LegPathInfo] = []
-    @Published var legTrafficInfos: [LegTrafficInfo] = []
-    @Published var busInfos: [BusDetailInfo] = []
     
-    @Published var lastTrainInfo: LastTrainInfo?
+    @Published var legInfo: LegInfo?
+    @Published var addressDesc: String?
     
     private let searchAddressUseCase: SearchAddressUseCase
     private let authorizationUseCase: RequestLocationAuthorizationUseCase
@@ -67,23 +65,20 @@ final class MainViewModel: BaseViewModel {
             .store(in: &cancellables)
     }
     
-    func drawRoute(address: String?, infos: LegInfo?) {
-        guard let address, let infos else { return }
-        self.address = address
-        legPathInfos = infos.pathInfo
-        legTrafficInfos = infos.trafficInfo
-        busInfos = infos.busInfo
-        
-        getRemainTimeInfo()
+    func drawRoute(address: String?, info: LegInfo?) {
+        guard let address, let info else { return }
+        addressDesc = address
+        legInfo = info
         
         let wrapper = UserDefaultsWrapper()
-        wrapper.set(infos, forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
         wrapper.set(address, forKey: UserDefaultsWrapper.Key.addressDesc.rawValue)
+        wrapper.set(info, forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
         
-        guard let time = legPathInfos.first?.departureDateTime else {
-            return
-        }
-        AlarmManager.shared.startAlarm(after: time, title: "집에 가자", body: "집에 가자")
+        getRemainTimeInfo(info: info)
+//        guard let time = legPathInfos.first?.departureDateTime else {
+//            return
+//        }
+//        AlarmManager.shared.startAlarm(after: time, title: "집에 가자", body: "집에 가자")
     }
     
     func removeLegInfoAndAddress() {
@@ -132,12 +127,13 @@ final class MainViewModel: BaseViewModel {
 
 // MARK: - Last Train
 extension MainViewModel {
-    func getRemainTimeInfo() {
-        if let firstNonWalkMode = legPathInfos.first(where: { $0.mode != .walk }) {
+    func getRemainTimeInfo(info: LegInfo) {
+        if let firstNonWalkMode = info.pathInfo.first(where: { $0.mode != .walk }) {
             print("최초의 walk 제외 mode: \(firstNonWalkMode.mode?.rawValue ?? "없음")")
+            
             switch firstNonWalkMode.mode {
             case .bus:
-                let busDetailInfo = busInfos.filter { $0.routeName?.isEmpty == false }
+                let busDetailInfo = info.busInfo.filter { $0.routeName?.isEmpty == false }
                 if let firstValidInfo = busDetailInfo.first(where: { $0.routeName != nil }) {
                     let request = BusRealTimeInfoRequest(
                         routeName: firstValidInfo.routeName,
@@ -194,10 +190,8 @@ extension MainViewModel {
             routeHandler?(.myPage)
             
         case .detailRoute:
-            routeHandler?(.detailRoute(address: self.address ?? "",
-                                       infos: LegInfo(pathInfo: legPathInfos,
-                                                      trafficInfo: legTrafficInfos,
-                                                      busInfo: busInfos)))
+            guard let address, let legInfo else { return }
+            routeHandler?(.detailRoute(address: address, infos: legInfo))
         }
     }
 }

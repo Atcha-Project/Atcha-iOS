@@ -79,8 +79,6 @@ final class LastTrainDepartBottomView: UIView {
         reloadImageView.tintColor = .white
         
         departTimeLabel.attributedText = AtchaFont.B4_R_15("출발시간", color: .white)
-        hourLabel.attributedText = AtchaFont.B1_R_17("시", color: .white)
-        miniuteLabel.attributedText = AtchaFont.B1_R_17("분", color: .white)
         
         exitButton.setContentHuggingPriority(.required, for: .horizontal)
         exitButton.setContentCompressionResistancePriority(.required, for: .horizontal)
@@ -165,56 +163,86 @@ final class LastTrainDepartBottomView: UIView {
         locationLabel.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleLocationTapped)))
     }
     
-    func setupTime(hour: String, minute: String) {
-        hourTimeLabel.attributedText = AtchaFont.D2_EB_48(hour, color: .white)
-        minuteTimeLabel.attributedText = AtchaFont.D2_EB_48(minute, color: .white)
-    }
-    
-    func setupTimeAfterAlarm(infos: [LegTrafficInfo]) {
-        if let firstStop = findFirstPassStop(from: infos) {
-            print("첫 번째 정류장: \(firstStop.stationName ?? "알 수 없음")")
-        }
-    }
-    
     func setupLoaction(location: String?) {
         guard let location else { return }
         let title: String = "\(location) -> 우리집"
         locationLabel.attributedText = AtchaFont.B4_R_15(title, color: .gray300)
     }
-    
-    private func findFirstPassStop(from legs: [LegTrafficInfo]) -> PassStopList? {
-        for leg in legs {
-            if let passStops = leg.passStopList, !passStops.isEmpty {
-                return passStops.first
+}
+
+// MARK: Binding Leg Info
+extension LastTrainDepartBottomView {
+    func setupLegInfo(info: LegInfo) {
+        guard let departureString = info.pathInfo.first?.departureDateTime else { return }
+        
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        formatter.locale = .current
+        
+        if let departureDate = formatter.date(from: departureString) {
+//            if departureDate > Date() {
+            if departureDate <= Date() {
+                print("출발 시간이 미래입니다.")
+                if let (hour, minute) = departureString.toHourMinute() {
+                    hourLabel.attributedText = AtchaFont.B1_R_17("시", color: .white)
+                    miniuteLabel.attributedText = AtchaFont.B1_R_17("분", color: .white)
+                    hourTimeLabel.attributedText = AtchaFont.D2_EB_48(hour, color: .white)
+                    minuteTimeLabel.attributedText = AtchaFont.D2_EB_48(minute, color: .white)
+                }
+            } else {
+                if let firstNonWalkMode = info.pathInfo.first(where: { $0.mode != .walk }) {
+                    print("최초의 walk 제외 mode: \(firstNonWalkMode.mode?.rawValue ?? "없음")")
+                    switch firstNonWalkMode.mode {
+                    case .bus:
+                        let busDetailInfo = info.busInfo.filter { $0.routeName?.isEmpty == false }
+                        if let firstValidInfo = busDetailInfo.first(where: { $0.routeName != nil }) {
+                            let request = BusRealTimeInfoRequest(
+                                routeName: firstValidInfo.routeName,
+                                stationName: firstValidInfo.start?.name,
+                                lat: firstValidInfo.start?.lat,
+                                lon: firstValidInfo.start?.lon,
+                                passStations: firstValidInfo.passStations
+                            )
+                        }
+                    case .subway:
+                        if let departureDate = formatter.date(from: departureString) {
+                            let now = Date()
+                            let interval = departureDate.timeIntervalSince(now)
+                            
+                            let minutes = Int(interval / 60)
+                            let seconds = Int(interval.truncatingRemainder(dividingBy: 60))
+                            
+                            hourLabel.attributedText = AtchaFont.B1_R_17("분", color: .widearea)
+                            miniuteLabel.attributedText = AtchaFont.B1_R_17("초", color: .widearea)
+                            hourTimeLabel.attributedText = AtchaFont.D2_EB_48("\(minutes)", color: .widearea)
+                            minuteTimeLabel.attributedText = AtchaFont.D2_EB_48("\(seconds)", color: .widearea)
+                        }
+                    default: print("걷기만 해서 집에갈 수 있어!?")
+                    }
+                }
             }
         }
-        return nil
     }
 }
 
 extension LastTrainDepartBottomView {
     @objc private func handleExitTapped() {
-        print(#function)
         actionPublisher.send(.exitTapped)
     }
     
     @objc private func handleDetailRoadTapped() {
-        print(#function)
         actionPublisher.send(.detailRoadMapTapped)
     }
     
     @objc private func handleReloadTapped() {
-        print(#function)
         actionPublisher.send(.reloadTapped)
     }
     
     @objc private func handleTimeTapped() {
-        print(#function)
         actionPublisher.send(.timeTapped)
     }
     
     @objc private func handleLocationTapped() {
-        print(#function)
         actionPublisher.send(.locationTapped)
     }
 }

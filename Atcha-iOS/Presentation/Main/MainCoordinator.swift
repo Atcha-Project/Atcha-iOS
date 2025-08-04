@@ -29,15 +29,15 @@ final class MainCoordinator {
                address: String? = nil) {
         let viewModel = diContainer.makeMainiewModel()
         self.mainViewModel = viewModel
-        viewModel.drawRoute(address: address, infos: info)
+//        viewModel.drawRoute(address: address, infos: info)
         
         viewModel.routeHandler = { [weak self] route in
             guard let self else { return }
             handle(route: route)
         }
-        viewModel.courseSearchResultHandler = { [weak self] address, infos in
+        viewModel.courseSearchResultHandler = { [weak self] address, info in
             guard let _ = self else { return }
-            viewModel.drawRoute(address: address, infos: infos)
+            viewModel.drawRoute(address: address, info: info)
         }
         let viewController = diContainer.makeMainViewController(viewModel: viewModel)
         navigationController.pushViewController(viewController, animated: false)
