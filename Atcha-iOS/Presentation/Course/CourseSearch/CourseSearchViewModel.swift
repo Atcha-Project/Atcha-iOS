@@ -159,6 +159,13 @@ final class CourseSearchViewModel: BaseViewModel {
         }
     }
     
+    func saveStartInfo() {
+        let wrapper = UserDefaultsWrapper()
+        wrapper.set(startLat, forKey: UserDefaultsWrapper.Key.startLat.rawValue)
+        wrapper.set(startLon, forKey: UserDefaultsWrapper.Key.startLon.rawValue)
+        wrapper.set(startAddress, forKey: UserDefaultsWrapper.Key.startAddress.rawValue)
+    }
+    
     func stopCourseStream() {
         courseStreamTask?.cancel()
         courseStreamTask = nil

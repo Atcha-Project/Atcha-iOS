@@ -42,6 +42,8 @@ class AppFlowCoordinator {
                 showMainFlow(info: info, address: address)
             case .lockScreen(let info, let address):
                 showLockScreenFlow(info: info, address: address)
+            case .detailRoute(let lat, let lon, let address):
+                print("lat : \(lat), lon : \(lon), address : \(address)")
             }
         }
         splashCoordinator.start()

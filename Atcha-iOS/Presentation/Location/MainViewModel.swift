@@ -75,6 +75,9 @@ final class MainViewModel: BaseViewModel {
     func removeLegInfoAndAddress() {
         let wrapper = UserDefaultsWrapper()
         wrapper.remove(forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
+        wrapper.remove(forKey: UserDefaultsWrapper.Key.addressDesc.rawValue)
+        wrapper.remove(forKey: UserDefaultsWrapper.Key.startLat.rawValue)
+        wrapper.remove(forKey: UserDefaultsWrapper.Key.startLon.rawValue)
         wrapper.remove(forKey: UserDefaultsWrapper.Key.startAddress.rawValue)
     }
     
@@ -108,11 +111,6 @@ final class MainViewModel: BaseViewModel {
             let lat: String = "\(currentLocation.latitude)"
             let lon: String = "\(currentLocation.longitude)"
             let address: String = address ?? ""
-            
-            let wrapper = UserDefaultsWrapper()
-            wrapper.set(lat, forKey: UserDefaultsWrapper.Key.startLat.rawValue)
-            wrapper.set(lat, forKey: UserDefaultsWrapper.Key.startLon.rawValue)
-            wrapper.set(lon, forKey: UserDefaultsWrapper.Key.startAddress.rawValue)
             
             routeHandler?(.courseSearch(startLat: lat,
                                         startLon: lon,

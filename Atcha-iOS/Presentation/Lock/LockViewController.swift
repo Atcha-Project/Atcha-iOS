@@ -129,7 +129,11 @@ final class LockViewController: BaseViewController<LockViewModel> {
     }
     
     @objc private func detailRouteTapped() {
-        // TODO: 로 변경 detailRoute
-        viewModel.routerHandler?(.onboarding)
+        let wrapper = UserDefaultsWrapper()
+        let lat = wrapper.string(forKey: UserDefaultsWrapper.Key.startLat.rawValue) ?? ""
+        let lon = wrapper.string(forKey: UserDefaultsWrapper.Key.startLat.rawValue) ?? ""
+        let address = wrapper.string(forKey: UserDefaultsWrapper.Key.startLat.rawValue) ?? ""
+        
+        viewModel.routerHandler?(.detailRoute(startLat: lat, startLon: lon, startAddress: address))
     }
 }
