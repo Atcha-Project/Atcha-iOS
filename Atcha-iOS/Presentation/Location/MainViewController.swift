@@ -176,7 +176,7 @@ extension MainViewController {
         case .locationTapped:
             ballonView.setupTitle(bottomMessage: "위치를 변경하려면 알림을 종료해야 해요")
         case .reloadTapped:
-            break
+            viewModel.getBusRealTime()
         case .timeTapped:
             ballonView.setupTitle(topMessage: "이때쯤 자리에서 출발하면 돼요",
                                   bottomMessage: "현재 교통 상황 기준으로,\n출발 시간이 가까워질수록 더 정확해져요")
@@ -235,6 +235,14 @@ extension MainViewController {
                 self?.commonAlarmSetupView()
                 self?.addRouteLine(pathInfos: info.pathInfo)
                 self?.lastTrainDepartView.setupLegInfo(info: info)
+            }
+            .store(in: &cancellables)
+        
+        viewModel.$busRealTimeInfo
+            .compactMap { $0 }
+            .receive(on: RunLoop.main)
+            .sink { [weak self] info in
+                self?.lastTrainDepartView.setupBusRealTime(realTime: info)
             }
             .store(in: &cancellables)
     }

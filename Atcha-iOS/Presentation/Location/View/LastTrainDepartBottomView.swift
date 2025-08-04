@@ -20,7 +20,6 @@ final class LastTrainDepartBottomView: UIView {
     let actionPublisher = PassthroughSubject<Action, Never>()
     
     private let titleView: UIView = UIView()
-//    ·
     private let trainIconImageView: UIImageView = UIImageView()
     private let trainTimeLabel: UILabel = UILabel()
     private let trainRigtImageView: UIImageView = UIImageView()
@@ -174,8 +173,7 @@ extension LastTrainDepartBottomView {
         formatter.locale = .current
         
         if let departureDate = formatter.date(from: departureString) {
-            //            if departureDate > Date() {
-            if departureDate <= Date() {
+            if departureDate > Date() {
                 print("출발 시간이 미래입니다.")
                 if let (hour, minute) = departureString.toHourMinute() {
                     hourLabel.attributedText = AtchaFont.B1_R_17("시", color: .white)
@@ -188,15 +186,16 @@ extension LastTrainDepartBottomView {
                     print("최초의 walk 제외 mode: \(firstNonWalkMode.mode?.rawValue ?? "없음")")
                     switch firstNonWalkMode.mode {
                     case .bus:
+                        if let firstBusLeg = info.trafficInfo.first(where: { $0.mode == .bus }) {
+                            trainRigtImageView.isHidden = true
+                            trainIconImageView.image = UIImage.route16PxBus
+                            trainIconImageView.tintColor = firstBusLeg.mode?.getColor(for: firstBusLeg.type ?? "")
+                            trainTimeLabel.attributedText = AtchaFont.B4_R_15("\(firstBusLeg.busName ?? "")", color: .white)
+                        }
+                        
                         let busDetailInfo = info.busInfo.filter { $0.routeName?.isEmpty == false }
-                        if let firstValidInfo = busDetailInfo.first(where: { $0.routeName != nil }) {
-                            let request = BusRealTimeInfoRequest(
-                                routeName: firstValidInfo.routeName,
-                                stationName: firstValidInfo.start?.name,
-                                lat: firstValidInfo.start?.lat,
-                                lon: firstValidInfo.start?.lon,
-                                passStations: firstValidInfo.passStations
-                            )
+                        if let _ = busDetailInfo.first(where: { $0.routeName != nil }) {
+                            handleReloadTapped()
                         }
                     case .subway:
                         if let departureDate = formatter.date(from: departureString) {
@@ -224,6 +223,34 @@ extension LastTrainDepartBottomView {
                 }
             }
         }
+    }
+    
+    func setupBusRealTime(realTime: BusRealTimeInfo?) {
+        guard let realTime, let firstInfo = realTime.realTimeBusArrival?.first else { return }
+        
+        let time = firstInfo.remainingTime?.toHourMinuteStringFromSeconds
+        let result = extractMinuteSecond(from: time)
+        hourLabel.attributedText = AtchaFont.B1_R_17("분", color: .widearea)
+        miniuteLabel.attributedText = AtchaFont.B1_R_17("초", color: .widearea)
+        hourTimeLabel.attributedText = AtchaFont.D2_EB_48("\(result.0)", color: .widearea)
+        minuteTimeLabel.attributedText = AtchaFont.D2_EB_48("\(result.1)", color: .widearea)
+        
+        trainRemainStationLabel.attributedText = AtchaFont.B4_R_15("· \(firstInfo.remainingStations ?? 0)정류장 전", color: .white)
+    }
+    
+    private func extractMinuteSecond(from timeText: String?) -> (minute: Int, second: Int) {
+        guard let timeText else { return (0, 0) }
+        let regex = try! NSRegularExpression(pattern: "\\d+")
+        let matches = regex.matches(in: timeText, range: NSRange(timeText.startIndex..., in: timeText))
+        
+        let numbers = matches.map {
+            Int((timeText as NSString).substring(with: $0.range)) ?? 0
+        }
+        
+        let minute = numbers.count > 0 ? numbers[0] : 0
+        let second = numbers.count > 1 ? numbers[1] : 0
+        
+        return (minute, second)
     }
 }
 
