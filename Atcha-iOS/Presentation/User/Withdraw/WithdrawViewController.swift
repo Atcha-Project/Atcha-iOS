@@ -10,8 +10,9 @@ import SnapKit
 
 class WithdrawViewController: BaseViewController<WithdrawViewModel> {
 
-    private lazy var topNavigationBar: TitleNavigationBar = AtchaNavigationBar.title("계정 탈퇴", shouldShowCloseButton: false, onClose:  {
-        
+    private lazy var topNavigationBar: TitleNavigationBar = AtchaNavigationBar.title("계정 탈퇴", shouldShowCloseButton: false, onClose:  { [weak self] in
+        guard let self else { return }
+        navigationController?.popViewController(animated: true)
     })
     private let withdrawListStackView: UIStackView = UIStackView()
     private var withdrawCheckmarkLists: [AtchaList] = []
