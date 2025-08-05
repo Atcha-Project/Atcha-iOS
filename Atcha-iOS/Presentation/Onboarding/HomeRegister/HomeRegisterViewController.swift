@@ -10,7 +10,7 @@ import SnapKit
 import CoreLocation
 
 final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel> {
-    private lazy var navigationBar: TitleNavigationBar = AtchaNavigationBar.title("우리집 변경", shouldShowCloseButton: false, onBack: { [weak self] in
+    private lazy var navigationBar: TitleNavigationBar = AtchaNavigationBar.title("우리집 설정", shouldShowCloseButton: false, onBack: { [weak self] in
         guard let self else { return }
         navigationController?.popViewController(animated: true)
     })
@@ -61,10 +61,30 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
         case .onboarding:
             setupUI()
             navigationBar.isHidden = true
+            
+            titleLabel.snp.remakeConstraints { make in
+                make.top.equalTo(navigationBar.snp.bottom)
+                make.leading.equalToSuperview().inset(16)
+            }
+            
+            searchLocationContainer.snp.remakeConstraints { make in
+                make.top.equalTo(titleLabel.snp.bottom).offset(32)
+                make.leading.trailing.equalToSuperview().inset(16)
+                make.height.equalTo(50)
+            }
         case .myPage:
-            viewModel.setupSelectedHome()
+//            viewModel.setupSelectedHome()
             nextButton.isHidden = true
-            titleLabel.isHidden = true
+            
+            titleLabel.snp.remakeConstraints { make in
+                make.height.equalTo(0)
+            }
+            
+            searchLocationContainer.snp.remakeConstraints { make in
+                make.top.equalTo(navigationBar.snp.bottom).offset(24)
+                make.leading.trailing.equalToSuperview().inset(16)
+                make.height.equalTo(50)
+            }
         }
     }
     
@@ -180,16 +200,28 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
     
     // MARK: - UI 렌더링
     private func render(_ state: LocationSelectionState) {
-        searchLocationContainer.subviews.forEach { $0.removeFromSuperview() }
+        searchLocationContainer.subviews.forEach {
+            if $0 != searchLocationLabel { // 기본 label은 남겨둠
+                $0.removeFromSuperview()
+            }
+        }
         currentLocationButton.removeTarget(nil, action: nil, for: .touchUpInside)
         
         switch state {
         case .none:
+            // 기본 안내 label 보이게
+            searchLocationLabel.isHidden = false
             setupNoneStateUI()
-            currentLocationButton.addTarget(self, action: #selector(handleCurrentLocationTapped), for: .touchUpInside)
+            currentLocationButton.addTarget(self,
+                                            action: #selector(handleCurrentLocationTapped),
+                                            for: .touchUpInside)
         case .selected(let name, let address):
+            // 기본 안내 label은 숨김
+            searchLocationLabel.isHidden = true
             setupSelectedStateUI(name: name, address: address)
-            currentLocationButton.addTarget(self, action: #selector(handleSearchTapped), for: .touchUpInside)
+            currentLocationButton.addTarget(self,
+                                            action: #selector(handleSearchTapped),
+                                            for: .touchUpInside)
         }
     }
 }

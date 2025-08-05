@@ -47,6 +47,9 @@ final class MyPageCoordinator {
             navigationController.pushViewController(vc, animated: true)
         case .account:
             let vm = diContainer.makeMyAccountViewModel()
+            vm.logout = { [weak self] in
+                self?.signoutFinish?()
+            }
             vm.signOutFinish = { [weak self] in
                 self?.showWithdraw()
             }

@@ -40,7 +40,37 @@ final class HomeRegisterViewModel: BaseViewModel {
         self.locationStateHolder = locationStateHolder
         
         super.init()
+        
+        setupInitialState()
         self.bind()
+    }
+    
+    private func setupInitialState() {
+        if let name = locationStateHolder.buildingName,
+           let address = locationStateHolder.address {
+            self.selectedState = .selected(name: name, address: address)
+        } else {
+            // fallback: UserDefaults에서 불러오기
+            let defaults = UserDefaultsWrapper()
+            if let lat = defaults.double(forKey: UserDefaultsWrapper.Key.homeLat.rawValue),
+               let lon = defaults.double(forKey: UserDefaultsWrapper.Key.homeLon.rawValue) {
+                Task {
+                    if let location = try? await fetchCurrentAddress(lat: lat, lon: lon) {
+                        let name = location.name ?? ""
+                        let address = location.address ?? ""
+                        
+                        defaults.set(name, forKey: UserDefaultsWrapper.Key.buildingName.rawValue)
+                        defaults.set(address, forKey: UserDefaultsWrapper.Key.homeAddress.rawValue)
+                        
+                        await MainActor.run {
+                            self.selectedState = .selected(name: name, address: address)
+                        }
+                    }
+                }
+            } else {
+                self.selectedState = LocationSelectionState.none
+            }
+        }
     }
     
     func bind() {
@@ -59,7 +89,6 @@ final class HomeRegisterViewModel: BaseViewModel {
                     self.locationStateHolder.address = address?.address
                 }
             })
-            .dropFirst()
             .sink { [weak self] location in
                 guard let self else { return }
                 if let name = self.locationStateHolder.buildingName,
