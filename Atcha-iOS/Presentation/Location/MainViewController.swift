@@ -117,13 +117,13 @@ extension MainViewController {
 
 // MARK: - Bindings
 extension MainViewController {
-    
     private func bindView() {
         bindLastTrainViewActions()
         bindLastTrainDepartViewActions()
         bindAddressUpdates()
         bindCurrentLocationUpdates()
         bindSelectedLocationUpdates()
+        bindAddressDescriptionUpdates()
         bindLegPathUpdates()
         bindTaxiFareUpdates()
     }
@@ -170,16 +170,16 @@ extension MainViewController {
                 guard let self else { return }
                 view.showToast(message: "알림이 종료되었어요")
             }
-            
         case .detailRoadMapTapped:
-            viewModel.handleRoute(route: .detailRoute(address: "", infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: [])))
-            print("detailRoadMapTapped 누르기")
+            viewModel.handleRoute(route: .detailRoute(address: "",
+                                                      infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: [])))
         case .locationTapped:
             ballonView.setupTitle(bottomMessage: "위치를 변경하려면 알림을 종료해야 해요")
         case .reloadTapped:
-            print("reloadTapped 누르기")
+            viewModel.getBusRealTime()
         case .timeTapped:
-            ballonView.setupTitle(topMessage: "이때쯤 자리에서 출발하면 돼요", bottomMessage: "현재 교통 상황 기준으로,\n출발 시간이 가까워질수록 더 정확해져요")
+            ballonView.setupTitle(topMessage: "이때쯤 자리에서 출발하면 돼요",
+                                  bottomMessage: "현재 교통 상황 기준으로,\n출발 시간이 가까워질수록 더 정확해져요")
         }
     }
     
@@ -204,6 +204,7 @@ extension MainViewController {
     
     private func bindCurrentLocationUpdates() {
         viewModel.$currentLocation
+            .removeDuplicates()
             .compactMap { $0 }
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in self?.mapContainerView.setupCenter(location: $0) }
@@ -212,54 +213,95 @@ extension MainViewController {
     
     private func bindSelectedLocationUpdates() {
         viewModel.$selectedLocation
+            .removeDuplicates()
             .compactMap { $0 }
             .receive(on: RunLoop.main)
             .sink { [weak self] in self?.mapContainerView.updateUserMarker(location: $0) }
             .store(in: &cancellables)
     }
     
-    private func bindLegPathUpdates() {
-        viewModel.$legPathInfos
-            .filter { !$0.isEmpty }
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] in self?.handleLegPathInfos($0) }
-            .store(in: &cancellables)
-        
-        viewModel.$legTrafficInfos
-            .compactMap { $0 }
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] in self?.lastTrainDepartView.setupTimeAfterAlarm(infos: $0) }
+    private func bindAddressDescriptionUpdates() {
+        viewModel.$addressDesc
+            .receive(on: RunLoop.main)
+            .sink { [weak self] desc in self?.lastTrainDepartView.setupLoaction(location: desc) }
             .store(in: &cancellables)
     }
     
-    private func handleLegPathInfos(_ infos: [LegPathInfo]) {
+    private func bindLegPathUpdates() {
+        viewModel.$legInfo
+            .receive(on: DispatchQueue.main)
+            .compactMap { $0 }
+            .sink { [weak self] info in
+                self?.commonAlarmSetupView()
+                self?.addRouteLine(pathInfos: info.pathInfo)
+                self?.lastTrainDepartView.setupLegInfo(info: info)
+            }
+            .store(in: &cancellables)
+        
+        viewModel.$busRealTimeInfo
+            .compactMap { $0 }
+            .receive(on: RunLoop.main)
+            .sink { [weak self] info in
+                self?.lastTrainDepartView.setupBusRealTime(realTime: info)
+            }
+            .store(in: &cancellables)
+    }
+    
+    private func commonAlarmSetupView() {
         lastTrainView.isHidden = true
         lastTrainDepartView.isHidden = false
         flagImageView.isHidden = true
+        
         updateAtchaImageConstraint(relativeTo: lastTrainDepartView)
-        ballonView.setupTitle(bottomMessage: "이때쯤 자리에서 출발하면 돼요")
-        
-        if let time = infos.first?.departureDateTime,
-           let (hour, minute) = time.toHourMinute() {
-            lastTrainDepartView.setupTime(hour: hour, minute: minute)
-        }
-        
-        lastTrainDepartView.setupLoaction(location: viewModel.address)
-        addRouteLine(infos: infos)
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-            guard let self else { return }
-            view.showToast(message: "알림이 등록되었어요.")
-        }
     }
     
-    private func addRouteLine(infos: [LegPathInfo]) {
+    private func handleLegPathInfos(_ infos: [LegPathInfo]) {
+//        ballonView.setupTitle(bottomMessage: "이때쯤 자리에서 출발하면 돼요")
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+//            guard let self else { return }
+//            view.showToast(message: "알림이 등록되었어요.")
+//        }
+    }
+    
+    private func bindTaxiFareUpdates() {
+        viewModel.$taxiFare
+            .removeDuplicates()
+            .compactMap { $0 }
+            .receive(on: RunLoop.main)
+            .sink { [weak self] in self?.updateTaxiFare($0) }
+            .store(in: &cancellables)
+    }
+    
+    private func updateTaxiFare(_ fare: Double) {
+        let fareStr = String(format: "%.0f", fare)
+        ballonView.setupTitle(bottomMessage: "여기서 막차 놓치면 택시비 : 약 \(fareStr)원")
+    }
+    
+    // MARK: - Constraint Helper
+    private func updateAtchaImageConstraint(relativeTo view: UIView) {
+        loactionButton.snp.remakeConstraints { make in
+            make.trailing.equalToSuperview().inset(16)
+            make.width.height.equalTo(40)
+            make.bottom.equalTo(view.snp.top).inset(-16)
+        }
+        
+        atchaImageView.snp.remakeConstraints { make in
+            make.width.height.equalTo(64)
+            make.leading.equalToSuperview().inset(8)
+            make.bottom.equalTo(view.snp.top).inset(24)
+        }
+    }
+}
+
+// MARK: Add Line
+extension MainViewController {
+    private func addRouteLine(pathInfos: [LegPathInfo]) {
         var shapeStrings: [String] = []
         var colors: [UIColor] = []
         var images: [UIImage] = []
-        var allCoordinates: [CLLocationCoordinate2D] = []  // ✅ 전체 좌표 수집
+        var allCoordinates: [CLLocationCoordinate2D] = []
         
-        infos.forEach { info in
+        pathInfos.forEach { info in
             switch info.mode {
             case .bus, .subway:
                 if let shape = info.passShape, !shape.isEmpty {
@@ -313,37 +355,7 @@ extension MainViewController {
         let count = min(a.count, b.count, c.count)
         return (0..<count).map { (a[$0], b[$0], c[$0]) }
     }
-    
-    private func bindTaxiFareUpdates() {
-        viewModel.$taxiFare
-            .removeDuplicates()
-            .compactMap { $0 }
-            .receive(on: RunLoop.main)
-            .sink { [weak self] in self?.updateTaxiFare($0) }
-            .store(in: &cancellables)
-    }
-    
-    private func updateTaxiFare(_ fare: Double) {
-        let fareStr = String(format: "%.0f", fare)
-        ballonView.setupTitle(bottomMessage: "여기서 막차 놓치면 택시비 : 약 \(fareStr)원")
-    }
-    
-    // MARK: - Constraint Helper
-    private func updateAtchaImageConstraint(relativeTo view: UIView) {
-        loactionButton.snp.remakeConstraints { make in
-            make.trailing.equalToSuperview().inset(16)
-            make.width.height.equalTo(40)
-            make.bottom.equalTo(view.snp.top).inset(-16)
-        }
-        
-        atchaImageView.snp.remakeConstraints { make in
-            make.width.height.equalTo(64)
-            make.leading.equalToSuperview().inset(8)
-            make.bottom.equalTo(view.snp.top).inset(24)
-        }
-    }
 }
-
 
 extension MainViewController {
     func didFinishLoadingMap(_ mapView: TMapWrapper) {
@@ -354,7 +366,7 @@ extension MainViewController {
             let wrapper = UserDefaultsWrapper()
             if let legInfo: LegInfo = wrapper.object(forKey: UserDefaultsWrapper.Key.legInfo.rawValue, of: LegInfo.self),
                let address: String = wrapper.string(forKey: UserDefaultsWrapper.Key.addressDesc.rawValue) {
-                self.viewModel.drawRoute(address: address, infos: legInfo)
+                self.viewModel.drawRoute(address: address, info: legInfo)
                 return
             }
         }
