@@ -63,6 +63,7 @@ final class CourseRepositoryImpl: CourseRepository {
                 do {
                     let (bytes, response) = try await URLSession.shared.bytes(for: urlRequest)
 
+                    print("스트리밍 로그: \(response)")
                     guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
                         throw URLError(.badServerResponse)
                     }
