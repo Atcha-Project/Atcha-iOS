@@ -18,14 +18,20 @@ final class HomeFindViewModel: BaseViewModel {
     var routeHandler: ((HomeRouter) -> Void)?
     
     private let searchAddressUseCase: SearchAddressUseCase
+    private let homePatchUseCase: HomePatchUseCase
     private let locationStateHolder: LocationStateHolder
+    private let streamUseCase: ObserveLocationStreamUseCase
     
     init(context: HomeRegisterContext,
          searchAddressUseCase: SearchAddressUseCase,
-         locationStateHolder: LocationStateHolder) {
+         homePatchUseCase: HomePatchUseCase,
+         locationStateHolder: LocationStateHolder,
+         streamUseCase: ObserveLocationStreamUseCase) {
         self.context = context
         self.searchAddressUseCase = searchAddressUseCase
+        self.homePatchUseCase = homePatchUseCase
         self.locationStateHolder = locationStateHolder
+        self.streamUseCase = streamUseCase
         self.buildingName = locationStateHolder.buildingName
         self.address = locationStateHolder.address
         
@@ -50,6 +56,30 @@ final class HomeFindViewModel: BaseViewModel {
             .store(in: &cancellables)
     }
     
+    func handleRegister() {
+        switch context {
+        case .onboarding:
+            saveCurrentLoaction()
+            
+        case .myPage:
+            guard let currentLocation,
+                  let address else {
+                print("⚠️ 집주소 변경 불가: 값 없음")
+                return
+            }
+            
+            let request = HomePatchRequest(
+                address: address,
+                lat: currentLocation.latitude,
+                lon: currentLocation.longitude
+            )
+            
+            Task { @MainActor in
+                self.homePatch(request: request)
+            }
+        }
+    }
+    
     func saveCurrentLoaction() {
         locationStateHolder.currentLocation = currentLocation
         locationStateHolder.buildingName = buildingName
@@ -58,7 +88,56 @@ final class HomeFindViewModel: BaseViewModel {
     }
     
     func setupLocation() {
-        currentLocation = locationStateHolder.currentLocation
+        if let savedLocation = locationStateHolder.currentLocation {
+            currentLocation = savedLocation
+        } else {
+            requestMyLocation()
+        }
+    }
+    
+    private func requestMyLocation() {
+        Task {
+            for await location in streamUseCase.startUpdate() {
+                self.currentLocation = CLLocationCoordinate2D(
+                    latitude: location.coordinate.latitude,
+                    longitude: location.coordinate.longitude
+                )
+                break
+            }
+        }
+    }
+    
+    // MARK: - 집주소 번경
+    @MainActor
+    func homePatch(request: HomePatchRequest) {
+        Task {
+            do {
+                let response = try await homePatchUseCase.homePatch(request)
+                
+                if let lat = response.lat {
+                    UserDefaultsWrapper().set(lat, forKey: UserDefaultsWrapper.Key.homeLat.rawValue)
+                }
+                if let lon = response.lon {
+                    UserDefaultsWrapper().set(lon, forKey: UserDefaultsWrapper.Key.homeLon.rawValue)
+                }
+                if let addr = response.address {
+                    UserDefaultsWrapper().set(addr, forKey: UserDefaultsWrapper.Key.homeAddress.rawValue)
+                }
+                UserDefaultsWrapper().set(self.buildingName, forKey: UserDefaultsWrapper.Key.buildingName.rawValue)
+                
+                if let lat = response.lat,
+                   let lon = response.lon {
+                    let newLocation = CLLocationCoordinate2D(latitude: lat, longitude: lon)
+                    
+                    locationStateHolder.currentLocation = newLocation
+                    locationStateHolder.buildingName = self.buildingName
+                    locationStateHolder.address = self.address
+                    locationStateHolder.currentLocationSubject.send(newLocation)
+                }
+            } catch {
+                print("집주소 변경 실패: \(error)")
+            }
+        }
     }
 }
 
