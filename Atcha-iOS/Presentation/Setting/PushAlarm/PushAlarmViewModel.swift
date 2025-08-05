@@ -50,8 +50,13 @@ final class PushAlarmViewModel: BaseViewModel {
                 AppDIContainer.shared.tokenStorage.refreshToken = response.refreshToken
                 
                 UserDefaultsWrapper().set(response.id, forKey: UserDefaultsWrapper.Key.userId.rawValue)
-                UserDefaultsWrapper().set(response.lat, forKey: UserDefaultsWrapper.Key.homeLat.rawValue)
-                UserDefaultsWrapper().set(response.lon, forKey: UserDefaultsWrapper.Key.homeLon.rawValue)
+                if let lat = response.lat, let lon = response.lon {
+                    UserDefaultsWrapper().set(lat, forKey: UserDefaultsWrapper.Key.homeLat.rawValue)
+                    UserDefaultsWrapper().set(lon, forKey: UserDefaultsWrapper.Key.homeLon.rawValue)
+                    print("✅ 회원가입 lat/lon 저장 완료: \(lat), \(lon)")
+                } else {
+                    print("⚠️ 회원가입 응답에 lat/lon 없음")
+                }
                 
                 onFinish?(true)
             } catch {

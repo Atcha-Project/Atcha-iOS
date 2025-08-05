@@ -59,7 +59,7 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
                 guard let self else { return }
-                viewModel.saveCurrentLoaction()
+                viewModel.handleRegister()
                 navigationController?.popToViewController(ofType: HomeRegisterViewController.self)
             }
             .store(in: &cancellables)
