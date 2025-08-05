@@ -42,6 +42,10 @@ final class PushAlarmViewModel: BaseViewModel {
             fcmToken: fcmToken
         )
         
+        // TODO: 위치 변경해야할 듯 
+        UserDefaultsWrapper().set(locationStateHolder.currentLocation?.latitude ?? 0.0, forKey: UserDefaultsWrapper.Key.homeLat.rawValue)
+        UserDefaultsWrapper().set(locationStateHolder.currentLocation?.longitude ?? 0.0, forKey: UserDefaultsWrapper.Key.homeLon.rawValue)
+        
         Task {
             do {
                 let response = try await signUpUseCase.excute(request)
