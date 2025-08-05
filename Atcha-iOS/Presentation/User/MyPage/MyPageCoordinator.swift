@@ -47,7 +47,9 @@ final class MyPageCoordinator {
             navigationController.pushViewController(vc, animated: true)
         case .account:
             let vm = diContainer.makeMyAccountViewModel()
-            vm.signOutFinish = { [weak self] in self?.signoutFinish?() }
+            vm.signOutFinish = { [weak self] in
+                self?.showWithdraw()
+            }
             let vc = diContainer.makeMyAccountViewController(viewModel: vm)
             navigationController.pushViewController(vc, animated: true)
         case .home:
@@ -101,5 +103,12 @@ final class MyPageCoordinator {
             showSearchAddress()
         default: do {}
         }
+    }
+    
+    private func showWithdraw() {
+        let vm = diContainer.makeWithdrawViewModel()
+
+        let vc = diContainer.makeWithdrawViewController(viewModel: vm)
+        navigationController.pushViewController(vc, animated: true)
     }
 }

@@ -225,6 +225,43 @@ extension AtchaButton {
     }
 }
 
+extension AtchaButton {
+    /// 버튼의 텍스트와 스타일을 업데이트
+    func updateStyle(
+        text: String? = nil,
+        style: Style
+    ) {
+        // 텍스트 업데이트 (없으면 기존 타이틀 유지)
+        let currentText = text ?? (title(for: .normal) ?? "")
+        
+        switch style {
+        case .filled(let filledStyle):
+            setAttributedTitle(filledStyle.attributedText(currentText, size: size), for: .normal)
+            backgroundColor = filledStyle.backgroundColor
+            setTitleColor(filledStyle.textColor, for: .normal)
+            layer.borderWidth = 0
+            layer.borderColor = nil
+            
+        case .line(let lineStyle):
+            setAttributedTitle(lineStyle.attributedText(currentText, size: size), for: .normal)
+            backgroundColor = .clear
+            setTitleColor(lineStyle.textColor, for: .normal)
+            layer.borderWidth = 1
+            layer.borderColor = lineStyle.borderColor.cgColor
+        }
+        
+        // 아이콘 있는 경우 색상 맞춰주기
+        if let imageView = imageView, imageView.image != nil {
+            switch style {
+            case .filled(let filledStyle):
+                tintColor = filledStyle.textColor
+            case .line(let lineStyle):
+                tintColor = lineStyle.textColor
+            }
+        }
+    }
+}
+
 // MARK: - 사용예시
 //
 //let button1 = AtchaButton(

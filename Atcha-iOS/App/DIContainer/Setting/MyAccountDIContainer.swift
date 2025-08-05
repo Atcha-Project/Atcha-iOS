@@ -9,19 +9,27 @@ import Foundation
 
 final class MyAccountDIContainer {
     private let apiService: APIService
-    
+    private lazy var repository: UserRepository = UserRepositoryImpl(apiService: apiService)
     init(apiService: APIService) {
         self.apiService = apiService
     }
     
     func makeMyAccountViewModel() -> MyAccountViewModel {
-        let repository: UserRepository = UserRepositoryImpl(apiService: apiService)
-        let useCase: SignOutUseCase = SignOutUseCaseImpl(repository: repository)
+        
         let logoutUseCase: LogoutuseCase = LogoutuseCaseCaseImpl(repository: repository)
-        return MyAccountViewModel(signOutUseCase: useCase, logoutUseCase: logoutUseCase)
+        return MyAccountViewModel(logoutUseCase: logoutUseCase)
     }
     
     func makeMyAccountViewController(viewModel: MyAccountViewModel) -> MyAccountViewController {
         return MyAccountViewController(viewModel: viewModel)
+    }
+    
+    func makeWithdrawViewModel() -> WithdrawViewModel {
+        let useCase: SignOutUseCase = SignOutUseCaseImpl(repository: repository)
+        return WithdrawViewModel(signOutUseCase: useCase)
+    }
+    
+    func makeWithdrawViewController(viewModel: WithdrawViewModel) -> WithdrawViewController {
+        return WithdrawViewController(viewModel: viewModel)
     }
 }

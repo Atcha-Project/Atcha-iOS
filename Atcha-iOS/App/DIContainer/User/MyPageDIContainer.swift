@@ -73,6 +73,13 @@ extension MyPageDIContainer {
     func makeMyAccountViewController(viewModel: MyAccountViewModel) -> MyAccountViewController {
         myAccountDI.makeMyAccountViewController(viewModel: viewModel)
     }
+    
+    func makeWithdrawViewModel() -> WithdrawViewModel {
+        myAccountDI.makeWithdrawViewModel()
+    }
+    func makeWithdrawViewController(viewModel: WithdrawViewModel) -> WithdrawViewController {
+        myAccountDI.makeWithdrawViewController(viewModel: viewModel)
+    }
 }
 
 // MARK: - Alarm Setting
