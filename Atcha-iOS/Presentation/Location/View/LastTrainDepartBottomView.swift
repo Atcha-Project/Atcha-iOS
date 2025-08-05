@@ -26,6 +26,8 @@ final class LastTrainDepartBottomView: UIView {
     private let trainTimeLabel: UILabel = UILabel()
     private let trainRigtImageView: UIImageView = UIImageView()
     private let trainRemainStationLabel: UILabel = UILabel()
+    private let alreadySoonLabel: UILabel = UILabel()
+    
     private let reloadImageView: UIImageView = UIImageView()
     private lazy var trainStackView: UIStackView = {
         let stackView: UIStackView = UIStackView(arrangedSubviews: [trainIconImageView, trainTimeLabel, trainRemainStationLabel, trainRigtImageView, reloadImageView])
@@ -78,7 +80,10 @@ final class LastTrainDepartBottomView: UIView {
         backgroundColor = .gray950
         layer.cornerRadius = 20
         timeView.addSubViews(hourLabel, hourTimeLabel, miniuteLabel, minuteTimeLabel)
-        addSubViews(trainStackView, timeView, locationLabel, buttonStackView)
+        addSubViews(trainStackView, timeView, locationLabel, buttonStackView, alreadySoonLabel)
+        
+        alreadySoonLabel.isHidden = true
+        alreadySoonLabel.attributedText = AtchaFont.D2_EB_48("곧 도착", color: .widearea)
         
         trainRigtImageView.image = UIImage.infoOutlined
         trainRigtImageView.contentMode = .scaleAspectFit
@@ -130,6 +135,12 @@ final class LastTrainDepartBottomView: UIView {
         timeView.snp.makeConstraints { make in
             make.height.equalTo(66)
             make.top.equalTo(trainStackView.snp.bottom)
+            make.horizontalEdges.equalToSuperview().inset(16)
+        }
+        
+        alreadySoonLabel.snp.makeConstraints { make in
+            make.height.equalTo(42)
+            make.top.equalTo(trainStackView.snp.bottom).offset(16)
             make.horizontalEdges.equalToSuperview().inset(16)
         }
         
@@ -201,14 +212,13 @@ extension LastTrainDepartBottomView {
                 
                 self.remainingTimeInSeconds -= 1
                 
-                if self.remainingTimeInSeconds <= 60 {
-                    // 1분 이내: 곧 도착 처리
+                if self.remainingTimeInSeconds <= 120 {
                     self.countdownCancellable?.cancel()
                     self.hourLabel.isHidden = true
                     self.miniuteLabel.isHidden = true
                     self.hourTimeLabel.isHidden = true
                     self.minuteTimeLabel.isHidden = true
-//                    self.trainRemainStationLabel.attributedText = AtchaFont.B4_R_15("곧 도착", color: .red500)
+                    self.alreadySoonLabel.isHidden = false
                 } else {
                     self.updateCountdownLabels()
                 }
@@ -278,6 +288,7 @@ extension LastTrainDepartBottomView {
                             miniuteLabel.attributedText = AtchaFont.B1_R_17("초", color: .widearea)
                             hourTimeLabel.attributedText = AtchaFont.D2_EB_48("\(minutes)", color: .widearea)
                             minuteTimeLabel.attributedText = AtchaFont.D2_EB_48("\(seconds)", color: .widearea)
+                            reloadImageView.isHidden = true
                             
                             startCountdownWithCombine(minutes: minutes, seconds: seconds)
                             

@@ -11,13 +11,6 @@ import Combine
 import UIKit
 import TMapSDK
 
-struct LastTrainInfo {
-    let name: String? // 147 or 강남역
-    let time: String? // 7분 5초
-    let icon: UIImage?
-    let remainingSeat: Int? // 몇자리 남았는지
-}
-
 final class MainViewModel: BaseViewModel {
     @Published var currentLocation: CLLocationCoordinate2D?
     @Published var selectedLocation: CLLocationCoordinate2D?
@@ -78,8 +71,7 @@ final class MainViewModel: BaseViewModel {
         guard let time = legInfo?.pathInfo.first?.departureDateTime else {
             return
         }
-        print("time : \(time)")
-        AlarmManager.shared.startAlarm(after: time, title: "집에 가자", body: "집에 가자")
+        AlarmManager.shared.startAlarm(after: "2025-08-05T01:20:38", title: "집에 가자", body: "집에 가자")
     }
     
     func removeLegInfoAndAddress() {
