@@ -59,8 +59,7 @@ final class SearchLocationViewModel: BaseViewModel {
         locationStateHolder.buildingName = location.name
         locationStateHolder.currentLocation = CLLocationCoordinate2D(latitude: location.lat,
                                                                      longitude: location.lon)
-        
-        locationStateHolder.currentLocationSubject.send(CLLocationCoordinate2D(latitude: location.lat, longitude: location.lon))
+        routeHandler?(.homeRegister)
     }
 }
 

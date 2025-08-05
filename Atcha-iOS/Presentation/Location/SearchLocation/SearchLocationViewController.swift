@@ -97,7 +97,8 @@ final class SearchLocationViewController: BaseViewController<SearchLocationViewM
         }
         
         searchNavigationBar.onTextChange = { [weak self] text in
-            guard let self = self, let coordinate = viewModel.currentLocation else { return }
+            guard let self = self else { return }
+            let coordinate = viewModel.currentLocation ?? CLLocationCoordinate2D(latitude: 37.5665, longitude: 126.9780)
             self.handleTextChange(text: text, coordinate: coordinate)
         }
         
@@ -171,8 +172,6 @@ extension SearchLocationViewController: UITableViewDataSource, UITableViewDelega
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let location = viewModel.selectedLocation(at: indexPath)
         viewModel.saveNewLocation(location: location)
-        
-        navigationController?.popViewController(animated: true)
     }
     
     @objc private func handleCurrentLocationTapped() {

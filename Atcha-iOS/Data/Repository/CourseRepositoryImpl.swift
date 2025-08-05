@@ -59,6 +59,7 @@ final class CourseRepositoryImpl: CourseRepository {
 
                 var urlRequest = URLRequest(url: urlComponents.url!)
                 urlRequest.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+                urlRequest.setValue("text/event-stream", forHTTPHeaderField: "Accept")
 
                 do {
                     let (bytes, response) = try await URLSession.shared.bytes(for: urlRequest)
