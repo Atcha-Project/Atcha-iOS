@@ -56,6 +56,10 @@
 		6D6879BC2E3E78E200E59C55 /* RouteLineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6879BB2E3E78E200E59C55 /* RouteLineView.swift */; };
 		6D6879BE2E4067B400E59C55 /* Refresh.json in Resources */ = {isa = PBXBuildFile; fileRef = 6D6879BD2E4067B400E59C55 /* Refresh.json */; };
 		6D6879C02E40684C00E59C55 /* RefreshView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6879BF2E40684C00E59C55 /* RefreshView.swift */; };
+		6D6879C32E41A79C00E59C55 /* WithdrawViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6879C22E41A79C00E59C55 /* WithdrawViewController.swift */; };
+		6D6879C52E41A7A500E59C55 /* WithdrawViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6879C42E41A7A500E59C55 /* WithdrawViewModel.swift */; };
+		6D6879C72E41AB5600E59C55 /* WithdrawOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6879C62E41AB5600E59C55 /* WithdrawOption.swift */; };
+		6D6879C92E41B43000E59C55 /* UITextView+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6879C82E41B43000E59C55 /* UITextView+Ext.swift */; };
 		6D73EB5D2E1611F800F8DF8B /* CourseSearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D73EB5C2E1611F800F8DF8B /* CourseSearchViewController.swift */; };
 		6D73EB5F2E16120200F8DF8B /* CourseSearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D73EB5E2E16120200F8DF8B /* CourseSearchViewModel.swift */; };
 		6D73EB612E16120B00F8DF8B /* CourseModifyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D73EB602E16120B00F8DF8B /* CourseModifyViewController.swift */; };
@@ -321,6 +325,10 @@
 		6D6879BB2E3E78E200E59C55 /* RouteLineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteLineView.swift; sourceTree = "<group>"; };
 		6D6879BD2E4067B400E59C55 /* Refresh.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = Refresh.json; sourceTree = "<group>"; };
 		6D6879BF2E40684C00E59C55 /* RefreshView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshView.swift; sourceTree = "<group>"; };
+		6D6879C22E41A79C00E59C55 /* WithdrawViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithdrawViewController.swift; sourceTree = "<group>"; };
+		6D6879C42E41A7A500E59C55 /* WithdrawViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithdrawViewModel.swift; sourceTree = "<group>"; };
+		6D6879C62E41AB5600E59C55 /* WithdrawOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithdrawOption.swift; sourceTree = "<group>"; };
+		6D6879C82E41B43000E59C55 /* UITextView+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITextView+Ext.swift"; sourceTree = "<group>"; };
 		6D73EB5C2E1611F800F8DF8B /* CourseSearchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseSearchViewController.swift; sourceTree = "<group>"; };
 		6D73EB5E2E16120200F8DF8B /* CourseSearchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseSearchViewModel.swift; sourceTree = "<group>"; };
 		6D73EB602E16120B00F8DF8B /* CourseModifyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseModifyViewController.swift; sourceTree = "<group>"; };
@@ -696,6 +704,16 @@
 			path = CourseSearchDTO;
 			sourceTree = "<group>";
 		};
+		6D6879C12E41A75B00E59C55 /* Withdraw */ = {
+			isa = PBXGroup;
+			children = (
+				6D6879C22E41A79C00E59C55 /* WithdrawViewController.swift */,
+				6D6879C42E41A7A500E59C55 /* WithdrawViewModel.swift */,
+				6D6879C62E41AB5600E59C55 /* WithdrawOption.swift */,
+			);
+			path = Withdraw;
+			sourceTree = "<group>";
+		};
 		6D73EB562E16117400F8DF8B /* Course */ = {
 			isa = PBXGroup;
 			children = (
@@ -1065,6 +1083,7 @@
 		B65C132D2E06583E0016D2F0 /* User */ = {
 			isa = PBXGroup;
 			children = (
+				6D6879C12E41A75B00E59C55 /* Withdraw */,
 				B6AC8BDF2E2BC34500410ECD /* AlarmSetting */,
 				B6AC8BCF2E2A809400410ECD /* MyAccount */,
 				B6FB20972E1D33380032751B /* Home */,
@@ -1380,6 +1399,7 @@
 				B69E31A72E2681EF001040F4 /* CLLocationCoordinate2D+Ext.swift */,
 				B6AC8BFB2E2BF27200410ECD /* UINavigationController+Ext.swift */,
 				6D9284412E3C6ADF0090889B /* PaddingLabel.swift */,
+				6D6879C82E41B43000E59C55 /* UITextView+Ext.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -1758,6 +1778,7 @@
 				B6EDD73C2E0D87F2006170DF /* FileStorageImpl.swift in Sources */,
 				B6793D4B2E3493D6001BE9F5 /* AtcahaInsetLabel.swift in Sources */,
 				6D2B8CB52E39AC7200608104 /* BusPositionInfoResponse.swift in Sources */,
+				6D6879C52E41A7A500E59C55 /* WithdrawViewModel.swift in Sources */,
 				B6AC8BD12E2A80AF00410ECD /* MyAccountViewController.swift in Sources */,
 				B6793D542E386DFE001BE9F5 /* DetailRouteViewController.swift in Sources */,
 				B65C12FE2E057AF90016D2F0 /* NetworkConstant.swift in Sources */,
@@ -1792,6 +1813,7 @@
 				B65C13232E058C490016D2F0 /* AppVersionInfo.swift in Sources */,
 				B69E31AE2E2683C9001040F4 /* PermissionViewModel.swift in Sources */,
 				B6AC8BF42E2BD3FE00410ECD /* WebViewController.swift in Sources */,
+				6D6879C92E41B43000E59C55 /* UITextView+Ext.swift in Sources */,
 				B6713CC22E129AEC00AF8486 /* RequestLocationAuthorizationRepository.swift in Sources */,
 				6D91A9012E33E3620081BAFC /* LoadingView.swift in Sources */,
 				B664018B2E2277A900A397AE /* AlarmTimeOption.swift in Sources */,
@@ -1891,6 +1913,7 @@
 				B6FB209D2E1D492F0032751B /* HomeRegisterBottomView.swift in Sources */,
 				6DC3BEF32E04FE1D00831470 /* KeychainKey.swift in Sources */,
 				6D2B8C942E38A97500608104 /* BusDetailHeaderView.swift in Sources */,
+				6D6879C72E41AB5600E59C55 /* WithdrawOption.swift in Sources */,
 				6D2B8CBE2E39C9CB00608104 /* BusInfoRepository.swift in Sources */,
 				6D5E03BE2E24F70B0065AFBE /* FetchRecentSearchRequest.swift in Sources */,
 				6D2B8CAB2E39A9E500608104 /* BusOperationInfoResponse.swift in Sources */,
@@ -1920,6 +1943,7 @@
 				6D2B8CC02E39CC8800608104 /* BusInfoRepositoryImpl.swift in Sources */,
 				B6AC8BD32E2A80BC00410ECD /* MyAccountViewModel.swift in Sources */,
 				B6D083332E02D8F5003C28E1 /* AtchaList.swift in Sources */,
+				6D6879C32E41A79C00E59C55 /* WithdrawViewController.swift in Sources */,
 				B65C12DE2E042CF00016D2F0 /* UserInfo.swift in Sources */,
 				6D2B8C9E2E39A57300608104 /* BusDetailCoordinator.swift in Sources */,
 				B65C13002E057B2A0016D2F0 /* NetworkLogger.swift in Sources */,

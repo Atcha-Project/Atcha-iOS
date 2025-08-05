@@ -81,7 +81,7 @@ extension MyAccountViewController: UICollectionViewDelegate,
         case .logout:
             viewModel.logoutTapped()
         case .withdraw:
-            viewModel.signOutTapped()
+            viewModel.signOutFinish?()
         }
     }
 }

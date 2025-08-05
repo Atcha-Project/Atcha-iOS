@@ -17,6 +17,7 @@ class AtchaList: UIView {
     private let label = UILabel()
     private let rightView = UIView()
     private var actionButton: UIButton?
+    var onSelect: ((AtchaList) -> Void)?
     
     init(title: String, listType: AtchaListType) {
         self.listType = listType
@@ -85,6 +86,24 @@ class AtchaList: UIView {
     func getTitle() -> String {
         return optionTitle
     }
+    
+    @objc private func checkmarkTapped() {
+            checkmarkIsOn.toggle()
+            
+            UIView.transition(with: checkmarkImageView!,
+                              duration: 0.25,
+                              options: .transitionCrossDissolve,
+                              animations: { [weak self] in
+                guard let self else { return }
+                checkmarkImageView?.tintColor = checkmarkIsOn ? .main : .gray700
+            }, completion: nil)
+            onSelect?(self)
+        }
+        
+        func setCheckmark(_ isOn: Bool) {
+            checkmarkIsOn = isOn
+            checkmarkImageView?.tintColor = isOn ? .main : .gray700
+        }
 }
 
 // MARK: - CheckMark
@@ -106,17 +125,6 @@ extension AtchaList {
         addGestureRecognizer(tapGesture)
         checkmarkIsOn = isOn
         checkmarkImageView = imageView
-    }
-    
-    @objc private func checkmarkTapped() {
-        checkmarkIsOn.toggle()
-        UIView.transition(with: checkmarkImageView!,
-                          duration: 0.25,
-                          options: .transitionCrossDissolve,
-                          animations: { [weak self] in
-            guard let self else { return }
-            checkmarkImageView?.tintColor = checkmarkIsOn ? .main : .lightGray
-        }, completion: nil)
     }
 }
 
