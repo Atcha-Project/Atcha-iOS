@@ -167,6 +167,8 @@ extension MainViewController {
         switch action {
         case .refreshBusTime, .reloadTapped: viewModel.getBusRealTime()
         case .exitTapped: exitButtonTapped()
+        case .detailRoadMapTapped: viewModel.handleRoute(route: .detailRoute(address: "",
+                                                                             infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: [])))
         default: print("action")
         }
     }

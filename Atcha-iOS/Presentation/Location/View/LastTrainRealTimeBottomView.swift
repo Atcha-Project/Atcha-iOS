@@ -11,10 +11,10 @@ import Combine
 final class LastTrainRealTimeBottomView: UIView {
     enum Action {
         case reloadTapped
-        case locationTapped
         case detailRoadMapTapped
         case exitTapped
         case refreshBusTime
+        case finishAlarm
     }
     
     private var countdownCancellable: AnyCancellable?
@@ -184,8 +184,6 @@ final class LastTrainRealTimeBottomView: UIView {
         detailRoadMapButton.addTarget(self, action: #selector(handleDetailRoadTapped), for: .touchUpInside)
         reloadImageView.isUserInteractionEnabled = true
         reloadImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleReloadTapped)))
-        locationLabel.isUserInteractionEnabled = true
-        locationLabel.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleLocationTapped)))
     }
 }
 
@@ -234,7 +232,7 @@ extension LastTrainRealTimeBottomView {
             
             minuteTimeLabel.attributedText = AtchaFont.D2_EB_48("\(minutes)", color: .widearea)
             secondTimeLabel.attributedText = AtchaFont.D2_EB_48("\(seconds)", color: .widearea)
-//            reloadImageView.isHidden = true
+            //            reloadImageView.isHidden = true
             startCountdownWithCombine(minutes: minutes, seconds: seconds)
         }
     }
@@ -275,6 +273,14 @@ extension LastTrainRealTimeBottomView {
         remainingTimeInSeconds = minutes * 60 + seconds
         updateCountdownLabels()
         
+        print("remainingTimeInSeconds : \(remainingTimeInSeconds)")
+        
+        self.minuteLabel.isHidden = false
+        self.minuteTimeLabel.isHidden = false
+        self.secondLabel.isHidden = false
+        self.secondTimeLabel.isHidden = false
+        self.alreadySoonLabel.isHidden = true
+        
         countdownCancellable = Timer
             .publish(every: 1.0, on: .main, in: .common)
             .autoconnect()
@@ -283,7 +289,7 @@ extension LastTrainRealTimeBottomView {
                 
                 self.remainingTimeInSeconds -= 1
                 
-                if self.remainingTimeInSeconds <= 120 {
+                if self.remainingTimeInSeconds <= 60 {
                     self.countdownCancellable?.cancel()
                     self.minuteLabel.isHidden = true
                     self.minuteTimeLabel.isHidden = true
@@ -331,9 +337,5 @@ extension LastTrainRealTimeBottomView {
     
     @objc private func handleReloadTapped() {
         actionPublisher.send(.reloadTapped)
-    }
-    
-    @objc private func handleLocationTapped() {
-        actionPublisher.send(.locationTapped)
     }
 }
