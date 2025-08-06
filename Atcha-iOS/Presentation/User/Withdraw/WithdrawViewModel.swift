@@ -15,10 +15,10 @@ final class WithdrawViewModel: BaseViewModel {
         self.signOutUseCase = signOutUseCase
     }
     
-    func signOutTapped() {
+    func signOutTapped(_ request: WithdrawRequest) {
         Task {
             do {
-                let _ = try await signOutUseCase.excute()
+                let _ = try await signOutUseCase.excute(request)
                 AppDIContainer.shared.tokenStorage.clearAllTokens()
                 UserDefaultsWrapper().removeAll()
                 signOutFinish?()
