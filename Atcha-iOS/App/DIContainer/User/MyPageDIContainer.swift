@@ -93,7 +93,7 @@ extension MyPageDIContainer {
 }
 
 extension MyPageDIContainer {
-    func makePushAlarmViewModel() -> PushAlarmViewModel { pushDI.makePushRegisterViewModel() }
+    func makePushAlarmViewModel(context: PushAlarmContext) -> PushAlarmViewModel { pushDI.makePushRegisterViewModel(context: context) }
     func makePushAlarmViewController(viewModel: PushAlarmViewModel) -> PushAlarmViewController {
         pushDI.makePushRegisterViewController(viewModel: viewModel)
     }

@@ -27,5 +27,8 @@ protocol UserRepository {
     func logout() async throws -> APIEmptyResponse
     
     // MARK: - 집주소 변경
-    func homePatch(_ request: HomePatchRequest) async throws -> HomePatchResponse
+    func homePatch(_ request: HomePatchRequest) async throws -> UserInfoPatchResponse
+    
+    // MARK: - 알림빈도 변경
+    func pushAlarmPatch(_ request: PushAlarmPatchRequest) async throws -> UserInfoPatchResponse
 }

@@ -14,7 +14,6 @@ final class HomeFindViewModel: BaseViewModel {
     @Published var buildingName: String?
     @Published var address: String?
     @Published var currentLocation: CLLocationCoordinate2D?
-    
     var routeHandler: ((HomeRouter) -> Void)?
     
     private let searchAddressUseCase: SearchAddressUseCase

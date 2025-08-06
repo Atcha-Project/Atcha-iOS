@@ -64,6 +64,16 @@ final class MyPageCoordinator {
             navigationController.pushViewController(vc, animated: true)
         case .notification:
             let vm = diContainer.makeAlarmSettingViewModel()
+            vm.onItemSelected = { [weak self] item in
+                switch item {
+                case .frequent:
+                    self?.showPushAlarm()
+                case .soundType:
+                    let soundTypeVM = AlarmSoundTypeViewModel()
+                    let soundTypeVC = AlarmSoundTypeViewController(viewModel: soundTypeVM)
+                    self?.navigationController.pushViewController(soundTypeVC, animated: true)
+                }
+            }
             let vc = diContainer.makeAlarmSettingViewController(viewModel: vm)
             navigationController.pushViewController(vc, animated: true)
         case .term:
@@ -114,6 +124,12 @@ final class MyPageCoordinator {
             self?.signoutFinish?()
         }
         let vc = diContainer.makeWithdrawViewController(viewModel: vm)
+        navigationController.pushViewController(vc, animated: true)
+    }
+    
+    private func showPushAlarm() {
+        let vm = diContainer.makePushAlarmViewModel(context: .myPage)
+        let vc = diContainer.makePushAlarmViewController(viewModel: vm)
         navigationController.pushViewController(vc, animated: true)
     }
 }

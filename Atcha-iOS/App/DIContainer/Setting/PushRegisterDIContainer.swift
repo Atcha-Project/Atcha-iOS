@@ -17,9 +17,12 @@ final class PushRegisterDIContainer {
         self.locationStateHolder = locationStateHolder
     }
     
-    func makePushRegisterViewModel() -> PushAlarmViewModel {
-        let useCase: SignUpUseCase = SignUpUseCaseImpl(repository: UserRepositoryImpl(apiService: apiService))
-        return PushAlarmViewModel(signUpUseCase: useCase,
+    func makePushRegisterViewModel(context: PushAlarmContext) -> PushAlarmViewModel {
+        let signUpUseCase: SignUpUseCase = SignUpUseCaseImpl(repository: UserRepositoryImpl(apiService: apiService))
+        let pushAlarmPatchUseCase: PushAlarmPatchUseCase = PushAlarmPatchUseCaseImpl(repository: UserRepositoryImpl(apiService: apiService))
+        return PushAlarmViewModel(context: context,
+                                  signUpUseCase: signUpUseCase,
+                                  pushAlarmPatchUseCase: pushAlarmPatchUseCase,
                                   locationStateHolder: locationStateHolder)
     }
     

@@ -20,7 +20,7 @@ final class AppDIContainer {
     let onboardingDIContainer: OnboardingDIContainer
     let lockScreenDIContainer: LockScreenDIContainer
     
-    private let locationStateHolder: LocationStateHolder = LocationStateHolder()
+    let locationStateHolder: LocationStateHolder = LocationStateHolder()
     
     private init() {
         self.tokenStorage = TokenStorageImpl()

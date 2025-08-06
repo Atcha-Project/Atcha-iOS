@@ -45,7 +45,7 @@ final class OnboardingDIContainer {
         homeDI.makeHomeSearchViewController(viewModel: viewModel)
     }
     
-    func makePushAlarmViewModel() -> PushAlarmViewModel { pushDI.makePushRegisterViewModel() }
+    func makePushAlarmViewModel(context: PushAlarmContext) -> PushAlarmViewModel { pushDI.makePushRegisterViewModel(context: context) }
     func makePushAlarmViewController(viewModel: PushAlarmViewModel) -> PushAlarmViewController {
         pushDI.makePushRegisterViewController(viewModel: viewModel)
     }

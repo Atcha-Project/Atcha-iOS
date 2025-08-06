@@ -55,7 +55,7 @@ final class OnboardingCoordinator {
     }
     
     private func showPushRegister() {
-        let vm = diContainer.makePushAlarmViewModel()
+        let vm = diContainer.makePushAlarmViewModel(context: .onboarding)
         vm.routeHandler = { [weak self] route in self?.handle(route: route) }
         vm.onFinish = { [weak self] isSuccess in self?.onFinish?(isSuccess) }
         let vc = diContainer.makePushAlarmViewController(viewModel: vm)

@@ -25,7 +25,7 @@ final class HomeRegisterViewModel: BaseViewModel {
     private let requestUseCase: RequestLocationAuthorizationUseCase
     private let searchAddressUseCase: SearchAddressUseCase
     private let streamUseCase: ObserveLocationStreamUseCase
-    private let locationStateHolder: LocationStateHolder
+    var locationStateHolder: LocationStateHolder
     
     @Published var selectedState: LocationSelectionState?
     

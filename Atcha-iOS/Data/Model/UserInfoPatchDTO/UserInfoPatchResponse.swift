@@ -1,13 +1,13 @@
 //
-//  HomeModifyResponse.swift
+//  UserInfoPatchResponse.swift
 //  Atcha-iOS
 //
-//  Created by wodnd on 8/5/25.
+//  Created by wodnd on 8/6/25.
 //
 
 import Foundation
 
-struct HomePatchResponse: Codable {
+struct UserInfoPatchResponse: Codable {
     let id: Int?
     let providerId: String?
     let address: String?

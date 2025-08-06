@@ -80,10 +80,19 @@ final class UserRepositoryImpl: UserRepository {
         )
     }
     
-    func homePatch(_ request: HomePatchRequest) async throws -> HomePatchResponse {
+    func homePatch(_ request: HomePatchRequest) async throws -> UserInfoPatchResponse {
         return try await apiService.request(
             Endpoint(
                 path: "https://atcha.p-e.kr/api/members/me/home-address",
+                method: .patch,
+                encoding: JSONEncoding.default),
+            body: request)
+    }
+    
+    func pushAlarmPatch(_ request: PushAlarmPatchRequest) async throws -> UserInfoPatchResponse {
+        return try await apiService.request(
+            Endpoint(
+                path: "https://atcha.p-e.kr/api/members/me/alert-frequency",
                 method: .patch,
                 encoding: JSONEncoding.default),
             body: request)
