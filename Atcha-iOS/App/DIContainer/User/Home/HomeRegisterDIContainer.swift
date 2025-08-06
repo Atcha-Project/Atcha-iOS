@@ -26,6 +26,7 @@ final class HomeRegisterDIContainer {
     
     func makeHomeRegisterViewModel(context: HomeRegisterContext) -> HomeRegisterViewModel {
         return HomeRegisterViewModel(context: context,
+                                     requestUseCase: authorizationRequestUseCase,
                                      searchAddressUseCase: searchAddressUseCase,
                                      streamUseCase: streamUseCase,
                                      locationStateHolder: locationStateHolder)

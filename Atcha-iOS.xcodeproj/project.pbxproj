@@ -63,6 +63,7 @@
 		6D6879CE2E4211B000E59C55 /* HomePatchResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6879CD2E4211B000E59C55 /* HomePatchResponse.swift */; };
 		6D6879D02E4211B800E59C55 /* HomePatchRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6879CF2E4211B800E59C55 /* HomePatchRequest.swift */; };
 		6D6879D32E42127700E59C55 /* HomePatchUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6879D22E42127700E59C55 /* HomePatchUseCase.swift */; };
+		6D6879D52E433AFA00E59C55 /* WithdrawRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6879D42E433AFA00E59C55 /* WithdrawRequest.swift */; };
 		6D73EB5D2E1611F800F8DF8B /* CourseSearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D73EB5C2E1611F800F8DF8B /* CourseSearchViewController.swift */; };
 		6D73EB5F2E16120200F8DF8B /* CourseSearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D73EB5E2E16120200F8DF8B /* CourseSearchViewModel.swift */; };
 		6D73EB612E16120B00F8DF8B /* CourseModifyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D73EB602E16120B00F8DF8B /* CourseModifyViewController.swift */; };
@@ -336,6 +337,7 @@
 		6D6879CD2E4211B000E59C55 /* HomePatchResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomePatchResponse.swift; sourceTree = "<group>"; };
 		6D6879CF2E4211B800E59C55 /* HomePatchRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomePatchRequest.swift; sourceTree = "<group>"; };
 		6D6879D22E42127700E59C55 /* HomePatchUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomePatchUseCase.swift; sourceTree = "<group>"; };
+		6D6879D42E433AFA00E59C55 /* WithdrawRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithdrawRequest.swift; sourceTree = "<group>"; };
 		6D73EB5C2E1611F800F8DF8B /* CourseSearchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseSearchViewController.swift; sourceTree = "<group>"; };
 		6D73EB5E2E16120200F8DF8B /* CourseSearchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseSearchViewModel.swift; sourceTree = "<group>"; };
 		6D73EB602E16120B00F8DF8B /* CourseModifyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseModifyViewController.swift; sourceTree = "<group>"; };
@@ -1463,6 +1465,7 @@
 			isa = PBXGroup;
 			children = (
 				B6AC8BDD2E2BAD6F00410ECD /* UserInfoResponse.swift */,
+				6D6879D42E433AFA00E59C55 /* WithdrawRequest.swift */,
 			);
 			path = UserDTO;
 			sourceTree = "<group>";
@@ -1787,6 +1790,7 @@
 				B6AC8BEC2E2BC60600410ECD /* AlarmSoundTypeViewModel.swift in Sources */,
 				B65C134C2E07A18D0016D2F0 /* MyPageNavigationTarget.swift in Sources */,
 				6D2B8CBA2E39C8E100608104 /* BusInfoUseCase.swift in Sources */,
+				6D6879D52E433AFA00E59C55 /* WithdrawRequest.swift in Sources */,
 				B68309542E005A3600E2D029 /* SceneDelegate.swift in Sources */,
 				B600CA132E07FD29008B0D87 /* MyPageCoordinator.swift in Sources */,
 				B6C507482E129640000AB39F /* RequestLocationAuthorizationUseCase.swift in Sources */,

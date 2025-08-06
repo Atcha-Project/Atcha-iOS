@@ -73,8 +73,8 @@ final class LastTrainSearchBottomView: UIView {
         currentDotView.layer.cornerRadius = 2
         arrivalDotView.layer.cornerRadius = 2
         
-        currentLocationLabel.attributedText = AtchaFont.B1_R_17("현위치 : 조회 중..", color: .main)
-        arrivalLocationLabel.attributedText = AtchaFont.B1_R_17("도착지 : 우리집", color: .gray200)
+        currentLocationLabel.attributedText = AtchaFont.B1_R_17(lineHeight: 0, "현위치 : 조회 중..", color: .main)
+        arrivalLocationLabel.attributedText = AtchaFont.B1_R_17(lineHeight: 0, "도착지 : 우리집", color: .gray200)
         
         addSubViews(currentLocationView, arrivalLocationView, searchButton)
         
@@ -114,7 +114,7 @@ final class LastTrainSearchBottomView: UIView {
     }
     
     func setupCurrentLocationTitle(_ address: String) {
-        currentLocationLabel.attributedText = AtchaFont.B1_R_17("\(address)", color: .main)
+        currentLocationLabel.attributedText = AtchaFont.B1_R_17(lineHeight: 0, "\(address)", color: .main)
     }
 }
 

@@ -21,7 +21,7 @@ protocol UserRepository {
     func checkRegistration(_ request: AuthCheckRequest) async throws -> AuthCheckResponse
     
     // MARK: - 회원 탈퇴
-    func signOut() async throws -> APIEmptyResponse
+    func signOut(_ request: WithdrawRequest) async throws -> APIEmptyResponse
     
     // MARK: - 로그 아웃
     func logout() async throws -> APIEmptyResponse
