@@ -16,8 +16,11 @@ final class MainViewController: BaseViewController<MainViewModel>,
                                 TMapWrapperDelegate {
     
     private let mapContainerView: TMapContainerView = TMapContainerView()
-    private let lastTrainView: LastTrainSearchBottomView = LastTrainSearchBottomView()
-    private let lastTrainDepartView: LastTrainDepartBottomView = LastTrainDepartBottomView()
+    
+    private let lastTrainView: LastTrainSearchBottomView = LastTrainSearchBottomView() // 알람 등록 전
+    private let lastTrainDepartView: LastTrainDepartBottomView = LastTrainDepartBottomView() // 알람 등록 이후
+    private let lastTrainRealTimeView: LastTrainRealTimeBottomView = LastTrainRealTimeBottomView() // 알람 등록 이후, 시간 지남
+    
     private let flagImageView: UIImageView = UIImageView()
     private let myPageButton: UIButton = UIButton()
     private let loactionButton: UIButton = UIButton()
@@ -242,7 +245,7 @@ extension MainViewController {
             .compactMap { $0 }
             .receive(on: RunLoop.main)
             .sink { [weak self] info in
-                self?.lastTrainDepartView.setupBusRealTime(realTime: info)
+//                self?.lastTrainDepartView.setupBusRealTime(realTime: info)
             }
             .store(in: &cancellables)
     }
