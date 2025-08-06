@@ -47,6 +47,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
             myPageButton,
             loactionButton,
             lastTrainDepartView,
+            lastTrainRealTimeView,
             ballonView
         )
         
@@ -54,6 +55,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
         
         lastTrainView.isHidden = false
         lastTrainDepartView.isHidden = true
+        lastTrainRealTimeView.isHidden = true
         
         configureButton(myPageButton,
                         imageName: "mypage-filled",
@@ -88,6 +90,10 @@ extension MainViewController {
             make.bottom.equalToSuperview()
         }
         lastTrainDepartView.snp.makeConstraints { make in
+            make.horizontalEdges.equalToSuperview()
+            make.bottom.equalToSuperview()
+        }
+        lastTrainRealTimeView.snp.makeConstraints { make in
             make.horizontalEdges.equalToSuperview()
             make.bottom.equalToSuperview()
         }
@@ -226,7 +232,10 @@ extension MainViewController {
     private func bindAddressDescriptionUpdates() {
         viewModel.$addressDesc
             .receive(on: RunLoop.main)
-            .sink { [weak self] desc in self?.lastTrainDepartView.setupLoaction(location: desc) }
+            .sink { [weak self] desc in
+                self?.lastTrainDepartView.setupLoaction(location: desc)
+                self?.lastTrainRealTimeView.setupLoaction(location: desc)
+            }
             .store(in: &cancellables)
     }
     
@@ -238,6 +247,7 @@ extension MainViewController {
                 self?.commonAlarmSetupView()
                 self?.addRouteLine(pathInfos: info.pathInfo)
                 self?.lastTrainDepartView.setupLegInfo(info: info)
+                self?.lastTrainRealTimeView.setupLegInfo(info: info)
             }
             .store(in: &cancellables)
         
@@ -251,10 +261,12 @@ extension MainViewController {
     }
     
     private func commonAlarmSetupView() {
-        lastTrainView.isHidden = true
-        lastTrainDepartView.isHidden = false
         flagImageView.isHidden = true
+        lastTrainView.isHidden = true
         
+        lastTrainDepartView.isHidden = true
+        lastTrainRealTimeView.isHidden = false
+     
         updateAtchaImageConstraint(relativeTo: lastTrainDepartView)
     }
     
