@@ -13,7 +13,7 @@ final class CourseCell: UICollectionViewCell {
     var onToggleExpanded: (() -> Void)?
     var onDetailTapped: (() -> Void)?
     var onGetAlarmTapped: (() -> Void)?
-
+    
     private let courseTapGesture = UITapGestureRecognizer()
     private let detailTapGesture = UITapGestureRecognizer()
     private let onDetailTapGesture = UITapGestureRecognizer()
@@ -214,12 +214,21 @@ final class CourseCell: UICollectionViewCell {
         }
         
         courseCompactStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        
+        let maxIcons = 13
+        var addedCount = 0
+        
         for (index, leg) in course.legs.enumerated() {
+            if addedCount >= maxIcons {
+                break
+            }
+            
             switch leg.mode {
             case .walk:
                 let walkIcon = UIImageView(image: UIImage.walkGray700)
                 walkIcon.snp.makeConstraints { $0.size.equalTo(26) }
                 courseCompactStack.addArrangedSubview(walkIcon)
+                addedCount += 1
             case .bus:
                 if let type = leg.type {
                     let imageName = busIcon[type] ?? busDefaultIcon
@@ -227,6 +236,7 @@ final class CourseCell: UICollectionViewCell {
                         let busIconView = UIImageView(image: image)
                         busIconView.snp.makeConstraints { $0.size.equalTo(26) }
                         courseCompactStack.addArrangedSubview(busIconView)
+                        addedCount += 1
                     }
                 }
             case .subway:
@@ -236,6 +246,7 @@ final class CourseCell: UICollectionViewCell {
                         let subwayIconView = UIImageView(image: image)
                         subwayIconView.snp.makeConstraints { $0.size.equalTo(26) }
                         courseCompactStack.addArrangedSubview(subwayIconView)
+                        addedCount += 1
                     }
                 }
             default:
@@ -248,6 +259,7 @@ final class CourseCell: UICollectionViewCell {
                 arrow.contentMode = .scaleAspectFit
                 arrow.snp.makeConstraints { $0.size.equalTo(12) }
                 courseCompactStack.addArrangedSubview(arrow)
+                addedCount += 1
             }
         }
         
@@ -343,7 +355,7 @@ final class CourseCell: UICollectionViewCell {
                     courseDetailStack.addArrangedSubview(endStepView)
                 }
                 
-//            case .unknown:
+                //            case .unknown:
             default:
                 let stepView = CourseStepView()
                 stepView.configure(
