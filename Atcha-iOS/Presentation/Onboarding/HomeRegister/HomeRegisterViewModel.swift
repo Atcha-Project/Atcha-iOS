@@ -22,6 +22,7 @@ final class HomeRegisterViewModel: BaseViewModel {
     @Published private(set) var context: HomeRegisterContext
     private var streamTask: Task<Void, Never>?
     
+    private let requestUseCase: RequestLocationAuthorizationUseCase
     private let searchAddressUseCase: SearchAddressUseCase
     private let streamUseCase: ObserveLocationStreamUseCase
     private let locationStateHolder: LocationStateHolder
@@ -31,10 +32,12 @@ final class HomeRegisterViewModel: BaseViewModel {
     var routeHandler: ((HomeRouter) -> Void)?
     
     init(context: HomeRegisterContext,
+         requestUseCase: RequestLocationAuthorizationUseCase,
          searchAddressUseCase: SearchAddressUseCase,
          streamUseCase: ObserveLocationStreamUseCase,
          locationStateHolder: LocationStateHolder) {
         self.context = context
+        self.requestUseCase = requestUseCase
         self.searchAddressUseCase = searchAddressUseCase
         self.streamUseCase = streamUseCase
         self.locationStateHolder = locationStateHolder
@@ -101,8 +104,6 @@ final class HomeRegisterViewModel: BaseViewModel {
     
     func requestMyLocation() {
         Task {
-            //            let status = await authorizationUseCase.askPermission()
-            //            guard status == .authorizedAlways || status == .authorizedWhenInUse else { return }
             streamTask = Task {
                 for await location in streamUseCase.startUpdate() {
                     let currentLocation: CLLocationCoordinate2D = CLLocationCoordinate2D(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
@@ -110,6 +111,13 @@ final class HomeRegisterViewModel: BaseViewModel {
                     break
                 }
             }
+        }
+    }
+    
+    func requestAuth() {
+        Task {
+            _ = await requestUseCase.askLocationPermission()
+            _ = await requestUseCase.askPushPermission()
         }
     }
     

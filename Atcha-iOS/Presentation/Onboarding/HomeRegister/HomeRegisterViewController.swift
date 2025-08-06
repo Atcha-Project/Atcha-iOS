@@ -35,6 +35,14 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
         addGesture()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        if viewModel.context == .onboarding {
+            viewModel.requestAuth()
+        }
+    }
+    
     // MARK: - ViewModel 바인딩
     private func bindViewModel() {
         viewModel.routeHandler?(.permission)
