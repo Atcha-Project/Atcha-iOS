@@ -52,6 +52,12 @@ final class SplashViewModel: BaseViewModel {
            let address: String = wrapper.string(forKey: UserDefaultsWrapper.Key.addressDesc.rawValue) {
             
             // TODO: 알람 값이 존재하고, 시간에 따라 분기 처리
+//            if legInfo.trafficInfo.first?.departureDateTime > Date() {
+//                
+//            } else {
+//                
+//            }
+            
             routerHandler?(.alarm(info: legInfo, address: address))
 //            routerHandler?(.lockScreen(info: legInfo, address: address))
             return

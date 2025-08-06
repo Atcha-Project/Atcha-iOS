@@ -71,7 +71,7 @@ final class MainViewModel: BaseViewModel {
         guard let time = legInfo?.pathInfo.first?.departureDateTime else {
             return
         }
-        AlarmManager.shared.startAlarm(after: "2025-08-05T01:20:38", title: "집에 가자", body: "집에 가자")
+        AlarmManager.shared.startAlarm(after: time, title: "집에 가자", body: "집에 가자")
     }
     
     func removeLegInfoAndAddress() {
