@@ -62,6 +62,17 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
                 setupUI(context: context)
             }
             .store(in: &cancellables)
+        
+        viewModel.locationStateHolder.currentLocationSubject
+            .compactMap { $0 }
+            .sink { [weak self] location in
+                guard let self else { return }
+
+                if self.viewModel.context == .myPage {
+                    AtchaToast(message: "집 주소가 변경되었어요").show(in: self.view)
+                }
+            }
+            .store(in: &cancellables)
     }
     
     private func setupUI(context: HomeRegisterContext) {

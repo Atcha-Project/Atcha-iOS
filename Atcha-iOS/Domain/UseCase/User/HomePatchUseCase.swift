@@ -8,7 +8,7 @@
 import Foundation
 
 protocol HomePatchUseCase {
-    func homePatch(_ request: HomePatchRequest) async throws -> HomePatchResponse
+    func homePatch(_ request: HomePatchRequest) async throws -> UserInfoPatchResponse
 }
 
 final class HomePatchUseCaseImpl: HomePatchUseCase {
@@ -18,7 +18,7 @@ final class HomePatchUseCaseImpl: HomePatchUseCase {
         self.repository = repository
     }
     
-    func homePatch(_ request: HomePatchRequest) async throws -> HomePatchResponse {
+    func homePatch(_ request: HomePatchRequest) async throws -> UserInfoPatchResponse {
         return try await repository.homePatch(request)
     }
 }

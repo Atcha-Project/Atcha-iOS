@@ -16,4 +16,12 @@ final class LocationStateHolder {
     var currentLocation: CLLocationCoordinate2D?
     var address: String?
     var buildingName: String?
+    
+    func clear() {
+        currentLocation = nil
+        address = nil
+        buildingName = nil
+        currentLocationSubject.send(nil)
+        selectLocationSubject.send(nil)
+    }
 }

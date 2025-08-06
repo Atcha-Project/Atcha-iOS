@@ -21,6 +21,7 @@ final class WithdrawViewModel: BaseViewModel {
                 let _ = try await signOutUseCase.excute(request)
                 AppDIContainer.shared.tokenStorage.clearAllTokens()
                 UserDefaultsWrapper().removeAll()
+                AppDIContainer.shared.locationStateHolder.clear()
                 signOutFinish?()
             } catch {
                 print("error 발생")

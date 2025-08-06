@@ -33,7 +33,7 @@ final class AlarmSettingViewController: BaseViewController<AlarmSettingViewModel
         
         setupUI()
         setupAutoLayout()
-        bindView()
+
     }
     
     private func setupUI() {
@@ -52,23 +52,29 @@ final class AlarmSettingViewController: BaseViewController<AlarmSettingViewModel
         }
     }
     
-    private func bindView() {
-        viewModel.$item
-            .compactMap { $0 }
-            .receive(on: RunLoop.main)
-            .sink { [weak self] item in
-                guard let self else { return }
-                showDetailViewController(type: item)
-            }
-            .store(in: &cancellables)
-    }
-    
-    private func showDetailViewController(type: AlarmSettingItem) {
-        let soundTypeViewModel = AlarmSoundTypeViewModel()
-        let soundTypeViewController = AlarmSoundTypeViewController(viewModel: soundTypeViewModel)
-        
-        navigationController?.pushViewController(soundTypeViewController, animated: true)
-    }
+//    private func bindView() {
+//        viewModel.$item
+//            .compactMap { $0 }
+//            .receive(on: RunLoop.main)
+//            .sink { [weak self] item in
+//                guard let self else { return }
+//                showDetailViewController(type: item)
+//            }
+//            .store(in: &cancellables)
+//    }
+//    
+//    private func showDetailViewController(type: AlarmSettingItem) {
+//        
+//        switch type {
+//        case.frequent:
+//           break
+//        case .soundType:
+//            let soundTypeViewModel = AlarmSoundTypeViewModel()
+//            let soundTypeViewController = AlarmSoundTypeViewController(viewModel: soundTypeViewModel)
+//            
+//            navigationController?.pushViewController(soundTypeViewController, animated: true)
+//        }
+//    }
 }
 
 extension AlarmSettingViewController: UICollectionViewDelegate,

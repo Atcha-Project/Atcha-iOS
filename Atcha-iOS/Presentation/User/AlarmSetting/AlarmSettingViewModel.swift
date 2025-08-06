@@ -8,9 +8,11 @@
 import Foundation
 
 final class AlarmSettingViewModel: BaseViewModel {
-    @Published var item: AlarmSettingItem?
+//    @Published var item: AlarmSettingItem?
+    var onItemSelected: ((AlarmSettingItem) -> Void)?
     
     func listTapped(_ type: AlarmSettingItem) {
-        item = type
+//        item = type
+        onItemSelected?(type)
     }
 }

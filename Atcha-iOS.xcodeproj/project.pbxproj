@@ -60,10 +60,12 @@
 		6D6879C52E41A7A500E59C55 /* WithdrawViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6879C42E41A7A500E59C55 /* WithdrawViewModel.swift */; };
 		6D6879C72E41AB5600E59C55 /* WithdrawOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6879C62E41AB5600E59C55 /* WithdrawOption.swift */; };
 		6D6879C92E41B43000E59C55 /* UITextView+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6879C82E41B43000E59C55 /* UITextView+Ext.swift */; };
-		6D6879CE2E4211B000E59C55 /* HomePatchResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6879CD2E4211B000E59C55 /* HomePatchResponse.swift */; };
 		6D6879D02E4211B800E59C55 /* HomePatchRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6879CF2E4211B800E59C55 /* HomePatchRequest.swift */; };
 		6D6879D32E42127700E59C55 /* HomePatchUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6879D22E42127700E59C55 /* HomePatchUseCase.swift */; };
 		6D6879D52E433AFA00E59C55 /* WithdrawRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6879D42E433AFA00E59C55 /* WithdrawRequest.swift */; };
+		6D6879DC2E43703200E59C55 /* PushAlarmPatchRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6879DB2E43703200E59C55 /* PushAlarmPatchRequest.swift */; };
+		6D6879DE2E43706800E59C55 /* PushAlarmPatchUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6879DD2E43706800E59C55 /* PushAlarmPatchUseCase.swift */; };
+		6D6879E32E43718800E59C55 /* UserInfoPatchResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6879E22E43718800E59C55 /* UserInfoPatchResponse.swift */; };
 		6D73EB5D2E1611F800F8DF8B /* CourseSearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D73EB5C2E1611F800F8DF8B /* CourseSearchViewController.swift */; };
 		6D73EB5F2E16120200F8DF8B /* CourseSearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D73EB5E2E16120200F8DF8B /* CourseSearchViewModel.swift */; };
 		6D73EB612E16120B00F8DF8B /* CourseModifyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D73EB602E16120B00F8DF8B /* CourseModifyViewController.swift */; };
@@ -333,10 +335,12 @@
 		6D6879C42E41A7A500E59C55 /* WithdrawViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithdrawViewModel.swift; sourceTree = "<group>"; };
 		6D6879C62E41AB5600E59C55 /* WithdrawOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithdrawOption.swift; sourceTree = "<group>"; };
 		6D6879C82E41B43000E59C55 /* UITextView+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITextView+Ext.swift"; sourceTree = "<group>"; };
-		6D6879CD2E4211B000E59C55 /* HomePatchResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomePatchResponse.swift; sourceTree = "<group>"; };
 		6D6879CF2E4211B800E59C55 /* HomePatchRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomePatchRequest.swift; sourceTree = "<group>"; };
 		6D6879D22E42127700E59C55 /* HomePatchUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomePatchUseCase.swift; sourceTree = "<group>"; };
 		6D6879D42E433AFA00E59C55 /* WithdrawRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithdrawRequest.swift; sourceTree = "<group>"; };
+		6D6879DB2E43703200E59C55 /* PushAlarmPatchRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushAlarmPatchRequest.swift; sourceTree = "<group>"; };
+		6D6879DD2E43706800E59C55 /* PushAlarmPatchUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushAlarmPatchUseCase.swift; sourceTree = "<group>"; };
+		6D6879E22E43718800E59C55 /* UserInfoPatchResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserInfoPatchResponse.swift; sourceTree = "<group>"; };
 		6D73EB5C2E1611F800F8DF8B /* CourseSearchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseSearchViewController.swift; sourceTree = "<group>"; };
 		6D73EB5E2E16120200F8DF8B /* CourseSearchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseSearchViewModel.swift; sourceTree = "<group>"; };
 		6D73EB602E16120B00F8DF8B /* CourseModifyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseModifyViewController.swift; sourceTree = "<group>"; };
@@ -722,21 +726,30 @@
 			path = Withdraw;
 			sourceTree = "<group>";
 		};
-		6D6879CC2E42119500E59C55 /* UserInfoModifyDTO */ = {
+		6D6879CC2E42119500E59C55 /* UserInfoPatchDTO */ = {
 			isa = PBXGroup;
 			children = (
-				6D6879D12E4211C400E59C55 /* HomeModify */,
+				6D6879D12E4211C400E59C55 /* HomePatch */,
+				6D6879DF2E43713B00E59C55 /* PushAlarmPatch */,
+				6D6879E22E43718800E59C55 /* UserInfoPatchResponse.swift */,
 			);
-			path = UserInfoModifyDTO;
+			path = UserInfoPatchDTO;
 			sourceTree = "<group>";
 		};
-		6D6879D12E4211C400E59C55 /* HomeModify */ = {
+		6D6879D12E4211C400E59C55 /* HomePatch */ = {
 			isa = PBXGroup;
 			children = (
-				6D6879CD2E4211B000E59C55 /* HomePatchResponse.swift */,
 				6D6879CF2E4211B800E59C55 /* HomePatchRequest.swift */,
 			);
-			path = HomeModify;
+			path = HomePatch;
+			sourceTree = "<group>";
+		};
+		6D6879DF2E43713B00E59C55 /* PushAlarmPatch */ = {
+			isa = PBXGroup;
+			children = (
+				6D6879DB2E43703200E59C55 /* PushAlarmPatchRequest.swift */,
+			);
+			path = PushAlarmPatch;
 			sourceTree = "<group>";
 		};
 		6D73EB562E16117400F8DF8B /* Course */ = {
@@ -1083,7 +1096,7 @@
 		B65C13212E058C410016D2F0 /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				6D6879CC2E42119500E59C55 /* UserInfoModifyDTO */,
+				6D6879CC2E42119500E59C55 /* UserInfoPatchDTO */,
 				6D2B8C9F2E39A70500608104 /* BusInfoDTO */,
 				B6AC8BDC2E2BAD6100410ECD /* UserDTO */,
 				6D5E03BA2E24F3D50065AFBE /* SearchHistoryDTO */,
@@ -1212,6 +1225,7 @@
 				B6AC8BD82E2A85D800410ECD /* SignOutUseCase.swift */,
 				B6AC8BDA2E2B3AA200410ECD /* LogoutuseCase.swift */,
 				6D6879D22E42127700E59C55 /* HomePatchUseCase.swift */,
+				6D6879DD2E43706800E59C55 /* PushAlarmPatchUseCase.swift */,
 			);
 			path = User;
 			sourceTree = "<group>";
@@ -1822,6 +1836,7 @@
 				B6AC8BEA2E2BC5FF00410ECD /* AlarmSoundTypeViewController.swift in Sources */,
 				B6793D652E3B0456001BE9F5 /* DetailRouteWalkCell.swift in Sources */,
 				B6CF46F82E096CB100304A85 /* LoginResult.swift in Sources */,
+				6D6879E32E43718800E59C55 /* UserInfoPatchResponse.swift in Sources */,
 				B6B57EC22E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift in Sources */,
 				6D8157422E126C3A003688A6 /* LockViewModel.swift in Sources */,
 				B6DC7C1F2E16A12D005D8E17 /* SearchAddressUseCase.swift in Sources */,
@@ -1860,7 +1875,6 @@
 				6D5E03C82E2881830065AFBE /* FetchRecentSearchResponse.swift in Sources */,
 				B6AC8BF62E2BD91000410ECD /* AppInfoProvider.swift in Sources */,
 				6DC3BEF12E04FE1600831470 /* KeychainWrapper.swift in Sources */,
-				6D6879CE2E4211B000E59C55 /* HomePatchResponse.swift in Sources */,
 				B6ADE1942E0C0DE6008C4E23 /* LoginType.swift in Sources */,
 				B68309672E005B5300E2D029 /* UIView+Ext.swift in Sources */,
 				6D1EE2F72E0A933000F7BBF1 /* OnboardingCoordinator.swift in Sources */,
@@ -1923,6 +1937,7 @@
 				6D1EE2E52E09A42F00F7BBF1 /* PushAlarmViewController.swift in Sources */,
 				B6793D4F2E34972B001BE9F5 /* FetchTaxiFareRequest.swift in Sources */,
 				6D8157442E126C45003688A6 /* LockViewController.swift in Sources */,
+				6D6879DE2E43706800E59C55 /* PushAlarmPatchUseCase.swift in Sources */,
 				B68309572E005A3600E2D029 /* ViewController.swift in Sources */,
 				B6AC8BF82E2BDA2900410ECD /* AppUpdateManager.swift in Sources */,
 				B6D083352E02D928003C28E1 /* AtchaListType.swift in Sources */,
@@ -1950,6 +1965,7 @@
 				6D5E03BE2E24F70B0065AFBE /* FetchRecentSearchRequest.swift in Sources */,
 				6D2B8CAB2E39A9E500608104 /* BusOperationInfoResponse.swift in Sources */,
 				B61C44982E40341B00285A4B /* LockScreenDIConatiner.swift in Sources */,
+				6D6879DC2E43703200E59C55 /* PushAlarmPatchRequest.swift in Sources */,
 				B6DC7C1D2E169F37005D8E17 /* MapBottomType.swift in Sources */,
 				B65C134A2E07A1280016D2F0 /* MyPageRouter.swift in Sources */,
 				B65C131C2E058C150016D2F0 /* CheckAppVersionUseCase.swift in Sources */,

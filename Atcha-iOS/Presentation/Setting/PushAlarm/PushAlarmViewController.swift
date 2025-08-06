@@ -23,33 +23,63 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
                                                            size: .h52,
                                                            style: .filled(.primary)) { [weak self] in
         guard let self else { return }
-        let options = AlarmTimeOption.allCases
+        let options = AlarmTimeOption.displayOptions
         let selectedAlarms = alarmCheckmarkLists.map { $0.isCheckmarkSelected() }
         
         let selectedOptions = zip(options, selectedAlarms)
-            .enumerated()
-            .compactMap { index, pair in
-                let (option, isSelected) = pair
-                return index == 0 || isSelected ? option : nil
+            .compactMap { option, isSelected in
+                isSelected ? option : nil
             }
         
-        self.viewModel.signUp(selectedAlarms: selectedOptions)
+        let finalOptions: [AlarmTimeOption] = [.oneMinute] + selectedOptions
+        
+        switch self.viewModel.context {
+        case .onboarding:
+            self.viewModel.signUp(selectedAlarms: finalOptions)
+        case .myPage:
+            Task {
+                do {
+                    try await self.viewModel.pushAlarmPatch(selectedAlarms: finalOptions)
+                    AtchaToast(message: "푸시 알림 설정이 변경되었어요").show(in: self.view)
+                } catch {
+                    AtchaToast(message: "푸시 알림 설정에 실패했어요").show(in: self.view)
+                }
+                self.alarmCheckmarkLists.forEach { $0.setCheckmark(false) }
+            }
+        }
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setupUI()
+        bindViewModel()
         setupAlarmLists()
         setupAutoLayout()
     }
     
-    // MARK: - Push Alarm UI
-    private func setupUI() {
-        view.addSubViews(topNavigationBar, titleLabel, pushImageView, alarmListStackView, nextButton)
-        
-        topNavigationBar.hideCloseButton()
-        
+    // MARK: - ViewModel 바인딩
+    private func bindViewModel() {
+        viewModel.$context
+            .receive(on: RunLoop.main)
+            .sink { [weak self] context in
+                guard let self else { return }
+                setupUI(context: context)
+            }
+            .store(in: &cancellables)
+    }
+    
+    private func setupUI(context: PushAlarmContext) {
+        switch context {
+        case .onboarding:
+            setupOnbaordingUI()
+        case .myPage:
+            setupMyPageUI()
+        }
+    }
+    
+    private func setupOnbaordingUI() {
+        view.addSubViews(titleLabel, pushImageView)
         titleLabel.attributedText = AtchaFont.H2_B_22("출발 알람을 받기 전,\n푸시로 미리 알려드려요",
                                                       color: AtchaColor.white)
         titleLabel.numberOfLines = 0
@@ -58,17 +88,8 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
         pushImageView.image = UIImage.imgNotification
         pushImageView.contentMode = .scaleAspectFill
         
-        alarmListStackView.axis = .vertical
-        alarmListStackView.spacing = 0
-        alarmListStackView.alignment = .fill
-        alarmListStackView.distribution = .equalSpacing
-    }
-    
-    private func setupAutoLayout() {
-        topNavigationBar.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
-            make.leading.trailing.equalToSuperview()
-        }
+        topNavigationBar.updateTitle("")
+        nextButton.updateStyle(text: "확인", style: .filled(.primary))
         
         titleLabel.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top).inset(72)
@@ -81,15 +102,60 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
             make.trailing.equalToSuperview().inset(16)
         }
         
-        alarmListStackView.snp.makeConstraints { make in
+        alarmListStackView.snp.remakeConstraints { make in
             make.top.equalTo(pushImageView.snp.bottom).offset(32)
+            make.leading.trailing.equalToSuperview()
+            make.bottom.lessThanOrEqualTo(nextButton.snp.top).offset(-155.12)
+        }
+    }
+    
+    private func setupMyPageUI() {
+        view.addSubViews(titleLabel)
+        
+        titleLabel.attributedText = AtchaFont.B4_R_15(lineHeight: 0, "출발 알림을 받기 전, 푸시로 미리 알려드려요", color: AtchaColor.white)
+        titleLabel.numberOfLines = 1
+        titleLabel.textAlignment = .left
+        
+        topNavigationBar.updateTitle("푸시 알림 설정")
+        nextButton.updateStyle(text: "저장", style: .filled(.primary))
+        
+        titleLabel.snp.makeConstraints { make in
+            make.top.equalTo(topNavigationBar.snp.bottom).offset(24)
+            make.leading.equalToSuperview().offset(16)
+        }
+        
+        alarmListStackView.snp.remakeConstraints { make in
+            make.top.equalTo(titleLabel.snp.bottom).offset(36)
+            make.leading.trailing.equalToSuperview()
+            make.bottom.lessThanOrEqualTo(nextButton.snp.top).offset(-253)
+        }
+    }
+    
+    // MARK: - Push Alarm 기본 UI
+    private func setupUI() {
+        view.addSubViews(topNavigationBar, alarmListStackView, nextButton)
+        topNavigationBar.hideCloseButton()
+        
+        alarmListStackView.axis = .vertical
+        alarmListStackView.spacing = 0
+        alarmListStackView.alignment = .fill
+        alarmListStackView.distribution = .fill
+    }
+    
+    private func setupAutoLayout() {
+        topNavigationBar.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
+            make.leading.trailing.equalToSuperview()
+        }
+        
+        alarmListStackView.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
         }
         
         nextButton.snp.makeConstraints { make in
             make.leading.equalToSuperview().offset(16)
             make.trailing.equalToSuperview().inset(16)
-            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).inset(20)
+            make.bottom.equalToSuperview().inset(40)
         }
     }
     
@@ -110,3 +176,4 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
         }
     }
 }
+

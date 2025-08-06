@@ -8,16 +8,27 @@
 import Foundation
 import Combine
 
+enum PushAlarmContext {
+    case onboarding
+    case myPage
+}
+
 final class PushAlarmViewModel: BaseViewModel {
+    @Published private(set) var context: PushAlarmContext
     private let signUpUseCase: SignUpUseCase
+    private let pushAlarmPatchUseCase: PushAlarmPatchUseCase
     private let locationStateHolder: LocationStateHolder
     
     var onFinish: ((Bool) -> Void)?
     var routeHandler: ((HomeRouter) -> Void)?
     
-    init(signUpUseCase: SignUpUseCase,
+    init(context: PushAlarmContext,
+         signUpUseCase: SignUpUseCase,
+         pushAlarmPatchUseCase: PushAlarmPatchUseCase,
          locationStateHolder: LocationStateHolder) {
+        self.context = context
         self.signUpUseCase = signUpUseCase
+        self.pushAlarmPatchUseCase = pushAlarmPatchUseCase
         self.locationStateHolder = locationStateHolder
     }
     
@@ -38,11 +49,11 @@ final class PushAlarmViewModel: BaseViewModel {
             address: locationStateHolder.address ?? "",
             lat: locationStateHolder.currentLocation?.latitude ?? 0.0,
             lon: locationStateHolder.currentLocation?.longitude ?? 0.0,
-            alertFrequencies: [1] + selectedAlarms.map { $0.rawValue },
+            alertFrequencies: selectedAlarms.map { $0.rawValue },
             fcmToken: fcmToken
         )
         
-        // TODO: 위치 변경해야할 듯 
+        // TODO: 위치 변경해야할 듯
         UserDefaultsWrapper().set(locationStateHolder.currentLocation?.latitude ?? 0.0, forKey: UserDefaultsWrapper.Key.homeLat.rawValue)
         UserDefaultsWrapper().set(locationStateHolder.currentLocation?.longitude ?? 0.0, forKey: UserDefaultsWrapper.Key.homeLon.rawValue)
         
@@ -67,5 +78,11 @@ final class PushAlarmViewModel: BaseViewModel {
                 onFinish?(false)
             }
         }
+    }
+    
+    
+    func pushAlarmPatch(selectedAlarms: [AlarmTimeOption]) async throws {
+        let request = PushAlarmPatchRequest(alertFrequencies: selectedAlarms.map { $0.rawValue })
+        let response = try await pushAlarmPatchUseCase.pushAlarmPatch(request)
     }
 }
