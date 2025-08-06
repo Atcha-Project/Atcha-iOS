@@ -21,6 +21,8 @@ final class MainViewModel: BaseViewModel {
     @Published var addressDesc: String?
     @Published var busRealTimeInfo: BusRealTimeInfo?
     
+    @Published var bottomType: MapBottomType?
+    
     private let searchAddressUseCase: SearchAddressUseCase
     private let authorizationUseCase: RequestLocationAuthorizationUseCase
     private let fetchTaxiFareUseCase: FetchTaxiFareUseCase
