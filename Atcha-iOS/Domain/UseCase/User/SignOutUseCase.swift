@@ -8,7 +8,7 @@
 import Foundation
 
 protocol SignOutUseCase {
-    func excute() async throws -> APIEmptyResponse
+    func excute(_ request: WithdrawRequest) async throws -> APIEmptyResponse
 }
 
 final class SignOutUseCaseImpl: SignOutUseCase {
@@ -18,7 +18,7 @@ final class SignOutUseCaseImpl: SignOutUseCase {
         self.repository = repository
     }
     
-    func excute() async throws -> APIEmptyResponse {
-        return try await repository.signOut()
+    func excute(_ request: WithdrawRequest) async throws -> APIEmptyResponse {
+        return try await repository.signOut(request)
     }
 }

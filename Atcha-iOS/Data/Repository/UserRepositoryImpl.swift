@@ -37,13 +37,13 @@ final class UserRepositoryImpl: UserRepository {
             body: request)
     }
     
-    func signOut() async throws -> APIEmptyResponse {
+    func signOut(_ request: WithdrawRequest) async throws -> APIEmptyResponse {
         return try await apiService.request(
             Endpoint(
                 path: "https://atcha.p-e.kr/api/members/me",
-                method: .delete
-            )
-        )
+                method: .delete,
+                encoding: JSONEncoding.default),
+            body: request)
     }
     
     func login(_ request: LoginRequest) async throws -> LoginResponse {
