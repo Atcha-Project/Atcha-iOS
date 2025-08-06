@@ -251,6 +251,14 @@ extension MainViewController {
             }
             .store(in: &cancellables)
         
+        viewModel.$bottomType
+            .compactMap { $0 }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] type in
+                self?.setupBottomType(type)
+            }
+            .store(in: &cancellables)
+        
         viewModel.$busRealTimeInfo
             .compactMap { $0 }
             .receive(on: RunLoop.main)
@@ -261,13 +269,27 @@ extension MainViewController {
     }
     
     private func commonAlarmSetupView() {
-        flagImageView.isHidden = true
-        lastTrainView.isHidden = true
-        
-        lastTrainDepartView.isHidden = true
-        lastTrainRealTimeView.isHidden = false
-     
         updateAtchaImageConstraint(relativeTo: lastTrainDepartView)
+    }
+    
+    private func setupBottomType(_ type: MapBottomType) {
+        switch type {
+        case .realTime:
+            lastTrainRealTimeView.isHidden = false
+            flagImageView.isHidden = true
+            lastTrainView.isHidden = true
+            lastTrainDepartView.isHidden = true
+        case .departure:
+            lastTrainDepartView.isHidden = false
+            flagImageView.isHidden = true
+            lastTrainView.isHidden = true
+            lastTrainRealTimeView.isHidden = true
+        case .search:
+            lastTrainView.isHidden = false
+            flagImageView.isHidden = false
+            lastTrainDepartView.isHidden = true
+            lastTrainRealTimeView.isHidden = true
+        }
     }
     
     private func handleLegPathInfos(_ infos: [LegPathInfo]) {
