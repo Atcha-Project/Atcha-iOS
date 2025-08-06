@@ -14,7 +14,11 @@ final class LastTrainRealTimeBottomView: UIView {
         case locationTapped
         case detailRoadMapTapped
         case exitTapped
+        case refreshBusTime
     }
+    
+    private var countdownCancellable: AnyCancellable?
+    private var remainingTimeInSeconds: Int = 0
     
     let actionPublisher = PassthroughSubject<Action, Never>()
     
@@ -22,6 +26,7 @@ final class LastTrainRealTimeBottomView: UIView {
     private let iconImageView: UIImageView = UIImageView()
     private let trainInfoLabel: UILabel = UILabel()
     private let remainStationLabel: UILabel = UILabel()
+    private let alreadySoonLabel: UILabel = UILabel()
     private let reloadImageView: UIImageView = UIImageView()
     
     private let timeView: UIView = UIView()
@@ -29,20 +34,6 @@ final class LastTrainRealTimeBottomView: UIView {
     private let minuteTimeLabel: UILabel = UILabel()
     private let secondLabel: UILabel = UILabel()
     private let secondTimeLabel: UILabel = UILabel()
-    
-    
-    private let trainIconImageView: UIImageView = UIImageView()
-    private let trainTimeLabel: UILabel = UILabel()
-    private let trainRigtImageView: UIImageView = UIImageView()
-    private let trainRemainStationLabel: UILabel = UILabel()
-    private let alreadySoonLabel: UILabel = UILabel()
-    private lazy var trainStackView: UIStackView = {
-        let stackView: UIStackView = UIStackView(arrangedSubviews: [trainIconImageView, trainTimeLabel, trainRemainStationLabel, trainRigtImageView, reloadImageView])
-        stackView.axis = .horizontal
-        stackView.spacing = 6
-        stackView.alignment = .center
-        return stackView
-    }()
     
     private let locationLabel: UILabel = UILabel()
     
@@ -103,16 +94,11 @@ final class LastTrainRealTimeBottomView: UIView {
         reloadImageView.contentMode = .scaleAspectFit
         reloadImageView.tintColor = .white
         
-        // MARK: Test
-        iconImageView.image = UIImage.route16PxBus
-        iconImageView.tintColor = .green
-        trainInfoLabel.attributedText = AtchaFont.B4_R_15("강남역", color: .white)
-        remainStationLabel.attributedText = AtchaFont.B4_R_15("6정류장 전", color: .white)
+        alreadySoonLabel.isHidden = true
+        alreadySoonLabel.attributedText = AtchaFont.D2_EB_48("곧 도착", color: .widearea)
         
         minuteLabel.attributedText = AtchaFont.B1_R_17("분", color: .widearea)
         secondLabel.attributedText = AtchaFont.B1_R_17("초", color: .widearea)
-        minuteTimeLabel.attributedText = AtchaFont.D2_EB_48("\(07)", color: .widearea)
-        secondTimeLabel.attributedText = AtchaFont.D2_EB_48("\(05)", color: .widearea)
     }
     
     private func setupAutoLayout() {
@@ -127,6 +113,11 @@ final class LastTrainRealTimeBottomView: UIView {
             make.centerY.equalToSuperview()
             make.leading.equalToSuperview()
             make.size.equalTo(16)
+        }
+        
+        alreadySoonLabel.snp.makeConstraints { make in
+            make.leading.equalToSuperview()
+            make.centerY.equalTo(timeView.snp.centerY)
         }
         
         trainInfoLabel.snp.makeConstraints { make in
@@ -201,7 +192,123 @@ final class LastTrainRealTimeBottomView: UIView {
 // MARK: Binding Leg Info
 extension LastTrainRealTimeBottomView {
     func setupLegInfo(info: LegInfo) {
+        guard let departureStr = info.pathInfo.first?.departureDateTime else { return }
+        if let firstNonWalkMode = info.pathInfo.first(where: { $0.mode != .walk }) {
+            switch firstNonWalkMode.mode {
+            case .bus:
+                if let firstBusLeg = info.trafficInfo.first(where: { $0.mode == .bus }) {
+                    iconImageView.image = UIImage.route16PxBus
+                    iconImageView.tintColor = firstBusLeg.mode?.getColor(for: firstBusLeg.type ?? "")
+                    trainInfoLabel.attributedText = AtchaFont.B4_R_15("\(firstBusLeg.busName ?? "")", color: .white)
+                }
+                
+                let busDetailInfo = info.busInfo.filter { $0.routeName?.isEmpty == false }
+                if let _ = busDetailInfo.first(where: { $0.routeName != nil }) {
+                    actionPublisher.send(.refreshBusTime)
+                }
+            case .subway:
+                setupSubwayTime(departureStr: departureStr)
+                if let firstSubwayLeg = info.trafficInfo.first(where: { $0.mode == .subway }),
+                   let firstStationName = firstSubwayLeg.passStopList?.first?.stationName {
+                    iconImageView.image = UIImage.route16PxSubway
+                    iconImageView.tintColor = firstSubwayLeg.mode?.getColor(for: firstSubwayLeg.type ?? "")
+                    trainInfoLabel.attributedText = AtchaFont.B4_R_15("\(firstStationName)역",
+                                                                      color: .white)
+                }
+            default: do {}
+            }
+        }
+    }
+    
+    private func setupSubwayTime(departureStr: String) {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        formatter.locale = .current
         
+        if let departureDate = formatter.date(from: departureStr) {
+            let now = Date()
+            let interval = departureDate.timeIntervalSince(now)
+            
+            let minutes = Int(interval / 60)
+            let seconds = Int(interval.truncatingRemainder(dividingBy: 60))
+            
+            minuteTimeLabel.attributedText = AtchaFont.D2_EB_48("\(minutes)", color: .widearea)
+            secondTimeLabel.attributedText = AtchaFont.D2_EB_48("\(seconds)", color: .widearea)
+//            reloadImageView.isHidden = true
+            startCountdownWithCombine(minutes: minutes, seconds: seconds)
+        }
+    }
+    
+    func setupBusRealTime(realTime: BusRealTimeInfo?) {
+        guard let realTime, let firstInfo = realTime.realTimeBusArrival?.first else { return }
+        
+        let time = firstInfo.remainingTime?.toHourMinuteStringFromSeconds
+        let result = extractMinuteSecond(from: time)
+        minuteTimeLabel.attributedText = AtchaFont.D2_EB_48("\(result.0)",
+                                                            color: .widearea)
+        secondTimeLabel.attributedText = AtchaFont.D2_EB_48("\(result.1)",
+                                                            color: .widearea)
+        
+        startCountdownWithCombine(minutes: result.0, seconds: result.1)
+        remainStationLabel.attributedText = AtchaFont.B4_R_15("· \(firstInfo.remainingStations ?? 0)정류장 전", color: .white)
+    }
+    
+    private func extractMinuteSecond(from timeText: String?) -> (minute: Int, second: Int) {
+        guard let timeText else { return (0, 0) }
+        let regex = try! NSRegularExpression(pattern: "\\d+")
+        let matches = regex.matches(in: timeText, range: NSRange(timeText.startIndex..., in: timeText))
+        
+        let numbers = matches.map {
+            Int((timeText as NSString).substring(with: $0.range)) ?? 0
+        }
+        
+        let minute = numbers.count > 0 ? numbers[0] : 0
+        let second = numbers.count > 1 ? numbers[1] : 0
+        
+        return (minute, second)
+    }
+}
+
+extension LastTrainRealTimeBottomView {
+    private func startCountdownWithCombine(minutes: Int, seconds: Int) {
+        countdownCancellable?.cancel() // 기존 구독 해제
+        remainingTimeInSeconds = minutes * 60 + seconds
+        updateCountdownLabels()
+        
+        countdownCancellable = Timer
+            .publish(every: 1.0, on: .main, in: .common)
+            .autoconnect()
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+                
+                self.remainingTimeInSeconds -= 1
+                
+                if self.remainingTimeInSeconds <= 120 {
+                    self.countdownCancellable?.cancel()
+                    self.minuteLabel.isHidden = true
+                    self.minuteTimeLabel.isHidden = true
+                    self.secondLabel.isHidden = true
+                    self.secondTimeLabel.isHidden = true
+                    self.alreadySoonLabel.isHidden = false
+                } else {
+                    self.updateCountdownLabels()
+                }
+            }
+    }
+    
+    private func updateCountdownLabels() {
+        let minutes = remainingTimeInSeconds / 60
+        let seconds = remainingTimeInSeconds % 60
+        
+        minuteTimeLabel.attributedText = AtchaFont.D2_EB_48("\(minutes)",
+                                                            color: .widearea)
+        secondTimeLabel.attributedText = AtchaFont.D2_EB_48("\(seconds)",
+                                                            color: .widearea)
+    }
+    
+    private func cancelCountdownTimer() {
+        countdownCancellable?.cancel()
+        countdownCancellable = nil
     }
 }
 

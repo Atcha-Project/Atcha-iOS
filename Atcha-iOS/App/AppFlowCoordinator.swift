@@ -73,7 +73,7 @@ class AppFlowCoordinator {
         lockScreenCoordinator.routerHandler = { [weak self] router in
             DispatchQueue.main.async {
                 // TODO: Router에 따라 값 분기 하기
-                self?.showMainFlow(info: info, address: address)
+                self?.showMainFlow(info: info, address: address, bottomType: .realTime)
             }
         }
         lockScreenCoordinator.start()

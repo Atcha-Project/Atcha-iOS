@@ -50,11 +50,9 @@ final class SplashViewModel: BaseViewModel {
         let wrapper = UserDefaultsWrapper()
         if let legInfo: LegInfo = wrapper.object(forKey: UserDefaultsWrapper.Key.legInfo.rawValue, of: LegInfo.self),
            let address: String = wrapper.string(forKey: UserDefaultsWrapper.Key.addressDesc.rawValue) {
-            if checkFutureTimeOver10Minutes(dateString: legInfo.trafficInfo.first?.departureDateTime ?? "")?.0 == true {
-                print("미래")
+            if checkFutureTimeOver(dateString: legInfo.trafficInfo.first?.departureDateTime ?? "")?.0 == false {
                 routerHandler?(.alarm(info: legInfo, address: address))
             } else {
-                print("과거")
                 routerHandler?(.lockScreen(info: legInfo, address: address))
             }
             return
@@ -72,7 +70,7 @@ final class SplashViewModel: BaseViewModel {
         }
     }
     
-    private func checkFutureTimeOver10Minutes(dateString: String) -> (isFuture: Bool, secondsUntil: TimeInterval)? {
+    private func checkFutureTimeOver(dateString: String) -> (isFuture: Bool, secondsUntil: TimeInterval)? {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
         formatter.timeZone = .current
