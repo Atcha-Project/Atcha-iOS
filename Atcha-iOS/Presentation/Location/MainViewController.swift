@@ -127,8 +127,7 @@ extension MainViewController {
 // MARK: - Bindings
 extension MainViewController {
     private func bindView() {
-        bindLastTrainViewActions()
-        bindLastTrainDepartViewActions()
+        bindBottomViewActions()
         bindAddressUpdates()
         bindCurrentLocationUpdates()
         bindSelectedLocationUpdates()
@@ -138,13 +137,22 @@ extension MainViewController {
     }
     
     // MARK: - View Actions
-    private func bindLastTrainViewActions() {
+    private func bindBottomViewActions() {
         lastTrainView.actionPublisher
-            .sink { [weak self] in self?.handleLastTrainViewAction($0) }
+            .sink { [weak self] in self?.handleSearchViewAction($0) }
+            .store(in: &cancellables)
+        
+        lastTrainRealTimeView.actionPublisher
+            .sink { [weak self] in self?.handleRealTimeViewAction($0) }
+            .store(in: &cancellables)
+        
+        lastTrainDepartView.actionPublisher
+            .receive(on: RunLoop.main)
+            .sink { [weak self] in self?.handleTrainDepartAction($0) }
             .store(in: &cancellables)
     }
     
-    private func handleLastTrainViewAction(_ action: LastTrainSearchBottomView.Action) {
+    private func handleSearchViewAction(_ action: LastTrainSearchBottomView.Action) {
         switch action {
         case .currentTapped:
             viewModel.handleRoute(route: .changeCourse)
@@ -155,30 +163,17 @@ extension MainViewController {
         }
     }
     
-    private func bindLastTrainDepartViewActions() {
-        lastTrainDepartView.actionPublisher
-            .receive(on: RunLoop.main)
-            .sink { [weak self] in self?.handleLastTrainDepartAction($0) }
-            .store(in: &cancellables)
+    private func handleRealTimeViewAction(_ action: LastTrainRealTimeBottomView.Action) {
+        switch action {
+        case .refreshBusTime, .reloadTapped: viewModel.getBusRealTime()
+        case .exitTapped: exitButtonTapped()
+        default: print("action")
+        }
     }
     
-    private func handleLastTrainDepartAction(_ action: LastTrainDepartBottomView.Action) {
+    private func handleTrainDepartAction(_ action: LastTrainDepartBottomView.Action) {
         switch action {
-        case .exitTapped:
-            viewModel.requestPermissionAndStartTracking()
-            viewModel.removeLegInfoAndAddress()
-            AlarmManager.shared.stopAlarm()
-            
-            lastTrainView.isHidden = false
-            flagImageView.isHidden = false
-            lastTrainDepartView.isHidden = true
-            updateAtchaImageConstraint(relativeTo: lastTrainView)
-            mapContainerView.clearMapView()
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-                guard let self else { return }
-                view.showToast(message: "알림이 종료되었어요")
-            }
+        case .exitTapped: exitButtonTapped()
         case .detailRoadMapTapped:
             viewModel.handleRoute(route: .detailRoute(address: "",
                                                       infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: [])))
@@ -189,6 +184,23 @@ extension MainViewController {
         case .timeTapped:
             ballonView.setupTitle(topMessage: "이때쯤 자리에서 출발하면 돼요",
                                   bottomMessage: "현재 교통 상황 기준으로,\n출발 시간이 가까워질수록 더 정확해져요")
+        }
+    }
+    
+    private func exitButtonTapped() {
+        viewModel.requestPermissionAndStartTracking()
+        viewModel.removeLegInfoAndAddress()
+        AlarmManager.shared.stopAlarm()
+        
+        lastTrainView.isHidden = false
+        flagImageView.isHidden = false
+        lastTrainDepartView.isHidden = true
+        updateAtchaImageConstraint(relativeTo: lastTrainView)
+        mapContainerView.clearMapView()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            guard let self else { return }
+            view.showToast(message: "알림이 종료되었어요")
         }
     }
     
@@ -263,7 +275,7 @@ extension MainViewController {
             .compactMap { $0 }
             .receive(on: RunLoop.main)
             .sink { [weak self] info in
-//                self?.lastTrainDepartView.setupBusRealTime(realTime: info)
+                self?.lastTrainRealTimeView.setupBusRealTime(realTime: info)
             }
             .store(in: &cancellables)
     }
@@ -293,11 +305,11 @@ extension MainViewController {
     }
     
     private func handleLegPathInfos(_ infos: [LegPathInfo]) {
-//        ballonView.setupTitle(bottomMessage: "이때쯤 자리에서 출발하면 돼요")
-//        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-//            guard let self else { return }
-//            view.showToast(message: "알림이 등록되었어요.")
-//        }
+        //        ballonView.setupTitle(bottomMessage: "이때쯤 자리에서 출발하면 돼요")
+        //        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+        //            guard let self else { return }
+        //            view.showToast(message: "알림이 등록되었어요.")
+        //        }
     }
     
     private func bindTaxiFareUpdates() {
