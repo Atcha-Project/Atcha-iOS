@@ -161,6 +161,7 @@ final class CourseCell: UICollectionViewCell {
         
         courseStack.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(7)
+            make.trailing.lessThanOrEqualToSuperview().inset(10)
             make.top.equalToSuperview().inset(4)
             make.bottom.equalToSuperview().inset(4)
         }
