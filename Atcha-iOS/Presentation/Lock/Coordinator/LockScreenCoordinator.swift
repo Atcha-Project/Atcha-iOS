@@ -12,7 +12,7 @@ final class LockScreenCoordinator {
     private let navigationController: UINavigationController
     private let diContainer: LockScreenDIContainer
     
-    var routerHandler: ((SplashRouter) -> Void)?
+    var routerHandler: ((MainRoute) -> Void)?
     
     init(navigationController: UINavigationController, diContainer: LockScreenDIContainer) {
         self.navigationController = navigationController
