@@ -33,7 +33,7 @@ final class PushAlarmViewModel: BaseViewModel {
     }
     
     func signUp(selectedAlarms: [AlarmTimeOption]) {
-        guard let provider = UserDefaultsWrapper().integer(forKey: UserDefaultsWrapper.Key.provider.rawValue) else {
+        guard let provider = UserDefaultsWrapper.shared.integer(forKey: UserDefaultsWrapper.Key.provider.rawValue) else {
             print("❌ 플랫폼 정보 없음")
             return
         }
@@ -54,8 +54,8 @@ final class PushAlarmViewModel: BaseViewModel {
         )
         
         // TODO: 위치 변경해야할 듯
-        UserDefaultsWrapper().set(locationStateHolder.currentLocation?.latitude ?? 0.0, forKey: UserDefaultsWrapper.Key.homeLat.rawValue)
-        UserDefaultsWrapper().set(locationStateHolder.currentLocation?.longitude ?? 0.0, forKey: UserDefaultsWrapper.Key.homeLon.rawValue)
+        UserDefaultsWrapper.shared.set(locationStateHolder.currentLocation?.latitude ?? 0.0, forKey: UserDefaultsWrapper.Key.homeLat.rawValue)
+        UserDefaultsWrapper.shared.set(locationStateHolder.currentLocation?.longitude ?? 0.0, forKey: UserDefaultsWrapper.Key.homeLon.rawValue)
         
         Task {
             do {
@@ -64,10 +64,10 @@ final class PushAlarmViewModel: BaseViewModel {
                 AppDIContainer.shared.tokenStorage.accessToken = response.accessToken
                 AppDIContainer.shared.tokenStorage.refreshToken = response.refreshToken
                 
-                UserDefaultsWrapper().set(response.id, forKey: UserDefaultsWrapper.Key.userId.rawValue)
+                UserDefaultsWrapper.shared.set(response.id, forKey: UserDefaultsWrapper.Key.userId.rawValue)
                 if let lat = response.lat, let lon = response.lon {
-                    UserDefaultsWrapper().set(lat, forKey: UserDefaultsWrapper.Key.homeLat.rawValue)
-                    UserDefaultsWrapper().set(lon, forKey: UserDefaultsWrapper.Key.homeLon.rawValue)
+                    UserDefaultsWrapper.shared.set(lat, forKey: UserDefaultsWrapper.Key.homeLat.rawValue)
+                    UserDefaultsWrapper.shared.set(lon, forKey: UserDefaultsWrapper.Key.homeLon.rawValue)
                     print("✅ 회원가입 lat/lon 저장 완료: \(lat), \(lon)")
                 } else {
                     print("⚠️ 회원가입 응답에 lat/lon 없음")

@@ -8,6 +8,8 @@
 import Foundation
 
 final public class UserDefaultsWrapper {
+    private init() {}
+    static let shared = UserDefaultsWrapper()
     
     private let userDefaults: UserDefaults = .standard
     

@@ -129,7 +129,7 @@ final class LockViewController: BaseViewController<LockViewModel> {
     }
     
     @objc private func detailRouteTapped() {
-        let wrapper = UserDefaultsWrapper()
+        let wrapper = UserDefaultsWrapper.shared
         let lat = wrapper.string(forKey: UserDefaultsWrapper.Key.startLat.rawValue) ?? ""
         let lon = wrapper.string(forKey: UserDefaultsWrapper.Key.startLat.rawValue) ?? ""
         let address = wrapper.string(forKey: UserDefaultsWrapper.Key.startLat.rawValue) ?? ""

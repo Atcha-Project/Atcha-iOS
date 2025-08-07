@@ -10,6 +10,6 @@ import Foundation
 final class AlarmSoundTypeViewModel: BaseViewModel {
     func saveSoundType(_ option: AlarmSoundOption) {
         print("option: \(option)")
-        UserDefaultsWrapper().set(option.soundType, forKey: UserDefaultsWrapper.Key.soundType.rawValue)
+        UserDefaultsWrapper.shared.set(option.soundType, forKey: UserDefaultsWrapper.Key.soundType.rawValue)
     }
 }

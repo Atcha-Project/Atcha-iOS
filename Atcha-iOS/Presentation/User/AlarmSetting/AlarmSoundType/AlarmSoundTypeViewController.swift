@@ -57,7 +57,7 @@ final class AlarmSoundTypeViewController: BaseViewController<AlarmSoundTypeViewM
     }
     
     private func makeAlarmSoundOptions() -> [AlarmSoundOption] {
-        let savedType = UserDefaultsWrapper().object(
+        let savedType = UserDefaultsWrapper.shared.object(
             forKey: UserDefaultsWrapper.Key.soundType.rawValue,
             of: AlarmSoundType.self
         )

@@ -432,7 +432,7 @@ extension MainViewController {
             self.viewModel.setupLocation()
             self.hideLoading()
             
-            let wrapper = UserDefaultsWrapper()
+            let wrapper = UserDefaultsWrapper.shared
             if let legInfo: LegInfo = wrapper.object(forKey: UserDefaultsWrapper.Key.legInfo.rawValue, of: LegInfo.self),
                let address: String = wrapper.string(forKey: UserDefaultsWrapper.Key.addressDesc.rawValue) {
                 self.viewModel.drawRoute(address: address, info: legInfo)

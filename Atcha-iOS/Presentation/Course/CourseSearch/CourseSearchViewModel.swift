@@ -84,7 +84,7 @@ final class CourseSearchViewModel: BaseViewModel {
     func courseSearch() {
         Task {
             do {
-                let userDefaults = UserDefaultsWrapper()
+                let userDefaults = UserDefaultsWrapper.shared
                 let endLat = userDefaults.string(forKey: UserDefaultsWrapper.Key.homeLat.rawValue) ?? "37.554722"
                 let endLon = userDefaults.string(forKey: UserDefaultsWrapper.Key.homeLon.rawValue) ?? "126.970833"
                 
@@ -114,7 +114,7 @@ final class CourseSearchViewModel: BaseViewModel {
         
         courseStreamTask = Task {
             do {
-                let userDefaults = UserDefaultsWrapper()
+                let userDefaults = UserDefaultsWrapper.shared
                 let endLat = userDefaults.string(forKey: UserDefaultsWrapper.Key.homeLat.rawValue) ?? "37.554722"
                 let endLon = userDefaults.string(forKey: UserDefaultsWrapper.Key.homeLon.rawValue) ?? "126.970833"
                 
@@ -160,7 +160,7 @@ final class CourseSearchViewModel: BaseViewModel {
     }
     
     func saveStartInfo() {
-        let wrapper = UserDefaultsWrapper()
+        let wrapper = UserDefaultsWrapper.shared
         wrapper.set(startLat, forKey: UserDefaultsWrapper.Key.startLat.rawValue)
         wrapper.set(startLon, forKey: UserDefaultsWrapper.Key.startLon.rawValue)
         wrapper.set(startAddress, forKey: UserDefaultsWrapper.Key.startAddress.rawValue)

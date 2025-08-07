@@ -23,7 +23,7 @@ final class UserRepositoryImpl: UserRepository {
     }
     
     func signUp(_ request: SignUpRequest) async throws -> SignUpResponse {
-        guard let providerToken = UserDefaultsWrapper().string(forKey: UserDefaultsWrapper.Key.providerToken.rawValue) else {
+        guard let providerToken = UserDefaultsWrapper.shared.string(forKey: UserDefaultsWrapper.Key.providerToken.rawValue) else {
             print("플랫폼 토큰 없음")
             throw NSError(domain: "SignUpError", code: -1, userInfo: [NSLocalizedDescriptionKey: "플랫폼 토큰 없음"])
         }
