@@ -50,7 +50,7 @@ final class SplashViewModel: BaseViewModel {
         let wrapper = UserDefaultsWrapper()
         if let legInfo: LegInfo = wrapper.object(forKey: UserDefaultsWrapper.Key.legInfo.rawValue, of: LegInfo.self),
            let address: String = wrapper.string(forKey: UserDefaultsWrapper.Key.addressDesc.rawValue) {
-            if checkFutureTimeOver(dateString: legInfo.trafficInfo.first?.departureDateTime ?? "")?.0 == false {
+            if checkFutureTimeOver(dateString: legInfo.trafficInfo.first?.departureDateTime ?? "")?.0 == true {
                 routerHandler?(.alarm(info: legInfo, address: address))
             } else {
                 routerHandler?(.lockScreen(info: legInfo, address: address))
@@ -88,24 +88,4 @@ final class SplashViewModel: BaseViewModel {
         
         return (isFuture, secondsUntil)
     }
-    
-    //    private func compareToCurrentTime(dateString: String) -> (isPast: Bool, secondsDifference: TimeInterval, isOver10Minutes: Bool)? {
-    //        let formatter = DateFormatter()
-    //        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-    //        formatter.timeZone = .current
-    //
-    //        guard let inputDate = formatter.date(from: dateString) else {
-    //            print("날짜 파싱 실패")
-    //            return nil
-    //        }
-    //
-    //        let currentDate = Date()
-    //        let timeInterval = currentDate.timeIntervalSince(inputDate)
-    //
-    //        let isPast = timeInterval > 0
-    //        let secondsDifference = abs(timeInterval)
-    //        let isOver10Minutes = secondsDifference >= 600 // 600초 = 10분
-    //
-    //        return (isPast, secondsDifference, isOver10Minutes)
-    //    }
 }

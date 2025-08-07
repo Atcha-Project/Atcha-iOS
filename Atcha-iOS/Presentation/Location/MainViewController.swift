@@ -17,7 +17,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
     
     private let mapContainerView: TMapContainerView = TMapContainerView()
     
-    private let lastTrainView: LastTrainSearchBottomView = LastTrainSearchBottomView() // 알람 등록 전
+    private let lastTrainSearchView: LastTrainSearchBottomView = LastTrainSearchBottomView() // 알람 등록 전
     private let lastTrainDepartView: LastTrainDepartBottomView = LastTrainDepartBottomView() // 알람 등록 이후
     private let lastTrainRealTimeView: LastTrainRealTimeBottomView = LastTrainRealTimeBottomView() // 알람 등록 이후, 시간 지남
     
@@ -43,7 +43,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
             mapContainerView,
             flagImageView,
             atchaImageView,
-            lastTrainView,
+            lastTrainSearchView,
             myPageButton,
             loactionButton,
             lastTrainDepartView,
@@ -52,11 +52,6 @@ final class MainViewController: BaseViewController<MainViewModel>,
         )
         
         mapContainerView.delegate = self
-        
-        lastTrainView.isHidden = false
-        lastTrainDepartView.isHidden = true
-        lastTrainRealTimeView.isHidden = true
-        
         configureButton(myPageButton,
                         imageName: "mypage-filled",
                         action: #selector(didTapMyPageButton))
@@ -65,7 +60,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
                         action: #selector(didTapLocationButton))
         flagImageView.image = UIImage.settingLocationMark
         atchaImageView.image = UIImage.atcha
-        ballonView.setupTitle(bottomMessage: "여기서 막차 놓치면 택시비")
+        ballonView.setupTitle(bottomMessage: "지도를 움직여 출발지를 설정해 봐요.")
     }
     
     private func configureButton(_ button: UIButton, imageName: String, action: Selector) {
@@ -85,7 +80,7 @@ extension MainViewController {
             make.height.equalTo(63)
             make.width.equalTo(48)
         }
-        lastTrainView.snp.makeConstraints { make in
+        lastTrainSearchView.snp.makeConstraints { make in
             make.horizontalEdges.equalToSuperview()
             make.bottom.equalToSuperview()
         }
@@ -103,7 +98,7 @@ extension MainViewController {
             make.width.height.equalTo(40)
         }
         loactionButton.snp.makeConstraints { make in
-            make.bottom.equalTo(lastTrainView.snp.top).inset(-16)
+            make.bottom.equalTo(lastTrainSearchView.snp.top).inset(-16)
             make.trailing.equalToSuperview().inset(16)
             make.width.height.equalTo(40)
         }
@@ -114,12 +109,12 @@ extension MainViewController {
         atchaImageView.snp.makeConstraints { make in
             make.width.height.equalTo(64)
             make.leading.equalToSuperview().inset(8)
-            make.bottom.equalTo(lastTrainView.snp.top).inset(24)
+            make.bottom.equalTo(lastTrainSearchView.snp.top).inset(24)
         }
         mapContainerView.snp.makeConstraints { make in
             make.horizontalEdges.equalToSuperview()
             make.top.equalToSuperview()
-            make.bottom.equalTo(lastTrainView.snp.top).inset(30)
+            make.bottom.equalTo(lastTrainSearchView.snp.top).inset(30)
         }
     }
 }
@@ -138,7 +133,7 @@ extension MainViewController {
     
     // MARK: - View Actions
     private func bindBottomViewActions() {
-        lastTrainView.actionPublisher
+        lastTrainSearchView.actionPublisher
             .sink { [weak self] in self?.handleSearchViewAction($0) }
             .store(in: &cancellables)
         
@@ -194,10 +189,11 @@ extension MainViewController {
         viewModel.removeLegInfoAndAddress()
         AlarmManager.shared.stopAlarm()
         
-        lastTrainView.isHidden = false
+        lastTrainSearchView.isHidden = false
         flagImageView.isHidden = false
         lastTrainDepartView.isHidden = true
-        updateAtchaImageConstraint(relativeTo: lastTrainView)
+        lastTrainRealTimeView.isHidden = true
+        updateAtchaImageConstraint(relativeTo: lastTrainSearchView)
         mapContainerView.clearMapView()
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
@@ -222,7 +218,7 @@ extension MainViewController {
         }
         
         let title = (address == firstAddress) ? "현위치 : \(address)" : address
-        lastTrainView.setupCurrentLocationTitle(title)
+        lastTrainSearchView.setupCurrentLocationTitle(title)
     }
     
     private func bindCurrentLocationUpdates() {
@@ -291,18 +287,23 @@ extension MainViewController {
         case .realTime:
             lastTrainRealTimeView.isHidden = false
             flagImageView.isHidden = true
-            lastTrainView.isHidden = true
+            lastTrainSearchView.isHidden = true
             lastTrainDepartView.isHidden = true
         case .departure:
             lastTrainDepartView.isHidden = false
             flagImageView.isHidden = true
-            lastTrainView.isHidden = true
+            lastTrainSearchView.isHidden = true
             lastTrainRealTimeView.isHidden = true
         case .search:
-            lastTrainView.isHidden = false
+            lastTrainSearchView.isHidden = false
             flagImageView.isHidden = false
             lastTrainDepartView.isHidden = true
             lastTrainRealTimeView.isHidden = true
+        case .finish:
+            lastTrainRealTimeView.isHidden = false
+            flagImageView.isHidden = true
+            lastTrainSearchView.isHidden = true
+            lastTrainDepartView.isHidden = true
         }
     }
     

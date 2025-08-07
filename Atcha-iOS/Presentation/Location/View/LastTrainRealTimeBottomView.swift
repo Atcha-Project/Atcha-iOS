@@ -18,6 +18,8 @@ final class LastTrainRealTimeBottomView: UIView {
     }
     
     private var countdownCancellable: AnyCancellable?
+    private var busRefreshCancellable: AnyCancellable?
+    
     private var remainingTimeInSeconds: Int = 0
     
     let actionPublisher = PassthroughSubject<Action, Never>()
@@ -194,15 +196,16 @@ extension LastTrainRealTimeBottomView {
         if let firstNonWalkMode = info.pathInfo.first(where: { $0.mode != .walk }) {
             switch firstNonWalkMode.mode {
             case .bus:
+                let busDetailInfo = info.busInfo.filter { $0.routeName?.isEmpty == false }
+                if let _ = busDetailInfo.first(where: { $0.routeName != nil }) {
+                    actionPublisher.send(.refreshBusTime)
+                    startBusAutoRefresh()
+                }
+                
                 if let firstBusLeg = info.trafficInfo.first(where: { $0.mode == .bus }) {
                     iconImageView.image = UIImage.route16PxBus
                     iconImageView.tintColor = firstBusLeg.mode?.getColor(for: firstBusLeg.type ?? "")
                     trainInfoLabel.attributedText = AtchaFont.B4_R_15("\(firstBusLeg.busName ?? "")", color: .white)
-                }
-                
-                let busDetailInfo = info.busInfo.filter { $0.routeName?.isEmpty == false }
-                if let _ = busDetailInfo.first(where: { $0.routeName != nil }) {
-                    actionPublisher.send(.refreshBusTime)
                 }
             case .subway:
                 setupSubwayTime(departureStr: departureStr)
@@ -263,6 +266,8 @@ extension LastTrainRealTimeBottomView {
         let minute = numbers.count > 0 ? numbers[0] : 0
         let second = numbers.count > 1 ? numbers[1] : 0
         
+        print("minute : \(minute), second : \(second)")
+        
         return (minute, second)
     }
 }
@@ -315,6 +320,17 @@ extension LastTrainRealTimeBottomView {
     private func cancelCountdownTimer() {
         countdownCancellable?.cancel()
         countdownCancellable = nil
+    }
+    
+    private func startBusAutoRefresh() {
+        busRefreshCancellable?.cancel() // 기존 타이머 제거
+
+        busRefreshCancellable = Timer
+            .publish(every: 60.0, on: .main, in: .common)
+            .autoconnect()
+            .sink { [weak self] _ in
+                self?.actionPublisher.send(.refreshBusTime)
+            }
     }
 }
 

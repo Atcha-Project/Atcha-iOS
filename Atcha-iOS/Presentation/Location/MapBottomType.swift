@@ -11,4 +11,5 @@ enum MapBottomType {
     case search
     case departure
     case realTime
+    case finish
 }
