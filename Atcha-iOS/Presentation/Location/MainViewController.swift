@@ -49,6 +49,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
             loactionButton,
             lastTrainDepartView,
             lastTrainRealTimeView,
+            lastTrainArrivalView,
             ballonView
         )
         
@@ -90,6 +91,10 @@ extension MainViewController {
             make.bottom.equalToSuperview()
         }
         lastTrainRealTimeView.snp.makeConstraints { make in
+            make.horizontalEdges.equalToSuperview()
+            make.bottom.equalToSuperview()
+        }
+        lastTrainArrivalView.snp.makeConstraints { make in
             make.horizontalEdges.equalToSuperview()
             make.bottom.equalToSuperview()
         }
@@ -146,6 +151,11 @@ extension MainViewController {
             .receive(on: RunLoop.main)
             .sink { [weak self] in self?.handleTrainDepartAction($0) }
             .store(in: &cancellables)
+        
+        lastTrainArrivalView.actionPublisher
+            .receive(on: RunLoop.main)
+            .sink { [weak self] in self?.handleArrivalViewAction($0) }
+            .store(in: &cancellables)
     }
     
     private func handleSearchViewAction(_ action: LastTrainSearchBottomView.Action) {
@@ -182,6 +192,14 @@ extension MainViewController {
         case .timeTapped:
             ballonView.setupTitle(topMessage: "이때쯤 자리에서 출발하면 돼요",
                                   bottomMessage: "현재 교통 상황 기준으로,\n출발 시간이 가까워질수록 더 정확해져요")
+        }
+    }
+    
+    private func handleArrivalViewAction(_ action: LastTrainArrivalBottomView.Action) {
+        switch action {
+        case .exitTapped: exitButtonTapped()
+        case .detailRoadMapTapped: viewModel.handleRoute(route: .detailRoute(address: "",
+                                                                             infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: [])))
         }
     }
     
@@ -260,6 +278,7 @@ extension MainViewController {
                 self?.addRouteLine(pathInfos: info.pathInfo)
                 self?.lastTrainDepartView.setupLegInfo(info: info)
                 self?.lastTrainRealTimeView.setupLegInfo(info: info)
+                self?.lastTrainArrivalView.setupLegInfo(info: info)
             }
             .store(in: &cancellables)
         

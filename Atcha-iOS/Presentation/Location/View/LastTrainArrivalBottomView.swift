@@ -146,17 +146,43 @@ final class LastTrainArrivalBottomView: UIView {
 // MARK: Binding Leg Info
 extension LastTrainArrivalBottomView {
     func setupLegInfo(info: LegInfo) {
-        guard let departureStr = info.pathInfo.first?.departureDateTime else { return }
+        guard let departureStr = info.pathInfo.first?.departureDateTime,
+              let totalTime = info.trafficInfo.first?.totalTime else { return }
+        
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
         formatter.locale = .current
         
-        if let _ = formatter.date(from: departureStr) {
-            if let (hour, minute) = departureStr.toHourMinute() {
-                hourTimeLabel.attributedText = AtchaFont.D2_EB_48(hour, color: .white)
-                minuteTimeLabel.attributedText = AtchaFont.D2_EB_48(minute, color: .white)
-            }
+        guard let departureDate = formatter.date(from: departureStr) else { return }
+        
+        let minutes = parseTotalTimeToMinutes(totalTime)
+        
+        guard let arrivalDate = Calendar.current.date(byAdding: .minute, value: minutes, to: departureDate) else { return }
+        
+        let hour = Calendar.current.component(.hour, from: arrivalDate)
+        let minute = Calendar.current.component(.minute, from: arrivalDate)
+        
+        let hourText = String(format: "%02d", hour)
+        let minuteText = String(format: "%02d", minute)
+        
+        hourTimeLabel.attributedText = AtchaFont.D2_EB_48(hourText, color: .white)
+        minuteTimeLabel.attributedText = AtchaFont.D2_EB_48(minuteText, color: .white)
+    }
+    
+    private func parseTotalTimeToMinutes(_ time: String) -> Int {
+        var totalMinutes = 0
+        
+        if let hourMatch = time.range(of: "\\d+(?=시간)", options: .regularExpression),
+           let hour = Int(time[hourMatch]) {
+            totalMinutes += hour * 60
         }
+        
+        if let minuteMatch = time.range(of: "\\d+(?=분)", options: .regularExpression),
+           let minute = Int(time[minuteMatch]) {
+            totalMinutes += minute
+        }
+        
+        return totalMinutes
     }
 }
 
