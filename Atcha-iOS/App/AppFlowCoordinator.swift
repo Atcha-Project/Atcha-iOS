@@ -61,6 +61,13 @@ class AppFlowCoordinator {
                 self?.showLoginFlow()
             }
         }
+        mainCoordinator?.lockScreenConfrim = { [weak self] info, address in
+            DispatchQueue.main.async {
+                self?.showMainFlow(info: info,
+                                   address: address,
+                                   bottomType: .realTime)
+            }
+        }
         mainCoordinator?.start(info: info, address: address, bottomType: bottomType)
     }
     

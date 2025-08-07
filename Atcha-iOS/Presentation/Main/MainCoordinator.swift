@@ -17,6 +17,7 @@ final class MainCoordinator {
     private var mainViewModel: MainViewModel?
     
     var signoutFinish: (() -> Void)?
+    var lockScreenConfrim: ((LegInfo?, String?) -> Void)?
     var routeHandler: ((MainRoute) -> Void)?
     
     init(navigationController: UINavigationController,
@@ -126,6 +127,20 @@ final class MainCoordinator {
             let vm = routeDI.makeDetailRouteViewModel(address: address, infos: infos)
             let vc = routeDI.makeDetailRouteViewController(viewModel: vm)
             navigationController.pushViewController(vc, animated: false)
+            
+        case .lockScreen:
+            let lockScreenDI = diContainer.makeLockScreenDIContainer()
+            let vm = lockScreenDI.makeLockScreenViewModel()
+            vm.routerHandler = { [weak self] router in
+                switch router {
+                case .lockScreen(let info, let address):
+                    self?.lockScreenConfrim?(info, address)
+                default: do {}
+                }
+            }
+            let vc = lockScreenDI.makeLockScreenViewController(viewModel: vm)
+            vc.modalPresentationStyle = .overFullScreen
+            navigationController.present(vc, animated: false)
         }
         
         routeHandler?(route)

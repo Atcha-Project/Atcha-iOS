@@ -52,7 +52,7 @@ final class MainViewModel: BaseViewModel {
         
         super.init()
         self.bind()
-        self.startAlarmTimer()
+//        self.startAlarmTimer()
     }
     
     func bind() {
@@ -162,11 +162,7 @@ extension MainViewModel {
     private func checkAlarmTime() {
         let wrapper = UserDefaultsWrapper.shared
         if let departureTime: String = wrapper.string(forKey: UserDefaultsWrapper.Key.departureTime.rawValue) {
-            if !checkFutureTimeOver(dateString: departureTime) {
-                let diContainer = LockScreenDIContainer()
-                let vm = diContainer.makeLockScreenViewModel()
-                let vc = diContainer.makeLockScreenViewController(viewModel: vm)
-                vc.modalPresentationStyle = .overFullScreen
+            if checkFutureTimeOver(dateString: departureTime) {
                 print("과거")
                 showLockView = true
                 stopAlarmTimer()
@@ -231,6 +227,9 @@ extension MainViewModel {
         case .detailRoute:
             guard let address, let legInfo else { return }
             routeHandler?(.detailRoute(address: address, infos: legInfo))
+        case .lockScreen:
+            guard let address, let legInfo else { return }
+            routeHandler?(.lockScreen(info: legInfo, address: address))
         }
     }
 }

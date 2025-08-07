@@ -135,6 +135,17 @@ extension MainViewController {
         bindAddressDescriptionUpdates()
         bindLegPathUpdates()
         bindTaxiFareUpdates()
+        bindLockView()
+    }
+    
+    // MARK: - bind Lock View
+    private func bindLockView() {
+        viewModel.$showLockView
+            .filter { $0 }
+            .receive(on: RunLoop.main)
+            .removeDuplicates()
+            .sink { [weak self] _ in self?.viewModel.handleRoute(route: .lockScreen(info: nil, address: nil)) }
+            .store(in: &cancellables)
     }
     
     // MARK: - View Actions

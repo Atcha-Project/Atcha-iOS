@@ -11,7 +11,7 @@ import Combine
 final class LockViewModel: BaseViewModel {
     @Published private(set) var taxiFare: Int
     
-    var routerHandler: ((SplashRouter) -> Void)?
+    var routerHandler: ((MainRoute) -> Void)?
     
     init(taxiFare: Int) {
         self.taxiFare = taxiFare
