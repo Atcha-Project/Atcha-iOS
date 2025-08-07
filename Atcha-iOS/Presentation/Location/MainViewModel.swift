@@ -12,6 +12,8 @@ import UIKit
 import TMapSDK
 
 final class MainViewModel: BaseViewModel {
+    private var alarmTimerCancellable: AnyCancellable?
+    
     @Published var currentLocation: CLLocationCoordinate2D?
     @Published var selectedLocation: CLLocationCoordinate2D?
     @Published var address: String?
@@ -22,6 +24,7 @@ final class MainViewModel: BaseViewModel {
     @Published var busRealTimeInfo: BusRealTimeInfo?
     
     @Published var bottomType: MapBottomType?
+    @Published var showLockView: Bool = false
     
     private let searchAddressUseCase: SearchAddressUseCase
     private let authorizationUseCase: RequestLocationAuthorizationUseCase
@@ -48,10 +51,11 @@ final class MainViewModel: BaseViewModel {
         self.busInfoUseCase = busInfoUseCase
         
         super.init()
-        self.bindView()
+        self.bind()
+        self.startAlarmTimer()
     }
     
-    func bindView() {
+    func bind() {
         $currentLocation
             .removeDuplicates()
             .debounce(for: .seconds(0.3), scheduler: RunLoop.main)
@@ -66,23 +70,27 @@ final class MainViewModel: BaseViewModel {
         addressDesc = address
         legInfo = info
         
-        let wrapper = UserDefaultsWrapper()
+        let wrapper = UserDefaultsWrapper.shared
         wrapper.set(address, forKey: UserDefaultsWrapper.Key.addressDesc.rawValue)
         wrapper.set(info, forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
         
         guard let time = legInfo?.pathInfo.first?.departureDateTime else {
             return
         }
+        print("time : \(time)")
+        wrapper.set(time, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
+        
         AlarmManager.shared.startAlarm(after: time, title: "집에 가자", body: "집에 가자")
     }
     
     func removeLegInfoAndAddress() {
-        let wrapper = UserDefaultsWrapper()
+        let wrapper = UserDefaultsWrapper.shared
         wrapper.remove(forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
         wrapper.remove(forKey: UserDefaultsWrapper.Key.addressDesc.rawValue)
         wrapper.remove(forKey: UserDefaultsWrapper.Key.startLat.rawValue)
         wrapper.remove(forKey: UserDefaultsWrapper.Key.startLon.rawValue)
         wrapper.remove(forKey: UserDefaultsWrapper.Key.startAddress.rawValue)
+        wrapper.remove(forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
     }
     
     func requestPermissionAndStartTracking() {
@@ -149,6 +157,59 @@ final class MainViewModel: BaseViewModel {
     }
 }
 
+// MARK: - Alarm
+extension MainViewModel {
+    private func checkAlarmTime() {
+        let wrapper = UserDefaultsWrapper.shared
+        if let departureTime: String = wrapper.string(forKey: UserDefaultsWrapper.Key.departureTime.rawValue) {
+            if !checkFutureTimeOver(dateString: departureTime) {
+                let diContainer = LockScreenDIContainer()
+                let vm = diContainer.makeLockScreenViewModel()
+                let vc = diContainer.makeLockScreenViewController(viewModel: vm)
+                vc.modalPresentationStyle = .overFullScreen
+                print("과거")
+                showLockView = true
+                stopAlarmTimer()
+            } else {
+                print("미래")
+            }
+        } else {
+            print("값 없음")
+        }
+    }
+    
+    private func checkFutureTimeOver(dateString: String) -> Bool {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        formatter.timeZone = .current
+        
+        guard let inputDate = formatter.date(from: dateString) else {
+            print("날짜 파싱 실패")
+            return false
+        }
+        
+        let currentDate = Date()
+        let timeInterval = inputDate.timeIntervalSince(currentDate)
+        let isFuture = timeInterval > 0
+        
+        return isFuture
+    }
+    
+    func startAlarmTimer() {
+        alarmTimerCancellable = Timer
+            .publish(every: 5.0, on: .main, in: .common)
+            .autoconnect()
+            .sink { [weak self] _ in
+                self?.checkAlarmTime()
+            }
+    }
+    
+    private func stopAlarmTimer() {
+        alarmTimerCancellable?.cancel()
+        alarmTimerCancellable = nil
+    }
+}
+
 // MARK: - Router
 extension MainViewModel {
     func handleRoute(route: MainRoute) {
@@ -196,8 +257,8 @@ extension MainViewModel {
             let request = FetchTaxiFareRequest(
                 originLat: info?.lat,
                 originLon: info?.lon,
-                destinationLat: UserDefaultsWrapper().double(forKey: UserDefaultsWrapper.Key.homeLat.rawValue),
-                destinationLon: UserDefaultsWrapper().double(forKey: UserDefaultsWrapper.Key.homeLon.rawValue)
+                destinationLat: UserDefaultsWrapper.shared.double(forKey: UserDefaultsWrapper.Key.homeLat.rawValue),
+                destinationLon: UserDefaultsWrapper.shared.double(forKey: UserDefaultsWrapper.Key.homeLon.rawValue)
             )
             
             taxiFare = try? await fetchTaxiFare(request: request)

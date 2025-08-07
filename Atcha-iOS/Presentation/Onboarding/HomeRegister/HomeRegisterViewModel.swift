@@ -54,7 +54,7 @@ final class HomeRegisterViewModel: BaseViewModel {
             self.selectedState = .selected(name: name, address: address)
         } else {
             // fallback: UserDefaults에서 불러오기
-            let defaults = UserDefaultsWrapper()
+            let defaults = UserDefaultsWrapper.shared
             if let lat = defaults.double(forKey: UserDefaultsWrapper.Key.homeLat.rawValue),
                let lon = defaults.double(forKey: UserDefaultsWrapper.Key.homeLon.rawValue) {
                 Task {

@@ -114,15 +114,15 @@ final class HomeFindViewModel: BaseViewModel {
                 let response = try await homePatchUseCase.homePatch(request)
                 
                 if let lat = response.lat {
-                    UserDefaultsWrapper().set(lat, forKey: UserDefaultsWrapper.Key.homeLat.rawValue)
+                    UserDefaultsWrapper.shared.set(lat, forKey: UserDefaultsWrapper.Key.homeLat.rawValue)
                 }
                 if let lon = response.lon {
-                    UserDefaultsWrapper().set(lon, forKey: UserDefaultsWrapper.Key.homeLon.rawValue)
+                    UserDefaultsWrapper.shared.set(lon, forKey: UserDefaultsWrapper.Key.homeLon.rawValue)
                 }
                 if let addr = response.address {
-                    UserDefaultsWrapper().set(addr, forKey: UserDefaultsWrapper.Key.homeAddress.rawValue)
+                    UserDefaultsWrapper.shared.set(addr, forKey: UserDefaultsWrapper.Key.homeAddress.rawValue)
                 }
-                UserDefaultsWrapper().set(self.buildingName, forKey: UserDefaultsWrapper.Key.buildingName.rawValue)
+                UserDefaultsWrapper.shared.set(self.buildingName, forKey: UserDefaultsWrapper.Key.buildingName.rawValue)
                 
                 if let lat = response.lat,
                    let lon = response.lon {

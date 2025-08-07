@@ -235,7 +235,13 @@ extension LastTrainRealTimeBottomView {
             
             minuteTimeLabel.attributedText = AtchaFont.D2_EB_48("\(minutes)", color: .widearea)
             secondTimeLabel.attributedText = AtchaFont.D2_EB_48("\(seconds)", color: .widearea)
-            startCountdownWithCombine(minutes: minutes, seconds: seconds)
+            
+            if minutes > 0 || seconds > 0 {
+                startCountdownWithCombine(minutes: minutes, seconds: seconds)
+            } else {
+                cancelTimer()
+                actionPublisher.send(.finishAlarm)
+            }
         }
     }
     

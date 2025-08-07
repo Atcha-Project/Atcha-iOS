@@ -41,6 +41,7 @@ final class MainCoordinator {
             guard let _ = self else { return }
             viewModel.bottomType = .departure
             viewModel.drawRoute(address: address, info: info)
+            viewModel.startAlarmTimer()
         }
         let viewController = diContainer.makeMainViewController(viewModel: viewModel)
         navigationController.pushViewController(viewController, animated: false)

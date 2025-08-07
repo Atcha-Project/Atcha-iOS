@@ -62,8 +62,8 @@ extension LoginViewModel {
                 
                 if let lat = response.latitude,
                    let lon = response.longitude {
-                    UserDefaultsWrapper().set(lat, forKey: UserDefaultsWrapper.Key.homeLat.rawValue)
-                    UserDefaultsWrapper().set(lon, forKey: UserDefaultsWrapper.Key.homeLon.rawValue)
+                    UserDefaultsWrapper.shared.set(lat, forKey: UserDefaultsWrapper.Key.homeLat.rawValue)
+                    UserDefaultsWrapper.shared.set(lon, forKey: UserDefaultsWrapper.Key.homeLon.rawValue)
                 }
                 
                 print("로그인 완료")
@@ -78,8 +78,8 @@ extension LoginViewModel {
             let request = AuthCheckRequest(provider: provider.rawValue, accessToken: token)
             let result = try await loginUseCase.checkRegistration(request)
             
-            UserDefaultsWrapper().set(token, forKey: UserDefaultsWrapper.Key.providerToken.rawValue)
-            UserDefaultsWrapper().set(provider.rawValue, forKey: UserDefaultsWrapper.Key.provider.rawValue)
+            UserDefaultsWrapper.shared.set(token, forKey: UserDefaultsWrapper.Key.providerToken.rawValue)
+            UserDefaultsWrapper.shared.set(provider.rawValue, forKey: UserDefaultsWrapper.Key.provider.rawValue)
             
             switch result {
             case .registered:
