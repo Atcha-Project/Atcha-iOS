@@ -20,6 +20,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
     private let lastTrainSearchView: LastTrainSearchBottomView = LastTrainSearchBottomView() // 알람 등록 전
     private let lastTrainDepartView: LastTrainDepartBottomView = LastTrainDepartBottomView() // 알람 등록 이후
     private let lastTrainRealTimeView: LastTrainRealTimeBottomView = LastTrainRealTimeBottomView() // 알람 등록 이후, 시간 지남
+    private let lastTrainArrivalView: LastTrainArrivalBottomView = LastTrainArrivalBottomView() // 알람 등록 이후, 시간 지남
     
     private let flagImageView: UIImageView = UIImageView()
     private let myPageButton: UIButton = UIButton()
@@ -164,7 +165,7 @@ extension MainViewController {
         case .exitTapped: exitButtonTapped()
         case .detailRoadMapTapped: viewModel.handleRoute(route: .detailRoute(address: "",
                                                                              infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: [])))
-        case .finishAlarm: setupBottomType(.departure)
+        case .finishAlarm: setupBottomType(.finish)
         }
     }
     
@@ -244,6 +245,7 @@ extension MainViewController {
             .receive(on: RunLoop.main)
             .sink { [weak self] desc in
                 self?.lastTrainDepartView.setupLoaction(location: desc)
+                self?.lastTrainArrivalView.setupLoaction(location: desc)
                 self?.lastTrainRealTimeView.setupLoaction(location: desc)
             }
             .store(in: &cancellables)
@@ -283,27 +285,37 @@ extension MainViewController {
     }
     
     private func setupBottomType(_ type: MapBottomType) {
+        lastTrainRealTimeView.isHidden = true
+        flagImageView.isHidden = true
+        lastTrainSearchView.isHidden = true
+        lastTrainDepartView.isHidden = true
+        lastTrainArrivalView.isHidden = true
+        
         switch type {
         case .realTime:
             lastTrainRealTimeView.isHidden = false
-            flagImageView.isHidden = true
-            lastTrainSearchView.isHidden = true
-            lastTrainDepartView.isHidden = true
+//            flagImageView.isHidden = true
+//            lastTrainSearchView.isHidden = true
+//            lastTrainDepartView.isHidden = true
+//            lastTrainArrivalView.isHidden = true
         case .departure:
             lastTrainDepartView.isHidden = false
-            flagImageView.isHidden = true
-            lastTrainSearchView.isHidden = true
-            lastTrainRealTimeView.isHidden = true
+//            flagImageView.isHidden = true
+//            lastTrainSearchView.isHidden = true
+//            lastTrainRealTimeView.isHidden = true
+//            lastTrainArrivalView.isHidden = true
         case .search:
             lastTrainSearchView.isHidden = false
             flagImageView.isHidden = false
-            lastTrainDepartView.isHidden = true
-            lastTrainRealTimeView.isHidden = true
+//            lastTrainDepartView.isHidden = true
+//            lastTrainRealTimeView.isHidden = true
+//            lastTrainArrivalView.isHidden = true
         case .finish:
-            lastTrainRealTimeView.isHidden = false
-            flagImageView.isHidden = true
-            lastTrainSearchView.isHidden = true
-            lastTrainDepartView.isHidden = true
+//            lastTrainRealTimeView.isHidden = true
+//            flagImageView.isHidden = true
+//            lastTrainSearchView.isHidden = true
+//            lastTrainDepartView.isHidden = true
+            lastTrainArrivalView.isHidden = false
         }
     }
     

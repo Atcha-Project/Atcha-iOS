@@ -249,7 +249,13 @@ extension LastTrainRealTimeBottomView {
         secondTimeLabel.attributedText = AtchaFont.D2_EB_48("\(seconds)",
                                                             color: .widearea)
         
-        startCountdownWithCombine(minutes: minutes, seconds: seconds)
+        if minutes > 0 || seconds > 0 {
+            startCountdownWithCombine(minutes: minutes, seconds: seconds)
+        } else {
+            cancelTimer()
+            actionPublisher.send(.finishAlarm)
+        }
+        
         remainStationLabel.attributedText = AtchaFont.B4_R_15("· \(firstInfo.remainingStations ?? 0)정류장 전", color: .white)
     }
 }
@@ -271,12 +277,13 @@ extension LastTrainRealTimeBottomView {
                 if self.remainingTimeInSeconds == 0 {
                     // 딱 0이 되었을 때 한 번만 refresh
                     self.actionPublisher.send(.refreshBusTime)
-                } else if self.remainingTimeInSeconds < 0 {
-                    // 0 이후 계속해서 finishAlarm 전송
-                    self.actionPublisher.send(.finishAlarm)
-                    cancelCountdownTimer()
-                    return // 더 이상 UI 업데이트 필요 없음
                 }
+//                else if self.remainingTimeInSeconds < 0 {
+//                    // 0 이후 계속해서 finishAlarm 전송
+//                    self.actionPublisher.send(.finishAlarm)
+//                    cancelCountdownTimer()
+//                    return // 더 이상 UI 업데이트 필요 없음
+//                }
 
                 if self.remainingTimeInSeconds <= 60 && self.remainingTimeInSeconds > 0 {
                     self.minuteLabel.isHidden = true
@@ -300,9 +307,12 @@ extension LastTrainRealTimeBottomView {
                                                             color: .widearea)
     }
     
-    private func cancelCountdownTimer() {
+    private func cancelTimer() {
         countdownCancellable?.cancel()
         countdownCancellable = nil
+        
+        busRefreshCancellable?.cancel()
+        busRefreshCancellable = nil
     }
     
     private func startBusAutoRefresh() {
