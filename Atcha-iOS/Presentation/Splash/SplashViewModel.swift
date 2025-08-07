@@ -50,7 +50,7 @@ final class SplashViewModel: BaseViewModel {
         let wrapper = UserDefaultsWrapper()
         if let legInfo: LegInfo = wrapper.object(forKey: UserDefaultsWrapper.Key.legInfo.rawValue, of: LegInfo.self),
            let address: String = wrapper.string(forKey: UserDefaultsWrapper.Key.addressDesc.rawValue) {
-            if checkFutureTimeOver(dateString: legInfo.trafficInfo.first?.departureDateTime ?? "")?.0 == true {
+            if checkFutureTimeOver(dateString: legInfo.trafficInfo.first?.departureDateTime ?? "")?.0 == false {
                 routerHandler?(.alarm(info: legInfo, address: address))
             } else {
                 routerHandler?(.lockScreen(info: legInfo, address: address))

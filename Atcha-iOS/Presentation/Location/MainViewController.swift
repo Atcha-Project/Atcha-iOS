@@ -164,7 +164,7 @@ extension MainViewController {
         case .exitTapped: exitButtonTapped()
         case .detailRoadMapTapped: viewModel.handleRoute(route: .detailRoute(address: "",
                                                                              infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: [])))
-        default: print("action")
+        case .finishAlarm: setupBottomType(.departure)
         }
     }
     

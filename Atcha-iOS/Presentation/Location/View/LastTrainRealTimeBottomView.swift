@@ -235,73 +235,56 @@ extension LastTrainRealTimeBottomView {
             
             minuteTimeLabel.attributedText = AtchaFont.D2_EB_48("\(minutes)", color: .widearea)
             secondTimeLabel.attributedText = AtchaFont.D2_EB_48("\(seconds)", color: .widearea)
-            //            reloadImageView.isHidden = true
             startCountdownWithCombine(minutes: minutes, seconds: seconds)
         }
     }
     
     func setupBusRealTime(realTime: BusRealTimeInfo?) {
         guard let realTime, let firstInfo = realTime.realTimeBusArrival?.first else { return }
-        
-        let time = firstInfo.remainingTime?.toHourMinuteStringFromSeconds
-        let result = extractMinuteSecond(from: time)
-        minuteTimeLabel.attributedText = AtchaFont.D2_EB_48("\(result.0)",
+        let time = firstInfo.remainingTime ?? 60
+        let minutes = time / 60
+        let seconds = time % 60
+        minuteTimeLabel.attributedText = AtchaFont.D2_EB_48("\(minutes)",
                                                             color: .widearea)
-        secondTimeLabel.attributedText = AtchaFont.D2_EB_48("\(result.1)",
+        secondTimeLabel.attributedText = AtchaFont.D2_EB_48("\(seconds)",
                                                             color: .widearea)
         
-        startCountdownWithCombine(minutes: result.0, seconds: result.1)
+        startCountdownWithCombine(minutes: minutes, seconds: seconds)
         remainStationLabel.attributedText = AtchaFont.B4_R_15("· \(firstInfo.remainingStations ?? 0)정류장 전", color: .white)
-    }
-    
-    private func extractMinuteSecond(from timeText: String?) -> (minute: Int, second: Int) {
-        guard let timeText else { return (0, 0) }
-        let regex = try! NSRegularExpression(pattern: "\\d+")
-        let matches = regex.matches(in: timeText, range: NSRange(timeText.startIndex..., in: timeText))
-        
-        let numbers = matches.map {
-            Int((timeText as NSString).substring(with: $0.range)) ?? 0
-        }
-        
-        let minute = numbers.count > 0 ? numbers[0] : 0
-        let second = numbers.count > 1 ? numbers[1] : 0
-        
-        print("minute : \(minute), second : \(second)")
-        
-        return (minute, second)
     }
 }
 
 extension LastTrainRealTimeBottomView {
     private func startCountdownWithCombine(minutes: Int, seconds: Int) {
-        countdownCancellable?.cancel() // 기존 구독 해제
+        countdownCancellable?.cancel()
         remainingTimeInSeconds = minutes * 60 + seconds
         updateCountdownLabels()
-        
-        print("remainingTimeInSeconds : \(remainingTimeInSeconds)")
-        
-        self.minuteLabel.isHidden = false
-        self.minuteTimeLabel.isHidden = false
-        self.secondLabel.isHidden = false
-        self.secondTimeLabel.isHidden = false
-        self.alreadySoonLabel.isHidden = true
         
         countdownCancellable = Timer
             .publish(every: 1.0, on: .main, in: .common)
             .autoconnect()
             .sink { [weak self] _ in
                 guard let self = self else { return }
-                
+
                 self.remainingTimeInSeconds -= 1
-                
-                if self.remainingTimeInSeconds <= 60 {
-                    self.countdownCancellable?.cancel()
+
+                if self.remainingTimeInSeconds == 0 {
+                    // 딱 0이 되었을 때 한 번만 refresh
+                    self.actionPublisher.send(.refreshBusTime)
+                } else if self.remainingTimeInSeconds < 0 {
+                    // 0 이후 계속해서 finishAlarm 전송
+                    self.actionPublisher.send(.finishAlarm)
+                    cancelCountdownTimer()
+                    return // 더 이상 UI 업데이트 필요 없음
+                }
+
+                if self.remainingTimeInSeconds <= 60 && self.remainingTimeInSeconds > 0 {
                     self.minuteLabel.isHidden = true
                     self.minuteTimeLabel.isHidden = true
                     self.secondLabel.isHidden = true
                     self.secondTimeLabel.isHidden = true
                     self.alreadySoonLabel.isHidden = false
-                } else {
+                } else if self.remainingTimeInSeconds > 0 {
                     self.updateCountdownLabels()
                 }
             }
