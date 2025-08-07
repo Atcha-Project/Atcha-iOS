@@ -149,52 +149,6 @@ final class MainViewModel: BaseViewModel {
     }
 }
 
-// MARK: - Last Train
-extension MainViewModel {
-    //    func getRemainTimeInfo(info: LegInfo) {
-    //        if let firstNonWalkMode = info.pathInfo.first(where: { $0.mode != .walk }) {
-    //            print("최초의 walk 제외 mode: \(firstNonWalkMode.mode?.rawValue ?? "없음")")
-    //
-    //            switch firstNonWalkMode.mode {
-    //            case .bus:
-    //                let busDetailInfo = info.busInfo.filter { $0.routeName?.isEmpty == false }
-    //                if let firstValidInfo = busDetailInfo.first(where: { $0.routeName != nil }) {
-    //                    let request = BusRealTimeInfoRequest(
-    //                        routeName: firstValidInfo.routeName,
-    //                        stationName: firstValidInfo.start?.name,
-    //                        lat: firstValidInfo.start?.lat,
-    //                        lon: firstValidInfo.start?.lon,
-    //                        passStations: firstValidInfo.passStations
-    //                    )
-    //                }
-    //            case .subway:
-    //                if let departureString = firstNonWalkMode.departureDateTime {
-    //                    let formatter = DateFormatter()
-    //                    formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-    //                    formatter.timeZone = .current
-    //
-    //                    if let departureDate = formatter.date(from: departureString) {
-    //                        let now = Date()
-    //                        let interval = departureDate.timeIntervalSince(now) // 초 단위
-    //
-    //                        let minutes = Int(interval / 60)
-    //                        let seconds = Int(interval.truncatingRemainder(dividingBy: 60))
-    //
-    //                        //                        firstNonWalkMode.mode?.getIcon(for: firstNonWalkMode.type ?? "")
-    //                        print("몇 호선 이야 : \(firstNonWalkMode.type)")
-    //                        print("출발까지 남은 시간: \(minutes)분 \(seconds)초")
-    //
-    //
-    //                    } else {
-    //                        print("❌ 날짜 변환 실패: \(departureString)")
-    //                    }
-    //                }
-    //            default: print("걷기만 해서 집에갈 수 있어!?")
-    //            }
-    //        }
-    //    }
-}
-
 // MARK: - Router
 extension MainViewModel {
     func handleRoute(route: MainRoute) {
@@ -268,11 +222,3 @@ extension MainViewModel {
         return try await busInfoUseCase.busRealTimeInfo(request)
     }
 }
-
-//                  = LastTrainInfo(name: response.routeName,
-//                                              time: response.realTimeBusArrival?.first?.remainingTime?.toHourMinuteSecondString,
-//                                              icon: ,
-//                                              remainingSeat: response.realTimeBusArrival?.first?.remainingStations)
-//                print("버스 번호 : \(response.routeName)")
-//                print("버스 남은 시간 : \(response.realTimeBusArrival?.first?.remainingTime?.toHourMinuteSecondString)")
-//                print("버스 남은 좌석 : \(response.realTimeBusArrival?.first?.remainingStations)")

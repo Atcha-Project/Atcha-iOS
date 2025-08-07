@@ -313,27 +313,12 @@ extension MainViewController {
         switch type {
         case .realTime:
             lastTrainRealTimeView.isHidden = false
-//            flagImageView.isHidden = true
-//            lastTrainSearchView.isHidden = true
-//            lastTrainDepartView.isHidden = true
-//            lastTrainArrivalView.isHidden = true
         case .departure:
             lastTrainDepartView.isHidden = false
-//            flagImageView.isHidden = true
-//            lastTrainSearchView.isHidden = true
-//            lastTrainRealTimeView.isHidden = true
-//            lastTrainArrivalView.isHidden = true
         case .search:
             lastTrainSearchView.isHidden = false
             flagImageView.isHidden = false
-//            lastTrainDepartView.isHidden = true
-//            lastTrainRealTimeView.isHidden = true
-//            lastTrainArrivalView.isHidden = true
         case .finish:
-//            lastTrainRealTimeView.isHidden = true
-//            flagImageView.isHidden = true
-//            lastTrainSearchView.isHidden = true
-//            lastTrainDepartView.isHidden = true
             lastTrainArrivalView.isHidden = false
         }
     }
