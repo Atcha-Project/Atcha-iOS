@@ -26,10 +26,12 @@ final class MainCoordinator {
     }
     
     func start(info: LegInfo? = nil,
-               address: String? = nil) {
+               address: String? = nil,
+               bottomType: MapBottomType = .search) {
         let viewModel = diContainer.makeMainiewModel()
         self.mainViewModel = viewModel
-//        viewModel.drawRoute(address: address, infos: info)
+        
+        viewModel.bottomType = bottomType
         
         viewModel.routeHandler = { [weak self] route in
             guard let self else { return }
@@ -37,6 +39,7 @@ final class MainCoordinator {
         }
         viewModel.courseSearchResultHandler = { [weak self] address, info in
             guard let _ = self else { return }
+            viewModel.bottomType = .departure
             viewModel.drawRoute(address: address, info: info)
         }
         let viewController = diContainer.makeMainViewController(viewModel: viewModel)

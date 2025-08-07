@@ -8,7 +8,8 @@
 import Foundation
 
 enum MapBottomType {
-    case register
-    case address
-    case timer
+    case search
+    case departure
+    case realTime
+    case finish
 }

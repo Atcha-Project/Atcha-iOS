@@ -39,7 +39,7 @@ class AppFlowCoordinator {
             case .onboarding:
                 showOnboardingFlow()
             case .alarm(let info, let address):
-                showMainFlow(info: info, address: address)
+                showMainFlow(info: info, address: address, bottomType: .departure)
             case .lockScreen(let info, let address):
                 showLockScreenFlow(info: info, address: address)
             case .detailRoute(let lat, let lon, let address):
@@ -51,7 +51,8 @@ class AppFlowCoordinator {
     }
     
     private func showMainFlow(info: LegInfo? = nil,
-                              address: String? = nil) {
+                              address: String? = nil,
+                              bottomType: MapBottomType = .search) {
         let navigationController = UINavigationController()
         window.rootViewController = navigationController
         mainCoordinator = container.makeMainCoordinator(navigationController: navigationController)
@@ -60,7 +61,7 @@ class AppFlowCoordinator {
                 self?.showLoginFlow()
             }
         }
-        mainCoordinator?.start(info: info, address: address)
+        mainCoordinator?.start(info: info, address: address, bottomType: bottomType)
     }
     
     private func showLockScreenFlow(info: LegInfo? = nil,
@@ -72,7 +73,7 @@ class AppFlowCoordinator {
         lockScreenCoordinator.routerHandler = { [weak self] router in
             DispatchQueue.main.async {
                 // TODO: Router에 따라 값 분기 하기
-                self?.showMainFlow(info: info, address: address)
+                self?.showMainFlow(info: info, address: address, bottomType: .realTime)
             }
         }
         lockScreenCoordinator.start()

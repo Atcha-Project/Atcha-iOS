@@ -1,18 +1,15 @@
 //
-//  LastTrainDepartBottomView.swift
+//  LastTrainArrivalBottomView.swift
 //  Atcha-iOS
 //
-//  Created by geonhui Yu on 7/27/25.
+//  Created by geonhui Yu on 8/7/25.
 //
 
 import UIKit
 import Combine
 
-final class LastTrainDepartBottomView: UIView {
+final class LastTrainArrivalBottomView: UIView {
     enum Action {
-        case reloadTapped
-        case timeTapped
-        case locationTapped
         case detailRoadMapTapped
         case exitTapped
     }
@@ -21,8 +18,6 @@ final class LastTrainDepartBottomView: UIView {
     
     private let titleView: UIView = UIView()
     private let trainTimeLabel: UILabel = UILabel()
-    private let trainRigtImageView: UIImageView = UIImageView()
-    private let reloadImageView: UIImageView = UIImageView()
     
     private let timeView: UIView = UIView()
     private let hourTimeLabel: UILabel = UILabel()
@@ -66,19 +61,11 @@ final class LastTrainDepartBottomView: UIView {
     private func setupUI() {
         backgroundColor = .gray950
         layer.cornerRadius = 20
-        titleView.addSubViews(trainTimeLabel, trainRigtImageView, reloadImageView)
+        titleView.addSubViews(trainTimeLabel)
         timeView.addSubViews(hourLabel, hourTimeLabel, miniuteLabel, minuteTimeLabel)
         addSubViews(titleView, timeView, locationLabel, buttonStackView)
         
-        trainTimeLabel.attributedText = AtchaFont.B4_R_15("출발시간", color: .white)
-        trainRigtImageView.image = UIImage.infoOutlined
-        trainRigtImageView.contentMode = .scaleAspectFit
-        trainRigtImageView.tintColor = .gray500
-        
-        reloadImageView.image = UIImage.refreshOutlined
-        reloadImageView.contentMode = .scaleAspectFit
-        reloadImageView.tintColor = .white
-        reloadImageView.setContentHuggingPriority(.required, for: .horizontal)
+        trainTimeLabel.attributedText = AtchaFont.B4_R_15("우리집 도착시간", color: .white)
         
         hourLabel.attributedText = AtchaFont.B1_R_17("시", color: .white)
         miniuteLabel.attributedText = AtchaFont.B1_R_17("분", color: .white)
@@ -101,18 +88,6 @@ final class LastTrainDepartBottomView: UIView {
         trainTimeLabel.snp.makeConstraints { make in
             make.centerY.equalToSuperview()
             make.leading.equalToSuperview()
-        }
-        
-        trainRigtImageView.snp.makeConstraints { make in
-            make.centerY.equalToSuperview()
-            make.leading.equalTo(trainTimeLabel.snp.trailing).offset(6)
-            make.size.equalTo(14)
-        }
-        
-        reloadImageView.snp.makeConstraints { make in
-            make.centerY.equalToSuperview()
-            make.trailing.equalToSuperview()
-            make.size.equalTo(28)
         }
         
         timeView.snp.makeConstraints { make in
@@ -159,12 +134,6 @@ final class LastTrainDepartBottomView: UIView {
     private func setupActions() {
         exitButton.addTarget(self, action: #selector(handleExitTapped), for: .touchUpInside)
         detailRoadMapButton.addTarget(self, action: #selector(handleDetailRoadTapped), for: .touchUpInside)
-        reloadImageView.isUserInteractionEnabled = true
-        reloadImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleReloadTapped)))
-        hourTimeLabel.isUserInteractionEnabled = true
-        hourTimeLabel.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleTimeTapped)))
-        locationLabel.isUserInteractionEnabled = true
-        locationLabel.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleLocationTapped)))
     }
     
     func setupLoaction(location: String?) {
@@ -175,25 +144,49 @@ final class LastTrainDepartBottomView: UIView {
 }
 
 // MARK: Binding Leg Info
-extension LastTrainDepartBottomView {
+extension LastTrainArrivalBottomView {
     func setupLegInfo(info: LegInfo) {
-        guard let departureStr = info.pathInfo.first?.departureDateTime else { return }
+        guard let departureStr = info.pathInfo.first?.departureDateTime,
+              let totalTime = info.trafficInfo.first?.totalTime else { return }
+        
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
         formatter.locale = .current
         
-        if let _ = formatter.date(from: departureStr) {
-            if let (hour, minute) = departureStr.toHourMinute() {
-                hourTimeLabel.attributedText = AtchaFont.D2_EB_48(hour, color: .white)
-                minuteTimeLabel.attributedText = AtchaFont.D2_EB_48(minute, color: .white)
-            }
-            
-            
+        guard let departureDate = formatter.date(from: departureStr) else { return }
+        
+        let minutes = parseTotalTimeToMinutes(totalTime)
+        
+        guard let arrivalDate = Calendar.current.date(byAdding: .minute, value: minutes, to: departureDate) else { return }
+        
+        let hour = Calendar.current.component(.hour, from: arrivalDate)
+        let minute = Calendar.current.component(.minute, from: arrivalDate)
+        
+        let hourText = String(format: "%02d", hour)
+        let minuteText = String(format: "%02d", minute)
+        
+        hourTimeLabel.attributedText = AtchaFont.D2_EB_48(hourText, color: .white)
+        minuteTimeLabel.attributedText = AtchaFont.D2_EB_48(minuteText, color: .white)
+    }
+    
+    private func parseTotalTimeToMinutes(_ time: String) -> Int {
+        var totalMinutes = 0
+        
+        if let hourMatch = time.range(of: "\\d+(?=시간)", options: .regularExpression),
+           let hour = Int(time[hourMatch]) {
+            totalMinutes += hour * 60
         }
+        
+        if let minuteMatch = time.range(of: "\\d+(?=분)", options: .regularExpression),
+           let minute = Int(time[minuteMatch]) {
+            totalMinutes += minute
+        }
+        
+        return totalMinutes
     }
 }
 
-extension LastTrainDepartBottomView {
+extension LastTrainArrivalBottomView {
     @objc private func handleExitTapped() {
         actionPublisher.send(.exitTapped)
     }
@@ -201,17 +194,4 @@ extension LastTrainDepartBottomView {
     @objc private func handleDetailRoadTapped() {
         actionPublisher.send(.detailRoadMapTapped)
     }
-    
-    @objc private func handleReloadTapped() {
-        actionPublisher.send(.reloadTapped)
-    }
-    
-    @objc private func handleTimeTapped() {
-        actionPublisher.send(.timeTapped)
-    }
-    
-    @objc private func handleLocationTapped() {
-        actionPublisher.send(.locationTapped)
-    }
 }
-
