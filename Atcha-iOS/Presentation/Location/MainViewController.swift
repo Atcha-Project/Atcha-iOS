@@ -212,6 +212,7 @@ extension MainViewController {
         flagImageView.isHidden = false
         lastTrainDepartView.isHidden = true
         lastTrainRealTimeView.isHidden = true
+        lastTrainArrivalView.isHidden = true
         updateAtchaImageConstraint(relativeTo: lastTrainSearchView)
         mapContainerView.clearMapView()
         

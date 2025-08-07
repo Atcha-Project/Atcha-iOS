@@ -50,7 +50,12 @@ final class SplashViewModel: BaseViewModel {
         let wrapper = UserDefaultsWrapper()
         if let legInfo: LegInfo = wrapper.object(forKey: UserDefaultsWrapper.Key.legInfo.rawValue, of: LegInfo.self),
            let address: String = wrapper.string(forKey: UserDefaultsWrapper.Key.addressDesc.rawValue) {
-            if checkFutureTimeOver(dateString: legInfo.trafficInfo.first?.departureDateTime ?? "")?.0 == false {
+            
+            // 앱 종료 이후, 재 실행 시 알람 재등록
+            guard let time = legInfo.pathInfo.first?.departureDateTime else { return }
+            AlarmManager.shared.startAlarm(after: time, title: "집에 가자", body: "집에 가자")
+            
+            if checkFutureTimeOver(dateString: legInfo.trafficInfo.first?.departureDateTime ?? "")?.0 == true {
                 routerHandler?(.alarm(info: legInfo, address: address))
             } else {
                 routerHandler?(.lockScreen(info: legInfo, address: address))
