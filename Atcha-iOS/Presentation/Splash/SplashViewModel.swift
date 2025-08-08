@@ -66,6 +66,11 @@ final class SplashViewModel: BaseViewModel {
                     routerHandler?(.realTime(info: legInfo, address: address))
                 } else {
                     
+                    if let _ = wrapper.object(forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue, of: Date.self) {
+                        routerHandler?(.finishTime(info: legInfo, address: address))
+                        return
+                    }
+                    
                     // 현재 시간 - 알람 시간 2분 이내에 진입 한 경우 (time이랑 Date() 차이가 2분)
                     if isMoreThanTwoMinutes(from: time) {
                         routerHandler?(.main) // 진입 이후, 알람 팝업
@@ -74,7 +79,6 @@ final class SplashViewModel: BaseViewModel {
                     }
                 }
             }
-            
             return
         }
         

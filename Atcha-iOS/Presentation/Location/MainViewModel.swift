@@ -93,6 +93,7 @@ final class MainViewModel: BaseViewModel {
         wrapper.remove(forKey: UserDefaultsWrapper.Key.startAddress.rawValue)
         wrapper.remove(forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
         wrapper.remove(forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue)
+        wrapper.remove(forKey: UserDefaultsWrapper.Key.trainRealTime.rawValue)
     }
     
     func requestPermissionAndStartTracking() {
@@ -208,14 +209,14 @@ extension MainViewModel {
             .autoconnect()
             .sink { [weak self] _ in
                 guard let self else { return }
-                if let departureTime = UserDefaultsWrapper.shared.object(
+                if let arrivalTime = UserDefaultsWrapper.shared.object(
                     forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue,
                     of: Date.self
                 ) {
                     let now = Date()
-                    let thirtyMinutesLater = departureTime.addingTimeInterval(30 * 60) // 30분 후
+                    let thirtyMinutesLater = arrivalTime.addingTimeInterval(30 * 60) // 30분 후
                     
-                    print("departure Time : \(departureTime)")
+                    print("departure Time : \(arrivalTime)")
                     print("30분 후 시각 : \(thirtyMinutesLater)")
                     
                     if now >= thirtyMinutesLater {

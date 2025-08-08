@@ -186,7 +186,7 @@ extension MainViewController {
         case .exitTapped: exitButtonTapped()
         case .detailRoadMapTapped: viewModel.handleRoute(route: .detailRoute(address: "",
                                                                              infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: [])))
-        case .finishAlarm: setupBottomType(.finish)
+        case .finishAlarm: viewModel.bottomType = .finish
         }
     }
     
@@ -299,14 +299,8 @@ extension MainViewController {
                     self?.lastTrainArrivalView.setupLegInfo(info: info)
                 default: do {}
                 }
-            }
-            .store(in: &cancellables)
-        
-        viewModel.$bottomType
-            .compactMap { $0 }
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] type in
-                self?.setupBottomType(type)
+                
+                self?.setupBottomType(bottomType)
             }
             .store(in: &cancellables)
         
@@ -323,7 +317,7 @@ extension MainViewController {
         updateAtchaImageConstraint(relativeTo: lastTrainDepartView)
     }
     
-    private func setupBottomType(_ type: MapBottomType) {
+    private func setupBottomType(_ type: MapBottomType?) {
         lastTrainRealTimeView.isHidden = true
         flagImageView.isHidden = true
         lastTrainSearchView.isHidden = true
@@ -343,6 +337,7 @@ extension MainViewController {
         case .finish:
             lastTrainArrivalView.isHidden = false
             viewModel.endAlarmTimer()
+        default: do {}
         }
     }
     

@@ -99,6 +99,8 @@ final class LastTrainRealTimeBottomView: UIView {
         alreadySoonLabel.isHidden = true
         alreadySoonLabel.attributedText = AtchaFont.D2_EB_48("곧 도착", color: .widearea)
         
+        minuteTimeLabel.attributedText = AtchaFont.D2_EB_48("--", color: .widearea)
+        secondTimeLabel.attributedText = AtchaFont.D2_EB_48("--", color: .widearea)
         minuteLabel.attributedText = AtchaFont.B1_R_17("분", color: .widearea)
         secondLabel.attributedText = AtchaFont.B1_R_17("초", color: .widearea)
     }
@@ -278,6 +280,7 @@ extension LastTrainRealTimeBottomView {
         countdownCancellable = Timer
             .publish(every: 1.0, on: .main, in: .common)
             .autoconnect()
+            .print("여기는 시간이 된 경우에만 보여주고 싶어!")
             .sink { [weak self] _ in
                 guard let self = self else { return }
 

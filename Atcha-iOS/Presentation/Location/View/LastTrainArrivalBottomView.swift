@@ -146,6 +146,7 @@ final class LastTrainArrivalBottomView: UIView {
 // MARK: Binding Leg Info
 extension LastTrainArrivalBottomView {
     func setupLegInfo(info: LegInfo) {
+        
         guard let departureStr = info.pathInfo.first?.departureDateTime,
               let totalTime = info.trafficInfo.first?.totalTime else { return }
         
@@ -159,8 +160,7 @@ extension LastTrainArrivalBottomView {
         
         guard let arrivalDate = Calendar.current.date(byAdding: .minute, value: minutes, to: departureDate) else { return }
         
-        UserDefaultsWrapper.shared.set(arrivalDate,
-                                       forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue)
+        UserDefaultsWrapper.shared.set(arrivalDate, forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue)
         
         let hour = Calendar.current.component(.hour, from: arrivalDate)
         let minute = Calendar.current.component(.minute, from: arrivalDate)
