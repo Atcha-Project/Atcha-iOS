@@ -42,6 +42,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func sceneDidBecomeActive(_ scene: UIScene) {
         // Called when the scene has moved from an inactive state to an active state.
         // Use this method to restart any tasks that were paused (or not yet started) when the scene was inactive.
+        print("앱 진입 완료 !!")
     }
     
     func sceneWillResignActive(_ scene: UIScene) {
@@ -58,8 +59,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Called as the scene transitions from the foreground to the background.
         // Use this method to save data, release shared resources, and store enough scene-specific state information
         // to restore the scene back to its current state.
+        AlarmManager.shared.sendBackgroundPush(title: "앗차를 다시 켜주세요",
+                                          body: "제 시간에 출발 시간을 알려드릴 수 있도록 앱을 다시 실행해 주세요.")
+        
     }
-    
-    
 }
 

@@ -215,16 +215,12 @@ extension MainViewController {
     }
     
     private func exitButtonTapped() {
-        viewModel.requestPermissionAndStartTracking()
-        viewModel.removeLegInfoAndAddress()
         AlarmManager.shared.stopAlarm()
         
-        lastTrainSearchView.isHidden = false
-        flagImageView.isHidden = false
-        lastTrainDepartView.isHidden = true
-        lastTrainRealTimeView.isHidden = true
-        lastTrainArrivalView.isHidden = true
-        updateAtchaImageConstraint(relativeTo: lastTrainSearchView)
+        viewModel.requestPermissionAndStartTracking()
+        viewModel.removeLegInfoAndAddress()
+        viewModel.bottomType = .search
+        
         mapContainerView.clearMapView()
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
@@ -304,6 +300,7 @@ extension MainViewController {
             .store(in: &cancellables)
         
         viewModel.$bottomType
+            .removeDuplicates()
             .receive(on: RunLoop.main)
             .sink { [weak self] type in
                 self?.setupBottomType(type)
@@ -339,7 +336,7 @@ extension MainViewController {
         case .search:
             lastTrainSearchView.isHidden = false
             flagImageView.isHidden = false
-            exitButtonTapped()
+            updateAtchaImageConstraint(relativeTo: lastTrainSearchView)
         case .finish:
             lastTrainArrivalView.isHidden = false
             viewModel.endAlarmTimer()

@@ -33,26 +33,34 @@ class AlarmManager {
         }
     }
     
-    func playLocalMusic(named fileName: String, withExtension fileExtension: String) {
-        guard let url = Bundle.main.url(forResource: fileName, withExtension: fileExtension) else {
-            print("파일을 찾을 수 없습니다.")
-            return
-        }
-        
-        do {
-            audioPlayer = try AVAudioPlayer(contentsOf: url)
-            audioPlayer?.prepareToPlay()
-            audioPlayer?.numberOfLoops = -1
-            audioPlayer?.play()
-            print("🎵 음악 재생 시작: \(fileName).\(fileExtension)")
-        } catch {
-            print("오디오 재생 오류: \(error.localizedDescription)")
+    private func playLocalMusic(named fileName: String, withExtension fileExtension: String) {
+        DispatchQueue.main.async {
+            if let player = self.audioPlayer, player.isPlaying {
+                player.stop()
+            }
+            self.audioPlayer = nil
+            
+            guard let url = Bundle.main.url(forResource: fileName, withExtension: fileExtension) else {
+                print("파일을 찾을 수 없습니다: \(fileName).\(fileExtension)")
+                return
+            }
+            
+            do {
+                let player = try AVAudioPlayer(contentsOf: url)
+                player.numberOfLoops = -1
+                player.prepareToPlay()
+                player.play()
+                self.audioPlayer = player
+                print("🎵 음악 재생 시작(교체됨): \(fileName).\(fileExtension)")
+            } catch {
+                print("오디오 재생 오류: \(error.localizedDescription)")
+            }
         }
     }
     
     func startAlarm(after departureDateTime: String,
-                        title: String,
-                        body: String) {
+                    title: String,
+                    body: String) {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
         formatter.timeZone = .current
@@ -65,7 +73,7 @@ class AlarmManager {
         let delay = targetDate.timeIntervalSinceNow
         if delay <= 0 {
             print("🕒 이미 지난 시간이므로 즉시 시작합니다.")
-//            startRepeatingPush(title: title, body: body)
+            //            startRepeatingPush(title: title, body: body)
         } else {
             print("⌛ \(Int(delay))초 후 푸시 반복 시작")
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
@@ -100,6 +108,27 @@ class AlarmManager {
             identifier: UUID().uuidString,
             content: content,
             trigger: nil
+        )
+        
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("❌ 푸시 전송 실패: \(error.localizedDescription)")
+            } else {
+                print("✅ 푸시 전송됨: \(title) - \(body)")
+            }
+        }
+    }
+    
+    func sendBackgroundPush(title: String, body: String) {
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = body
+        content.sound = .default
+        
+        let request = UNNotificationRequest(
+            identifier: UUID().uuidString,
+            content: content,
+            trigger: UNTimeIntervalNotificationTrigger(timeInterval: 1.0, repeats: false)
         )
         
         UNUserNotificationCenter.current().add(request) { error in
