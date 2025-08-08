@@ -55,7 +55,7 @@ final class SplashViewModel: BaseViewModel {
             guard let time = legInfo.pathInfo.first?.departureDateTime else { return }
             AlarmManager.shared.startAlarm(after: time, title: "집에 가자", body: "집에 가자")
             
-            if checkFutureTimeOver(dateString: legInfo.trafficInfo.first?.departureDateTime ?? "")?.0 == true {
+            if checkFutureTimeOver(dateString: legInfo.trafficInfo.first?.departureDateTime ?? "")?.0 == false {
                 routerHandler?(.alarm(info: legInfo, address: address))
             } else {
                 routerHandler?(.lockScreen(info: legInfo, address: address))

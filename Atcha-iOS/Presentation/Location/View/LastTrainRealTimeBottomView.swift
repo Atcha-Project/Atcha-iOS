@@ -193,6 +193,7 @@ final class LastTrainRealTimeBottomView: UIView {
 extension LastTrainRealTimeBottomView {
     func setupLegInfo(info: LegInfo) {
         guard let departureStr = info.pathInfo.first?.departureDateTime else { return }
+        
         if let firstNonWalkMode = info.pathInfo.first(where: { $0.mode != .walk }) {
             switch firstNonWalkMode.mode {
             case .bus:
@@ -280,8 +281,8 @@ extension LastTrainRealTimeBottomView {
 
                 self.remainingTimeInSeconds -= 1
 
+                // 딱 0이 되었을 때 한 번만 refresh
                 if self.remainingTimeInSeconds == 0 {
-                    // 딱 0이 되었을 때 한 번만 refresh
                     self.actionPublisher.send(.refreshBusTime)
                 }
 //                else if self.remainingTimeInSeconds < 0 {

@@ -159,6 +159,9 @@ extension LastTrainArrivalBottomView {
         
         guard let arrivalDate = Calendar.current.date(byAdding: .minute, value: minutes, to: departureDate) else { return }
         
+        UserDefaultsWrapper.shared.set(arrivalDate,
+                                       forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue)
+        
         let hour = Calendar.current.component(.hour, from: arrivalDate)
         let minute = Calendar.current.component(.minute, from: arrivalDate)
         

@@ -327,11 +327,14 @@ extension MainViewController {
             lastTrainRealTimeView.isHidden = false
         case .departure:
             lastTrainDepartView.isHidden = false
+            viewModel.startAlarmTimer()
         case .search:
             lastTrainSearchView.isHidden = false
             flagImageView.isHidden = false
+            exitButtonTapped()
         case .finish:
             lastTrainArrivalView.isHidden = false
+            viewModel.endAlarmTimer()
         }
     }
     
