@@ -48,31 +48,33 @@ final class SplashViewModel: BaseViewModel {
     
     func makeInitialFlow() {
         let wrapper = UserDefaultsWrapper.shared
+        
+        // 막차를 등록한 경우
         if let legInfo: LegInfo = wrapper.object(forKey: UserDefaultsWrapper.Key.legInfo.rawValue, of: LegInfo.self),
            let address: String = wrapper.string(forKey: UserDefaultsWrapper.Key.addressDesc.rawValue) {
+            guard let time = legInfo.pathInfo.first?.departureDateTime else { return } // 막차를 타기위해 출발해야 하는 시간
+            AlarmManager.shared.startAlarm(after: time, title: "눌러서 출발 알람 끄기", body: "자리에서 일언야 할 시간이에요!")
             
-            // 앱 종료 이후, 재 실행 시 알람 재등록
-            guard let time = legInfo.pathInfo.first?.departureDateTime else { return }
-            AlarmManager.shared.startAlarm(after: time, title: "집에 가자", body: "집에 가자")
-            
-            if checkFutureTimeOver(dateString: legInfo.trafficInfo.first?.departureDateTime ?? "") == false {
+            if checkFutureTimeOver(dateString: time) {
+                // 현재 시간 > 알람 시간 -> 알람 화면
                 routerHandler?(.alarm(info: legInfo, address: address))
             } else {
+                // 현재 시간 < 알림 시간
                 
-                if let arrivalTime = UserDefaultsWrapper.shared.object(
-                    forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue,
-                    of: Date.self
-                ) {
-                    // 현재 시간이 arrivalTime 과거 인 경우
-                    routerHandler?(.lockScreen(info: legInfo, address: address))
+                // 만약에 내가 실시간 조회 -> 타이머 시간이 존재하면 !!
+                if let _ = wrapper.integer(forKey: UserDefaultsWrapper.Key.trainRealTime.rawValue) {
+                    routerHandler?(.realTime(info: legInfo, address: address))
+                } else {
                     
-                    // 현재 시간이 arrivalTime 미래 인 경우 (30분 이내)
-                    
-                    // 현재 시간이 arrivalTime 30분이 넘게 지난 경우
+                    // 현재 시간 - 알람 시간 2분 이내에 진입 한 경우 (time이랑 Date() 차이가 2분)
+                    if isMoreThanTwoMinutes(from: time) {
+                        routerHandler?(.main) // 진입 이후, 알람 팝업
+                    } else {
+                        routerHandler?(.lockScreen(info: legInfo, address: address)) // 2분 이내에 재 진입, 잠금화면
+                    }
                 }
-                
-                //                routerHandler?(.lockScreen(info: legInfo, address: address))
             }
+            
             return
         }
         
@@ -99,9 +101,24 @@ final class SplashViewModel: BaseViewModel {
         
         let currentDate = Date()
         let timeInterval = inputDate.timeIntervalSince(currentDate)
-        
         let isFuture = timeInterval > 0
         
         return isFuture
+    }
+    
+    private func isMoreThanTwoMinutes(from dateString: String) -> Bool {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        formatter.timeZone = .current
+        
+        guard let date = formatter.date(from: dateString) else {
+            print("❌ 잘못된 날짜 형식: \(dateString)")
+            return false
+        }
+        
+        let now = Date()
+        let diff = now.timeIntervalSince(date) // 초 단위 차이
+        
+        return diff >= 120 // 120초 = 2분
     }
 }

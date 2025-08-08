@@ -29,4 +29,5 @@ public extension UserDefaultsWrapper.Key {
     static let lastRouteId: UserDefaultsWrapper.Key = "lastRouteId"
     static let departureTime: UserDefaultsWrapper.Key = "departureTime"
     static let arrivalTime: UserDefaultsWrapper.Key = "arrivalTime"
+    static let trainRealTime: UserDefaultsWrapper.Key = "trainRealTime"
 }

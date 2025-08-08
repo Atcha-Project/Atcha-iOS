@@ -92,6 +92,7 @@ final class MainViewModel: BaseViewModel {
         wrapper.remove(forKey: UserDefaultsWrapper.Key.startLon.rawValue)
         wrapper.remove(forKey: UserDefaultsWrapper.Key.startAddress.rawValue)
         wrapper.remove(forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
+        wrapper.remove(forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue)
     }
     
     func requestPermissionAndStartTracking() {

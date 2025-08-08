@@ -42,6 +42,8 @@ class AppFlowCoordinator {
                 showMainFlow(info: info, address: address, bottomType: .departure)
             case .lockScreen(let info, let address):
                 showLockScreenFlow(info: info, address: address)
+            case .realTime(let info, let address):
+                showMainFlow(info: info, address: address, bottomType: .realTime)
             case .detailRoute(let lat, let lon, let address):
                 print("lat : \(lat), lon : \(lon), address : \(address)")
             }

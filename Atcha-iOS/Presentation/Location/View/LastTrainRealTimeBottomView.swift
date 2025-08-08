@@ -241,6 +241,7 @@ extension LastTrainRealTimeBottomView {
                 startCountdownWithCombine(minutes: minutes, seconds: seconds)
             } else {
                 cancelTimer()
+                UserDefaultsWrapper.shared.remove(forKey: UserDefaultsWrapper.Key.trainRealTime.rawValue)
                 actionPublisher.send(.finishAlarm)
             }
         }
@@ -260,6 +261,7 @@ extension LastTrainRealTimeBottomView {
             startCountdownWithCombine(minutes: minutes, seconds: seconds)
         } else {
             cancelTimer()
+            UserDefaultsWrapper.shared.remove(forKey: UserDefaultsWrapper.Key.trainRealTime.rawValue)
             actionPublisher.send(.finishAlarm)
         }
         
@@ -280,17 +282,11 @@ extension LastTrainRealTimeBottomView {
                 guard let self = self else { return }
 
                 self.remainingTimeInSeconds -= 1
-
-                // 딱 0이 되었을 때 한 번만 refresh
+                UserDefaultsWrapper.shared.set(remainingTimeInSeconds, forKey: UserDefaultsWrapper.Key.trainRealTime.rawValue)
+                
                 if self.remainingTimeInSeconds == 0 {
                     self.actionPublisher.send(.refreshBusTime)
                 }
-//                else if self.remainingTimeInSeconds < 0 {
-//                    // 0 이후 계속해서 finishAlarm 전송
-//                    self.actionPublisher.send(.finishAlarm)
-//                    cancelCountdownTimer()
-//                    return // 더 이상 UI 업데이트 필요 없음
-//                }
 
                 if self.remainingTimeInSeconds <= 60 && self.remainingTimeInSeconds > 0 {
                     self.minuteLabel.isHidden = true

@@ -285,12 +285,20 @@ extension MainViewController {
         viewModel.$legInfo
             .receive(on: DispatchQueue.main)
             .compactMap { $0 }
-            .sink { [weak self] info in
+            .combineLatest(viewModel.$bottomType)
+            .sink { [weak self] info, bottomType in
                 self?.commonAlarmSetupView()
                 self?.addRouteLine(pathInfos: info.pathInfo)
-                self?.lastTrainDepartView.setupLegInfo(info: info)
-                self?.lastTrainRealTimeView.setupLegInfo(info: info)
-                self?.lastTrainArrivalView.setupLegInfo(info: info)
+                
+                switch bottomType {
+                case .departure:
+                    self?.lastTrainDepartView.setupLegInfo(info: info)
+                case .realTime:
+                    self?.lastTrainRealTimeView.setupLegInfo(info: info)
+                case .finish:
+                    self?.lastTrainArrivalView.setupLegInfo(info: info)
+                default: do {}
+                }
             }
             .store(in: &cancellables)
         
