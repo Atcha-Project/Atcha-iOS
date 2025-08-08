@@ -303,6 +303,13 @@ extension MainViewController {
             }
             .store(in: &cancellables)
         
+        viewModel.$bottomType
+            .receive(on: RunLoop.main)
+            .sink { [weak self] type in
+                self?.setupBottomType(type)
+            }
+            .store(in: &cancellables)
+        
         viewModel.$busRealTimeInfo
             .compactMap { $0 }
             .receive(on: RunLoop.main)
