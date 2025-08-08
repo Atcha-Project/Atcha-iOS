@@ -183,7 +183,9 @@ extension MainViewController {
     private func handleRealTimeViewAction(_ action: LastTrainRealTimeBottomView.Action) {
         switch action {
         case .refreshBusTime, .reloadTapped: viewModel.getBusRealTime()
-        case .exitTapped: exitButtonTapped()
+        case .exitTapped:
+            viewModel.alarmDelete()
+            exitButtonTapped()
         case .detailRoadMapTapped: viewModel.handleRoute(route: .detailRoute(address: "",
                                                                              infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: [])))
         case .finishAlarm: viewModel.bottomType = .finish
@@ -192,7 +194,9 @@ extension MainViewController {
     
     private func handleTrainDepartAction(_ action: LastTrainDepartBottomView.Action) {
         switch action {
-        case .exitTapped: exitButtonTapped()
+        case .exitTapped:
+            viewModel.alarmDelete()
+            exitButtonTapped()
         case .detailRoadMapTapped:
             viewModel.handleRoute(route: .detailRoute(address: "",
                                                       infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: [])))
@@ -208,7 +212,9 @@ extension MainViewController {
     
     private func handleArrivalViewAction(_ action: LastTrainArrivalBottomView.Action) {
         switch action {
-        case .exitTapped: exitButtonTapped()
+        case .exitTapped:
+            viewModel.alarmDelete()
+            exitButtonTapped()
         case .detailRoadMapTapped: viewModel.handleRoute(route: .detailRoute(address: "",
                                                                              infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: [])))
         }
