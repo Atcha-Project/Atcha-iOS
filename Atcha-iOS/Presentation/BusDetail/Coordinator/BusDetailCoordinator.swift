@@ -22,11 +22,10 @@ final class BusDetailCoordinator {
     
     func start(busDetailInfo: BusDetailInfo) {
         let viewModel = diContainer.makeBusDetailViewModel(busDetailInfo: busDetailInfo)
-        viewModel.onInfoTap = { [weak self, weak viewModel] in
-            guard let self = self, let viewModel = viewModel else { return }
-            print("터치됨, self:", self)
+        viewModel.onInfoTap = { [weak self] busRouteInfo in
+            guard let self = self else { return }
             self.showBusInfo(busDetailInfo: busDetailInfo,
-                             busRouteInfo: viewModel.busRouteInfo)
+                             busRouteInfo: busRouteInfo)
         }
         let viewController = diContainer.makeBusDetailViewController(viewModel: viewModel)
         

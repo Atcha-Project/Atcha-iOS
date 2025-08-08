@@ -37,6 +37,7 @@ final class DetailRouteBusCell: UICollectionViewCell {
     private var stationInfos: [PassStopList] = []
     private var isExpanded: Bool = false
     var didTapSummary: (() -> Void)?
+    var didTapDetail: (() -> Void)?
     
     private var stationListStackViewTopConstraint: Constraint?
     private var stationListStackViewBottomConstraint: Constraint?
@@ -65,6 +66,9 @@ final class DetailRouteBusCell: UICollectionViewCell {
         
         busBackView.setCornerRadius(4)
         busBackView.addSubViews(busLabel, busDetailArrowImageView)
+        busBackView.isUserInteractionEnabled = true
+        let busTap = UITapGestureRecognizer(target: self, action: #selector(handleBusBackTapped))
+        busBackView.addGestureRecognizer(busTap)
         
         summaryButton.setImage(UIImage.chevronDown, for: .normal)
         summaryButton.imageView?.tintColor = .gray200
@@ -172,6 +176,11 @@ final class DetailRouteBusCell: UICollectionViewCell {
         UIView.animate(withDuration: 0.3) { self.layoutIfNeeded() }
         didTapSummary?()
     }
+    
+    @objc private func handleBusBackTapped() {
+        didTapDetail?()
+    }
+    
     
     func configure(info: LegTrafficInfo, busInfo: [BusRealTimeInfo]) {
         stationInfos = []

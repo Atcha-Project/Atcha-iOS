@@ -116,7 +116,7 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
     // MARK: - Action
     private func bindActions() {
         headerView.onInfoTap = { [weak self] in
-            self?.viewModel.onInfoTap?()
+            self?.viewModel.didTapInfo()
         }
     }
     

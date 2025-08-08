@@ -185,7 +185,7 @@ extension MainViewController {
         case .refreshBusTime, .reloadTapped: viewModel.getBusRealTime()
         case .exitTapped:
             viewModel.alarmDelete()
-            exitButtonTapped()
+            exitButtonTapped(showToast: true)
         case .detailRoadMapTapped: viewModel.handleRoute(route: .detailRoute(address: "",
                                                                              infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: [])))
         case .finishAlarm: viewModel.bottomType = .finish
@@ -196,7 +196,7 @@ extension MainViewController {
         switch action {
         case .exitTapped:
             viewModel.alarmDelete()
-            exitButtonTapped()
+            exitButtonTapped(showToast: true)
         case .detailRoadMapTapped:
             viewModel.handleRoute(route: .detailRoute(address: "",
                                                       infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: [])))
@@ -214,13 +214,13 @@ extension MainViewController {
         switch action {
         case .exitTapped:
             viewModel.alarmDelete()
-            exitButtonTapped()
+            exitButtonTapped(showToast: true)
         case .detailRoadMapTapped: viewModel.handleRoute(route: .detailRoute(address: "",
                                                                              infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: [])))
         }
     }
     
-    private func exitButtonTapped() {
+    private func exitButtonTapped(showToast: Bool = true) {
         viewModel.requestPermissionAndStartTracking()
         viewModel.removeLegInfoAndAddress()
         AlarmManager.shared.stopAlarm()
@@ -233,9 +233,11 @@ extension MainViewController {
         updateAtchaImageConstraint(relativeTo: lastTrainSearchView)
         mapContainerView.clearMapView()
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-            guard let self else { return }
-            view.showToast(message: "알림이 종료되었어요")
+        if showToast {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+                guard let self else { return }
+                view.showToast(message: "알림이 종료되었어요")
+            }
         }
     }
     
@@ -345,7 +347,7 @@ extension MainViewController {
         case .search:
             lastTrainSearchView.isHidden = false
             flagImageView.isHidden = false
-            exitButtonTapped()
+            exitButtonTapped(showToast: false)
         case .finish:
             lastTrainArrivalView.isHidden = false
             viewModel.endAlarmTimer()
