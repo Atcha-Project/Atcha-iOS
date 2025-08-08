@@ -99,6 +99,8 @@ final class LastTrainRealTimeBottomView: UIView {
         alreadySoonLabel.isHidden = true
         alreadySoonLabel.attributedText = AtchaFont.D2_EB_48("곧 도착", color: .widearea)
         
+        minuteTimeLabel.attributedText = AtchaFont.D2_EB_48("--", color: .widearea)
+        secondTimeLabel.attributedText = AtchaFont.D2_EB_48("--", color: .widearea)
         minuteLabel.attributedText = AtchaFont.B1_R_17("분", color: .widearea)
         secondLabel.attributedText = AtchaFont.B1_R_17("초", color: .widearea)
     }
@@ -191,8 +193,9 @@ final class LastTrainRealTimeBottomView: UIView {
 
 // MARK: Binding Leg Info
 extension LastTrainRealTimeBottomView {
-    func setupLegInfo(info: LegInfo) {
-        guard let departureStr = info.pathInfo.first?.departureDateTime else { return }
+    func setupLegInfo(info: LegInfo?) {
+        guard let info, let departureStr = info.pathInfo.first?.departureDateTime else { return }
+        
         if let firstNonWalkMode = info.pathInfo.first(where: { $0.mode != .walk }) {
             switch firstNonWalkMode.mode {
             case .bus:
@@ -240,6 +243,7 @@ extension LastTrainRealTimeBottomView {
                 startCountdownWithCombine(minutes: minutes, seconds: seconds)
             } else {
                 cancelTimer()
+                UserDefaultsWrapper.shared.remove(forKey: UserDefaultsWrapper.Key.trainRealTime.rawValue)
                 actionPublisher.send(.finishAlarm)
             }
         }
@@ -259,6 +263,7 @@ extension LastTrainRealTimeBottomView {
             startCountdownWithCombine(minutes: minutes, seconds: seconds)
         } else {
             cancelTimer()
+            UserDefaultsWrapper.shared.remove(forKey: UserDefaultsWrapper.Key.trainRealTime.rawValue)
             actionPublisher.send(.finishAlarm)
         }
         
@@ -275,21 +280,16 @@ extension LastTrainRealTimeBottomView {
         countdownCancellable = Timer
             .publish(every: 1.0, on: .main, in: .common)
             .autoconnect()
+            .print("여기는 시간이 된 경우에만 보여주고 싶어!")
             .sink { [weak self] _ in
                 guard let self = self else { return }
 
                 self.remainingTimeInSeconds -= 1
-
+                UserDefaultsWrapper.shared.set(remainingTimeInSeconds, forKey: UserDefaultsWrapper.Key.trainRealTime.rawValue)
+                
                 if self.remainingTimeInSeconds == 0 {
-                    // 딱 0이 되었을 때 한 번만 refresh
                     self.actionPublisher.send(.refreshBusTime)
                 }
-//                else if self.remainingTimeInSeconds < 0 {
-//                    // 0 이후 계속해서 finishAlarm 전송
-//                    self.actionPublisher.send(.finishAlarm)
-//                    cancelCountdownTimer()
-//                    return // 더 이상 UI 업데이트 필요 없음
-//                }
 
                 if self.remainingTimeInSeconds <= 60 && self.remainingTimeInSeconds > 0 {
                     self.minuteLabel.isHidden = true

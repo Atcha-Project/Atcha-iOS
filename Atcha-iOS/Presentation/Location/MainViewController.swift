@@ -135,6 +135,17 @@ extension MainViewController {
         bindAddressDescriptionUpdates()
         bindLegPathUpdates()
         bindTaxiFareUpdates()
+        bindLockView()
+    }
+    
+    // MARK: - bind Lock View
+    private func bindLockView() {
+        viewModel.$showLockView
+            .filter { $0 }
+            .receive(on: RunLoop.main)
+            .removeDuplicates()
+            .sink { [weak self] _ in self?.viewModel.handleRoute(route: .lockScreen(info: nil, address: nil)) }
+            .store(in: &cancellables)
     }
     
     // MARK: - View Actions
@@ -175,7 +186,7 @@ extension MainViewController {
         case .exitTapped: exitButtonTapped()
         case .detailRoadMapTapped: viewModel.handleRoute(route: .detailRoute(address: "",
                                                                              infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: [])))
-        case .finishAlarm: setupBottomType(.finish)
+        case .finishAlarm: viewModel.bottomType = .finish
         }
     }
     
@@ -273,19 +284,27 @@ extension MainViewController {
     private func bindLegPathUpdates() {
         viewModel.$legInfo
             .receive(on: DispatchQueue.main)
-            .compactMap { $0 }
-            .sink { [weak self] info in
+            .combineLatest(viewModel.$bottomType)
+            .sink { [weak self] info, bottomType in
                 self?.commonAlarmSetupView()
-                self?.addRouteLine(pathInfos: info.pathInfo)
-                self?.lastTrainDepartView.setupLegInfo(info: info)
-                self?.lastTrainRealTimeView.setupLegInfo(info: info)
-                self?.lastTrainArrivalView.setupLegInfo(info: info)
+                self?.addRouteLine(pathInfos: info?.pathInfo ?? [])
+
+                switch bottomType {
+                case .departure:
+                    self?.lastTrainDepartView.setupLegInfo(info: info)
+                case .realTime:
+                    self?.lastTrainRealTimeView.setupLegInfo(info: info)
+                case .finish:
+                    self?.lastTrainArrivalView.setupLegInfo(info: info)
+                default: do {}
+                }
+                
+                self?.setupBottomType(bottomType)
             }
             .store(in: &cancellables)
         
         viewModel.$bottomType
-            .compactMap { $0 }
-            .receive(on: DispatchQueue.main)
+            .receive(on: RunLoop.main)
             .sink { [weak self] type in
                 self?.setupBottomType(type)
             }
@@ -304,7 +323,7 @@ extension MainViewController {
         updateAtchaImageConstraint(relativeTo: lastTrainDepartView)
     }
     
-    private func setupBottomType(_ type: MapBottomType) {
+    private func setupBottomType(_ type: MapBottomType?) {
         lastTrainRealTimeView.isHidden = true
         flagImageView.isHidden = true
         lastTrainSearchView.isHidden = true
@@ -316,11 +335,15 @@ extension MainViewController {
             lastTrainRealTimeView.isHidden = false
         case .departure:
             lastTrainDepartView.isHidden = false
+            viewModel.startAlarmTimer()
         case .search:
             lastTrainSearchView.isHidden = false
             flagImageView.isHidden = false
+            exitButtonTapped()
         case .finish:
             lastTrainArrivalView.isHidden = false
+            viewModel.endAlarmTimer()
+        default: do {}
         }
     }
     

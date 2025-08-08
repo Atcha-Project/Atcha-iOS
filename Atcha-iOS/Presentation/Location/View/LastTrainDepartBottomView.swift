@@ -176,8 +176,8 @@ final class LastTrainDepartBottomView: UIView {
 
 // MARK: Binding Leg Info
 extension LastTrainDepartBottomView {
-    func setupLegInfo(info: LegInfo) {
-        guard let departureStr = info.pathInfo.first?.departureDateTime else { return }
+    func setupLegInfo(info: LegInfo?) {
+        guard let info, let departureStr = info.pathInfo.first?.departureDateTime else { return }
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
         formatter.locale = .current

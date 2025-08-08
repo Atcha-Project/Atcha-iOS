@@ -125,7 +125,12 @@ final class LockViewController: BaseViewController<LockViewModel> {
     }
     
     @objc private func startTapped() {
-        viewModel.routerHandler?(.main)
+        viewModel.cancelLockScreenTimer()
+        
+        let wrapper = UserDefaultsWrapper.shared
+        let legInfo = wrapper.object(forKey: UserDefaultsWrapper.Key.legInfo.rawValue, of: LegInfo.self)
+        let addressDesc = wrapper.string(forKey: UserDefaultsWrapper.Key.addressDesc.rawValue) ?? ""
+        viewModel.routerHandler?(.lockScreen(info: legInfo, address: addressDesc))
     }
     
     @objc private func detailRouteTapped() {
@@ -134,6 +139,6 @@ final class LockViewController: BaseViewController<LockViewModel> {
         let lon = wrapper.string(forKey: UserDefaultsWrapper.Key.startLat.rawValue) ?? ""
         let address = wrapper.string(forKey: UserDefaultsWrapper.Key.startLat.rawValue) ?? ""
         
-        viewModel.routerHandler?(.detailRoute(startLat: lat, startLon: lon, startAddress: address))
+//        viewModel.routerHandler?(.detailRoute(startLat: lat, startLon: lon, startAddress: address))
     }
 }

@@ -42,6 +42,10 @@ class AppFlowCoordinator {
                 showMainFlow(info: info, address: address, bottomType: .departure)
             case .lockScreen(let info, let address):
                 showLockScreenFlow(info: info, address: address)
+            case .realTime(let info, let address):
+                showMainFlow(info: info, address: address, bottomType: .realTime)
+            case .finishTime(let info, let address):
+                showMainFlow(info: info, address: address, bottomType: .finish)
             case .detailRoute(let lat, let lon, let address):
                 print("lat : \(lat), lon : \(lon), address : \(address)")
             }
@@ -61,6 +65,15 @@ class AppFlowCoordinator {
                 self?.showLoginFlow()
             }
         }
+        mainCoordinator?.lockScreenConfrim = { [weak self] info, address in
+            DispatchQueue.main.async {
+                if let info, let address {
+                    self?.showMainFlow(info: info, address: address, bottomType: .realTime)
+                } else {
+                    self?.showMainFlow()
+                }
+            }
+        }
         mainCoordinator?.start(info: info, address: address, bottomType: bottomType)
     }
     
@@ -72,8 +85,15 @@ class AppFlowCoordinator {
         let lockScreenCoordinator = container.makeLockScreenCoordinator(navigationController: navigationController)
         lockScreenCoordinator.routerHandler = { [weak self] router in
             DispatchQueue.main.async {
-                // TODO: Router에 따라 값 분기 하기
-                self?.showMainFlow(info: info, address: address, bottomType: .realTime)
+                switch router {
+                case .lockScreen(let info, let address):
+                    if let info, let address {
+                        self?.showMainFlow(info: info, address: address, bottomType: .realTime)
+                    } else {
+                        self?.showMainFlow()
+                    }
+                default: do {}
+                }
             }
         }
         lockScreenCoordinator.start()

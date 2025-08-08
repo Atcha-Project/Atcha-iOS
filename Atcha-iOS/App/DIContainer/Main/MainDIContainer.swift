@@ -34,6 +34,10 @@ final class MainDIContainer {
         BusInfoDIContainer(apiService: apiService)
     }()
     
+    private lazy var lockScreenDI: LockScreenDIContainer = {
+        LockScreenDIContainer()
+    }()
+    
     init(apiService: APIService, locationStateHolder: LocationStateHolder) {
         self.apiService = apiService
         self.locationStateHolder = locationStateHolder
@@ -76,6 +80,13 @@ extension MainDIContainer {
 extension MainDIContainer {
     func makeRouteDIContainer() -> RouteDIContainer {
         return rotueDI
+    }
+}
+
+// MARK: - Lock Screen
+extension MainDIContainer {
+    func makeLockScreenDIContainer() -> LockScreenDIContainer {
+        return lockScreenDI
     }
 }
 

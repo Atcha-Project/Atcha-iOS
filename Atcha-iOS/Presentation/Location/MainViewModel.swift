@@ -13,6 +13,7 @@ import TMapSDK
 
 final class MainViewModel: BaseViewModel {
     private var alarmTimerCancellable: AnyCancellable?
+    private var alarmFinishCancellable: AnyCancellable?
     
     @Published var currentLocation: CLLocationCoordinate2D?
     @Published var selectedLocation: CLLocationCoordinate2D?
@@ -52,7 +53,7 @@ final class MainViewModel: BaseViewModel {
         
         super.init()
         self.bind()
-        self.startAlarmTimer()
+//        self.startAlarmTimer()
     }
     
     func bind() {
@@ -91,6 +92,8 @@ final class MainViewModel: BaseViewModel {
         wrapper.remove(forKey: UserDefaultsWrapper.Key.startLon.rawValue)
         wrapper.remove(forKey: UserDefaultsWrapper.Key.startAddress.rawValue)
         wrapper.remove(forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
+        wrapper.remove(forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue)
+        wrapper.remove(forKey: UserDefaultsWrapper.Key.trainRealTime.rawValue)
     }
     
     func requestPermissionAndStartTracking() {
@@ -163,10 +166,6 @@ extension MainViewModel {
         let wrapper = UserDefaultsWrapper.shared
         if let departureTime: String = wrapper.string(forKey: UserDefaultsWrapper.Key.departureTime.rawValue) {
             if !checkFutureTimeOver(dateString: departureTime) {
-                let diContainer = LockScreenDIContainer()
-                let vm = diContainer.makeLockScreenViewModel()
-                let vc = diContainer.makeLockScreenViewController(viewModel: vm)
-                vc.modalPresentationStyle = .overFullScreen
                 print("과거")
                 showLockView = true
                 stopAlarmTimer()
@@ -197,16 +196,61 @@ extension MainViewModel {
     
     func startAlarmTimer() {
         alarmTimerCancellable = Timer
-            .publish(every: 5.0, on: .main, in: .common)
+            .publish(every: 10.0, on: .main, in: .common)
             .autoconnect()
             .sink { [weak self] _ in
                 self?.checkAlarmTime()
             }
     }
     
+    func endAlarmTimer() {
+        alarmFinishCancellable = Timer
+            .publish(every: 10.0, on: .main, in: .common)
+            .autoconnect()
+            .sink { [weak self] _ in
+                guard let self else { return }
+                if let arrivalTime = UserDefaultsWrapper.shared.object(
+                    forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue,
+                    of: Date.self
+                ) {
+                    let now = Date()
+                    let thirtyMinutesLater = arrivalTime.addingTimeInterval(30 * 60) // 30분 후
+                    
+                    print("departure Time : \(arrivalTime)")
+                    print("30분 후 시각 : \(thirtyMinutesLater)")
+                    
+                    if now >= thirtyMinutesLater {
+                        stopFinishAlarmTimer()
+                        bottomType = .search
+                    }
+                }
+            }
+    }
+    
+    private func parseTotalTimeToMinutes(_ time: String) -> Int {
+        var totalMinutes = 0
+        
+        if let hourMatch = time.range(of: "\\d+(?=시간)", options: .regularExpression),
+           let hour = Int(time[hourMatch]) {
+            totalMinutes += hour * 60
+        }
+        
+        if let minuteMatch = time.range(of: "\\d+(?=분)", options: .regularExpression),
+           let minute = Int(time[minuteMatch]) {
+            totalMinutes += minute
+        }
+        
+        return totalMinutes
+    }
+    
     private func stopAlarmTimer() {
         alarmTimerCancellable?.cancel()
         alarmTimerCancellable = nil
+    }
+    
+    private func stopFinishAlarmTimer() {
+        alarmFinishCancellable?.cancel()
+        alarmFinishCancellable = nil
     }
 }
 
@@ -231,6 +275,9 @@ extension MainViewModel {
         case .detailRoute:
             guard let address, let legInfo else { return }
             routeHandler?(.detailRoute(address: address, infos: legInfo))
+        case .lockScreen:
+            guard let address, let legInfo else { return }
+            routeHandler?(.lockScreen(info: legInfo, address: address))
         }
     }
 }
