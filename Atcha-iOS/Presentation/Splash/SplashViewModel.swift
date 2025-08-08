@@ -53,7 +53,7 @@ final class SplashViewModel: BaseViewModel {
         if let legInfo: LegInfo = wrapper.object(forKey: UserDefaultsWrapper.Key.legInfo.rawValue, of: LegInfo.self),
            let address: String = wrapper.string(forKey: UserDefaultsWrapper.Key.addressDesc.rawValue) {
             guard let time = legInfo.pathInfo.first?.departureDateTime else { return } // 막차를 타기위해 출발해야 하는 시간
-            AlarmManager.shared.startAlarm(after: time, title: "눌러서 출발 알람 끄기", body: "자리에서 일언야 할 시간이에요!")
+            AlarmManager.shared.startAlarm(after: time, title: "눌러서 출발 알람 끄기", body: "자리에서 일어나야 할 시간이에요!")
             
             if checkFutureTimeOver(dateString: time) {
                 // 현재 시간 > 알람 시간 -> 알람 화면

@@ -129,7 +129,6 @@
 		B600CA132E07FD29008B0D87 /* MyPageCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C13472E07A10F0016D2F0 /* MyPageCoordinator.swift */; };
 		B61C448E2E3F57B600285A4B /* AlarmManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B61C448D2E3F57B600285A4B /* AlarmManager.swift */; };
 		B61C44902E3F750B00285A4B /* silent.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = B61C448F2E3F750B00285A4B /* silent.mp3 */; };
-		B61C44922E3F77DA00285A4B /* siren.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = B61C44912E3F77DA00285A4B /* siren.mp3 */; };
 		B61C44952E4033E500285A4B /* LockScreenCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B61C44942E4033E500285A4B /* LockScreenCoordinator.swift */; };
 		B61C44982E40341B00285A4B /* LockScreenDIConatiner.swift in Sources */ = {isa = PBXBuildFile; fileRef = B61C44972E40341B00285A4B /* LockScreenDIConatiner.swift */; };
 		B644BAB12E42DDFF00E64BC2 /* LastTrainRealTimeBottomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B644BAB02E42DDFF00E64BC2 /* LastTrainRealTimeBottomView.swift */; };
@@ -216,6 +215,7 @@
 		B68309612E005A3600E2D029 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B683094E2E005A3600E2D029 /* LaunchScreen.storyboard */; };
 		B68309622E005A3600E2D029 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B68309502E005A3600E2D029 /* Main.storyboard */; };
 		B68309672E005B5300E2D029 /* UIView+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B68309662E005B5300E2D029 /* UIView+Ext.swift */; };
+		B68730D02E46539F00BFB1F6 /* siren.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = B68730CF2E46539F00BFB1F6 /* siren.mp3 */; };
 		B69E31A82E2681EF001040F4 /* CLLocationCoordinate2D+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B69E31A72E2681EF001040F4 /* CLLocationCoordinate2D+Ext.swift */; };
 		B69E31AC2E2683B8001040F4 /* PermissionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B69E31AB2E2683B8001040F4 /* PermissionViewController.swift */; };
 		B69E31AE2E2683C9001040F4 /* PermissionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B69E31AD2E2683C9001040F4 /* PermissionViewModel.swift */; };
@@ -402,7 +402,6 @@
 		6DFF29EF2E0F23840039399F /* UIImage+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Ext.swift"; sourceTree = "<group>"; };
 		B61C448D2E3F57B600285A4B /* AlarmManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmManager.swift; sourceTree = "<group>"; };
 		B61C448F2E3F750B00285A4B /* silent.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = silent.mp3; sourceTree = "<group>"; };
-		B61C44912E3F77DA00285A4B /* siren.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = siren.mp3; sourceTree = "<group>"; };
 		B61C44942E4033E500285A4B /* LockScreenCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockScreenCoordinator.swift; sourceTree = "<group>"; };
 		B61C44972E40341B00285A4B /* LockScreenDIConatiner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockScreenDIConatiner.swift; sourceTree = "<group>"; };
 		B644BAB02E42DDFF00E64BC2 /* LastTrainRealTimeBottomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastTrainRealTimeBottomView.swift; sourceTree = "<group>"; };
@@ -493,6 +492,7 @@
 		B68309512E005A3600E2D029 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		B68309632E005ADE00E2D029 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		B68309662E005B5300E2D029 /* UIView+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Ext.swift"; sourceTree = "<group>"; };
+		B68730CF2E46539F00BFB1F6 /* siren.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = siren.mp3; sourceTree = "<group>"; };
 		B69E31A72E2681EF001040F4 /* CLLocationCoordinate2D+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CLLocationCoordinate2D+Ext.swift"; sourceTree = "<group>"; };
 		B69E31AB2E2683B8001040F4 /* PermissionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionViewController.swift; sourceTree = "<group>"; };
 		B69E31AD2E2683C9001040F4 /* PermissionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionViewModel.swift; sourceTree = "<group>"; };
@@ -1434,7 +1434,7 @@
 				B683094B2E005A3600E2D029 /* DesignSource */,
 				6D8157452E127BDB003688A6 /* GoogleService-Info.plist */,
 				B683094C2E005A3600E2D029 /* Info.plist */,
-				B61C44912E3F77DA00285A4B /* siren.mp3 */,
+				B68730CF2E46539F00BFB1F6 /* siren.mp3 */,
 				B61C448F2E3F750B00285A4B /* silent.mp3 */,
 				B683094E2E005A3600E2D029 /* LaunchScreen.storyboard */,
 				B68309502E005A3600E2D029 /* Main.storyboard */,
@@ -1786,11 +1786,11 @@
 				B683095C2E005A3600E2D029 /* Pretendard-Regular.otf in Resources */,
 				B61C44902E3F750B00285A4B /* silent.mp3 in Resources */,
 				6D8157462E127BDB003688A6 /* GoogleService-Info.plist in Resources */,
+				B68730D02E46539F00BFB1F6 /* siren.mp3 in Resources */,
 				B683095D2E005A3600E2D029 /* Pretendard-SemiBold.otf in Resources */,
 				6D81574C2E129B52003688A6 /* 잠금화면.json in Resources */,
 				B683095E2E005A3600E2D029 /* Icon.xcassets in Resources */,
 				B683095F2E005A3600E2D029 /* Assets.xcassets in Resources */,
-				B61C44922E3F77DA00285A4B /* siren.mp3 in Resources */,
 				B68309612E005A3600E2D029 /* LaunchScreen.storyboard in Resources */,
 				B68309622E005A3600E2D029 /* Main.storyboard in Resources */,
 				6D91A8FF2E33E2FA0081BAFC /* Loading.json in Resources */,
