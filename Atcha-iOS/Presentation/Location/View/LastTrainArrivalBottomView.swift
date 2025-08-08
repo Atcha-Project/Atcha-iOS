@@ -145,9 +145,9 @@ final class LastTrainArrivalBottomView: UIView {
 
 // MARK: Binding Leg Info
 extension LastTrainArrivalBottomView {
-    func setupLegInfo(info: LegInfo) {
+    func setupLegInfo(info: LegInfo?) {
         
-        guard let departureStr = info.pathInfo.first?.departureDateTime,
+        guard let info, let departureStr = info.pathInfo.first?.departureDateTime,
               let totalTime = info.trafficInfo.first?.totalTime else { return }
         
         let formatter = DateFormatter()

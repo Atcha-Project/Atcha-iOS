@@ -193,8 +193,8 @@ final class LastTrainRealTimeBottomView: UIView {
 
 // MARK: Binding Leg Info
 extension LastTrainRealTimeBottomView {
-    func setupLegInfo(info: LegInfo) {
-        guard let departureStr = info.pathInfo.first?.departureDateTime else { return }
+    func setupLegInfo(info: LegInfo?) {
+        guard let info, let departureStr = info.pathInfo.first?.departureDateTime else { return }
         
         if let firstNonWalkMode = info.pathInfo.first(where: { $0.mode != .walk }) {
             switch firstNonWalkMode.mode {

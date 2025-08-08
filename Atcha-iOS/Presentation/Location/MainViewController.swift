@@ -284,12 +284,11 @@ extension MainViewController {
     private func bindLegPathUpdates() {
         viewModel.$legInfo
             .receive(on: DispatchQueue.main)
-            .compactMap { $0 }
             .combineLatest(viewModel.$bottomType)
             .sink { [weak self] info, bottomType in
                 self?.commonAlarmSetupView()
-                self?.addRouteLine(pathInfos: info.pathInfo)
-                
+                self?.addRouteLine(pathInfos: info?.pathInfo ?? [])
+
                 switch bottomType {
                 case .departure:
                     self?.lastTrainDepartView.setupLegInfo(info: info)
