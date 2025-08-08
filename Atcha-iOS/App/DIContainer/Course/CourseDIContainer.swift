@@ -22,7 +22,12 @@ final class CourseDIContainer {
     
     func makeCourseSearchViewModel(startLat: String, startLon: String, startAddress: String) -> CourseSearchViewModel {
         let courseUseCase = CourseUseCaseImpl(repository: CourseRepositoryImpl(apiService: apiService))
-        return CourseSearchViewModel(courseUseCase: courseUseCase, startLat: startLat, startLon: startLon, startAddress: startAddress)
+        let alarmUseCase = AlarmUseCaseImpl(repository: AlarmRepositoryImpl(apiService: apiService))
+        return CourseSearchViewModel(courseUseCase: courseUseCase,
+                                     alarmUseCase: alarmUseCase,
+                                     startLat: startLat,
+                                     startLon: startLon,
+                                     startAddress: startAddress)
     }
     
     func makeCourseSearchViewController(viewModel: CourseSearchViewModel) -> UIViewController {

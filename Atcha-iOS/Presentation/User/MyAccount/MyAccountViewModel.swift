@@ -23,7 +23,6 @@ final class MyAccountViewModel: BaseViewModel {
                 let _ = try await logoutUseCase.excute()
                 AppDIContainer.shared.tokenStorage.clearAccessToken()
                 AppDIContainer.shared.tokenStorage.clearRefreshToken()
-//                UserDefaultsWrapper().removeAll()
                 UserDefaultsWrapper.shared.removeAll()
                 AppDIContainer.shared.locationStateHolder.clear()
                 await MainActor.run {

@@ -32,6 +32,7 @@ final class CourseSearchViewModel: BaseViewModel {
     @Published var isServerError: Bool = false
     
     private let courseUseCase: CourseUseCase
+    private let alarmUseCase: AlarmUseCase
     private let startLat: String
     private let startLon: String
     public private(set) var startAddress: String
@@ -42,11 +43,13 @@ final class CourseSearchViewModel: BaseViewModel {
     
     init(
         courseUseCase: CourseUseCase,
+        alarmUseCase: AlarmUseCase,
         startLat: String,
         startLon: String,
         startAddress: String
     ) {
         self.courseUseCase = courseUseCase
+        self.alarmUseCase = alarmUseCase
         self.startLat = startLat
         self.startLon = startLon
         self.startAddress = startAddress
@@ -159,11 +162,24 @@ final class CourseSearchViewModel: BaseViewModel {
         }
     }
     
-    func saveStartInfo() {
+    // MARK: - 알림 등록
+    func alarmRegister(_ request: AlarmRequest) {
+        Task {
+            do {
+                let _ = try await alarmUseCase.alarmRegister(request)
+                saveStartInfo(request.lastRouteId)
+            } catch {
+                print("알림 등록 실패: \(error)")
+            }
+        }
+    }
+    
+    func saveStartInfo(_ lastRouteId: String?) {
         let wrapper = UserDefaultsWrapper.shared
         wrapper.set(startLat, forKey: UserDefaultsWrapper.Key.startLat.rawValue)
         wrapper.set(startLon, forKey: UserDefaultsWrapper.Key.startLon.rawValue)
         wrapper.set(startAddress, forKey: UserDefaultsWrapper.Key.startAddress.rawValue)
+        wrapper.set(lastRouteId, forKey: UserDefaultsWrapper.Key.lastRouteId.rawValue)
     }
     
     func stopCourseStream() {

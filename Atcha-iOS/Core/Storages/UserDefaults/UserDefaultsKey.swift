@@ -26,5 +26,6 @@ public extension UserDefaultsWrapper.Key {
     static let startLon: UserDefaultsWrapper.Key = "startLon"
     static let startAddress: UserDefaultsWrapper.Key = "startAdress"
     
+    static let lastRouteId: UserDefaultsWrapper.Key = "lastRouteId"
     static let departureTime: UserDefaultsWrapper.Key = "departureTime"
 }
