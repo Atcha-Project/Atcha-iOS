@@ -63,9 +63,11 @@ class AppFlowCoordinator {
         }
         mainCoordinator?.lockScreenConfrim = { [weak self] info, address in
             DispatchQueue.main.async {
-                self?.showMainFlow(info: info,
-                                   address: address,
-                                   bottomType: .realTime)
+                if let info, let address {
+                    self?.showMainFlow(info: info, address: address, bottomType: .realTime)
+                } else {
+                    self?.showMainFlow()
+                }
             }
         }
         mainCoordinator?.start(info: info, address: address, bottomType: bottomType)
@@ -79,8 +81,15 @@ class AppFlowCoordinator {
         let lockScreenCoordinator = container.makeLockScreenCoordinator(navigationController: navigationController)
         lockScreenCoordinator.routerHandler = { [weak self] router in
             DispatchQueue.main.async {
-                // TODO: Router에 따라 값 분기 하기
-                self?.showMainFlow(info: info, address: address, bottomType: .realTime)
+                switch router {
+                case .lockScreen(let info, let address):
+                    if let info, let address {
+                        self?.showMainFlow(info: info, address: address, bottomType: .realTime)
+                    } else {
+                        self?.showMainFlow()
+                    }
+                default: do {}
+                }
             }
         }
         lockScreenCoordinator.start()

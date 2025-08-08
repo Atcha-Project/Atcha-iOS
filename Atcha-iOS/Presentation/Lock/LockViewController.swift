@@ -125,6 +125,8 @@ final class LockViewController: BaseViewController<LockViewModel> {
     }
     
     @objc private func startTapped() {
+        viewModel.cancelLockScreenTimer()
+        
         let wrapper = UserDefaultsWrapper.shared
         let legInfo = wrapper.object(forKey: UserDefaultsWrapper.Key.legInfo.rawValue, of: LegInfo.self)
         let addressDesc = wrapper.string(forKey: UserDefaultsWrapper.Key.addressDesc.rawValue) ?? ""

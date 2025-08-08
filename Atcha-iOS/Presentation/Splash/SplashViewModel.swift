@@ -55,10 +55,23 @@ final class SplashViewModel: BaseViewModel {
             guard let time = legInfo.pathInfo.first?.departureDateTime else { return }
             AlarmManager.shared.startAlarm(after: time, title: "집에 가자", body: "집에 가자")
             
-            if checkFutureTimeOver(dateString: legInfo.trafficInfo.first?.departureDateTime ?? "")?.0 == false {
+            if checkFutureTimeOver(dateString: legInfo.trafficInfo.first?.departureDateTime ?? "") == false {
                 routerHandler?(.alarm(info: legInfo, address: address))
             } else {
-                routerHandler?(.lockScreen(info: legInfo, address: address))
+                
+                if let arrivalTime = UserDefaultsWrapper.shared.object(
+                    forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue,
+                    of: Date.self
+                ) {
+                    // 현재 시간이 arrivalTime 과거 인 경우
+                    routerHandler?(.lockScreen(info: legInfo, address: address))
+                    
+                    // 현재 시간이 arrivalTime 미래 인 경우 (30분 이내)
+                    
+                    // 현재 시간이 arrivalTime 30분이 넘게 지난 경우
+                }
+                
+                //                routerHandler?(.lockScreen(info: legInfo, address: address))
             }
             return
         }
@@ -75,22 +88,20 @@ final class SplashViewModel: BaseViewModel {
         }
     }
     
-    private func checkFutureTimeOver(dateString: String) -> (isFuture: Bool, secondsUntil: TimeInterval)? {
+    private func checkFutureTimeOver(dateString: String) -> Bool {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
         formatter.timeZone = .current
         
         guard let inputDate = formatter.date(from: dateString) else {
-            print("날짜 파싱 실패")
-            return nil
+            return false
         }
         
         let currentDate = Date()
         let timeInterval = inputDate.timeIntervalSince(currentDate)
         
         let isFuture = timeInterval > 0
-        let secondsUntil = max(0, timeInterval) // 미래가 아니면 0초로 처리
         
-        return (isFuture, secondsUntil)
+        return isFuture
     }
 }
