@@ -95,6 +95,9 @@ final class CourseModifyViewController: BaseViewController<CourseModifyViewModel
         mapImageView.image = UIImage.map28Px
         mapImageView.tintColor = AtchaColor.gray200
         mapImageView.contentMode = .scaleAspectFit
+        mapImageView.isUserInteractionEnabled = true
+        let tap = UITapGestureRecognizer(target: self, action: #selector(didTapMapIcon))
+        mapImageView.addGestureRecognizer(tap)
         
         searchContainer.addArrangedSubview(searchTextField)
         searchContainer.addArrangedSubview(mapImageView)
@@ -246,6 +249,12 @@ final class CourseModifyViewController: BaseViewController<CourseModifyViewModel
             self.hideLoading()
             self.viewModel.onLocationConfirmed?(locationInfo, coordinate)
         }
+    }
+    
+    @objc private func didTapMapIcon() {
+        view.endEditing(true)
+        guard let loc = viewModel.initialLocation else { return }
+        viewModel.onLocationSelected?(loc)
     }
 }
 
