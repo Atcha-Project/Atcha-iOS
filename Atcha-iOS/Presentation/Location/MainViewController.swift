@@ -350,6 +350,7 @@ extension MainViewController {
         case .search:
             lastTrainSearchView.isHidden = false
             flagImageView.isHidden = false
+            mapContainerView.clearMapView()
             updateAtchaImageConstraint(relativeTo: lastTrainSearchView)
         case .finish:
             lastTrainArrivalView.isHidden = false
