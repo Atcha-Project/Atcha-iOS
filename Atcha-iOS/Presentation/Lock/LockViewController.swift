@@ -126,6 +126,7 @@ final class LockViewController: BaseViewController<LockViewModel> {
     
     @objc private func startTapped() {
         viewModel.cancelLockScreenTimer()
+        AlarmManager.shared.stopAlarm()
         
         let wrapper = UserDefaultsWrapper.shared
         let legInfo = wrapper.object(forKey: UserDefaultsWrapper.Key.legInfo.rawValue, of: LegInfo.self)
@@ -134,6 +135,8 @@ final class LockViewController: BaseViewController<LockViewModel> {
     }
     
     @objc private func detailRouteTapped() {
+        AlarmManager.shared.stopAlarm()
+        
         let wrapper = UserDefaultsWrapper.shared
         let lat = wrapper.string(forKey: UserDefaultsWrapper.Key.startLat.rawValue) ?? ""
         let lon = wrapper.string(forKey: UserDefaultsWrapper.Key.startLat.rawValue) ?? ""

@@ -221,7 +221,6 @@ extension MainViewModel {
         let wrapper = UserDefaultsWrapper.shared
         if let departureTime: String = wrapper.string(forKey: UserDefaultsWrapper.Key.departureTime.rawValue) {
             if !checkFutureTimeOver(dateString: departureTime) {
-                print("과거")
                 showLockView = true
                 stopAlarmTimer()
             } else {
@@ -244,14 +243,14 @@ extension MainViewModel {
         
         let currentDate = Date()
         let timeInterval = inputDate.timeIntervalSince(currentDate)
-        let isFuture = timeInterval > 0
+        let isFuture = timeInterval >= 60
         
         return isFuture
     }
     
     func startAlarmTimer() {
         alarmTimerCancellable = Timer
-            .publish(every: 10.0, on: .main, in: .common)
+            .publish(every: 5.0, on: .main, in: .common)
             .autoconnect()
             .sink { [weak self] _ in
                 self?.checkAlarmTime()
