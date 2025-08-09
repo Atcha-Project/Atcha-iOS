@@ -115,9 +115,32 @@ final class MainViewModel: BaseViewModel {
                         didSendInitialLocation = true
                     }
                     
+                    getNearstToast(currentLocation: currentLocation)
                     selectedLocation = currentLocation
                 }
             }
+        }
+    }
+    
+    func getNearstToast(currentLocation: CLLocationCoordinate2D) {
+        guard let legInfo = legInfo else { return }
+        
+        if let firstNonWalkMode = legInfo.trafficInfo.first(where: { $0.mode != .walk }),
+           let latStr = firstNonWalkMode.passStopList?.first?.lat,
+           let lonStr = firstNonWalkMode.passStopList?.first?.lon,
+           let lat = Double(latStr),
+           let lon = Double(lonStr) {
+            
+            // CLLocationCoordinate2D → CLLocation 변환
+            let stopCoordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
+            
+            let current = CLLocation(latitude: currentLocation.latitude, longitude: currentLocation.longitude)
+            let stop = CLLocation(latitude: stopCoordinate.latitude, longitude: stopCoordinate.longitude)
+            
+            let distanceMeters = current.distance(from: stop) // m 단위
+            print("현재 위치와 첫 정류장까지 거리: \(Int(distanceMeters)) m")
+        } else {
+            print("좌표를 가져오지 못했습니다.")
         }
     }
     

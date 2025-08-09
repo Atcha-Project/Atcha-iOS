@@ -194,7 +194,7 @@ final class LastTrainRealTimeBottomView: UIView {
 // MARK: Binding Leg Info
 extension LastTrainRealTimeBottomView {
     func setupLegInfo(info: LegInfo?) {
-        guard let info, let departureStr = info.pathInfo.first?.departureDateTime else { return }
+        guard let info else { return }
         
         if let firstNonWalkMode = info.pathInfo.first(where: { $0.mode != .walk }) {
             switch firstNonWalkMode.mode {
@@ -211,9 +211,10 @@ extension LastTrainRealTimeBottomView {
                     trainInfoLabel.attributedText = AtchaFont.B4_R_15("\(firstBusLeg.busName ?? "")", color: .white)
                 }
             case .subway:
-                setupSubwayTime(departureStr: departureStr)
                 if let firstSubwayLeg = info.trafficInfo.first(where: { $0.mode == .subway }),
-                   let firstStationName = firstSubwayLeg.passStopList?.first?.stationName {
+                   let firstStationName = firstSubwayLeg.passStopList?.first?.stationName,
+                   let time = firstSubwayLeg.subwayStartTime {
+                    setupSubwayTime(departureStr: time)
                     iconImageView.image = UIImage.route16PxSubway
                     iconImageView.tintColor = firstSubwayLeg.mode?.getColor(for: firstSubwayLeg.type ?? "")
                     trainInfoLabel.attributedText = AtchaFont.B4_R_15("\(firstStationName)역",
