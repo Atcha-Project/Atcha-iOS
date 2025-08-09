@@ -83,8 +83,7 @@ final class MainViewModel: BaseViewModel {
         }
         print("time : \(time)")
         wrapper.set(time, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
-        
-        AlarmManager.shared.startAlarm(after: time, title: "집에 가자", body: "집에 가자")
+        AlarmManager.shared.startAlarm(after: time, title: "눌러서 출발 알람 끄기", body: "자리에서 일어나야 할 시간이에요!")
     }
     
     func removeLegInfoAndAddress() {

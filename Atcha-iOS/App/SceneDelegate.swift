@@ -37,16 +37,20 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // This occurs shortly after the scene enters the background, or when its session is discarded.
         // Release any resources associated with this scene that can be re-created the next time the scene connects.
         // The scene may re-connect later, as its session was not necessarily discarded (see `application:didDiscardSceneSessions` instead).
+        AlarmManager.shared.sendBackgroundPush(title: "앗차를 다시 켜주세요",
+                                          body: "제 시간에 출발 시간을 알려드릴 수 있도록 앱을 다시 실행해 주세요.")
     }
     
     func sceneDidBecomeActive(_ scene: UIScene) {
         // Called when the scene has moved from an inactive state to an active state.
         // Use this method to restart any tasks that were paused (or not yet started) when the scene was inactive.
+        AlarmManager.shared.stopAlarm()
     }
     
     func sceneWillResignActive(_ scene: UIScene) {
         // Called when the scene will move from an active state to an inactive state.
         // This may occur due to temporary interruptions (ex. an incoming phone call).
+        
     }
     
     func sceneWillEnterForeground(_ scene: UIScene) {
@@ -58,8 +62,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Called as the scene transitions from the foreground to the background.
         // Use this method to save data, release shared resources, and store enough scene-specific state information
         // to restore the scene back to its current state.
+        
     }
-    
-    
 }
 

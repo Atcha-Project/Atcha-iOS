@@ -220,17 +220,12 @@ extension MainViewController {
         }
     }
     
-    private func exitButtonTapped(showToast: Bool = true) {
+    private func exitButtonTapped() {
+        AlarmManager.shared.stopAlarm()
         viewModel.requestPermissionAndStartTracking()
         viewModel.removeLegInfoAndAddress()
-        AlarmManager.shared.stopAlarm()
+        viewModel.bottomType = .search
         
-        lastTrainSearchView.isHidden = false
-        flagImageView.isHidden = false
-        lastTrainDepartView.isHidden = true
-        lastTrainRealTimeView.isHidden = true
-        lastTrainArrivalView.isHidden = true
-        updateAtchaImageConstraint(relativeTo: lastTrainSearchView)
         mapContainerView.clearMapView()
         
         if showToast {
@@ -312,6 +307,7 @@ extension MainViewController {
             .store(in: &cancellables)
         
         viewModel.$bottomType
+            .removeDuplicates()
             .receive(on: RunLoop.main)
             .sink { [weak self] type in
                 self?.setupBottomType(type)
@@ -347,7 +343,7 @@ extension MainViewController {
         case .search:
             lastTrainSearchView.isHidden = false
             flagImageView.isHidden = false
-            exitButtonTapped(showToast: false)
+            updateAtchaImageConstraint(relativeTo: lastTrainSearchView)
         case .finish:
             lastTrainArrivalView.isHidden = false
             viewModel.endAlarmTimer()
