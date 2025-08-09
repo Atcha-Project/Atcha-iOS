@@ -144,32 +144,6 @@ final class LastTrainArrivalBottomView: UIView {
     }
 }
 
-// MARK: Timer
-extension LastTrainArrivalBottomView {
-    private func scheduleFinishAfter30min(from arrivalDate: Date) {
-        // 이전 타이머 정리
-        finishTimer?.invalidate()
-        finishTimer = nil
-        
-        let elapsed = Date().timeIntervalSince(arrivalDate) // 초
-//        let target: TimeInterval = 30 * 60                  // 30분 == 1800초
-        let target: TimeInterval = 1 * 60                  // 30분 == 1800초
-        let remaining = target - elapsed
-        
-        if remaining <= 0 {
-            // 이미 30분 경과
-            print("종료")
-            return
-        }
-        
-        finishTimer = Timer.scheduledTimer(withTimeInterval: remaining, repeats: false) { [weak self] _ in
-            print("종료")
-            UserDefaultsWrapper.shared.remove(forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue)
-            self?.actionPublisher.send(.exitTapped)
-        }
-    }
-}
-
 // MARK: Binding Leg Info
 extension LastTrainArrivalBottomView {
     func setupLegInfo(info: LegInfo?) {
@@ -197,8 +171,6 @@ extension LastTrainArrivalBottomView {
         
         hourTimeLabel.attributedText = AtchaFont.D2_EB_48(hourText, color: .white)
         minuteTimeLabel.attributedText = AtchaFont.D2_EB_48(minuteText, color: .white)
-        
-        scheduleFinishAfter30min(from: arrivalDate)
     }
     
     private func parseTotalTimeToMinutes(_ time: String) -> Int {
