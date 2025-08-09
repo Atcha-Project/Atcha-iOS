@@ -75,9 +75,9 @@ final class MainCoordinator {
                 handle(route: .detailRoute(address: address, infos: infos))
             }
             self.navigationController.pushViewController(vc, animated: true)
-        case .changeCourse:
+        case let .changeCourse(location):
             let courseDI = diContainer.makeCourseDIContainer()
-            let modifyVM = courseDI.makeCourseModifyViewModel()
+            let modifyVM = courseDI.makeCourseModifyViewModel(location: location)
             
             modifyVM.onLocationSelected = { [weak self] location in
                 guard let self else { return }

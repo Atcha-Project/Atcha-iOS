@@ -47,6 +47,7 @@ final class CourseSettingViewController: BaseViewController<CourseSettingViewMod
     }
     
     private func bindView() {
+        viewModel.bindView()
         settingBottomView.actionPublisher
             .sink { [weak self] action in
                 guard let self else { return }
@@ -59,6 +60,7 @@ final class CourseSettingViewController: BaseViewController<CourseSettingViewMod
         
         viewModel.$locationInfo
             .receive(on: RunLoop.main)
+            .dropFirst()
             .sink { [weak self] location in
                 guard let self else { return }
                 settingBottomView.setupLocationTitle(location.name, location.address)
@@ -68,6 +70,7 @@ final class CourseSettingViewController: BaseViewController<CourseSettingViewMod
         viewModel.$currentLocation
             .compactMap { $0 }
             .receive(on: DispatchQueue.main)
+            .dropFirst()
             .sink { [weak self] location in
                 guard let self else { return }
                 mapContainerView.setupCenter(location: location)

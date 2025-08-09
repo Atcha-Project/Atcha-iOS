@@ -22,6 +22,7 @@ final class CourseModifyViewModel: BaseViewModel {
     @Published private(set) var items: [SearchResultItem] = []
     private(set) var mode: SearchMode = .recent
     private(set) var currentLocation: CLLocationCoordinate2D?
+    private(set) var initialLocation: Location?
     var onLocationSelected: ((Location) -> Void)?
     var onLocationConfirmed: ((LocationInfo, CLLocationCoordinate2D) -> Void)?
     
@@ -29,14 +30,19 @@ final class CourseModifyViewModel: BaseViewModel {
     private let authorizationUseCase: RequestLocationAuthorizationUseCase
     private let locationStateHolder: LocationStateHolder
     
-    init(searchAddressUseCase: SearchAddressUseCase, authorizationUseCase: RequestLocationAuthorizationUseCase, locationStateHolder: LocationStateHolder) {
+    init(searchAddressUseCase: SearchAddressUseCase,
+         authorizationUseCase: RequestLocationAuthorizationUseCase,
+         locationStateHolder: LocationStateHolder,
+         initialLocation: Location
+    ) {
         self.searchAddressUseCase = searchAddressUseCase
         self.authorizationUseCase = authorizationUseCase
         self.locationStateHolder = locationStateHolder
         
-        self.currentLocation = CLLocationCoordinate2D(latitude: 37.554722,
-                                                      longitude: 126.970833)
-//        self.currentLocation = locationStateHolder.currentLocation
+//        self.currentLocation = CLLocationCoordinate2D(latitude: 37.554722,
+//                                                      longitude: 126.970833)
+        self.initialLocation = initialLocation
+        self.currentLocation = CLLocationCoordinate2D(latitude: initialLocation.lat, longitude: initialLocation.lon)
         self.mode = .recent
         
         super.init()
@@ -55,9 +61,6 @@ final class CourseModifyViewModel: BaseViewModel {
     @MainActor
     func recentSearchLocation() {
         Task {
-            let accessToken = AppDIContainer.shared.tokenStorage.accessToken
-            let refreshToken = AppDIContainer.shared.tokenStorage.refreshToken
-
             do {
                 let request = FetchRecentSearchRequest(lat: currentLocation?.latitude, lon: currentLocation?.longitude)
                 let response = try await searchAddressUseCase.fetchRecentSearchHistories(request)

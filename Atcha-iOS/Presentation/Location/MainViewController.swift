@@ -172,7 +172,8 @@ extension MainViewController {
     private func handleSearchViewAction(_ action: LastTrainSearchBottomView.Action) {
         switch action {
         case .currentTapped:
-            viewModel.handleRoute(route: .changeCourse)
+            viewModel.handleRoute(route: .changeCourse(
+                location: Location(name: "", lat: 0.0, lon: 0.0, businessCategory: "", address: "", radius: "")))
         case .searchTapped:
             viewModel.handleRoute(route: .courseSearch(
                 startLat: "", startLon: "", startAddress: ""

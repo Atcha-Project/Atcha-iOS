@@ -40,6 +40,7 @@ final class MainViewModel: BaseViewModel {
     
     var routeHandler: ((MainRoute) -> Void)?
     var courseSearchResultHandler: ((String, LegInfo) -> Void)?
+    @Published private(set) var lastReverseGeocode: Location?
     
     init(authorizationUseCase: RequestLocationAuthorizationUseCase,
          streamUseCase: ObserveLocationStreamUseCase,
@@ -291,7 +292,14 @@ extension MainViewModel {
     func handleRoute(route: MainRoute) {
         switch route {
         case .changeCourse:
-            routeHandler?(.changeCourse)
+            routeHandler?(.changeCourse(location: Location(
+                name: lastReverseGeocode?.name,
+                lat: lastReverseGeocode?.lat ?? 0.0,
+                lon: lastReverseGeocode?.lon ?? 0.0,
+                businessCategory: lastReverseGeocode?.businessCategory,
+                address: lastReverseGeocode?.address,
+                radius: lastReverseGeocode?.radius)))
+            
         case .courseSearch:
             guard let currentLocation else { return }
             let lat: String = "\(currentLocation.latitude)"
@@ -330,6 +338,7 @@ extension MainViewModel {
     private func updateAddressAndFare(for location: CLLocationCoordinate2D) async {
         do {
             let info = try await fetchCurrentAddress(lat: location.latitude, lon: location.longitude)
+            self.lastReverseGeocode = info
             
             address = info?.name?.isEmpty == false ? info?.name : info?.address
             
