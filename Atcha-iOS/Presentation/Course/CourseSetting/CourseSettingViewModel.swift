@@ -32,6 +32,8 @@ final class CourseSettingViewModel: BaseViewModel {
          locationStateHolder: LocationStateHolder) {
 
         self.initialLocation = initialLocation
+        let coordinate = CLLocationCoordinate2D(latitude: initialLocation.lat, longitude: initialLocation.lon)
+        self.currentLocation = coordinate
         self.locationInfo = LocationInfo(
             name: initialLocation.name,
             address: initialLocation.address
@@ -47,6 +49,7 @@ final class CourseSettingViewModel: BaseViewModel {
     func bindView() {
         $currentLocation
             .removeDuplicates()
+            .dropFirst()
             .debounce(for: .seconds(0.3), scheduler: RunLoop.main)
             .sink { [weak self] location in
                 guard let self, let location else { return }
@@ -65,6 +68,10 @@ final class CourseSettingViewModel: BaseViewModel {
     func setupInitialLocation() {
         let coordinate = CLLocationCoordinate2D(latitude: initialLocation.lat, longitude: initialLocation.lon)
         self.currentLocation = coordinate
+        self.locationInfo = LocationInfo(
+            name: initialLocation.name,
+            address: initialLocation.address
+        )
     }
     
     func requestPermissionAndStartTracking() {
