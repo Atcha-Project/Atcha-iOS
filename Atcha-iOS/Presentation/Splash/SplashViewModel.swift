@@ -66,13 +66,17 @@ final class SplashViewModel: BaseViewModel {
                     routerHandler?(.realTime(info: legInfo, address: address))
                 } else {
                     
-                    if let _ = wrapper.object(forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue, of: Date.self) {
-                        routerHandler?(.finishTime(info: legInfo, address: address))
+                    if let arrivalTime = wrapper.object(forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue, of: Date.self) {
+                        if isMoreThanSeconds(from: arrivalTime, seconds: 60 * 30) { // 30분이 넘게 지난 경우 
+                            routerHandler?(.main)
+                        } else {
+                            routerHandler?(.finishTime(info: legInfo, address: address))
+                        }
                         return
                     }
                     
                     // 현재 시간 - 알람 시간 2분 이내에 진입 한 경우 (time이랑 Date() 차이가 2분)
-                    if isMoreThanTwoMinutes(from: time) {
+                    if isMoreThanSeconds(from: time, seconds: 120) {
                         routerHandler?(.main) // 진입 이후, 알람 팝업
                     } else {
                         routerHandler?(.lockScreen(info: legInfo, address: address)) // 2분 이내에 재 진입, 잠금화면
@@ -110,7 +114,13 @@ final class SplashViewModel: BaseViewModel {
         return isFuture
     }
     
-    private func isMoreThanTwoMinutes(from dateString: String) -> Bool {
+    private func isMoreThanSeconds(from date: Date, seconds: Int) -> Bool {
+        let now = Date()
+        let diff = now.timeIntervalSince(date) // 초 단위 차이
+        return diff >= Double(seconds)
+    }
+    
+    private func isMoreThanSeconds(from dateString: String, seconds: Int) -> Bool {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
         formatter.timeZone = .current
