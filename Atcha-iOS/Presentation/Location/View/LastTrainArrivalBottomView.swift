@@ -14,6 +14,7 @@ final class LastTrainArrivalBottomView: UIView {
         case exitTapped
     }
     
+    private var finishTimer: Timer?
     let actionPublisher = PassthroughSubject<Action, Never>()
     
     private let titleView: UIView = UIView()
