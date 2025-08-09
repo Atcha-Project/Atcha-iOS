@@ -104,6 +104,7 @@ final class MainViewModel: BaseViewModel {
     func requestPermissionAndStartTracking() {
         Task {
             let status = await authorizationUseCase.askLocationPermission()
+            let _ = await authorizationUseCase.askPushPermission()
             guard status == .authorizedAlways || status == .authorizedWhenInUse else { return }
             
             streamTask = Task {
