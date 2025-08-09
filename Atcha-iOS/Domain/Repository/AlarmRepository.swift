@@ -15,5 +15,5 @@ protocol AlarmRepository {
     func alarmDelete(_ request: AlarmRequest) async throws -> APIEmptyResponse
     
     // 출발시간 갱신
-    func alarmRefresh(_ request: AlarmRequest) async throws -> AlarmRefreshResponse
+    func alarmRefresh() async throws -> AlarmRefreshResponse
 }

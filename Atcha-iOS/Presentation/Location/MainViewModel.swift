@@ -22,6 +22,8 @@ final class MainViewModel: BaseViewModel {
     
     @Published var legInfo: LegInfo?
     @Published var addressDesc: String?
+    
+    @Published var departureTime: String?
     @Published var busRealTimeInfo: BusRealTimeInfo?
     
     @Published var bottomType: MapBottomType?
@@ -31,9 +33,9 @@ final class MainViewModel: BaseViewModel {
     private let authorizationUseCase: RequestLocationAuthorizationUseCase
     private let fetchTaxiFareUseCase: FetchTaxiFareUseCase
     private let streamUseCase: ObserveLocationStreamUseCase
-    private let alarmUseCase: AlarmUseCase
     private let locationStateHolder: LocationStateHolder
     private let busInfoUseCase: BusInfoUseCase
+    private let alarmUseCase: AlarmUseCase
     private var streamTask: Task<Void, Never>?
     
     var routeHandler: ((MainRoute) -> Void)?
@@ -43,16 +45,16 @@ final class MainViewModel: BaseViewModel {
          streamUseCase: ObserveLocationStreamUseCase,
          fetchTaxiFareUseCase: FetchTaxiFareUseCase,
          searchAddressUseCase: SearchAddressUseCase,
-         alarmUseCase: AlarmUseCase,
          locationStateHolder: LocationStateHolder,
-         busInfoUseCase: BusInfoUseCase) {
+         busInfoUseCase: BusInfoUseCase,
+         alarmUseCase: AlarmUseCase) {
         self.authorizationUseCase = authorizationUseCase
         self.streamUseCase = streamUseCase
         self.fetchTaxiFareUseCase = fetchTaxiFareUseCase
         self.searchAddressUseCase = searchAddressUseCase
-        self.alarmUseCase = alarmUseCase
         self.locationStateHolder = locationStateHolder
         self.busInfoUseCase = busInfoUseCase
+        self.alarmUseCase = alarmUseCase
         
         super.init()
         self.bind()
@@ -144,6 +146,17 @@ final class MainViewModel: BaseViewModel {
                         }
                     }
                 }
+            }
+        }
+    }
+    
+    func refreshDepatrueTime() {
+        Task {
+            do {
+                let info = try await realodDepartureTime()
+                departureTime = info.departureTime
+            } catch {
+                print("도착 시간 실시간 조회 실패")
             }
         }
     }
@@ -347,5 +360,9 @@ extension MainViewModel {
     
     private func busRealTimeInfo(request: BusRealTimeInfoRequest) async throws -> BusRealTimeInfo {
         return try await busInfoUseCase.busRealTimeInfo(request)
+    }
+    
+    private func realodDepartureTime() async throws -> AlarmRefresh {
+        return try await alarmUseCase.alarmRefresh()
     }
 }

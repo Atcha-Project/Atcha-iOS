@@ -185,7 +185,7 @@ extension MainViewController {
         case .refreshBusTime, .reloadTapped: viewModel.getBusRealTime()
         case .exitTapped:
             viewModel.alarmDelete()
-            exitButtonTapped(showToast: true)
+            exitButtonTapped()
         case .detailRoadMapTapped: viewModel.handleRoute(route: .detailRoute(address: "",
                                                                              infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: [])))
         case .finishAlarm: viewModel.bottomType = .finish
@@ -196,14 +196,14 @@ extension MainViewController {
         switch action {
         case .exitTapped:
             viewModel.alarmDelete()
-            exitButtonTapped(showToast: true)
+            exitButtonTapped()
         case .detailRoadMapTapped:
             viewModel.handleRoute(route: .detailRoute(address: "",
                                                       infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: [])))
         case .locationTapped:
             ballonView.setupTitle(bottomMessage: "위치를 변경하려면 알림을 종료해야 해요")
         case .reloadTapped:
-            viewModel.getBusRealTime()
+            viewModel.refreshDepatrueTime()
         case .timeTapped:
             ballonView.setupTitle(topMessage: "이때쯤 자리에서 출발하면 돼요",
                                   bottomMessage: "현재 교통 상황 기준으로,\n출발 시간이 가까워질수록 더 정확해져요")
@@ -214,7 +214,7 @@ extension MainViewController {
         switch action {
         case .exitTapped:
             viewModel.alarmDelete()
-            exitButtonTapped(showToast: true)
+            exitButtonTapped()
         case .detailRoadMapTapped: viewModel.handleRoute(route: .detailRoute(address: "",
                                                                              infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: [])))
         }
@@ -228,11 +228,9 @@ extension MainViewController {
         
         mapContainerView.clearMapView()
         
-        if showToast {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-                guard let self else { return }
-                view.showToast(message: "알림이 종료되었어요")
-            }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            guard let self else { return }
+            view.showToast(message: "알림이 종료되었어요")
         }
     }
     
@@ -319,6 +317,14 @@ extension MainViewController {
             .receive(on: RunLoop.main)
             .sink { [weak self] info in
                 self?.lastTrainRealTimeView.setupBusRealTime(realTime: info)
+            }
+            .store(in: &cancellables)
+        
+        viewModel.$departureTime
+            .compactMap { $0 }
+            .receive(on: RunLoop.main)
+            .sink { [weak self] time in
+                self?.lastTrainDepartView.refreshDepartureTime(departureStr: time)
             }
             .store(in: &cancellables)
     }
