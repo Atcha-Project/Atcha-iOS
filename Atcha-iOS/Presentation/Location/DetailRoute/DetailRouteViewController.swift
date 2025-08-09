@@ -114,6 +114,10 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
 //                mapContainerView.setupCenter(location: location)
             }
             .store(in: &cancellables)
+        
+        bottomSheet.onBusDetail = { [weak self] info in
+                self?.viewModel.onBusDetail?(info)
+            }
     }
     
     private func addRouteLine(infos: [LegPathInfo]) {

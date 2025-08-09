@@ -20,7 +20,7 @@ final class BusDetailViewModel: BaseViewModel {
     let busDetailInfo: BusDetailInfo
     private let busInfoUseCase: BusInfoUseCase
     var busRouteInfo = BusRouteInfo(busRouteId: "", routeName: "", serviceRegion: "")
-    var onInfoTap: (() -> Void)?
+    var onInfoTap: ((BusRouteInfo) -> Void)?
     
     @Published var busPositionInfo: BusPositionInfo?
     @Published var busRealTimeInfo: BusRealTimeInfo?
@@ -120,5 +120,9 @@ final class BusDetailViewModel: BaseViewModel {
     
     deinit {
         refreshTimer?.invalidate()
+    }
+    
+    func didTapInfo() {
+        onInfoTap?(busRouteInfo)
     }
 }

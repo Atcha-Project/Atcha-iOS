@@ -203,6 +203,14 @@ struct AddressInfo: Codable, Equatable, Hashable {
     let lat: Double?
 }
 
+extension AddressInfo {
+    init(name: String?, lat: Double?, lon: Double?) {
+        self.name = name
+        self.lat = lat
+        self.lon = lon
+    }
+}
+
 struct PassStopList: Codable, Hashable {
     let index: Int?
     let stationName: String?
