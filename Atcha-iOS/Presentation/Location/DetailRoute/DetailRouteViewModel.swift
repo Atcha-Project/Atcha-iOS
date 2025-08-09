@@ -16,6 +16,7 @@ final class DetailRouteViewModel: BaseViewModel {
     private var streamTask: Task<Void, Never>?
     
     private let infos: LegInfo
+    var onBusDetail: ((BusDetailInfo) -> Void)?
     
     @Published var currentLocation: CLLocationCoordinate2D?
     @Published var address: String

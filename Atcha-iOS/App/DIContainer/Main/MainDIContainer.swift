@@ -46,11 +46,13 @@ final class MainDIContainer {
     func makeMainiewModel() -> MainViewModel {
         
         let fetchTaxiFareUseCase = FetchTaxiFareUseCaseImpl(repository: FetchTaxiFareRepositoryImpl(apiService: apiService))
+        let alarmUseCase = AlarmUseCaseImpl(repository: AlarmRepositoryImpl(apiService: apiService))
         
         return MainViewModel(authorizationUseCase: requestUseCase,
                              streamUseCase: streamUseCase,
                              fetchTaxiFareUseCase: fetchTaxiFareUseCase,
                              searchAddressUseCase: searchAddressUseCase,
+                             alarmUseCase: alarmUseCase,
                              locationStateHolder: locationStateHolder,
                              busInfoUseCase: busInfoUseCase)
     }

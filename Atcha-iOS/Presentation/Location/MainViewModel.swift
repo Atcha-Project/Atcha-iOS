@@ -31,6 +31,7 @@ final class MainViewModel: BaseViewModel {
     private let authorizationUseCase: RequestLocationAuthorizationUseCase
     private let fetchTaxiFareUseCase: FetchTaxiFareUseCase
     private let streamUseCase: ObserveLocationStreamUseCase
+    private let alarmUseCase: AlarmUseCase
     private let locationStateHolder: LocationStateHolder
     private let busInfoUseCase: BusInfoUseCase
     private var streamTask: Task<Void, Never>?
@@ -42,12 +43,14 @@ final class MainViewModel: BaseViewModel {
          streamUseCase: ObserveLocationStreamUseCase,
          fetchTaxiFareUseCase: FetchTaxiFareUseCase,
          searchAddressUseCase: SearchAddressUseCase,
+         alarmUseCase: AlarmUseCase,
          locationStateHolder: LocationStateHolder,
          busInfoUseCase: BusInfoUseCase) {
         self.authorizationUseCase = authorizationUseCase
         self.streamUseCase = streamUseCase
         self.fetchTaxiFareUseCase = fetchTaxiFareUseCase
         self.searchAddressUseCase = searchAddressUseCase
+        self.alarmUseCase = alarmUseCase
         self.locationStateHolder = locationStateHolder
         self.busInfoUseCase = busInfoUseCase
         
@@ -141,6 +144,23 @@ final class MainViewModel: BaseViewModel {
                         }
                     }
                 }
+            }
+        }
+    }
+    
+    // MARK: - 알림 취소
+    func alarmDelete() {
+        let wrapper = UserDefaultsWrapper.shared
+        let savedLastRouteId: String? = wrapper.string(
+            forKey: UserDefaultsWrapper.Key.lastRouteId.rawValue)
+        let request = AlarmRequest(lastRouteId: savedLastRouteId)
+        Task {
+            do {
+                let _ = try await alarmUseCase.alarmDelete(request)
+                wrapper.remove(forKey: UserDefaultsWrapper.Key.lastRouteId.rawValue)
+                print("알림 취소 성공")
+            } catch {
+                print("알림 취소 실패: \(error)")
             }
         }
     }

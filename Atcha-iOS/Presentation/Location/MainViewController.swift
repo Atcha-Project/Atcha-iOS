@@ -183,7 +183,9 @@ extension MainViewController {
     private func handleRealTimeViewAction(_ action: LastTrainRealTimeBottomView.Action) {
         switch action {
         case .refreshBusTime, .reloadTapped: viewModel.getBusRealTime()
-        case .exitTapped: exitButtonTapped()
+        case .exitTapped:
+            viewModel.alarmDelete()
+            exitButtonTapped(showToast: true)
         case .detailRoadMapTapped: viewModel.handleRoute(route: .detailRoute(address: "",
                                                                              infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: [])))
         case .finishAlarm: viewModel.bottomType = .finish
@@ -192,7 +194,9 @@ extension MainViewController {
     
     private func handleTrainDepartAction(_ action: LastTrainDepartBottomView.Action) {
         switch action {
-        case .exitTapped: exitButtonTapped()
+        case .exitTapped:
+            viewModel.alarmDelete()
+            exitButtonTapped(showToast: true)
         case .detailRoadMapTapped:
             viewModel.handleRoute(route: .detailRoute(address: "",
                                                       infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: [])))
@@ -208,7 +212,9 @@ extension MainViewController {
     
     private func handleArrivalViewAction(_ action: LastTrainArrivalBottomView.Action) {
         switch action {
-        case .exitTapped: exitButtonTapped()
+        case .exitTapped:
+            viewModel.alarmDelete()
+            exitButtonTapped(showToast: true)
         case .detailRoadMapTapped: viewModel.handleRoute(route: .detailRoute(address: "",
                                                                              infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: [])))
         }
@@ -216,16 +222,17 @@ extension MainViewController {
     
     private func exitButtonTapped() {
         AlarmManager.shared.stopAlarm()
-        
         viewModel.requestPermissionAndStartTracking()
         viewModel.removeLegInfoAndAddress()
         viewModel.bottomType = .search
         
         mapContainerView.clearMapView()
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-            guard let self else { return }
-            view.showToast(message: "알림이 종료되었어요")
+        if showToast {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+                guard let self else { return }
+                view.showToast(message: "알림이 종료되었어요")
+            }
         }
     }
     

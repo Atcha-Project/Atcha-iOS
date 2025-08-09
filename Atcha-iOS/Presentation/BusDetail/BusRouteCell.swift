@@ -204,15 +204,31 @@ class BusRouteCell: UICollectionViewCell {
                         let updated = self.remainSeconds[index]
                         
                         if updated > 120 {
+                            let congestionText = congestion?.displayText
+                            let remainText: String
+                            if let congestionText, !congestionText.isEmpty {
+                                remainText = "\(remainStation)번째 전, \(congestionText)"
+                            } else {
+                                remainText = "\(remainStation)번째 전"
+                            }
+                            
                             label.attributedText = AtchaFont.B7_M_13(
                                 lineHeight: 0,
-                                "\(updated.toHourMinuteSecondString) (\(remainStation)번째 전, \(congestion?.displayText ?? ""))",
+                                "\(updated.toHourMinuteSecondString) (\(remainText))",
                                 color: AtchaColor.Etc.remainTime
                             )
                         } else if updated > 0 { // 3분 이하 → "곧 도착"
+                            let congestionText = congestion?.displayText
+                            let remainText: String
+                            if let congestionText, !congestionText.isEmpty {
+                                remainText = "\(remainStation)번째 전, \(congestionText)"
+                            } else {
+                                remainText = "\(remainStation)번째 전"
+                            }
+                            
                             label.attributedText = AtchaFont.B7_M_13(
                                 lineHeight: 0,
-                                "곧 도착 (\(remainStation)번째 전, \(congestion?.displayText ?? ""))",
+                                "곧 도착 (\(remainText))",
                                 color: AtchaColor.Etc.remainTime
                             )
                         } else {

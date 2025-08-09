@@ -45,6 +45,7 @@ final class DetailRouteInfoBottomView: UIView {
     
     private var startAddress: String = ""
     private var busRealTimeInfo: [BusRealTimeInfo] = []
+    var onBusDetail: ((BusDetailInfo) -> Void)?
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -266,6 +267,7 @@ extension DetailRouteInfoBottomView {
         return section
     }
     
+    
     private func setupDataSource() {
         dataSource = UICollectionViewDiffableDataSource<Section, LegTrafficInfo>(
             collectionView: collectionView
@@ -286,6 +288,27 @@ extension DetailRouteInfoBottomView {
                 ) as! DetailRouteBusCell
                 cell.didTapSummary = { [weak self] in
                     self?.applySnapshot()
+                }
+                cell.didTapDetail = { [weak self] in
+                    let stations = (item.passStopList ?? []).map {
+                        PassStations(index: $0.index, stationName: $0.stationName, lat: $0.lat, lon: $0.lon)
+                    }
+                    let first = item.passStopList?.first
+                    let lat = first?.lat.flatMap { Double($0) }
+                    let lon = first?.lon.flatMap { Double($0) }
+                    
+                    let start = AddressInfo(
+                        name: first?.stationName,
+                        lat: lat,
+                        lon: lon
+                    )
+                    
+                    let info = BusDetailInfo(
+                        routeName: item.route,
+                        start: start,
+                        passStations: stations
+                    )
+                    self?.onBusDetail?(info)
                 }
                 cell.configure(info: item, busInfo: self.busRealTimeInfo)
                 return cell

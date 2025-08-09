@@ -13,6 +13,7 @@ final class MainCoordinator {
     private let navigationController: UINavigationController
     private let diContainer: MainDIContainer
     private var myPageCoordinator: MyPageCoordinator?
+    private var busDetailCoordinator: BusDetailCoordinator?
     
     private var mainViewModel: MainViewModel?
     
@@ -56,7 +57,7 @@ final class MainCoordinator {
                 diContainer: myPageDI
             )
             self.myPageCoordinator = myPageCoordinator
-            myPageCoordinator.signoutFinish = self.signoutFinish 
+            myPageCoordinator.signoutFinish = self.signoutFinish
             myPageCoordinator.start()
         case let .courseSearch(startLat, startLon, startAddress):
             let courseDI = diContainer.makeCourseDIContainer()
@@ -125,6 +126,17 @@ final class MainCoordinator {
             let routeDI = diContainer.makeRouteDIContainer()
             let vm = routeDI.makeDetailRouteViewModel(address: address, infos: infos)
             let vc = routeDI.makeDetailRouteViewController(viewModel: vm)
+            
+            vm.onBusDetail = { [weak self] busDetailInfo in
+                guard let self else { return }
+                let busDI = self.diContainer.makeBusInfoDIContainer()
+                let busCoord = BusDetailCoordinator(
+                    navigationController: self.navigationController,
+                    diContainer: busDI
+                )
+                self.busDetailCoordinator = busCoord
+                busCoord.start(busDetailInfo: busDetailInfo)
+            }
             navigationController.pushViewController(vc, animated: false)
             
         case .lockScreen:
