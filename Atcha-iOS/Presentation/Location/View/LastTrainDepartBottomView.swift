@@ -80,6 +80,8 @@ final class LastTrainDepartBottomView: UIView {
         reloadImageView.tintColor = .white
         reloadImageView.setContentHuggingPriority(.required, for: .horizontal)
         
+        hourTimeLabel.attributedText = AtchaFont.D2_EB_48("--", color: .white)
+        minuteTimeLabel.attributedText = AtchaFont.D2_EB_48("--", color: .white)
         hourLabel.attributedText = AtchaFont.B1_R_17("시", color: .white)
         miniuteLabel.attributedText = AtchaFont.B1_R_17("분", color: .white)
         
@@ -187,8 +189,19 @@ extension LastTrainDepartBottomView {
                 hourTimeLabel.attributedText = AtchaFont.D2_EB_48(hour, color: .white)
                 minuteTimeLabel.attributedText = AtchaFont.D2_EB_48(minute, color: .white)
             }
-            
-            
+        }
+    }
+    
+    func refreshDepartureTime(departureStr: String) {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        formatter.locale = .current
+        
+        if let _ = formatter.date(from: departureStr) {
+            if let (hour, minute) = departureStr.toHourMinute() {
+                hourTimeLabel.attributedText = AtchaFont.D2_EB_48(hour, color: .white)
+                minuteTimeLabel.attributedText = AtchaFont.D2_EB_48(minute, color: .white)
+            }
         }
     }
 }

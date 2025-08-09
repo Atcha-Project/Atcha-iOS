@@ -15,6 +15,7 @@ final class MainDIContainer {
     private lazy var requestUseCase = RequestLocationAuthorizationUseCaseImpl(repository: PermissionRepositoryImpl())
     private lazy var streamUseCase = ObserLocationStreamUseCaseImpl(repository: LocationStreamRepositoryImpl())
     private lazy var busInfoUseCase = BusInfoUseCaseImpl(repository: BusInfoRepositoryImpl(apiService: apiService))
+    private lazy var alarmUseCase = AlarmUseCaseImpl(repository: AlarmRepositoryImpl(apiService: apiService))
     
     private lazy var myPageDI: MyPageDIContainer = {
         MyPageDIContainer(apiService: apiService,
@@ -44,17 +45,14 @@ final class MainDIContainer {
     }
     
     func makeMainiewModel() -> MainViewModel {
-        
         let fetchTaxiFareUseCase = FetchTaxiFareUseCaseImpl(repository: FetchTaxiFareRepositoryImpl(apiService: apiService))
-        let alarmUseCase = AlarmUseCaseImpl(repository: AlarmRepositoryImpl(apiService: apiService))
-        
         return MainViewModel(authorizationUseCase: requestUseCase,
                              streamUseCase: streamUseCase,
                              fetchTaxiFareUseCase: fetchTaxiFareUseCase,
                              searchAddressUseCase: searchAddressUseCase,
-                             alarmUseCase: alarmUseCase,
                              locationStateHolder: locationStateHolder,
-                             busInfoUseCase: busInfoUseCase)
+                             busInfoUseCase: busInfoUseCase,
+                             alarmUseCase: alarmUseCase)
     }
     
     func makeMainViewController(viewModel: MainViewModel) -> UIViewController {
