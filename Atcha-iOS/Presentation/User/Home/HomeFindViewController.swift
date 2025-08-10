@@ -46,7 +46,10 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
         mapContainerView.delegate = self
         flagImageView.image = UIImage.settingLocationMark
         backButton.setImage(UIImage.chevronLeft, for: .normal)
-        backButton.tintColor = .gray300
+        backButton.tintColor = .white
+        backButton.backgroundColor = .black
+        backButton.clipsToBounds = true
+        backButton.setCornerRadius(18)
         
         configureButton(loactionButton,
                         imageName: "mylocation-filled",
@@ -108,13 +111,13 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
         
         backButton.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(16)
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).inset(18)
-            make.size.equalTo(24)
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(12)
+            make.size.equalTo(36)
         }
         
         flagImageView.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
-            make.centerY.equalTo(mapContainerView.snp.centerY)
+            make.centerY.equalTo(mapContainerView.snp.centerY).offset(-63)
             make.height.equalTo(63)
             make.width.equalTo(48)
         }
