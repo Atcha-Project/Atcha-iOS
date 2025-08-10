@@ -400,6 +400,7 @@ extension MainViewController {
 // MARK: Add Line
 extension MainViewController {
     private func addRouteLine(pathInfos: [LegPathInfo]) {
+        mapContainerView.clearMapView()
         var shapeStrings: [String] = []
         var colors: [UIColor] = []
         var images: [UIImage] = []

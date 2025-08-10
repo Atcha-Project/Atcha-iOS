@@ -29,6 +29,12 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         bindView()
     }
     
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        // 레이아웃이 확정된 뒤에 호출해야 현재 프레임(절반 화면) 기준으로 정확히 맞춰짐
+        mapContainerView.adjustMapToFit(coordinates: allCoordinates)
+    }
+    
     private func setupUI() {
         view.addSubViews(mapContainerView, loactionButton, bottomSheet, backButton, relaodButton)
         mapContainerView.delegate = self
@@ -48,8 +54,8 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         relaodButton.addTarget(self, action: #selector(didTapReload), for: .touchUpInside)
         
         configureButton(loactionButton,
-                                imageName: "mylocation-filled",
-                                action: #selector(didTapLocationButton))
+                        imageName: "mylocation-filled",
+                        action: #selector(didTapLocationButton))
     }
     
     private func configureButton(_ button: UIButton, imageName: String, action: Selector) {
@@ -111,20 +117,20 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             .sink { [weak self] location in
                 guard let self else { return }
                 mapContainerView.adjustMapToFit(coordinates: allCoordinates)
-//                mapContainerView.setupCenter(location: location)
+                //                mapContainerView.setupCenter(location: location)
             }
             .store(in: &cancellables)
         
         bottomSheet.onBusDetail = { [weak self] info in
-                self?.viewModel.onBusDetail?(info)
-            }
+            self?.viewModel.onBusDetail?(info)
+        }
     }
     
     private func addRouteLine(infos: [LegPathInfo]) {
         var shapeStrings: [String] = []
         var colors: [UIColor] = []
         var images: [UIImage] = []
-
+        
         infos.forEach { info in
             switch info.mode {
             case .bus, .subway:
