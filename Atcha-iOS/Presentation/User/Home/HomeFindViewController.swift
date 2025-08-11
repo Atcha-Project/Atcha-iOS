@@ -82,7 +82,7 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
             .receive(on: DispatchQueue.main)
             .sink { [weak self] address in
                 guard let self else { return }
-                bottomView.setupaddressLabel(address: address)
+                bottomView.setupAddressLabel(address: address)
             }
             .store(in: &cancellables)
         
@@ -131,7 +131,6 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
         bottomView.snp.makeConstraints { make in
             make.horizontalEdges.equalToSuperview()
             make.bottom.equalToSuperview()
-            make.height.equalTo(210)
         }
     }
 }

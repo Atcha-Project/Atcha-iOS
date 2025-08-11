@@ -18,6 +18,13 @@ final class SearchLocationViewController: BaseViewController<SearchLocationViewM
     
     private var tableViewTopConstraint: Constraint?
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        DispatchQueue.main.async { [weak self] in
+            self?.searchNavigationBar.focusTextField()
+        }
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         

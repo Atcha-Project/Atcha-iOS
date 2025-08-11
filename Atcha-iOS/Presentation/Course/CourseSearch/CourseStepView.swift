@@ -77,23 +77,59 @@ final class CourseStepView: UIView {
         switch topLineStyle {
         case .none:
             topLineImageView.isHidden = true
+            topLineImageView.snp.remakeConstraints { make in
+                make.centerX.equalTo(iconImageView)
+                make.bottom.equalTo(iconImageView.snp.top)
+                make.top.greaterThanOrEqualToSuperview()
+                make.height.equalTo(0)
+            }
         case .solid:
             topLineImageView.isHidden = false
             topLineImageView.image = UIImage.verticalLine
+            topLineImageView.snp.remakeConstraints { make in
+                make.centerX.equalTo(iconImageView)
+                make.bottom.equalTo(iconImageView.snp.top)
+                make.top.greaterThanOrEqualToSuperview()
+                make.height.equalTo(18)
+            }
         case .dotted:
             topLineImageView.isHidden = false
             topLineImageView.image = UIImage.verticalDottedLine
+            topLineImageView.snp.remakeConstraints { make in
+                make.centerX.equalTo(iconImageView)
+                make.bottom.equalTo(iconImageView.snp.top)
+                make.top.greaterThanOrEqualToSuperview()
+                make.height.equalTo(18)
+            }
         }
         
         switch bottomLineStyle {
         case .none:
             bottomLineImageView.isHidden = true
+            bottomLineImageView.snp.remakeConstraints { make in
+                make.top.equalTo(iconImageView.snp.bottom).offset(isGetOff ? 6 : 4)
+                make.centerX.equalTo(iconImageView)
+                make.height.equalTo(0)
+                make.bottom.equalToSuperview().priority(.medium)
+            }
         case .solid:
             bottomLineImageView.isHidden = false
             bottomLineImageView.image = UIImage.verticalLine
+            bottomLineImageView.snp.remakeConstraints { make in
+                make.top.equalTo(iconImageView.snp.bottom).offset(isGetOff ? 6 : 4)
+                make.centerX.equalTo(iconImageView)
+                make.height.equalTo(18)
+                make.bottom.equalToSuperview().priority(.medium)
+            }
         case .dotted:
             bottomLineImageView.isHidden = false
             bottomLineImageView.image = UIImage.verticalDottedLine
+            bottomLineImageView.snp.remakeConstraints { make in
+                make.top.equalTo(iconImageView.snp.bottom).offset(isGetOff ? 6 : 4)
+                make.centerX.equalTo(iconImageView)
+                make.height.equalTo(18)
+                make.bottom.equalToSuperview().priority(.medium)
+            }
         }
         
         iconImageView.snp.remakeConstraints { make in
@@ -101,18 +137,18 @@ final class CourseStepView: UIView {
             make.leading.equalToSuperview().offset(isGetOff ? 6 : 0)
         }
         
-        bottomLineImageView.snp.remakeConstraints { make in
-            make.top.equalTo(iconImageView.snp.bottom).offset(isGetOff ? 6 : 4)
-            make.centerX.equalTo(iconImageView)
-            make.height.equalTo(18)
-            make.bottom.equalToSuperview().priority(.medium)
-        }
+//        bottomLineImageView.snp.remakeConstraints { make in
+//            make.top.equalTo(iconImageView.snp.bottom).offset(isGetOff ? 6 : 4)
+//            make.centerX.equalTo(iconImageView)
+//            make.height.equalTo(18)
+//            make.bottom.equalToSuperview().priority(.medium)
+//        }
         
         titleLabel.snp.makeConstraints { make in
             make.top.equalTo(iconImageView).offset(isGetOff ? -2 : 3)
             make.leading.equalTo(iconImageView.snp.trailing).offset(isGetOff ? 12 : 6)
         }
-
+        
         if let t = time {
             timeLabel.isHidden = false
             

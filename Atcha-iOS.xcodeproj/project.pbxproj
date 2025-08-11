@@ -7,11 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		6D17A88C2E1CE5A600642D66 /* Secrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6D17A88B2E1CE5A600642D66 /* Secrets.xcconfig */; };
-		6D17A89E2E20CD4B00642D66 /* TMapSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D17A89A2E20CD4000642D66 /* TMapSDK.framework */; };
-		6D17A89F2E20CD4B00642D66 /* TMapSDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 6D17A89A2E20CD4000642D66 /* TMapSDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		6D17A8A02E20CD4C00642D66 /* VSMSDK.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D17A89B2E20CD4000642D66 /* VSMSDK.xcframework */; };
-		6D17A8A12E20CD4C00642D66 /* VSMSDK.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 6D17A89B2E20CD4000642D66 /* VSMSDK.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		6D1EE2DA2E08E4E000F7BBF1 /* HomeRegisterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2D92E08E4E000F7BBF1 /* HomeRegisterViewController.swift */; };
 		6D1EE2DC2E08E4EA00F7BBF1 /* HomeRegisterViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2DB2E08E4EA00F7BBF1 /* HomeRegisterViewModel.swift */; };
 		6D1EE2DE2E090A3300F7BBF1 /* SearchLocationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2DD2E090A3300F7BBF1 /* SearchLocationViewController.swift */; };
@@ -106,6 +101,11 @@
 		6DB7636F2E45C6D100D06A49 /* AlarmRepositoryImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DB7636E2E45C6D100D06A49 /* AlarmRepositoryImpl.swift */; };
 		6DB763712E45C7A300D06A49 /* AlarmRefreshResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DB763702E45C7A300D06A49 /* AlarmRefreshResponse.swift */; };
 		6DB763732E45C7E800D06A49 /* AlarmRefresh.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DB763722E45C7E800D06A49 /* AlarmRefresh.swift */; };
+		6DB763752E48E11300D06A49 /* Secrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6DB763742E48E11300D06A49 /* Secrets.xcconfig */; };
+		6DB7637C2E48E6AC00D06A49 /* TMapSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6DB763782E48E6A900D06A49 /* TMapSDK.framework */; };
+		6DB7637D2E48E6AC00D06A49 /* TMapSDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 6DB763782E48E6A900D06A49 /* TMapSDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		6DB7637F2E48E6AD00D06A49 /* VSMSDK.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6DB763792E48E6A900D06A49 /* VSMSDK.xcframework */; };
+		6DB763802E48E6AD00D06A49 /* VSMSDK.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 6DB763792E48E6A900D06A49 /* VSMSDK.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		6DC3BEDD2E04F32400831470 /* UserDefaultsKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DC3BEDC2E04F32400831470 /* UserDefaultsKey.swift */; };
 		6DC3BEDF2E04F32D00831470 /* UserDefaultsWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DC3BEDE2E04F32D00831470 /* UserDefaultsWrapper.swift */; };
 		6DC3BEE22E04FD0700831470 /* KakaoSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 6DC3BEE12E04FD0700831470 /* KakaoSDK */; };
@@ -268,7 +268,6 @@
 		B6FB20842E1BE4B80032751B /* FetchTaxiFareUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6FB20832E1BE4B80032751B /* FetchTaxiFareUseCase.swift */; };
 		B6FB20882E1BE4F40032751B /* FetchTaxiFareRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6FB20872E1BE4F40032751B /* FetchTaxiFareRepository.swift */; };
 		B6FB208A2E1BE5200032751B /* FetchTaxiFareRepositoryImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6FB20892E1BE5200032751B /* FetchTaxiFareRepositoryImpl.swift */; };
-		B6FB20912E1D21760032751B /* Secrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = B6FB20902E1D21760032751B /* Secrets.xcconfig */; };
 		B6FB20952E1D306A0032751B /* HomeRegisterDIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6FB20942E1D306A0032751B /* HomeRegisterDIContainer.swift */; };
 		B6FB20992E1D334A0032751B /* HomeFindViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6FB20982E1D334A0032751B /* HomeFindViewController.swift */; };
 		B6FB209B2E1D33550032751B /* HomeFindViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6FB209A2E1D33550032751B /* HomeFindViewModel.swift */; };
@@ -277,14 +276,14 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		6DFF29C72E0D690C0039399F /* Embed Frameworks */ = {
+		6DB7637E2E48E6AC00D06A49 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				6D17A89F2E20CD4B00642D66 /* TMapSDK.framework in Embed Frameworks */,
-				6D17A8A12E20CD4C00642D66 /* VSMSDK.xcframework in Embed Frameworks */,
+				6DB7637D2E48E6AC00D06A49 /* TMapSDK.framework in Embed Frameworks */,
+				6DB763802E48E6AD00D06A49 /* VSMSDK.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -292,9 +291,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		6D17A88B2E1CE5A600642D66 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
-		6D17A89A2E20CD4000642D66 /* TMapSDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = TMapSDK.framework; sourceTree = "<group>"; };
-		6D17A89B2E20CD4000642D66 /* VSMSDK.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = VSMSDK.xcframework; sourceTree = "<group>"; };
 		6D1EE2D92E08E4E000F7BBF1 /* HomeRegisterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeRegisterViewController.swift; sourceTree = "<group>"; };
 		6D1EE2DB2E08E4EA00F7BBF1 /* HomeRegisterViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeRegisterViewModel.swift; sourceTree = "<group>"; };
 		6D1EE2DD2E090A3300F7BBF1 /* SearchLocationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchLocationViewController.swift; sourceTree = "<group>"; };
@@ -386,6 +382,9 @@
 		6DB7636E2E45C6D100D06A49 /* AlarmRepositoryImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmRepositoryImpl.swift; sourceTree = "<group>"; };
 		6DB763702E45C7A300D06A49 /* AlarmRefreshResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmRefreshResponse.swift; sourceTree = "<group>"; };
 		6DB763722E45C7E800D06A49 /* AlarmRefresh.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmRefresh.swift; sourceTree = "<group>"; };
+		6DB763742E48E11300D06A49 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
+		6DB763782E48E6A900D06A49 /* TMapSDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = TMapSDK.framework; sourceTree = "<group>"; };
+		6DB763792E48E6A900D06A49 /* VSMSDK.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = VSMSDK.xcframework; sourceTree = "<group>"; };
 		6DC3BEDC2E04F32400831470 /* UserDefaultsKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsKey.swift; sourceTree = "<group>"; };
 		6DC3BEDE2E04F32D00831470 /* UserDefaultsWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsWrapper.swift; sourceTree = "<group>"; };
 		6DC3BEF02E04FE1600831470 /* KeychainWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainWrapper.swift; sourceTree = "<group>"; };
@@ -545,7 +544,6 @@
 		B6FB20832E1BE4B80032751B /* FetchTaxiFareUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchTaxiFareUseCase.swift; sourceTree = "<group>"; };
 		B6FB20872E1BE4F40032751B /* FetchTaxiFareRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchTaxiFareRepository.swift; sourceTree = "<group>"; };
 		B6FB20892E1BE5200032751B /* FetchTaxiFareRepositoryImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchTaxiFareRepositoryImpl.swift; sourceTree = "<group>"; };
-		B6FB20902E1D21760032751B /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 		B6FB20942E1D306A0032751B /* HomeRegisterDIContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeRegisterDIContainer.swift; sourceTree = "<group>"; };
 		B6FB20982E1D334A0032751B /* HomeFindViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeFindViewController.swift; sourceTree = "<group>"; };
 		B6FB209A2E1D33550032751B /* HomeFindViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeFindViewModel.swift; sourceTree = "<group>"; };
@@ -562,12 +560,12 @@
 				6D8D8AE32E01386D003DABB2 /* PanModal in Frameworks */,
 				6DC3BEE92E04FD7B00831470 /* FirebaseAuth in Frameworks */,
 				6D8D8AE02E013819003DABB2 /* SnapKit in Frameworks */,
-				6D17A89E2E20CD4B00642D66 /* TMapSDK.framework in Frameworks */,
+				6DB7637C2E48E6AC00D06A49 /* TMapSDK.framework in Frameworks */,
 				6DC3BEE22E04FD0700831470 /* KakaoSDK in Frameworks */,
 				6DC3BEEB2E04FD7B00831470 /* FirebaseCore in Frameworks */,
 				6DC3BEED2E04FD7B00831470 /* FirebaseCrashlytics in Frameworks */,
 				6DC3BEE62E04FD0700831470 /* KakaoSDKCommon in Frameworks */,
-				6D17A8A02E20CD4C00642D66 /* VSMSDK.xcframework in Frameworks */,
+				6DB7637F2E48E6AD00D06A49 /* VSMSDK.xcframework in Frameworks */,
 				6DC3BEE42E04FD0700831470 /* KakaoSDKAuth in Frameworks */,
 				6D8157492E129A7C003688A6 /* Lottie in Frameworks */,
 			);
@@ -934,8 +932,7 @@
 		6DE42B842DFDE6360041344C = {
 			isa = PBXGroup;
 			children = (
-				B6FB20902E1D21760032751B /* Secrets.xcconfig */,
-				6D17A88B2E1CE5A600642D66 /* Secrets.xcconfig */,
+				6DB763742E48E11300D06A49 /* Secrets.xcconfig */,
 				B68309632E005ADE00E2D029 /* .gitignore */,
 				B68309522E005A3600E2D029 /* Atcha-iOS */,
 				6DE42B8E2DFDE6360041344C /* Products */,
@@ -1423,8 +1420,8 @@
 		B68309522E005A3600E2D029 /* Atcha-iOS */ = {
 			isa = PBXGroup;
 			children = (
-				6D17A89A2E20CD4000642D66 /* TMapSDK.framework */,
-				6D17A89B2E20CD4000642D66 /* VSMSDK.xcframework */,
+				6DB763782E48E6A900D06A49 /* TMapSDK.framework */,
+				6DB763792E48E6A900D06A49 /* VSMSDK.xcframework */,
 				B67E3E592E09811E0056EEB3 /* Atcha-iOS.entitlements */,
 				B65C12D52E0429970016D2F0 /* App */,
 				B65C12D22E0429450016D2F0 /* Data */,
@@ -1707,7 +1704,7 @@
 				6DE42B892DFDE6360041344C /* Sources */,
 				6DE42B8A2DFDE6360041344C /* Frameworks */,
 				6DE42B8B2DFDE6360041344C /* Resources */,
-				6DFF29C72E0D690C0039399F /* Embed Frameworks */,
+				6DB7637E2E48E6AC00D06A49 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -1776,11 +1773,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B6FB20912E1D21760032751B /* Secrets.xcconfig in Resources */,
 				B68309582E005A3600E2D029 /* Colors.xcassets in Resources */,
+				6DB763752E48E11300D06A49 /* Secrets.xcconfig in Resources */,
 				B68309592E005A3600E2D029 /* Pretendard-Bold.otf in Resources */,
 				6D6879BE2E4067B400E59C55 /* Refresh.json in Resources */,
-				6D17A88C2E1CE5A600642D66 /* Secrets.xcconfig in Resources */,
 				B683095A2E005A3600E2D029 /* Pretendard-ExtraBold.otf in Resources */,
 				B683095B2E005A3600E2D029 /* Pretendard-Medium.otf in Resources */,
 				B683095C2E005A3600E2D029 /* Pretendard-Regular.otf in Resources */,
@@ -2066,7 +2062,7 @@
 /* Begin XCBuildConfiguration section */
 		6DE42BA12DFDE6370041344C /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6D17A88B2E1CE5A600642D66 /* Secrets.xcconfig */;
+			baseConfigurationReference = 6DB763742E48E11300D06A49 /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -2097,7 +2093,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.atcha.iOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -2114,7 +2110,7 @@
 		};
 		6DE42BA22DFDE6370041344C /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6D17A88B2E1CE5A600642D66 /* Secrets.xcconfig */;
+			baseConfigurationReference = 6DB763742E48E11300D06A49 /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -2145,7 +2141,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.atcha.iOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -2162,7 +2158,7 @@
 		};
 		6DE42BA32DFDE6370041344C /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6D17A88B2E1CE5A600642D66 /* Secrets.xcconfig */;
+			baseConfigurationReference = 6DB763742E48E11300D06A49 /* Secrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -2227,7 +2223,7 @@
 		};
 		6DE42BA42DFDE6370041344C /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6D17A88B2E1CE5A600642D66 /* Secrets.xcconfig */;
+			baseConfigurationReference = 6DB763742E48E11300D06A49 /* Secrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;

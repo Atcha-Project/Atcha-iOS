@@ -41,6 +41,10 @@ final class CourseSearchViewModel: BaseViewModel {
     var getAlarmTapped: ((String, LegInfo) -> Void)?
     var getDetailTapped: ((String, LegInfo) -> Void)?
     
+    private let kst = TimeZone(identifier: "Asia/Seoul")!
+    private let cutoffHour = 5
+    private var anchorDate: Date? // 검색 시작 시 고정
+    
     init(
         courseUseCase: CourseUseCase,
         alarmUseCase: AlarmUseCase,
@@ -59,27 +63,33 @@ final class CourseSearchViewModel: BaseViewModel {
     
     // MARK: - 탭별 코스
     func fetchCourses(for tabIndex: Int) {
+        // 1) 탭별 베이스 리스트 만들기
+        let base: [CourseUIModel]
         switch tabIndex {
         case 0:
-            // BUS + SUBWAY 포함된 코스만
-            if courses != allCourses {
-                self.courses = allCourses
-            }
+            base = allCourses
         case 1:
-            // BUS만 포함된 코스
-            self.courses = allCourses.filter { uiModel in
-                let modes = uiModel.course.legs.compactMap { $0.mode }
+            // BUS만 포함
+            base = allCourses.filter { m in
+                let modes = m.course.legs.compactMap { $0.mode }
                 return !modes.contains(.subway) && modes.contains(.bus)
             }
-            
         case 2:
-            // SUBWAY만 포함된 코스
-            self.courses = allCourses.filter { uiModel in
-                let modes = uiModel.course.legs.compactMap { $0.mode }
+            // SUBWAY만 포함
+            base = allCourses.filter { m in
+                let modes = m.course.legs.compactMap { $0.mode }
                 return !modes.contains(.bus) && modes.contains(.subway)
             }
         default:
-            self.courses = []
+            base = []
+        }
+
+        // 2) 정렬: totalTime ↑, 같으면 departureDateTime ↑
+        let sorted = base.sorted(by: isLess(_:_:))
+
+        // 3) 변경이 있을 때만 갱신 (불필요한 리렌더 방지)
+        if courses != sorted {
+            self.courses = sorted
         }
     }
     
@@ -112,8 +122,8 @@ final class CourseSearchViewModel: BaseViewModel {
     // MARK: - 코스 검색 스트리밍용
     func startCourseStream() {
         courseStreamTask?.cancel()
-        
         setLoading(true)
+        anchorDate = Date()
         
         courseStreamTask = Task {
             do {
@@ -132,27 +142,30 @@ final class CourseSearchViewModel: BaseViewModel {
                 var hasReceived = false
                 
                 for try await course in courseUseCase.observeCourseStream(request) {
+                    guard let anchor = self.anchorDate,
+                          let isoString = course.departureDateTime,
+                          let dep = self.parseServerDate(isoString),
+                          self.isInWindow(dep, anchor: anchor) else {
+                        continue
+                    }
+                    setLoading(false)
                     hasReceived = true
-                    self.setLoading(false)
                     
-                    let uiModel = CourseUIModel(
-                        id: course.routeId ?? UUID().uuidString,
-                        course: course,
-                        isExpanded: false
-                    )
-                    
-                    if !allCourses.contains(where: { $0.id == uiModel.id }) {
+                    let uiModel = CourseUIModel(id: course.routeId ?? UUID().uuidString,
+                                                course: course, isExpanded: false)
+                    if !self.allCourses.contains(where: { $0.id == uiModel.id }) {
                         self.allCourses.append(uiModel)
+                        self.allCourses.sort(by: isLess(_:_:))
                         self.fetchCourses(for: 0)
                     }
                 }
-
+                
                 if !hasReceived {
                     print("스트림에서 아무 응답도 수신되지 않음")
                     self.setLoading(false)
                     self.isServerError = true
                 }
-
+                
             } catch {
                 print("스트림 오류 발생: \(error.localizedDescription)")
                 self.setLoading(false)
@@ -199,5 +212,76 @@ final class CourseSearchViewModel: BaseViewModel {
         newModel.isExpanded.toggle()
         courses[index] = newModel
     }
+    
+    
+    // MARK: - 서버 ISO 문자열 파싱
+    private func parseServerDate(_ iso: String) -> Date? {
+        // 1) 타임존 명시(Z 또는 +09:00 등)된 경우: ISO8601로
+        let tzRegex = #"[+-]\d{2}:\d{2}"#
+        let hasTZ = iso.contains("Z") || iso.range(of: tzRegex, options: .regularExpression) != nil
+
+        if hasTZ {
+            let iso1 = ISO8601DateFormatter()
+            iso1.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            if let d = iso1.date(from: iso) { return d }
+
+            let iso2 = ISO8601DateFormatter()
+            iso2.formatOptions = [.withInternetDateTime]
+            return iso2.date(from: iso)
+        }
+
+        // 2) 타임존이 없는 경우: KST로 해석
+        let fmt = DateFormatter()
+        fmt.locale = Locale(identifier: "en_US_POSIX")
+        fmt.timeZone = kst
+        for pattern in ["yyyy-MM-dd'T'HH:mm:ss.SSS", "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd'T'HH:mm"] {
+            fmt.dateFormat = pattern
+            if let d = fmt.date(from: iso) { return d }
+        }
+        return nil
+    }
+    
+    // MARK: - anchor 기준 "다음 05:00" 계산
+    private func nextCutoff5am(after anchor: Date) -> Date {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = kst
+
+        var comps = cal.dateComponents([.year, .month, .day, .hour, .minute, .second], from: anchor)
+
+        if (comps.hour ?? 0) < cutoffHour {
+            comps.hour = cutoffHour; comps.minute = 0; comps.second = 0
+            return cal.date(from: comps)!
+        } else {
+            // 다음 날 05:00
+            if let dayAdded = cal.date(byAdding: .day, value: 1, to: anchor) {
+                var next = cal.dateComponents([.year, .month, .day], from: dayAdded)
+                next.hour = cutoffHour; next.minute = 0; next.second = 0
+                return cal.date(from: next)!
+            }
+            return anchor // fallback
+        }
+    }
+    
+    // MARK: - 윈도우 체크: [anchor, next 05:00]
+    private func isInWindow(_ dep: Date, anchor: Date) -> Bool {
+        let upper = nextCutoff5am(after: anchor)
+        return dep >= anchor && dep <= upper
+    }
+    
+    private func isLess(_ a: CourseUIModel, _ b: CourseUIModel) -> Bool {
+        let at = a.course.totalTime ?? .max
+        let bt = b.course.totalTime ?? .max
+        if at != bt { return at < bt }
+
+        let ad = (a.course.departureDateTime.flatMap { parseServerDate($0) }) ?? Date.distantFuture
+        let bd = (b.course.departureDateTime.flatMap { parseServerDate($0) }) ?? Date.distantFuture
+        if ad != bd { return ad < bd }
+
+        return a.id < b.id
+    }
 }
+
+
+
+
 

@@ -16,6 +16,8 @@ final class HomeRegisterBottomView: UIView {
     
     let actionPublisher = PassthroughSubject<Action, Never>()
     
+    private var currentName: String?
+    private var currentAddress: String?
     private let nameLabel: UILabel = UILabel()
     private let addressLabel: UILabel = UILabel()
     private let button: AtchaButton = AtchaButton(text: "우리집 등록",
@@ -44,13 +46,35 @@ final class HomeRegisterBottomView: UIView {
     }
     
     func setupNameLabel(name: String?) {
-        guard let name else { return }
-        nameLabel.attributedText = AtchaFont.H4_SB_17(name, color: .white)
+        currentName = name
+        setupLabel()
     }
     
-    func setupaddressLabel(address: String?) {
-        guard let address else { return }
-        addressLabel.attributedText = AtchaFont.B4_R_15(address, color: .gray200)
+    func setupAddressLabel(address: String?) {
+        currentAddress = address
+        setupLabel()
+    }
+    
+
+    func setupLabel() {
+        let name = (currentName?.isEmpty == false) ? currentName : nil
+        let address = (currentAddress?.isEmpty == false) ? currentAddress : nil
+        
+        if let name {                            // name 있으면: title=name, subtitle=address
+            nameLabel.attributedText = AtchaFont.H4_SB_17(name, color: .white)
+            if let address {
+                addressLabel.attributedText = AtchaFont.B4_R_15(address, color: .gray200)
+            } else {
+                addressLabel.attributedText = nil
+            }
+        } else {                                 // name 없으면: title=address, subtitle=nil
+            if let address {
+                nameLabel.attributedText = AtchaFont.H4_SB_17(address, color: .white)
+            } else {
+                nameLabel.attributedText = nil
+            }
+            addressLabel.attributedText = nil
+        }
     }
     
     private func setupView() {

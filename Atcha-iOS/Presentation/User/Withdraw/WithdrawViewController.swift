@@ -10,7 +10,7 @@ import SnapKit
 
 class WithdrawViewController: BaseViewController<WithdrawViewModel> {
     
-    private lazy var topNavigationBar: TitleNavigationBar = AtchaNavigationBar.title("계정 탈퇴", shouldShowCloseButton: false, onClose:  { [weak self] in
+    private lazy var topNavigationBar: TitleNavigationBar = AtchaNavigationBar.title("계정 탈퇴", shouldShowCloseButton: false, onBack:  { [weak self] in
         guard let self else { return }
         navigationController?.popViewController(animated: true)
     })
