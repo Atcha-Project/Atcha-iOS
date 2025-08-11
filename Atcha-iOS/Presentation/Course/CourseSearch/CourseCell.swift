@@ -90,7 +90,7 @@ final class CourseCell: UICollectionViewCell {
         courseStack.spacing = 4
         
         courseCompactStack.axis = .horizontal
-        courseCompactStack.spacing = 4
+        courseCompactStack.spacing = 3
         courseCompactStack.alignment = .center
         courseCompactStack.distribution = .equalCentering
         courseCompactStack.isHidden = false
@@ -216,7 +216,7 @@ final class CourseCell: UICollectionViewCell {
         
         courseCompactStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         
-        let maxIcons = 11
+        let maxIcons = 13
         var addedCount = 0
         
         for (index, leg) in course.legs.enumerated() {
