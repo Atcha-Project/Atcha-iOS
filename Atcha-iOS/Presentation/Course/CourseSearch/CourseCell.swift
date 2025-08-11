@@ -192,11 +192,25 @@ final class CourseCell: UICollectionViewCell {
             courseStack.addArrangedSubview(courseDetailStack)
             courseCompactStack.isHidden = true
             courseDetailStack.isHidden = false
+            
+            courseStack.snp.remakeConstraints { make in
+                make.leading.equalToSuperview().inset(7)
+                make.trailing.lessThanOrEqualToSuperview().inset(10)
+                make.top.equalToSuperview().inset(8)
+                make.bottom.equalToSuperview().inset(8)
+            }
         } else {
             courseStack.removeArrangedSubview(courseDetailStack)
             courseStack.addArrangedSubview(courseCompactStack)
             courseCompactStack.isHidden = false
             courseDetailStack.isHidden = true
+            
+            courseStack.snp.remakeConstraints { make in
+                make.leading.equalToSuperview().inset(7)
+                make.trailing.lessThanOrEqualToSuperview().inset(10)
+                make.top.equalToSuperview().inset(4)
+                make.bottom.equalToSuperview().inset(4)
+            }
         }
         
         if let totalTime = course.totalTime {
