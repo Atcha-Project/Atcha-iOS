@@ -83,7 +83,7 @@ final class SearchNavigationBar: UIView{
             self?.onTextChange?("")
         }
         
-        textField.onTextSubmit = { [weak self] text in   
+        textField.onTextSubmit = { [weak self] text in
             self?.onTextSubmit?(text)
         }
     }
@@ -105,12 +105,13 @@ final class SearchNavigationBar: UIView{
     func focusTextField() {
         textField.isHidden = false
         textField.isUserInteractionEnabled = true
-        self.layoutIfNeeded()
+        layoutIfNeeded()
         textField.layoutIfNeeded()
+        
         _ = textField.becomeFirstResponder()
     }
-
+    
     func resignTextField() {
-        textField.resignFirstResponder()
+        _ = textField.resignFirstResponder()
     }
 }
