@@ -41,11 +41,9 @@ final class SearchNavigationBar: UIView{
         
         backButton.setImage(UIImage.chevronLeft, for: .normal)
         backButton.tintColor = AtchaColor.gray300
-        backButton.addTarget(self, action: #selector(didTapBack), for: .touchUpInside)
         
         currentLocationButton.setImage(UIImage.mylocationOutlined, for: .normal)
         currentLocationButton.tintColor = AtchaColor.gray300
-        currentLocationButton.addTarget(self, action: #selector(didTapCurrentLocation), for: .touchUpInside)
         
         addSubview(backButton)
         addSubview(textField)
@@ -85,7 +83,7 @@ final class SearchNavigationBar: UIView{
             self?.onTextChange?("")
         }
         
-        textField.onTextSubmit = { [weak self] text in    // ✅ 추가
+        textField.onTextSubmit = { [weak self] text in   
             self?.onTextSubmit?(text)
         }
     }
@@ -102,5 +100,17 @@ final class SearchNavigationBar: UIView{
     @objc private func textFieldDidChange(_ sender: UITextField) {
         let address = sender.text ?? ""
         onTextChange?(address)
+    }
+    
+    func focusTextField() {
+        textField.isHidden = false
+        textField.isUserInteractionEnabled = true
+        self.layoutIfNeeded()
+        textField.layoutIfNeeded()
+        _ = textField.becomeFirstResponder()
+    }
+
+    func resignTextField() {
+        textField.resignFirstResponder()
     }
 }

@@ -216,7 +216,7 @@ final class CourseCell: UICollectionViewCell {
         
         courseCompactStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         
-        let maxIcons = 13
+        let maxIcons = 11
         var addedCount = 0
         
         for (index, leg) in course.legs.enumerated() {
