@@ -134,6 +134,9 @@
 		B644BAB12E42DDFF00E64BC2 /* LastTrainRealTimeBottomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B644BAB02E42DDFF00E64BC2 /* LastTrainRealTimeBottomView.swift */; };
 		B644BAB32E443E5C00E64BC2 /* LastTrainArrivalBottomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B644BAB22E443E5C00E64BC2 /* LastTrainArrivalBottomView.swift */; };
 		B655AFBA2E3C26A9008BFDE4 /* DetailRouteEndCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B655AFB92E3C26A9008BFDE4 /* DetailRouteEndCell.swift */; };
+		B637D6E72E30C71500F73F14 /* AtchaPopupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B637D6E62E30C71500F73F14 /* AtchaPopupViewController.swift */; };
+		B637D6E92E30C72700F73F14 /* AtchaPopupViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B637D6E82E30C72700F73F14 /* AtchaPopupViewModel.swift */; };
+		B637D6EB2E30C75900F73F14 /* AtchaPopupInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B637D6EA2E30C75900F73F14 /* AtchaPopupInfo.swift */; };
 		B65C12D72E0429B30016D2F0 /* AppFlowCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C12D62E0429B30016D2F0 /* AppFlowCoordinator.swift */; };
 		B65C12DA2E042A740016D2F0 /* AppDIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C12D92E042A740016D2F0 /* AppDIContainer.swift */; };
 		B65C12DE2E042CF00016D2F0 /* UserInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C12DD2E042CF00016D2F0 /* UserInfo.swift */; };
@@ -406,6 +409,9 @@
 		B644BAB02E42DDFF00E64BC2 /* LastTrainRealTimeBottomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastTrainRealTimeBottomView.swift; sourceTree = "<group>"; };
 		B644BAB22E443E5C00E64BC2 /* LastTrainArrivalBottomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastTrainArrivalBottomView.swift; sourceTree = "<group>"; };
 		B655AFB92E3C26A9008BFDE4 /* DetailRouteEndCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailRouteEndCell.swift; sourceTree = "<group>"; };
+		B637D6E62E30C71500F73F14 /* AtchaPopupViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtchaPopupViewController.swift; sourceTree = "<group>"; };
+		B637D6E82E30C72700F73F14 /* AtchaPopupViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtchaPopupViewModel.swift; sourceTree = "<group>"; };
+		B637D6EA2E30C75900F73F14 /* AtchaPopupInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtchaPopupInfo.swift; sourceTree = "<group>"; };
 		B65C12D62E0429B30016D2F0 /* AppFlowCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFlowCoordinator.swift; sourceTree = "<group>"; };
 		B65C12D92E042A740016D2F0 /* AppDIContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDIContainer.swift; sourceTree = "<group>"; };
 		B65C12DD2E042CF00016D2F0 /* UserInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserInfo.swift; sourceTree = "<group>"; };
@@ -980,6 +986,16 @@
 			path = LockScreen;
 			sourceTree = "<group>";
 		};
+		B637D6E52E30C6F600F73F14 /* Popup */ = {
+			isa = PBXGroup;
+			children = (
+				B637D6E62E30C71500F73F14 /* AtchaPopupViewController.swift */,
+				B637D6E82E30C72700F73F14 /* AtchaPopupViewModel.swift */,
+				B637D6EA2E30C75900F73F14 /* AtchaPopupInfo.swift */,
+			);
+			path = Popup;
+			sourceTree = "<group>";
+		};
 		B65C12CE2E0429250016D2F0 /* Domain */ = {
 			isa = PBXGroup;
 			children = (
@@ -1285,6 +1301,7 @@
 			isa = PBXGroup;
 			children = (
 				6D91A90B2E38A1AC0081BAFC /* BusDetail */,
+				B637D6E52E30C6F600F73F14 /* Popup */,
 				B6AC8BF22E2BD3F500410ECD /* WebView */,
 				B66401862E22761800A397AE /* Setting */,
 				6D73EB562E16117400F8DF8B /* Course */,
@@ -1840,6 +1857,7 @@
 				6D73EB6F2E169F7700F8DF8B /* TransportationIconView.swift in Sources */,
 				B65C13312E0658580016D2F0 /* MyPageViewModel.swift in Sources */,
 				6D9284422E3C6ADF0090889B /* PaddingLabel.swift in Sources */,
+				B637D6EB2E30C75900F73F14 /* AtchaPopupInfo.swift in Sources */,
 				B6AC8BFE2E2D1F5400410ECD /* LoginItnro.swift in Sources */,
 				B65C133D2E06E00F0016D2F0 /* MyPageDIContainer.swift in Sources */,
 				B65C134F2E07A6C70016D2F0 /* MainCoordinator.swift in Sources */,
@@ -1874,6 +1892,7 @@
 				6DC3BF602E071F0900831470 /* LoginUseCase.swift in Sources */,
 				6D73EB632E16121700F8DF8B /* CourseModifyViewModel.swift in Sources */,
 				6DC3BF4A2E05C79700831470 /* LoginViewController.swift in Sources */,
+				B637D6E92E30C72700F73F14 /* AtchaPopupViewModel.swift in Sources */,
 				6DC3BF5E2E07123F00831470 /* LoginIntroCell.swift in Sources */,
 				6D91A8E82E29F68E0081BAFC /* OriginSettingBottomView.swift in Sources */,
 				B66401802E2243D100A397AE /* SearchLocationRequest.swift in Sources */,
@@ -2022,6 +2041,7 @@
 				B6FB20A12E1E8EF60032751B /* LocationStateHolder.swift in Sources */,
 				6DC3BEDD2E04F32400831470 /* UserDefaultsKey.swift in Sources */,
 				B65C13442E06E0BC0016D2F0 /* SplashCoordinator.swift in Sources */,
+				B637D6E72E30C71500F73F14 /* AtchaPopupViewController.swift in Sources */,
 				B65C13262E058CC30016D2F0 /* BaseViewModel.swift in Sources */,
 				B65C132A2E058FD70016D2F0 /* APIResponse.swift in Sources */,
 				6D2B8CC02E39CC8800608104 /* BusInfoRepositoryImpl.swift in Sources */,
