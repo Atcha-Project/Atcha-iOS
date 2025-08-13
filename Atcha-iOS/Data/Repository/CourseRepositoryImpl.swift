@@ -32,8 +32,7 @@ final class CourseRepositoryImpl: CourseRepository {
                     "startLat": request.startLat,
                     "startLon": request.startLon,
                     "endLat": request.endLat,
-                    "endLon": request.endLon,
-                    "sortType": request.sortType
+                    "endLon": request.endLon
                 ],
                 headers: headers
             )
@@ -62,8 +61,7 @@ final class CourseRepositoryImpl: CourseRepository {
             URLQueryItem(name: "startLat", value: "\(request.startLat)"),
             URLQueryItem(name: "startLon", value: "\(request.startLon)"),
             URLQueryItem(name: "endLat", value: "\(request.endLat)"),
-            URLQueryItem(name: "endLon", value: "\(request.endLon)"),
-            URLQueryItem(name: "sortType", value: "\(request.sortType)")
+            URLQueryItem(name: "endLon", value: "\(request.endLon)")
         ]
         
         var urlRequest = URLRequest(url: urlComponents.url!)
