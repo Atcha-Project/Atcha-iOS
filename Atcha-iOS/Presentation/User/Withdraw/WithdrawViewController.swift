@@ -17,7 +17,7 @@ class WithdrawViewController: BaseViewController<WithdrawViewModel> {
     private let withdrawListStackView: UIStackView = UIStackView()
     private var withdrawCheckmarkLists: [AtchaList] = []
     private lazy var withdrawButton: AtchaButton = AtchaButton(text: "탈퇴하기", size: .h52, style: .filled(.disabled)) { [weak self] in
-        self?.signOutTapped()
+        self?.showWithdrawPopup()
     }
     private let withdrawTextBox: WithDrawTextBox = AtchaTextBox.withDrawTextBox { _ in }
     private var selectedOption: WithdrawOption?
@@ -113,5 +113,32 @@ class WithdrawViewController: BaseViewController<WithdrawViewModel> {
         let request = WithdrawRequest(reason: reason)
         
         viewModel.signOutTapped(request)
+    }
+    
+    private func showWithdrawPopup() {
+        guard let option = selectedOption else {
+            return
+        }
+        if option == .etc, (withdrawTextBox.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return
+        }
+
+        let popupVM = AtchaPopupViewModel(info: .withdraw)
+        let popupVC = AtchaPopupViewController(viewModel: popupVM)
+
+        popupVC.confirmButton.addAction(UIAction { [weak self, weak popupVC] _ in
+            guard let self else { return }
+            popupVC?.dismiss(animated: true)
+
+            self.withdrawButton.isEnabled = false
+            self.signOutTapped()
+        }, for: .touchUpInside)
+
+        popupVC.cancelButton.addAction(UIAction { [weak popupVC] _ in
+            popupVC?.dismiss(animated: true)
+        }, for: .touchUpInside)
+
+        popupVC.modalPresentationStyle = .overFullScreen
+        present(popupVC, animated: false)
     }
 }
