@@ -101,7 +101,7 @@ final class CourseSearchViewModel: BaseViewModel {
                 let endLat = userDefaults.string(forKey: UserDefaultsWrapper.Key.homeLat.rawValue) ?? "37.554722"
                 let endLon = userDefaults.string(forKey: UserDefaultsWrapper.Key.homeLon.rawValue) ?? "126.970833"
                 
-                let request = CourseSearchRequest(startLat: startLat, startLon: startLon, endLat: endLat, endLon: endLon, sortType: 1)
+                let request = CourseSearchRequest(startLat: startLat, startLon: startLon, endLat: endLat, endLon: endLon)
                 
                 let response = try await courseUseCase.courseSearch(request)
                 
@@ -135,8 +135,7 @@ final class CourseSearchViewModel: BaseViewModel {
                     startLat: startLat,
                     startLon: startLon,
                     endLat: endLat,
-                    endLon: endLon,
-                    sortType: 1
+                    endLon: endLon
                 )
                 
                 var hasReceived = false
