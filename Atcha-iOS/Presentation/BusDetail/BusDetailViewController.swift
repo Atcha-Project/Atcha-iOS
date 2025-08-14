@@ -165,7 +165,11 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         let turnPoint = viewModel.busPositionInfo?.turnPoint ?? 9999
         
         let isTurnPoint = (order == turnPoint)
-        let isCurrentStation = (station.busStationName == viewModel.busDetailInfo.start?.name)
+        let isCurrentStation = viewModel.busDetailInfo.targetBusStation?.contains(where: { target in
+            target.busStationId == station.busStationId &&
+            target.busStationNumber == station.busStationNumber &&
+            target.busStationName == station.busStationName
+        }) ?? false
         let isAfterTurnPoint = (order > turnPoint)
         
         let stations = viewModel.busPositionInfo?.busRouteStationList ?? []

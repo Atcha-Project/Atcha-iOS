@@ -86,12 +86,13 @@ final class CourseRepositoryImpl: CourseRepository {
                 }
             }
             
-            for try await line in bytes.lines {
-                let trimmedLine = line.trimmingCharacters(in: .whitespacesAndNewlines)
-                guard trimmedLine.starts(with: "data:") else { continue }
-                
-                let jsonString = trimmedLine.replacingOccurrences(of: "data:", with: "").trimmingCharacters(in: .whitespaces)
-                if let data = jsonString.data(using: .utf8) {
+            let parser = SSEParser()
+            
+            for try await chunk in bytes {
+                let events = parser.feed(Data([chunk]))
+                for event in events {
+                    guard !event.data.isEmpty,
+                          let data = event.data.data(using: .utf8) else { continue }
                     if let decoded = try? JSONDecoder().decode(CourseSearchResponse.self, from: data) {
                         continuation.yield(decoded)
                     }

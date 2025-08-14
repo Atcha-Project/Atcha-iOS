@@ -306,7 +306,8 @@ extension DetailRouteInfoBottomView {
                     let info = BusDetailInfo(
                         routeName: item.route,
                         start: start,
-                        passStations: stations
+                        passStations: stations,
+                        targetBusStation: item.targetBusStation
                     )
                     self?.onBusDetail?(info)
                 }
