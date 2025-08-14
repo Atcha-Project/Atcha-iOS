@@ -87,14 +87,22 @@ final class CourseRepositoryImpl: CourseRepository {
             }
             
             let parser = SSEParser()
-            
-            for try await chunk in bytes {
-                let events = parser.feed(Data([chunk]))
+
+            for try await byte in bytes {
+                // 바이트 단위로 들어오므로 Data로 감싸서 누적
+                let events = parser.feed(Data([byte]))
                 for event in events {
                     guard !event.data.isEmpty,
-                          let data = event.data.data(using: .utf8) else { continue }
-                    if let decoded = try? JSONDecoder().decode(CourseSearchResponse.self, from: data) {
+                          let payload = event.data.data(using: .utf8) else {
+                        // 하트비트/코멘트 등
+                        continue
+                    }
+                
+                    do {
+                        let decoded = try JSONDecoder().decode(CourseSearchResponse.self, from: payload)
                         continuation.yield(decoded)
+                    } catch {
+                        print("❌ SSE Decode 실패:", error)
                     }
                 }
             }

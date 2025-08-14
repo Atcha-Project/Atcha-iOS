@@ -46,7 +46,9 @@ struct LegResponse: Codable {
     let passStopList: [PassStopResponse]?
     let step: [StepResponse]?
     let passShape: String?
-    let targetBusStation: [TargetBusStationResponse]?
+    let subwayFinalStation: String?
+    let subwayDirection: String?
+    let targetBusStation: TargetBusStationResponse?
     
     func toEntity() -> Legs {
         return Legs(
@@ -62,7 +64,9 @@ struct LegResponse: Codable {
             passStopList: passStopList?.map { $0.toEntity() },
             step: step?.map { $0.toEntity() },
             passShape: passShape,
-            targetBusStation: targetBusStation?.map { $0.toEntity() } ?? []
+            subwayFinalStation: subwayFinalStation,
+            subwayDirection: subwayDirection,
+            targetBusStation: targetBusStation.map { [$0.toEntity()] }
         )
     }
 }

@@ -103,7 +103,9 @@ struct Legs: Codable, Hashable {
     let passStopList: [PassStopList]?
     let step: [Step]?
     let passShape: String? // 경로그리기
-    let targetBusStation: [TargetBusStation]
+    let subwayFinalStation: String?
+    let subwayDirection: String?
+    let targetBusStation: [TargetBusStation]?
     
     var formattedSectionTimeRounded: String {
         guard let totalTime = sectionTime else { return "N/A" }
