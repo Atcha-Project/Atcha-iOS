@@ -337,7 +337,7 @@ extension MainViewModel {
             
         case .detailRoute:
             guard let address, let legInfo else { return }
-            routeHandler?(.detailRoute(address: address, infos: legInfo))
+            routeHandler?(.detailRoute(address: address, infos: legInfo, context: .afterReigster))
         case .lockScreen:
             guard let address, let legInfo else { return }
             routeHandler?(.lockScreen(info: legInfo, address: address))

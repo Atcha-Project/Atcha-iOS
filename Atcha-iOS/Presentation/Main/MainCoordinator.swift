@@ -72,7 +72,7 @@ final class MainCoordinator {
             }
             vm.getDetailTapped = { [weak self] address, infos in
                 guard let self else { return }
-                handle(route: .detailRoute(address: address, infos: infos))
+                handle(route: .detailRoute(address: address, infos: infos, context: .beforeRegister))
             }
             self.navigationController.pushViewController(vc, animated: true)
         case let .changeCourse(location):
@@ -112,7 +112,7 @@ final class MainCoordinator {
                 }
                 searchVM.getDetailTapped = { [weak self] address, infos in
                     guard let self else { return }
-                    self.handle(route: .detailRoute(address: address, infos: infos))
+                    self.handle(route: .detailRoute(address: address, infos: infos, context: .beforeRegister))
                 }
                 
                 let searchVC = courseDI.makeCourseSearchViewController(viewModel: searchVM)
@@ -122,9 +122,9 @@ final class MainCoordinator {
             let modifyVC = CourseModifyViewController(viewModel: modifyVM)
             self.navigationController.pushViewController(modifyVC, animated: true)
             
-        case .detailRoute(let address, let infos):
+        case .detailRoute(let address, let infos, let context):
             let routeDI = diContainer.makeRouteDIContainer()
-            let vm = routeDI.makeDetailRouteViewModel(address: address, infos: infos)
+            let vm = routeDI.makeDetailRouteViewModel(address: address, infos: infos, context: context)
             let vc = routeDI.makeDetailRouteViewController(viewModel: vm)
             
             vm.onBusDetail = { [weak self] busDetailInfo in
@@ -137,6 +137,22 @@ final class MainCoordinator {
                 self.busDetailCoordinator = busCoord
                 busCoord.start(busDetailInfo: busDetailInfo)
             }
+            
+            vm.getAlarmTapped = { [weak self] address, infos in
+                guard let self else { return }
+                mainViewModel?.courseSearchResultHandler?(address, infos)
+                let nav = self.navigationController
+                let vcs = nav.viewControllers
+         
+                let targetIndex = vcs.count - 4
+                
+                if targetIndex >= 0 {
+                    nav.popToViewController(vcs[targetIndex], animated: true)
+                } else {
+                    nav.popToRootViewController(animated: true)
+                }
+            }
+            
             navigationController.pushViewController(vc, animated: false)
             
         case .lockScreen:

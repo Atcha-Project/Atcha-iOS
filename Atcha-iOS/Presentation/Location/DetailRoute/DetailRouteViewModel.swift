@@ -9,29 +9,37 @@ import Foundation
 import UIKit
 import CoreLocation
 
+enum DetailRouteContext {
+    case beforeRegister
+    case afterReigster
+}
+
 final class DetailRouteViewModel: BaseViewModel {
     private let busInfoUseCase: BusInfoUseCase
     private let authorizationUseCase: RequestLocationAuthorizationUseCase
     private let streamUseCase: ObserveLocationStreamUseCase
     private var streamTask: Task<Void, Never>?
     
-    private let infos: LegInfo
+    let infos: LegInfo
     var onBusDetail: ((BusDetailInfo) -> Void)?
+    var getAlarmTapped: ((String, LegInfo) -> Void)?
     
     @Published var currentLocation: CLLocationCoordinate2D?
     @Published var address: String
     @Published var legtPathInfo: [LegPathInfo] = []
     @Published var legTrafficInfo: [LegTrafficInfo] = []
     @Published var busRealTimeInfos: [BusRealTimeInfo] = []
+    @Published private(set) var context: DetailRouteContext
     
     init(address: String,
          infos: LegInfo,
+         context: DetailRouteContext,
          busInfoUseCase: BusInfoUseCase,
          authorizationUseCase: RequestLocationAuthorizationUseCase,
          streamUseCase: ObserveLocationStreamUseCase) {
         self.infos = infos
         self.address = address
-        
+        self.context = context
         self.busInfoUseCase = busInfoUseCase
         self.authorizationUseCase = authorizationUseCase
         self.streamUseCase = streamUseCase

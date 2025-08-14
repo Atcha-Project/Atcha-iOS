@@ -188,7 +188,9 @@ extension MainViewController {
             viewModel.alarmDelete()
             exitButtonTapped()
         case .detailRoadMapTapped: viewModel.handleRoute(route: .detailRoute(address: "",
-                                                                             infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: [])))
+                                                                             infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: []),
+                                                                             context: .afterReigster)
+        )
         case .finishAlarm: viewModel.bottomType = .finish
         }
     }
@@ -200,7 +202,9 @@ extension MainViewController {
             exitButtonTapped()
         case .detailRoadMapTapped:
             viewModel.handleRoute(route: .detailRoute(address: "",
-                                                      infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: [])))
+                                                      infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: []),
+                                                      context: .afterReigster)
+            )
         case .locationTapped:
             ballonView.setupTitle(bottomMessage: "위치를 변경하려면 알림을 종료해야 해요")
         case .reloadTapped:
@@ -217,7 +221,7 @@ extension MainViewController {
             viewModel.alarmDelete()
             exitButtonTapped()
         case .detailRoadMapTapped: viewModel.handleRoute(route: .detailRoute(address: "",
-                                                                             infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: [])))
+                                                                             infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: []), context: .afterReigster))
         }
     }
     
