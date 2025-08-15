@@ -121,6 +121,14 @@ final class CourseSearchViewModel: BaseViewModel {
     
     // MARK: - 코스 검색 스트리밍용
     func startCourseStream() {
+        
+        if isBlackoutNow() {
+            setLoading(false)
+            isServerError = true 
+            courses = []
+            return
+        }
+        
         courseStreamTask?.cancel()
         setLoading(true)
         anchorDate = Date()
@@ -141,12 +149,6 @@ final class CourseSearchViewModel: BaseViewModel {
                 var hasReceived = false
                 
                 for try await course in courseUseCase.observeCourseStream(request) {
-                    guard let anchor = self.anchorDate,
-                          let isoString = course.departureDateTime,
-                          let dep = self.parseServerDate(isoString),
-                          self.isInWindow(dep, anchor: anchor) else {
-                        continue
-                    }
                     setLoading(false)
                     hasReceived = true
                     
@@ -240,33 +242,6 @@ final class CourseSearchViewModel: BaseViewModel {
         return nil
     }
     
-    // MARK: - anchor 기준 "다음 05:00" 계산
-    private func nextCutoff5am(after anchor: Date) -> Date {
-        var cal = Calendar(identifier: .gregorian)
-        cal.timeZone = kst
-        
-        var comps = cal.dateComponents([.year, .month, .day, .hour, .minute, .second], from: anchor)
-        
-        if (comps.hour ?? 0) < cutoffHour {
-            comps.hour = cutoffHour; comps.minute = 0; comps.second = 0
-            return cal.date(from: comps)!
-        } else {
-            // 다음 날 05:00
-            if let dayAdded = cal.date(byAdding: .day, value: 1, to: anchor) {
-                var next = cal.dateComponents([.year, .month, .day], from: dayAdded)
-                next.hour = cutoffHour; next.minute = 0; next.second = 0
-                return cal.date(from: next)!
-            }
-            return anchor // fallback
-        }
-    }
-    
-    // MARK: - 윈도우 체크: [anchor, next 05:00]
-    private func isInWindow(_ dep: Date, anchor: Date) -> Bool {
-        let upper = nextCutoff5am(after: anchor)
-        return dep >= anchor && dep <= upper
-    }
-    
     private func isLess(_ a: CourseUIModel, _ b: CourseUIModel) -> Bool {
         let at = a.course.totalTime ?? .max
         let bt = b.course.totalTime ?? .max
@@ -284,11 +259,7 @@ final class CourseSearchViewModel: BaseViewModel {
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = kst
         let hour = cal.component(.hour, from: Date())
-        return hour >= 3 && hour < 5
+        // 00:00 <= now < 05:00
+        return hour >= 0 && hour < 5
     }
 }
-
-
-
-
-

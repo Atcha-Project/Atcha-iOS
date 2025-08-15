@@ -95,7 +95,8 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
 
                 if isError && !isLoading {
                     if viewModel.isBlackoutNow() {
-                        self.noSearchLabel.attributedText = AtchaFont.B4_R_15("23:00 - 05:00\n막차 검색을 할 수 없어요", color: AtchaColor.gray400, alignment: .center)
+                        self.noSearchLabel.attributedText = AtchaFont.B4_R_15("24:00 - 05:00\n막차 검색을 할 수 없어요", color: AtchaColor.gray400, alignment: .center)
+                        self.noSearchLabel.numberOfLines = 0
                         self.noSearchStack.isHidden = false
                     } else {
                         self.noSearchLabel.attributedText = AtchaFont.B4_R_15("검색 가능한 막차가 없습니다.", color: AtchaColor.gray400)
