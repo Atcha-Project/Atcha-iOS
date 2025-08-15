@@ -24,6 +24,9 @@ protocol SearchAddressUseCase {
     
     // 최근 검색 삭제
     func deleteSearchHistory(_ request: RecentSearchRequest) async throws -> APIEmptyResponse
+    
+    // 서울 경기 인천 판별
+    func checkServiceRegion(_ request: CheckServiceRegionRequest) async throws -> Bool
 }
 
 final class SearchAddressUseCaseImpl: SearchAddressUseCase {
@@ -54,5 +57,9 @@ final class SearchAddressUseCaseImpl: SearchAddressUseCase {
     
     func deleteSearchHistory(_ request: RecentSearchRequest) async throws -> APIEmptyResponse {
         return try await repository.deleteSearchHistory(request: request)
+    }
+    
+    func checkServiceRegion(_ request: CheckServiceRegionRequest) async throws -> Bool {
+        return try await repository.checkServiceRegion(request: request)
     }
 }
