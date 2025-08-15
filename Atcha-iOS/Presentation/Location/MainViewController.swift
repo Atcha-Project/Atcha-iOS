@@ -414,10 +414,19 @@ extension MainViewController {
             .receive(on: RunLoop.main)
             .sink { [weak self] ok in
                 guard let self else { return }
-                if ok == true, let fare = self.viewModel.taxiFare {
-                    self.updateTaxiFare(fare) // 바로 갱신
-                } else if ok == false {
+                switch ok {
+                case .some(true):
+                    self.lastTrainSearchView.updateSearchEnabled(true)
+                    if let fare = self.viewModel.taxiFare {
+                        self.updateTaxiFare(fare)
+                    }
+                    
+                case .some(false):
+                    self.lastTrainSearchView.updateSearchEnabled(false)
                     self.ballonView.setupTitle(bottomMessage: "서울, 경기, 인천에서만 이용 가능해요")
+                    
+                case .none:
+                    self.lastTrainSearchView.updateSearchEnabled(false)
                 }
             }
             .store(in: &cancellables)
