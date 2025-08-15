@@ -386,7 +386,6 @@ extension MainViewModel {
         
         do {
             isServiceRegion = try await searchAddressUseCase.checkServiceRegion(req)
-            print("서비스 지역 유무: \(req)")
         } catch {
             print("서비스 지역 확인 실패:", error)
         }
