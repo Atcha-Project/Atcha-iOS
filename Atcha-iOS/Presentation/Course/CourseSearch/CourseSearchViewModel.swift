@@ -42,7 +42,7 @@ final class CourseSearchViewModel: BaseViewModel {
     var getDetailTapped: ((String, LegInfo) -> Void)?
     
     private let kst = TimeZone(identifier: "Asia/Seoul")!
-    private let cutoffHour = 5
+    private let cutoffHour = 3 // 새벽 3시까지 검색
     private var anchorDate: Date? // 검색 시작 시 고정
     
     init(
@@ -83,10 +83,10 @@ final class CourseSearchViewModel: BaseViewModel {
         default:
             base = []
         }
-
+        
         // 2) 정렬: totalTime ↑, 같으면 departureDateTime ↑
         let sorted = base.sorted(by: isLess(_:_:))
-
+        
         // 3) 변경이 있을 때만 갱신 (불필요한 리렌더 방지)
         if courses != sorted {
             self.courses = sorted
@@ -218,17 +218,17 @@ final class CourseSearchViewModel: BaseViewModel {
         // 1) 타임존 명시(Z 또는 +09:00 등)된 경우: ISO8601로
         let tzRegex = #"[+-]\d{2}:\d{2}"#
         let hasTZ = iso.contains("Z") || iso.range(of: tzRegex, options: .regularExpression) != nil
-
+        
         if hasTZ {
             let iso1 = ISO8601DateFormatter()
             iso1.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
             if let d = iso1.date(from: iso) { return d }
-
+            
             let iso2 = ISO8601DateFormatter()
             iso2.formatOptions = [.withInternetDateTime]
             return iso2.date(from: iso)
         }
-
+        
         // 2) 타임존이 없는 경우: KST로 해석
         let fmt = DateFormatter()
         fmt.locale = Locale(identifier: "en_US_POSIX")
@@ -244,9 +244,9 @@ final class CourseSearchViewModel: BaseViewModel {
     private func nextCutoff5am(after anchor: Date) -> Date {
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = kst
-
+        
         var comps = cal.dateComponents([.year, .month, .day, .hour, .minute, .second], from: anchor)
-
+        
         if (comps.hour ?? 0) < cutoffHour {
             comps.hour = cutoffHour; comps.minute = 0; comps.second = 0
             return cal.date(from: comps)!
@@ -271,12 +271,20 @@ final class CourseSearchViewModel: BaseViewModel {
         let at = a.course.totalTime ?? .max
         let bt = b.course.totalTime ?? .max
         if at != bt { return at < bt }
-
+        
         let ad = (a.course.departureDateTime.flatMap { parseServerDate($0) }) ?? Date.distantFuture
         let bd = (b.course.departureDateTime.flatMap { parseServerDate($0) }) ?? Date.distantFuture
         if ad != bd { return ad < bd }
-
+        
         return a.id < b.id
+    }
+    
+    // MARK: - 새벽 03~05시 검색 확인
+    func isBlackoutNow() -> Bool {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = kst
+        let hour = cal.component(.hour, from: Date())
+        return hour >= 3 && hour < 5
     }
 }
 
