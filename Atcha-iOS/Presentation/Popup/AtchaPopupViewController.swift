@@ -9,8 +9,8 @@ import UIKit
 
 final class AtchaPopupViewController: BaseViewController<AtchaPopupViewModel> {
     private let titleLabel: UILabel = UILabel()
-    private let cancelButton: UIButton = UIButton(type: .system)
-    private let confirmButton: UIButton = UIButton(type: .system)
+    let cancelButton: UIButton = UIButton(type: .system)
+    let confirmButton: UIButton = UIButton(type: .system)
     private let containerView: UIView = UIView()
     private lazy var buttonStackView: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [cancelButton, confirmButton])

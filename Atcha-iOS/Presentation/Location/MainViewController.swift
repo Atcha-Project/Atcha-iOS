@@ -185,10 +185,11 @@ extension MainViewController {
         switch action {
         case .refreshBusTime, .reloadTapped: viewModel.getBusRealTime()
         case .exitTapped:
-            viewModel.alarmDelete()
-            exitButtonTapped()
+            showAlarmExitPopup()
         case .detailRoadMapTapped: viewModel.handleRoute(route: .detailRoute(address: "",
-                                                                             infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: [])))
+                                                                             infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: []),
+                                                                             context: .afterReigster)
+        )
         case .finishAlarm: viewModel.bottomType = .finish
         }
     }
@@ -196,11 +197,12 @@ extension MainViewController {
     private func handleTrainDepartAction(_ action: LastTrainDepartBottomView.Action) {
         switch action {
         case .exitTapped:
-            viewModel.alarmDelete()
-            exitButtonTapped()
+            showAlarmExitPopup()
         case .detailRoadMapTapped:
             viewModel.handleRoute(route: .detailRoute(address: "",
-                                                      infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: [])))
+                                                      infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: []),
+                                                      context: .afterReigster)
+            )
         case .locationTapped:
             ballonView.setupTitle(bottomMessage: "위치를 변경하려면 알림을 종료해야 해요")
         case .reloadTapped:
@@ -214,11 +216,30 @@ extension MainViewController {
     private func handleArrivalViewAction(_ action: LastTrainArrivalBottomView.Action) {
         switch action {
         case .exitTapped:
-            viewModel.alarmDelete()
-            exitButtonTapped()
+            showAlarmExitPopup()
         case .detailRoadMapTapped: viewModel.handleRoute(route: .detailRoute(address: "",
-                                                                             infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: [])))
+                                                                             infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: []), context: .afterReigster))
         }
+    }
+    
+    private func showAlarmExitPopup() {
+        let popupVM = AtchaPopupViewModel(info: .alarm)
+        let popupVC = AtchaPopupViewController(viewModel: popupVM)
+
+        popupVC.confirmButton.addAction(UIAction { [weak popupVC] _ in
+            popupVC?.dismiss(animated: true)
+        }, for: .touchUpInside)
+
+        popupVC.cancelButton.addAction(UIAction { [weak self, weak popupVC] _ in
+            guard let self else { return }
+            popupVC?.dismiss(animated: true)
+
+            self.viewModel.alarmDelete()
+            self.exitButtonTapped()
+        }, for: .touchUpInside)
+
+        popupVC.modalPresentationStyle = .overFullScreen
+        present(popupVC, animated: false)
     }
     
     private func exitButtonTapped() {
