@@ -69,31 +69,25 @@ class WithdrawViewController: BaseViewController<WithdrawViewModel> {
     
     // MARK: - 탈퇴사유 리스트 UI
     private func setupWithdrawLists() {
+        withdrawCheckmarkLists.removeAll()
+
         WithdrawOption.allCases.enumerated().forEach { index, withdraw in
-            let listView = AtchaList(title: withdraw.title, listType: .checkmark(isOn: false))
-            listView.tag = index
-            
-            listView.onSelect = { [weak self] selectedList in
+            let listView = AtchaList(title: withdraw.title, listType: .radioButton(isOn: false))
+
+            listView.setRadio(false)
+
+            listView.onSelect = { [weak self] selected in
                 guard let self else { return }
-                
-                self.withdrawCheckmarkLists.forEach { $0.setCheckmark(false) }
-                
-                selectedList.setCheckmark(true)
+
+                self.withdrawCheckmarkLists.forEach { $0.setRadio(false) }
+                selected.setRadio(true)
+
                 self.selectedOption = withdraw
-                
                 self.withdrawButton.updateStyle(text: "탈퇴하기", style: .filled(.white))
-                
-                if withdraw == .etc {
-                    self.withdrawTextBox.isHidden = false
-                } else {
-                    self.withdrawTextBox.isHidden = true
-                }
+                self.withdrawTextBox.isHidden = (withdraw != .etc)
             }
-            
-            listView.snp.makeConstraints { make in
-                make.height.equalTo(52)
-            }
-            
+
+            listView.snp.makeConstraints { $0.height.equalTo(52) }
             withdrawListStackView.addArrangedSubview(listView)
             withdrawCheckmarkLists.append(listView)
         }
