@@ -58,17 +58,34 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
     
     private func bindViewModel() {
         bottomView.actionPublisher
-            .removeDuplicates()
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
-                guard let self else { return }
-                viewModel.handleRegister()
-                navigationController?.popToViewController(ofType: HomeRegisterViewController.self)
+                guard let self = self else { return }
+                guard let coord = self.viewModel.currentLocation else { return }
+                
+                self.bottomView.isUserInteractionEnabled = false
+                
+                Task { @MainActor [weak self] in
+                    guard let self = self else { return }
+                    let ok = await self.viewModel.checkServiceRegion(
+                        lat: coord.latitude,
+                        lon: coord.longitude
+                    )
+                    if ok {
+                        self.viewModel.handleRegister()
+                        self.navigationController?.popToViewController(ofType: HomeRegisterViewController.self)
+                    } else {
+                        AtchaToast(message: "앗차는 현재 서울, 경기, 인천에서만 이용 가능해요")
+                            .show(in: self.view)
+                    }
+                    
+                    self.bottomView.isUserInteractionEnabled = true
+                }
             }
             .store(in: &cancellables)
         
         viewModel.$currentLocation
-//            .removeDuplicates()
+        //            .removeDuplicates()
             .compactMap { $0 }
             .receive(on: DispatchQueue.main)
             .sink { [weak self] location in

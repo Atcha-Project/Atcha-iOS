@@ -135,6 +135,7 @@ extension MainViewController {
         bindAddressDescriptionUpdates()
         bindLegPathUpdates()
         bindTaxiFareUpdates()
+        bindServiceRegionUpdates()
         bindLockView()
     }
     
@@ -225,19 +226,19 @@ extension MainViewController {
     private func showAlarmExitPopup() {
         let popupVM = AtchaPopupViewModel(info: .alarm)
         let popupVC = AtchaPopupViewController(viewModel: popupVM)
-
+        
         popupVC.confirmButton.addAction(UIAction { [weak popupVC] _ in
             popupVC?.dismiss(animated: true)
         }, for: .touchUpInside)
-
+        
         popupVC.cancelButton.addAction(UIAction { [weak self, weak popupVC] _ in
             guard let self else { return }
             popupVC?.dismiss(animated: true)
-
+            
             self.viewModel.alarmDelete()
             self.exitButtonTapped()
         }, for: .touchUpInside)
-
+        
         popupVC.modalPresentationStyle = .overFullScreen
         present(popupVC, animated: false)
     }
@@ -311,7 +312,7 @@ extension MainViewController {
             .sink { [weak self] info, bottomType in
                 self?.commonAlarmSetupView()
                 self?.addRouteLine(pathInfos: info?.pathInfo ?? [])
-
+                
                 switch bottomType {
                 case .departure:
                     self?.lastTrainDepartView.setupLegInfo(info: info)
@@ -390,16 +391,45 @@ extension MainViewController {
     
     private func bindTaxiFareUpdates() {
         viewModel.$taxiFare
-            .removeDuplicates()
             .compactMap { $0 }
+            .combineLatest(viewModel.$isServiceRegion)
+            .filter { _, isService in isService == true }
+            .map { fare, _ in fare }
+            .removeDuplicates()
             .receive(on: RunLoop.main)
-            .sink { [weak self] in self?.updateTaxiFare($0) }
+            .sink { [weak self] fare in
+                self?.updateTaxiFare(fare)
+            }
             .store(in: &cancellables)
     }
     
     private func updateTaxiFare(_ fare: Double) {
         let fareStr = String(format: "%.0f", fare)
         ballonView.setupTitle(bottomMessage: "여기서 막차 놓치면 택시비 : 약 \(fareStr)원")
+    }
+    
+    private func bindServiceRegionUpdates() {
+        viewModel.$isServiceRegion
+            .removeDuplicates()
+            .receive(on: RunLoop.main)
+            .sink { [weak self] ok in
+                guard let self else { return }
+                switch ok {
+                case .some(true):
+                    self.lastTrainSearchView.updateSearchEnabled(true)
+                    if let fare = self.viewModel.taxiFare {
+                        self.updateTaxiFare(fare)
+                    }
+                    
+                case .some(false):
+                    self.lastTrainSearchView.updateSearchEnabled(false)
+                    self.ballonView.setupTitle(bottomMessage: "서울, 경기, 인천에서만 이용 가능해요")
+                    
+                case .none:
+                    self.lastTrainSearchView.updateSearchEnabled(false)
+                }
+            }
+            .store(in: &cancellables)
     }
     
     // MARK: - Constraint Helper

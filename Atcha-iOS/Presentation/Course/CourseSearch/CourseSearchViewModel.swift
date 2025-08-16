@@ -42,7 +42,7 @@ final class CourseSearchViewModel: BaseViewModel {
     var getDetailTapped: ((String, LegInfo) -> Void)?
     
     private let kst = TimeZone(identifier: "Asia/Seoul")!
-    private let cutoffHour = 5
+    private let cutoffHour = 3 // 새벽 3시까지 검색
     private var anchorDate: Date? // 검색 시작 시 고정
     
     init(
@@ -83,10 +83,10 @@ final class CourseSearchViewModel: BaseViewModel {
         default:
             base = []
         }
-
+        
         // 2) 정렬: totalTime ↑, 같으면 departureDateTime ↑
         let sorted = base.sorted(by: isLess(_:_:))
-
+        
         // 3) 변경이 있을 때만 갱신 (불필요한 리렌더 방지)
         if courses != sorted {
             self.courses = sorted
@@ -121,6 +121,14 @@ final class CourseSearchViewModel: BaseViewModel {
     
     // MARK: - 코스 검색 스트리밍용
     func startCourseStream() {
+        
+        if isBlackoutNow() {
+            setLoading(false)
+            isServerError = true 
+            courses = []
+            return
+        }
+        
         courseStreamTask?.cancel()
         setLoading(true)
         anchorDate = Date()
@@ -141,12 +149,6 @@ final class CourseSearchViewModel: BaseViewModel {
                 var hasReceived = false
                 
                 for try await course in courseUseCase.observeCourseStream(request) {
-                    guard let anchor = self.anchorDate,
-                          let isoString = course.departureDateTime,
-                          let dep = self.parseServerDate(isoString),
-                          self.isInWindow(dep, anchor: anchor) else {
-                        continue
-                    }
                     setLoading(false)
                     hasReceived = true
                     
@@ -218,17 +220,17 @@ final class CourseSearchViewModel: BaseViewModel {
         // 1) 타임존 명시(Z 또는 +09:00 등)된 경우: ISO8601로
         let tzRegex = #"[+-]\d{2}:\d{2}"#
         let hasTZ = iso.contains("Z") || iso.range(of: tzRegex, options: .regularExpression) != nil
-
+        
         if hasTZ {
             let iso1 = ISO8601DateFormatter()
             iso1.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
             if let d = iso1.date(from: iso) { return d }
-
+            
             let iso2 = ISO8601DateFormatter()
             iso2.formatOptions = [.withInternetDateTime]
             return iso2.date(from: iso)
         }
-
+        
         // 2) 타임존이 없는 경우: KST로 해석
         let fmt = DateFormatter()
         fmt.locale = Locale(identifier: "en_US_POSIX")
@@ -240,47 +242,24 @@ final class CourseSearchViewModel: BaseViewModel {
         return nil
     }
     
-    // MARK: - anchor 기준 "다음 05:00" 계산
-    private func nextCutoff5am(after anchor: Date) -> Date {
-        var cal = Calendar(identifier: .gregorian)
-        cal.timeZone = kst
-
-        var comps = cal.dateComponents([.year, .month, .day, .hour, .minute, .second], from: anchor)
-
-        if (comps.hour ?? 0) < cutoffHour {
-            comps.hour = cutoffHour; comps.minute = 0; comps.second = 0
-            return cal.date(from: comps)!
-        } else {
-            // 다음 날 05:00
-            if let dayAdded = cal.date(byAdding: .day, value: 1, to: anchor) {
-                var next = cal.dateComponents([.year, .month, .day], from: dayAdded)
-                next.hour = cutoffHour; next.minute = 0; next.second = 0
-                return cal.date(from: next)!
-            }
-            return anchor // fallback
-        }
-    }
-    
-    // MARK: - 윈도우 체크: [anchor, next 05:00]
-    private func isInWindow(_ dep: Date, anchor: Date) -> Bool {
-        let upper = nextCutoff5am(after: anchor)
-        return dep >= anchor && dep <= upper
-    }
-    
     private func isLess(_ a: CourseUIModel, _ b: CourseUIModel) -> Bool {
         let at = a.course.totalTime ?? .max
         let bt = b.course.totalTime ?? .max
         if at != bt { return at < bt }
-
+        
         let ad = (a.course.departureDateTime.flatMap { parseServerDate($0) }) ?? Date.distantFuture
         let bd = (b.course.departureDateTime.flatMap { parseServerDate($0) }) ?? Date.distantFuture
         if ad != bd { return ad < bd }
-
+        
         return a.id < b.id
     }
+    
+    // MARK: - 새벽 03~05시 검색 확인
+    func isBlackoutNow() -> Bool {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = kst
+        let hour = cal.component(.hour, from: Date())
+        // 00:00 <= now < 05:00
+        return hour >= 0 && hour < 5
+    }
 }
-
-
-
-
-

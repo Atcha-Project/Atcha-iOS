@@ -133,6 +133,19 @@ final class CourseModifyViewModel: BaseViewModel {
         locationStateHolder.currentLocation = CLLocationCoordinate2D(latitude: location.lat,
                                                                      longitude: location.lon)
     }
+    
+    // MARK: - 서비즈 지역 확인
+    @MainActor
+    func checkServiceRegion(lat: Double, lon: Double) async -> Bool {
+        let req = CheckServiceRegionRequest(lat: lat, lon: lon)
+        do {
+            let ok = try await searchAddressUseCase.checkServiceRegion(req)
+            return ok
+        } catch {
+            print("서비스 지역 확인 실패:", error)
+            return false
+        }
+    }
 }
 
 extension CourseModifyViewModel {

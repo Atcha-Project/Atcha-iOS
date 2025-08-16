@@ -15,4 +15,5 @@ protocol AddressRepository {
     func addRecentSearchHistory(request: RecentSearchRequest) async throws -> APIEmptyResponse
     func clearAllSearchHistories() async throws -> APIEmptyResponse
     func deleteSearchHistory(request: RecentSearchRequest) async throws -> APIEmptyResponse
+    func checkServiceRegion(request: CheckServiceRegionRequest) async throws -> Bool
 }

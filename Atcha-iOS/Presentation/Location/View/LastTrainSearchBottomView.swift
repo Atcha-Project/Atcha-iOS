@@ -46,7 +46,7 @@ final class LastTrainSearchBottomView: UIView {
     
     private let searchButton: AtchaButton = AtchaButton(text: "막차 검색하기",
                                                         size: .h52,
-                                                        style: .filled(.primary),
+                                                        style: .filled(.disabled),
                                                         image: .imgSearch16Px) {}
     
     override init(frame: CGRect) {
@@ -115,6 +115,13 @@ final class LastTrainSearchBottomView: UIView {
     
     func setupCurrentLocationTitle(_ address: String) {
         currentLocationLabel.attributedText = AtchaFont.B1_R_17(lineHeight: 0, "\(address)", color: .main)
+    }
+    
+    func updateSearchEnabled(_ enabled: Bool) {
+            searchButton.isEnabled = enabled
+            searchButton.updateStyle(
+                text: "막차 검색하기",
+                style: .filled(enabled ? .primary : .disabled))
     }
 }
 

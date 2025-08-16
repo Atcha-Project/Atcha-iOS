@@ -330,12 +330,25 @@ extension CourseModifyViewController: UITableViewDataSource, UITableViewDelegate
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let item = items[indexPath.row]
         switch item {
-        case .recent(let loc), .result(let loc):
-            print("선택된 장소: \(loc.name ?? "")")
-            
+        case .recent(let loc):
             viewModel.addRecentSearchLocation(request: RecentSearchRequest(name: loc.name, lat: loc.lat, lon: loc.lon, businessCategory: loc.businessCategory, address: loc.address))
             
             viewModel.onLocationSelected?(loc)
+            
+        case .result(let loc):
+            Task { [weak self] in
+                guard let self else { return }
+                let ok = await viewModel.checkServiceRegion(lat: loc.lat, lon: loc.lon)
+
+                if ok {
+                    viewModel.addRecentSearchLocation(request: RecentSearchRequest(name: loc.name, lat: loc.lat, lon: loc.lon, businessCategory: loc.businessCategory, address: loc.address))
+                    
+                    viewModel.onLocationSelected?(loc)
+                } else {
+                    AtchaToast(message: "앗차는 현재 서울, 경기, 인천에서만 이용 가능해요")
+                        .show(in: self.view)
+                }
+            }
         }
     }
     

@@ -19,6 +19,7 @@ final class MainViewModel: BaseViewModel {
     @Published var selectedLocation: CLLocationCoordinate2D?
     @Published var address: String?
     @Published var taxiFare: Double?
+    @Published var isServiceRegion: Bool?
     
     @Published var legInfo: LegInfo?
     @Published var addressDesc: String?
@@ -116,7 +117,7 @@ final class MainViewModel: BaseViewModel {
                         self.currentLocation = currentLocation
                         didSendInitialLocation = true
                     }
-                    
+                
                     getNearstToast(currentLocation: currentLocation)
                     selectedLocation = currentLocation
                 }
@@ -354,6 +355,7 @@ extension MainViewModel {
         }
         
         Task {
+            await checkServiceRegion(currentLocation: location)
             await updateAddressAndFare(for: location)
         }
     }
@@ -375,6 +377,17 @@ extension MainViewModel {
             taxiFare = try? await fetchTaxiFare(request: request)
         } catch {
             print("❌ 주소 또는 요금 정보 업데이트 실패: \(error)")
+        }
+    }
+    
+    // MARK: - 서비즈 지역 확인
+    private func checkServiceRegion(currentLocation: CLLocationCoordinate2D) async {
+        let req = CheckServiceRegionRequest(lat: currentLocation.latitude, lon: currentLocation.longitude)
+        
+        do {
+            isServiceRegion = try await searchAddressUseCase.checkServiceRegion(req)
+        } catch {
+            print("서비스 지역 확인 실패:", error)
         }
     }
 }
