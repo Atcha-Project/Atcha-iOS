@@ -176,6 +176,27 @@ extension MainViewController {
             viewModel.handleRoute(route: .changeCourse(
                 location: Location(name: "", lat: 0.0, lon: 0.0, businessCategory: "", address: "", radius: "")))
         case .searchTapped:
+            
+            guard let startCoord = viewModel.currentLocation else {
+                view.showToast(message: "현재 위치를 확인 중이에요. 잠시 후 다시 시도해 주세요.")
+                return
+            }
+            
+            let wrapper = UserDefaultsWrapper.shared
+            let endLatStr = wrapper.string(forKey: UserDefaultsWrapper.Key.homeLat.rawValue) ?? "37.554722"
+            let endLonStr = wrapper.string(forKey: UserDefaultsWrapper.Key.homeLon.rawValue) ?? "126.970833"
+            
+            guard let endLat = Double(endLatStr), let endLon = Double(endLonStr) else {
+                view.showToast(message: "저장된 목적지 좌표가 잘못되었어요.")
+                return
+            }
+            let endCoord = CLLocationCoordinate2D(latitude: endLat, longitude: endLon)
+            
+            if ProximityManager.shared.isWithinThreshold(from: startCoord, to: endCoord) {
+                viewModel.handleRoute(route: .proximity)
+                return
+            }
+            
             viewModel.handleRoute(route: .courseSearch(
                 startLat: "", startLon: "", startAddress: ""
             ))

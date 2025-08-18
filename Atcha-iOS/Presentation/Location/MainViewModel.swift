@@ -342,6 +342,8 @@ extension MainViewModel {
         case .lockScreen:
             guard let address, let legInfo else { return }
             routeHandler?(.lockScreen(info: legInfo, address: address))
+        case .proximity:
+            routeHandler?(.proximity)
         }
     }
 }

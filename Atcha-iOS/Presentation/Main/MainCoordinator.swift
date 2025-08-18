@@ -168,6 +168,12 @@ final class MainCoordinator {
             let vc = lockScreenDI.makeLockScreenViewController(viewModel: vm)
             vc.modalPresentationStyle = .overFullScreen
             navigationController.present(vc, animated: false)
+        case .proximity:
+            let proximityDI = diContainer.makeProximityDIContainer()
+            let vm = proximityDI.makeProximityViewModel()
+            let vc = proximityDI.makeProximityViewController(viewModel: vm)
+            
+            navigationController.presentPanModal(vc)
         }
         
         routeHandler?(route)
