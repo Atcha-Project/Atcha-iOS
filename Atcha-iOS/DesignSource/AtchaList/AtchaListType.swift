@@ -9,6 +9,7 @@ import Foundation
 
 enum AtchaListType {
     case checkmark(isOn: Bool)
+    case radioButton(isOn: Bool)
     case text(String)
     case arrow
     case button(title: String, action: () -> Void)

@@ -65,6 +65,8 @@ class AtchaList: UIView {
         switch type {
         case .checkmark(let isOn):
             addCheckmarkView(isOn: isOn)
+        case .radioButton(let isOn):
+            addRadioButtonView(isOn: isOn)
         case .text(let text):
             addTextLabelView(text: text)
         case .arrow:
@@ -88,22 +90,31 @@ class AtchaList: UIView {
     }
     
     @objc private func checkmarkTapped() {
-            checkmarkIsOn.toggle()
-            
-            UIView.transition(with: checkmarkImageView!,
-                              duration: 0.25,
-                              options: .transitionCrossDissolve,
-                              animations: { [weak self] in
-                guard let self else { return }
-                checkmarkImageView?.tintColor = checkmarkIsOn ? .main : .gray700
-            }, completion: nil)
+        switch listType {
+        case .radioButton:
+            if checkmarkIsOn { onSelect?(self); return }
+            setRadio(true)
             onSelect?(self)
+
+        case .checkmark:
+            checkmarkIsOn.toggle()
+            guard let iv = checkmarkImageView else { return }
+            UIView.transition(with: iv, duration: 0.25, options: .transitionCrossDissolve) { [weak self] in
+                guard let self else { return }
+                iv.tintColor = self.checkmarkIsOn ? .main : .gray700
+            }
+            onSelect?(self)
+
+        default:
+            break
         }
-        
-        func setCheckmark(_ isOn: Bool) {
-            checkmarkIsOn = isOn
-            checkmarkImageView?.tintColor = isOn ? .main : .gray700
-        }
+    }
+
+    
+    func setCheckmark(_ isOn: Bool) {
+        checkmarkIsOn = isOn
+        checkmarkImageView?.tintColor = isOn ? .main : .gray700
+    }
 }
 
 // MARK: - CheckMark
@@ -125,6 +136,48 @@ extension AtchaList {
         addGestureRecognizer(tapGesture)
         checkmarkIsOn = isOn
         checkmarkImageView = imageView
+    }
+}
+
+// MARK: - CheckMark
+extension AtchaList {
+    private func addRadioButtonView(isOn: Bool = false) {
+        let image = (isOn ? UIImage.radioOn : UIImage.radioOff).withRenderingMode(.alwaysTemplate)
+        let imageView = UIImageView(image: image)
+        imageView.tintColor = isOn ? .main : .gray400
+        
+        rightView.addSubview(imageView)
+        
+        rightView.snp.remakeConstraints { make in
+            make.trailing.equalToSuperview().inset(16)
+            make.centerY.equalToSuperview()
+            make.leading.equalToSuperview().offset(16)
+        }
+        
+        imageView.snp.makeConstraints { make in
+            make.size.equalTo(20)
+            make.leading.equalToSuperview()
+            make.centerY.equalToSuperview()
+        }
+
+        label.snp.remakeConstraints { make in
+            make.leading.equalTo(imageView.snp.trailing).offset(16)
+            make.trailing.lessThanOrEqualToSuperview().inset(16)
+            make.centerY.equalToSuperview()
+        }
+        
+    
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(checkmarkTapped))
+        addGestureRecognizer(tapGesture)
+        checkmarkIsOn = isOn
+        checkmarkImageView = imageView
+    }
+    
+    func setRadio(_ isOn: Bool) {
+        guard case .radioButton = listType else { return }
+        checkmarkIsOn = isOn
+        checkmarkImageView?.image = (isOn ? UIImage.radioOn : UIImage.radioOff).withRenderingMode(.alwaysTemplate)
+        checkmarkImageView?.tintColor = isOn ? .main : .gray400
     }
 }
 

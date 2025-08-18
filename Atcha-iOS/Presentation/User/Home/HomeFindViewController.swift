@@ -85,7 +85,6 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
             .store(in: &cancellables)
         
         viewModel.$currentLocation
-        //            .removeDuplicates()
             .compactMap { $0 }
             .receive(on: DispatchQueue.main)
             .sink { [weak self] location in
