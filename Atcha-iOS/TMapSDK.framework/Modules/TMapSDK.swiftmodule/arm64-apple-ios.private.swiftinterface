@@ -531,6 +531,7 @@ public enum MapType {
   case Default
   case Night
   case Hybrid
+  case Public
   public static func == (a: TMapSDK.MapType, b: TMapSDK.MapType) -> Swift.Bool
   public func hash(into hasher: inout Swift.Hasher)
   public var hashValue: Swift.Int {

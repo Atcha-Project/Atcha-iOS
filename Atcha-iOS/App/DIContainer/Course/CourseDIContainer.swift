@@ -34,12 +34,12 @@ final class CourseDIContainer {
         return CourseSearchViewController(viewModel: viewModel)
     }
     
-    func makeCourseModifyViewModel() -> CourseModifyViewModel {
-        return CourseModifyViewModel(searchAddressUseCase: searchAddressUseCase, authorizationUseCase: requestUseCase, locationStateHolder: locationStateHolder)
+    func makeCourseModifyViewModel(location: Location) -> CourseModifyViewModel {
+        return CourseModifyViewModel(searchAddressUseCase: searchAddressUseCase, authorizationUseCase: requestUseCase, locationStateHolder: locationStateHolder, initialLocation: location)
     }
     
-    func makeCourseModifyViewController() -> UIViewController {
-        return CourseModifyViewController(viewModel: makeCourseModifyViewModel())
+    func makeCourseModifyViewController(viewModel: CourseModifyViewModel) -> UIViewController {
+        return CourseModifyViewController(viewModel: viewModel)
     }
     
     func makeCourseSettingViewModel(location: Location) -> CourseSettingViewModel {

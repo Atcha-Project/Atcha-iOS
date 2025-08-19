@@ -46,7 +46,10 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
         mapContainerView.delegate = self
         flagImageView.image = UIImage.settingLocationMark
         backButton.setImage(UIImage.chevronLeft, for: .normal)
-        backButton.tintColor = .gray300
+        backButton.tintColor = .white
+        backButton.backgroundColor = .black
+        backButton.clipsToBounds = true
+        backButton.setCornerRadius(18)
         
         configureButton(loactionButton,
                         imageName: "mylocation-filled",
@@ -55,17 +58,33 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
     
     private func bindViewModel() {
         bottomView.actionPublisher
-            .removeDuplicates()
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
-                guard let self else { return }
-                viewModel.handleRegister()
-                navigationController?.popToViewController(ofType: HomeRegisterViewController.self)
+                guard let self = self else { return }
+                guard let coord = self.viewModel.currentLocation else { return }
+                
+                self.bottomView.isUserInteractionEnabled = false
+                
+                Task { @MainActor [weak self] in
+                    guard let self = self else { return }
+                    let ok = await self.viewModel.checkServiceRegion(
+                        lat: coord.latitude,
+                        lon: coord.longitude
+                    )
+                    if ok {
+                        self.viewModel.handleRegister()
+                        self.navigationController?.popToViewController(ofType: HomeRegisterViewController.self)
+                    } else {
+                        AtchaToast(message: "앗차는 현재 서울, 경기, 인천에서만 이용 가능해요")
+                            .show(in: self.view)
+                    }
+                    
+                    self.bottomView.isUserInteractionEnabled = true
+                }
             }
             .store(in: &cancellables)
         
         viewModel.$currentLocation
-//            .removeDuplicates()
             .compactMap { $0 }
             .receive(on: DispatchQueue.main)
             .sink { [weak self] location in
@@ -79,7 +98,7 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
             .receive(on: DispatchQueue.main)
             .sink { [weak self] address in
                 guard let self else { return }
-                bottomView.setupaddressLabel(address: address)
+                bottomView.setupAddressLabel(address: address)
             }
             .store(in: &cancellables)
         
@@ -108,13 +127,13 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
         
         backButton.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(16)
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).inset(18)
-            make.size.equalTo(24)
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(12)
+            make.size.equalTo(36)
         }
         
         flagImageView.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
-            make.centerY.equalTo(mapContainerView.snp.centerY)
+            make.centerY.equalTo(mapContainerView.snp.centerY).offset(-63)
             make.height.equalTo(63)
             make.width.equalTo(48)
         }
@@ -128,7 +147,6 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
         bottomView.snp.makeConstraints { make in
             make.horizontalEdges.equalToSuperview()
             make.bottom.equalToSuperview()
-            make.height.equalTo(210)
         }
     }
 }

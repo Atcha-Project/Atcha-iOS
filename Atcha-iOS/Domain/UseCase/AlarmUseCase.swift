@@ -15,7 +15,7 @@ protocol AlarmUseCase {
     func alarmDelete(_ request: AlarmRequest) async throws -> APIEmptyResponse
     
     // 출발시간 갱신
-    func alarmRefresh(_ request: AlarmRequest) async throws -> AlarmRefresh
+    func alarmRefresh() async throws -> AlarmRefresh
 }
 
 final class AlarmUseCaseImpl: AlarmUseCase {
@@ -36,8 +36,8 @@ final class AlarmUseCaseImpl: AlarmUseCase {
     }
     
     // 출발시간 갱신
-    func alarmRefresh(_ request: AlarmRequest) async throws -> AlarmRefresh {
-        guard let entity = try await repository.alarmRefresh(request).toEntity() else {
+    func alarmRefresh() async throws -> AlarmRefresh {
+        guard let entity = try await repository.alarmRefresh().toEntity() else {
             throw NSError(domain: "AlarmUseCaseError", code: -1, userInfo: [
                 NSLocalizedDescriptionKey: "AlarmRefresh 변환 실패"
             ])

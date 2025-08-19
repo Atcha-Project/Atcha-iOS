@@ -32,7 +32,7 @@ final class PushAlarmViewModel: BaseViewModel {
         self.locationStateHolder = locationStateHolder
     }
     
-    func signUp(selectedAlarms: [AlarmTimeOption]) {
+    func signUp() {
         guard let provider = UserDefaultsWrapper.shared.integer(forKey: UserDefaultsWrapper.Key.provider.rawValue) else {
             print("❌ 플랫폼 정보 없음")
             return
@@ -49,7 +49,7 @@ final class PushAlarmViewModel: BaseViewModel {
             address: locationStateHolder.address ?? "",
             lat: locationStateHolder.currentLocation?.latitude ?? 0.0,
             lon: locationStateHolder.currentLocation?.longitude ?? 0.0,
-            alertFrequencies: selectedAlarms.map { $0.rawValue },
+            alertFrequencies: [1, 10],
             fcmToken: fcmToken
         )
         
@@ -81,8 +81,8 @@ final class PushAlarmViewModel: BaseViewModel {
     }
     
     
-    func pushAlarmPatch(selectedAlarms: [AlarmTimeOption]) async throws {
-        let request = PushAlarmPatchRequest(alertFrequencies: selectedAlarms.map { $0.rawValue })
-        let response = try await pushAlarmPatchUseCase.pushAlarmPatch(request)
-    }
+//    func pushAlarmPatch(selectedAlarms: [AlarmTimeOption]) async throws {
+//        let request = PushAlarmPatchRequest(alertFrequencies: selectedAlarms.map { $0.rawValue })
+//        let response = try await pushAlarmPatchUseCase.pushAlarmPatch(request)
+//    }
 }

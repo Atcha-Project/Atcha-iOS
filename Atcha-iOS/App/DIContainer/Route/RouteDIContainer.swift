@@ -18,9 +18,10 @@ final class RouteDIContainer {
         self.apiService = apiService
     }
     
-    func makeDetailRouteViewModel(address: String, infos: LegInfo) -> DetailRouteViewModel {
+    func makeDetailRouteViewModel(address: String, infos: LegInfo, context: DetailRouteContext) -> DetailRouteViewModel {
         return DetailRouteViewModel(address: address,
                                     infos: infos,
+                                    context: context,
                                     busInfoUseCase: busInfoUseCase,
                                     authorizationUseCase: requestUseCase,
                                     streamUseCase: streamUseCase)

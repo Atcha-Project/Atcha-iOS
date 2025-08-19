@@ -79,6 +79,24 @@ final class RegisterTextField: UIView {
         onTextReset?()
         onTextChange?("")
     }
+    
+    override var canBecomeFirstResponder: Bool {
+        textField.canBecomeFirstResponder
+    }
+    
+    @discardableResult
+    override func becomeFirstResponder() -> Bool {
+        return textField.becomeFirstResponder()
+    }
+    
+    @discardableResult
+    override func resignFirstResponder() -> Bool {
+        return textField.resignFirstResponder()
+    }
+    
+    // 선택: 외부에서 쓰기 좋은 편의 메서드
+    func focus() { _ = becomeFirstResponder() }
+    func unfocus() { _ = resignFirstResponder() }
 }
 
 extension RegisterTextField: UITextFieldDelegate {

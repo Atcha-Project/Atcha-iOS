@@ -12,6 +12,7 @@ import TMapSDK
 
 final class CourseSettingViewController: BaseViewController<CourseSettingViewModel>, TMapWrapperDelegate {
     
+    private let backButton: UIButton = UIButton()
     private let mapContainerView: TMapContainerView = TMapContainerView()
     private let settingBottomView: OriginSettingBottomView = OriginSettingBottomView()
     private let flagImageView: UIImageView = UIImageView()
@@ -22,6 +23,7 @@ final class CourseSettingViewController: BaseViewController<CourseSettingViewMod
         
         setupUI()
         setupAutoLayout()
+        setupBackButton()
         bindView()
     }
     
@@ -30,13 +32,16 @@ final class CourseSettingViewController: BaseViewController<CourseSettingViewMod
             mapContainerView,
             flagImageView,
             currentLoactionButton,
-            settingBottomView
+            settingBottomView,
+            backButton
         )
         
         mapContainerView.delegate = self
         flagImageView.image = UIImage.settingLocationMark
         flagImageView.isUserInteractionEnabled = false
         configureButton(currentLoactionButton, imageName: "mylocation-filled", action: #selector(didTapLocationButton))
+        backButton.setImage(UIImage.chevronLeft, for: .normal)
+        backButton.tintColor = .gray300
     }
     
     private func configureButton(_ button: UIButton, imageName: String, action: Selector) {
@@ -47,11 +52,33 @@ final class CourseSettingViewController: BaseViewController<CourseSettingViewMod
     }
     
     private func bindView() {
+        viewModel.bindView()
         settingBottomView.actionPublisher
             .sink { [weak self] action in
                 guard let self else { return }
                 switch action {
                 case .settingTapped:
+                    
+                    guard let startCoord = viewModel.currentLocation else {
+                        view.showToast(message: "현재 위치를 확인 중이에요. 잠시 후 다시 시도해 주세요.")
+                        return
+                    }
+                    
+                    let wrapper = UserDefaultsWrapper.shared
+                    let endLatStr = wrapper.string(forKey: UserDefaultsWrapper.Key.homeLat.rawValue) ?? "37.554722"
+                    let endLonStr = wrapper.string(forKey: UserDefaultsWrapper.Key.homeLon.rawValue) ?? "126.970833"
+                    
+                    guard let endLat = Double(endLatStr), let endLon = Double(endLonStr) else {
+                        view.showToast(message: "저장된 목적지 좌표가 잘못되었어요.")
+                        return
+                    }
+                    let endCoord = CLLocationCoordinate2D(latitude: endLat, longitude: endLon)
+                    
+                    if ProximityManager.shared.isWithinThreshold(from: startCoord, to: endCoord) {
+                        view.showToast(message: "이동하려는 거리가 매우 가까워요")
+                        return
+                    }
+                    
                     viewModel.userDidTapSettingButton()
                 }
             }
@@ -59,6 +86,7 @@ final class CourseSettingViewController: BaseViewController<CourseSettingViewMod
         
         viewModel.$locationInfo
             .receive(on: RunLoop.main)
+            .dropFirst()
             .sink { [weak self] location in
                 guard let self else { return }
                 settingBottomView.setupLocationTitle(location.name, location.address)
@@ -68,6 +96,7 @@ final class CourseSettingViewController: BaseViewController<CourseSettingViewMod
         viewModel.$currentLocation
             .compactMap { $0 }
             .receive(on: DispatchQueue.main)
+            .dropFirst()
             .sink { [weak self] location in
                 guard let self else { return }
                 mapContainerView.setupCenter(location: location)
@@ -100,6 +129,12 @@ final class CourseSettingViewController: BaseViewController<CourseSettingViewMod
             make.top.equalToSuperview()
             make.bottom.equalTo(settingBottomView.snp.top).inset(30)
         }
+        
+        backButton.snp.makeConstraints { make in
+            make.leading.equalToSuperview().inset(16)
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).inset(18)
+            make.size.equalTo(24)
+        }
     }
 }
 
@@ -111,6 +146,17 @@ extension CourseSettingViewController {
     
     @objc private func didTapLocationButton() {
         viewModel.setupLocation()
+    }
+    
+    private func setupBackButton() {
+        backButton.addTarget(self,
+                             action: #selector(backButtonTapped),
+                             for: .touchUpInside)
+    }
+    
+    
+    @objc private func backButtonTapped() {
+        navigationController?.popViewController(animated: true)
     }
 }
 

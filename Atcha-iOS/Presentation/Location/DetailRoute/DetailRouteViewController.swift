@@ -19,6 +19,9 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
     private lazy var bottomSheet: DetailRouteInfoBottomView = DetailRouteInfoBottomView()
     private let relaodButton: UIButton = UIButton()
     private var allCoordinates: [CLLocationCoordinate2D] = []
+    private let registerContainer: UIView = UIView()
+    private var registerGradient = CAGradientLayer()
+    private let alarmRegisterButton: AtchaButton = AtchaButton(text: "막차 알림 받기", size: .h52, style: .filled(.primary), image: .bellOutlined)
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -27,6 +30,66 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         setupUI()
         setupAutoLayout()
         bindView()
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        // 레이아웃이 확정된 뒤에 호출해야 현재 프레임(절반 화면) 기준으로 정확히 맞춰짐
+        mapContainerView.adjustMapToFit(coordinates: allCoordinates)
+        registerGradient.frame = registerContainer.bounds
+    }
+    
+    private func setupUI(context: DetailRouteContext) {
+        switch context {
+        case .beforeRegister:
+            setupBeforeUI()
+        case .afterReigster:
+            setupAfterUI()
+        }
+    }
+    
+    // MARK: 알림 등록 이전 UI
+    private func setupBeforeUI() {
+        relaodButton.isHidden = true
+        registerContainer.addSubview(alarmRegisterButton)
+        registerContainer.backgroundColor = .clear
+        view.addSubview(registerContainer)
+        
+        alarmRegisterButton.addTarget(self, action: #selector(didTapAlarmRegister), for: .touchUpInside)
+        
+        registerContainer.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview()
+            make.bottom.equalTo(view.snp.bottom)
+            make.height.equalTo(160)
+        }
+        
+        view.bringSubviewToFront(registerContainer)
+        applyRegisterGradient()
+        
+        alarmRegisterButton.snp.makeConstraints { make in
+            make.leading.equalToSuperview().offset(16)
+            make.trailing.equalToSuperview().inset(16)
+            make.bottom.equalToSuperview().inset(40)
+        }
+    }
+    
+    private func applyRegisterGradient() {
+        registerGradient.removeFromSuperlayer()
+        registerGradient = CAGradientLayer()
+        registerGradient.colors = [
+            AtchaColor.black.withAlphaComponent(0.0).cgColor, // 위: 투명
+            AtchaColor.black.withAlphaComponent(1.0).cgColor  // 아래: 불투명
+        ]
+        registerGradient.locations = [0.0, 1.0]
+        registerGradient.startPoint = CGPoint(x: 0.5, y: 0.0)
+        registerGradient.endPoint   = CGPoint(x: 0.5, y: 1.0)
+        registerContainer.layer.insertSublayer(registerGradient, at: 0)
+    }
+
+    
+    // MARK: 알림 등록 이후 UI
+    private func setupAfterUI() {
+        relaodButton.isHidden = false
     }
     
     private func setupUI() {
@@ -48,8 +111,8 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         relaodButton.addTarget(self, action: #selector(didTapReload), for: .touchUpInside)
         
         configureButton(loactionButton,
-                                imageName: "mylocation-filled",
-                                action: #selector(didTapLocationButton))
+                        imageName: "mylocation-filled",
+                        action: #selector(didTapLocationButton))
     }
     
     private func configureButton(_ button: UIButton, imageName: String, action: Selector) {
@@ -111,20 +174,27 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             .sink { [weak self] location in
                 guard let self else { return }
                 mapContainerView.adjustMapToFit(coordinates: allCoordinates)
-//                mapContainerView.setupCenter(location: location)
+                //                mapContainerView.setupCenter(location: location)
             }
             .store(in: &cancellables)
         
         bottomSheet.onBusDetail = { [weak self] info in
-                self?.viewModel.onBusDetail?(info)
-            }
+            self?.viewModel.onBusDetail?(info)
+        }
+        
+        viewModel.$context
+                .receive(on: RunLoop.main)
+                .sink { [weak self] ctx in
+                    self?.setupUI(context: ctx)
+                }
+                .store(in: &cancellables)
     }
     
     private func addRouteLine(infos: [LegPathInfo]) {
         var shapeStrings: [String] = []
         var colors: [UIColor] = []
         var images: [UIImage] = []
-
+        
         infos.forEach { info in
             switch info.mode {
             case .bus, .subway:
@@ -180,6 +250,10 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
     private func zip3<A, B, C>(_ a: [A], _ b: [B], _ c: [C]) -> [(A, B, C)] {
         let count = min(a.count, b.count, c.count)
         return (0..<count).map { (a[$0], b[$0], c[$0]) }
+    }
+    
+    @objc private func didTapAlarmRegister() {
+        viewModel.getAlarmTapped?(viewModel.address, viewModel.infos)
     }
     
     deinit {

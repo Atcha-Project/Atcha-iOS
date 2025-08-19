@@ -86,6 +86,19 @@ final class AddressRepositoryImpl: AddressRepository {
             )
         )
     }
+    
+    func checkServiceRegion(request: CheckServiceRegionRequest) async throws -> Bool {
+        return try await apiService.request(
+            Endpoint(
+                path: "https://atcha.p-e.kr/api/locations/is-service-region",
+                method: .get,
+                parameters: [
+                    "lat": "\(request.lat ?? 0.0)",
+                    "lon": "\(request.lon ?? 0.0)"
+                ]
+            )
+        )
+    }
 }
 
 

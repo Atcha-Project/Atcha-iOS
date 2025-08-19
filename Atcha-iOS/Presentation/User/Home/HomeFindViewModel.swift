@@ -40,8 +40,8 @@ final class HomeFindViewModel: BaseViewModel {
     
     private func bind() {
         $currentLocation
-        //            .removeDuplicates()
             .debounce(for: .seconds(0.3), scheduler: RunLoop.main)
+            .dropFirst()
             .sink { [weak self] location in
                 guard let self, let location else { return }
                 Task {
@@ -136,6 +136,19 @@ final class HomeFindViewModel: BaseViewModel {
             } catch {
                 print("집주소 변경 실패: \(error)")
             }
+        }
+    }
+    
+    // MARK: - 서비즈 지역 확인
+    @MainActor
+    func checkServiceRegion(lat: Double, lon: Double) async -> Bool {
+        let req = CheckServiceRegionRequest(lat: lat, lon: lon)
+        do {
+            let ok = try await searchAddressUseCase.checkServiceRegion(req)
+            return ok
+        } catch {
+            print("서비스 지역 확인 실패:", error)
+            return false
         }
     }
 }

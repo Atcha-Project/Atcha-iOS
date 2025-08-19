@@ -32,8 +32,7 @@ final class CourseRepositoryImpl: CourseRepository {
                     "startLat": request.startLat,
                     "startLon": request.startLon,
                     "endLat": request.endLat,
-                    "endLon": request.endLon,
-                    "sortType": request.sortType
+                    "endLon": request.endLon
                 ],
                 headers: headers
             )
@@ -62,8 +61,7 @@ final class CourseRepositoryImpl: CourseRepository {
             URLQueryItem(name: "startLat", value: "\(request.startLat)"),
             URLQueryItem(name: "startLon", value: "\(request.startLon)"),
             URLQueryItem(name: "endLat", value: "\(request.endLat)"),
-            URLQueryItem(name: "endLon", value: "\(request.endLon)"),
-            URLQueryItem(name: "sortType", value: "\(request.sortType)")
+            URLQueryItem(name: "endLon", value: "\(request.endLon)")
         ]
         
         var urlRequest = URLRequest(url: urlComponents.url!)
@@ -88,14 +86,23 @@ final class CourseRepositoryImpl: CourseRepository {
                 }
             }
             
-            for try await line in bytes.lines {
-                let trimmedLine = line.trimmingCharacters(in: .whitespacesAndNewlines)
-                guard trimmedLine.starts(with: "data:") else { continue }
+            let parser = SSEParser()
+
+            for try await byte in bytes {
+                // 바이트 단위로 들어오므로 Data로 감싸서 누적
+                let events = parser.feed(Data([byte]))
+                for event in events {
+                    guard !event.data.isEmpty,
+                          let payload = event.data.data(using: .utf8) else {
+                        // 하트비트/코멘트 등
+                        continue
+                    }
                 
-                let jsonString = trimmedLine.replacingOccurrences(of: "data:", with: "").trimmingCharacters(in: .whitespaces)
-                if let data = jsonString.data(using: .utf8) {
-                    if let decoded = try? JSONDecoder().decode(CourseSearchResponse.self, from: data) {
+                    do {
+                        let decoded = try JSONDecoder().decode(CourseSearchResponse.self, from: payload)
                         continuation.yield(decoded)
+                    } catch {
+                        print("❌ SSE Decode 실패:", error)
                     }
                 }
             }

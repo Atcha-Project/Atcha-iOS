@@ -15,6 +15,7 @@ final class MainDIContainer {
     private lazy var requestUseCase = RequestLocationAuthorizationUseCaseImpl(repository: PermissionRepositoryImpl())
     private lazy var streamUseCase = ObserLocationStreamUseCaseImpl(repository: LocationStreamRepositoryImpl())
     private lazy var busInfoUseCase = BusInfoUseCaseImpl(repository: BusInfoRepositoryImpl(apiService: apiService))
+    private lazy var alarmUseCase = AlarmUseCaseImpl(repository: AlarmRepositoryImpl(apiService: apiService))
     
     private lazy var myPageDI: MyPageDIContainer = {
         MyPageDIContainer(apiService: apiService,
@@ -34,6 +35,10 @@ final class MainDIContainer {
         BusInfoDIContainer(apiService: apiService)
     }()
     
+    private lazy var proximityDI: ProximityDIContainer = {
+        ProximityDIContainer(apiService: apiService)
+    }()
+    
     private lazy var lockScreenDI: LockScreenDIContainer = {
         LockScreenDIContainer()
     }()
@@ -44,17 +49,14 @@ final class MainDIContainer {
     }
     
     func makeMainiewModel() -> MainViewModel {
-        
         let fetchTaxiFareUseCase = FetchTaxiFareUseCaseImpl(repository: FetchTaxiFareRepositoryImpl(apiService: apiService))
-        let alarmUseCase = AlarmUseCaseImpl(repository: AlarmRepositoryImpl(apiService: apiService))
-        
         return MainViewModel(authorizationUseCase: requestUseCase,
                              streamUseCase: streamUseCase,
                              fetchTaxiFareUseCase: fetchTaxiFareUseCase,
                              searchAddressUseCase: searchAddressUseCase,
-                             alarmUseCase: alarmUseCase,
                              locationStateHolder: locationStateHolder,
-                             busInfoUseCase: busInfoUseCase)
+                             busInfoUseCase: busInfoUseCase,
+                             alarmUseCase: alarmUseCase)
     }
     
     func makeMainViewController(viewModel: MainViewModel) -> UIViewController {
@@ -94,32 +96,6 @@ extension MainDIContainer {
 
 // MARK: - Cousre
 extension MainDIContainer {
-//    func makeCourseSearchViewModel(startLat: String, startLon: String, startAddress: String) -> CourseSearchViewModel {
-//        let courseUseCase = CourseUseCaseImpl(repository: CourseRepositoryImpl(apiService: apiService))
-//        return CourseSearchViewModel(courseUseCase: courseUseCase, startLat: startLat, startLon: startLon, startAddress: startAddress)
-//    }
-//    
-//    func makeCourseSearchViewController(startLat: String, startLon: String, startAddress: String) -> UIViewController {
-//        let viewModel = makeCourseSearchViewModel(startLat: startLat, startLon: startLon, startAddress: startAddress)
-//        return CourseSearchViewController(viewModel: viewModel)
-//    }
-//    
-//    func makeCourseModifyViewModel() -> CourseModifyViewModel {
-//        return CourseModifyViewModel(searchAddressUseCase: searchAddressUseCase, authorizationUseCase: requestUseCase, locationStateHolder: locationStateHolder)
-//    }
-//    
-//    func makeCourseModifyViewController() -> UIViewController {
-//        return CourseModifyViewController(viewModel: makeCourseModifyViewModel())
-//    }
-//    
-//    func makeCourseSettingViewModel() -> CourseSettingViewModel {
-//        return CourseSettingViewModel(address: SettingAddress(name: "", address: ""), authorizationUseCase: requestUseCase, streamUseCase: streamUseCase, searchAddressUseCase: searchAddressUseCase, locationStateHolder: locationStateHolder)
-//    }
-//    
-//    func makeCourseSettingViewController() -> UIViewController {
-//        return CourseSettingViewController(viewModel: makeCourseSettingViewModel())
-//    }
-    
     func makeCourseDIContainer() -> CourseDIContainer {
         return courseDI
     }
@@ -129,5 +105,12 @@ extension MainDIContainer {
 extension MainDIContainer {
     func makeBusInfoDIContainer() -> BusInfoDIContainer {
         return busInfoDI
+    }
+}
+
+// MARK: - Proximity
+extension MainDIContainer{
+    func makeProximityDIContainer() -> ProximityDIContainer {
+        return proximityDI
     }
 }

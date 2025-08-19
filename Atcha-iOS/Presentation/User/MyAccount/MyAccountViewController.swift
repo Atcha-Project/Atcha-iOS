@@ -51,6 +51,26 @@ final class MyAccountViewController: BaseViewController<MyAccountViewModel> {
             $0.leading.trailing.bottom.equalToSuperview()
         }
     }
+    
+    private func showLogoutPopup() {
+        let popupVM = AtchaPopupViewModel(info: .logout)
+        let popupVC = AtchaPopupViewController(viewModel: popupVM)
+
+        popupVC.confirmButton.addAction(UIAction { [weak self, weak popupVC] _ in
+            guard let self else { return }
+            popupVC?.dismiss(animated: true)
+
+            self.viewModel.logoutTapped()
+        }, for: .touchUpInside)
+
+        // 취소
+        popupVC.cancelButton.addAction(UIAction { [weak popupVC] _ in
+            popupVC?.dismiss(animated: true)
+        }, for: .touchUpInside)
+
+        popupVC.modalPresentationStyle = .overFullScreen
+        present(popupVC, animated: false)
+    }
 }
 
 extension MyAccountViewController: UICollectionViewDelegate,
@@ -79,7 +99,7 @@ extension MyAccountViewController: UICollectionViewDelegate,
         let selectedItem = MyAccountItem.allCases[indexPath.row]
         switch selectedItem {
         case .logout:
-            viewModel.logoutTapped()
+            showLogoutPopup()
         case .withdraw:
             viewModel.signOutFinish?()
         }

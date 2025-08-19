@@ -35,7 +35,7 @@ final class AlarmRepositoryImpl: AlarmRepository {
         )
     }
     
-    func alarmRefresh(_ request: AlarmRequest) async throws -> AlarmRefreshResponse {
+    func alarmRefresh() async throws -> AlarmRefreshResponse {
         return try await apiService.request(
             Endpoint(
                 path: "https://atcha.p-e.kr/api/routes/user-routes/refresh",

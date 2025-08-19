@@ -41,6 +41,10 @@ final class CourseSearchViewModel: BaseViewModel {
     var getAlarmTapped: ((String, LegInfo) -> Void)?
     var getDetailTapped: ((String, LegInfo) -> Void)?
     
+    private let kst = TimeZone(identifier: "Asia/Seoul")!
+    private let cutoffHour = 3 // 새벽 3시까지 검색
+    private var anchorDate: Date? // 검색 시작 시 고정
+    
     init(
         courseUseCase: CourseUseCase,
         alarmUseCase: AlarmUseCase,
@@ -59,27 +63,33 @@ final class CourseSearchViewModel: BaseViewModel {
     
     // MARK: - 탭별 코스
     func fetchCourses(for tabIndex: Int) {
+        // 1) 탭별 베이스 리스트 만들기
+        let base: [CourseUIModel]
         switch tabIndex {
         case 0:
-            // BUS + SUBWAY 포함된 코스만
-            if courses != allCourses {
-                self.courses = allCourses
-            }
+            base = allCourses
         case 1:
-            // BUS만 포함된 코스
-            self.courses = allCourses.filter { uiModel in
-                let modes = uiModel.course.legs.compactMap { $0.mode }
+            // BUS만 포함
+            base = allCourses.filter { m in
+                let modes = m.course.legs.compactMap { $0.mode }
                 return !modes.contains(.subway) && modes.contains(.bus)
             }
-            
         case 2:
-            // SUBWAY만 포함된 코스
-            self.courses = allCourses.filter { uiModel in
-                let modes = uiModel.course.legs.compactMap { $0.mode }
+            // SUBWAY만 포함
+            base = allCourses.filter { m in
+                let modes = m.course.legs.compactMap { $0.mode }
                 return !modes.contains(.bus) && modes.contains(.subway)
             }
         default:
-            self.courses = []
+            base = []
+        }
+        
+        // 2) 정렬: totalTime ↑, 같으면 departureDateTime ↑
+        let sorted = base.sorted(by: isLess(_:_:))
+        
+        // 3) 변경이 있을 때만 갱신 (불필요한 리렌더 방지)
+        if courses != sorted {
+            self.courses = sorted
         }
     }
     
@@ -91,7 +101,7 @@ final class CourseSearchViewModel: BaseViewModel {
                 let endLat = userDefaults.string(forKey: UserDefaultsWrapper.Key.homeLat.rawValue) ?? "37.554722"
                 let endLon = userDefaults.string(forKey: UserDefaultsWrapper.Key.homeLon.rawValue) ?? "126.970833"
                 
-                let request = CourseSearchRequest(startLat: startLat, startLon: startLon, endLat: endLat, endLon: endLon, sortType: 1)
+                let request = CourseSearchRequest(startLat: startLat, startLon: startLon, endLat: endLat, endLon: endLon)
                 
                 let response = try await courseUseCase.courseSearch(request)
                 
@@ -111,9 +121,17 @@ final class CourseSearchViewModel: BaseViewModel {
     
     // MARK: - 코스 검색 스트리밍용
     func startCourseStream() {
-        courseStreamTask?.cancel()
         
+        if isBlackoutNow() {
+            setLoading(false)
+            isServerError = true 
+            courses = []
+            return
+        }
+        
+        courseStreamTask?.cancel()
         setLoading(true)
+        anchorDate = Date()
         
         courseStreamTask = Task {
             do {
@@ -125,34 +143,30 @@ final class CourseSearchViewModel: BaseViewModel {
                     startLat: startLat,
                     startLon: startLon,
                     endLat: endLat,
-                    endLon: endLon,
-                    sortType: 1
+                    endLon: endLon
                 )
                 
                 var hasReceived = false
                 
                 for try await course in courseUseCase.observeCourseStream(request) {
+                    setLoading(false)
                     hasReceived = true
-                    self.setLoading(false)
                     
-                    let uiModel = CourseUIModel(
-                        id: course.routeId ?? UUID().uuidString,
-                        course: course,
-                        isExpanded: false
-                    )
-                    
-                    if !allCourses.contains(where: { $0.id == uiModel.id }) {
+                    let uiModel = CourseUIModel(id: course.routeId ?? UUID().uuidString,
+                                                course: course, isExpanded: false)
+                    if !self.allCourses.contains(where: { $0.id == uiModel.id }) {
                         self.allCourses.append(uiModel)
+                        self.allCourses.sort(by: isLess(_:_:))
                         self.fetchCourses(for: 0)
                     }
                 }
-
+                
                 if !hasReceived {
                     print("스트림에서 아무 응답도 수신되지 않음")
                     self.setLoading(false)
                     self.isServerError = true
                 }
-
+                
             } catch {
                 print("스트림 오류 발생: \(error.localizedDescription)")
                 self.setLoading(false)
@@ -199,5 +213,53 @@ final class CourseSearchViewModel: BaseViewModel {
         newModel.isExpanded.toggle()
         courses[index] = newModel
     }
+    
+    
+    // MARK: - 서버 ISO 문자열 파싱
+    private func parseServerDate(_ iso: String) -> Date? {
+        // 1) 타임존 명시(Z 또는 +09:00 등)된 경우: ISO8601로
+        let tzRegex = #"[+-]\d{2}:\d{2}"#
+        let hasTZ = iso.contains("Z") || iso.range(of: tzRegex, options: .regularExpression) != nil
+        
+        if hasTZ {
+            let iso1 = ISO8601DateFormatter()
+            iso1.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            if let d = iso1.date(from: iso) { return d }
+            
+            let iso2 = ISO8601DateFormatter()
+            iso2.formatOptions = [.withInternetDateTime]
+            return iso2.date(from: iso)
+        }
+        
+        // 2) 타임존이 없는 경우: KST로 해석
+        let fmt = DateFormatter()
+        fmt.locale = Locale(identifier: "en_US_POSIX")
+        fmt.timeZone = kst
+        for pattern in ["yyyy-MM-dd'T'HH:mm:ss.SSS", "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd'T'HH:mm"] {
+            fmt.dateFormat = pattern
+            if let d = fmt.date(from: iso) { return d }
+        }
+        return nil
+    }
+    
+    private func isLess(_ a: CourseUIModel, _ b: CourseUIModel) -> Bool {
+        let at = a.course.totalTime ?? .max
+        let bt = b.course.totalTime ?? .max
+        if at != bt { return at < bt }
+        
+        let ad = (a.course.departureDateTime.flatMap { parseServerDate($0) }) ?? Date.distantFuture
+        let bd = (b.course.departureDateTime.flatMap { parseServerDate($0) }) ?? Date.distantFuture
+        if ad != bd { return ad < bd }
+        
+        return a.id < b.id
+    }
+    
+    // MARK: - 새벽 03~05시 검색 확인
+    func isBlackoutNow() -> Bool {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = kst
+        let hour = cal.component(.hour, from: Date())
+        // 00:00 <= now < 05:00
+        return hour >= 0 && hour < 5
+    }
 }
-

@@ -6,51 +6,11 @@
 	<dict>
 		<key>Assets.car</key>
 		<data>
-		7Ywpad/oMV+G/AnAAjLVy73tL9c=
+		B6OWte8JQzrA4chD3z6OgqvmEi0=
 		</data>
 		<key>Config.xcconfig</key>
 		<data>
 		aYcgornfiWbxfw+IXjCtk5slKV8=
-		</data>
-		<key>Frameworks/VSMSDK.framework/Info.plist</key>
-		<data>
-		QEjFXWb/dSOJ2XcFc1FtMcZYIG0=
-		</data>
-		<key>Frameworks/VSMSDK.framework/NaviRenderer.bundle/AlterRouteBubblePopupView.nib</key>
-		<data>
-		mN14c69I6jpzLhw+bGH0CB8Vln0=
-		</data>
-		<key>Frameworks/VSMSDK.framework/NaviRenderer.bundle/Info.plist</key>
-		<data>
-		TlI32eAU9J+UhGH6VGlu27kOT/8=
-		</data>
-		<key>Frameworks/VSMSDK.framework/NaviRenderer.bundle/_CodeSignature/CodeDirectory</key>
-		<data>
-		myx0W/vEo60q5Jpb+EaeTj2YyOc=
-		</data>
-		<key>Frameworks/VSMSDK.framework/NaviRenderer.bundle/_CodeSignature/CodeRequirements</key>
-		<data>
-		pwROfoQAzxav7NzDBwd1uisLef4=
-		</data>
-		<key>Frameworks/VSMSDK.framework/NaviRenderer.bundle/_CodeSignature/CodeRequirements-1</key>
-		<data>
-		bHd/HchJT4ovFy8pL0MuPV4gNeA=
-		</data>
-		<key>Frameworks/VSMSDK.framework/NaviRenderer.bundle/_CodeSignature/CodeResources</key>
-		<data>
-		oYiyMgZIetFmcHzk88nHEREufQg=
-		</data>
-		<key>Frameworks/VSMSDK.framework/NaviRenderer.bundle/_CodeSignature/CodeSignature</key>
-		<data>
-		tkJVW6bOmYDJgjth8Idvl8cfaXs=
-		</data>
-		<key>Frameworks/VSMSDK.framework/VSMSDK</key>
-		<data>
-		s+Pn+trttabqSE1NW3mjCHKk9xY=
-		</data>
-		<key>Frameworks/VSMSDK.framework/_CodeSignature/CodeResources</key>
-		<data>
-		gEfkXJlp2Qt7IsT6MGGOy7ppL7I=
 		</data>
 		<key>Headers/TMapSDK-Swift.h</key>
 		<data>
@@ -66,19 +26,19 @@
 		</data>
 		<key>Info.plist</key>
 		<data>
-		hQzT/Fg7Po08ymJO9WOQUeW36TI=
+		/T6RewDQDagPqns871shKSb6N8k=
 		</data>
 		<key>Modules/TMapSDK.swiftmodule/Project/arm64-apple-ios.swiftsourceinfo</key>
 		<data>
-		tc9AWcP8EcGbyVrJRUETftwzR1M=
+		5is6kAEsm3yfquuFCMY3et7bUYc=
 		</data>
 		<key>Modules/TMapSDK.swiftmodule/arm64-apple-ios.abi.json</key>
 		<data>
-		FGsAJ4zolUb0rvV7p5UsxhKQB+k=
+		0uTIlA0G5rK1I727bYwZxRUDQWg=
 		</data>
 		<key>Modules/TMapSDK.swiftmodule/arm64-apple-ios.private.swiftinterface</key>
 		<data>
-		yrjSDk1tQg/0X2FdSxnUbxQIvoc=
+		M00UQiacgkXbdaQT8Z3JP1CD9rE=
 		</data>
 		<key>Modules/TMapSDK.swiftmodule/arm64-apple-ios.swiftdoc</key>
 		<data>
@@ -86,11 +46,11 @@
 		</data>
 		<key>Modules/TMapSDK.swiftmodule/arm64-apple-ios.swiftinterface</key>
 		<data>
-		yrjSDk1tQg/0X2FdSxnUbxQIvoc=
+		M00UQiacgkXbdaQT8Z3JP1CD9rE=
 		</data>
 		<key>Modules/TMapSDK.swiftmodule/arm64-apple-ios.swiftmodule</key>
 		<data>
-		tnX2NTRSnLVj+h2a68f8/yjQVP0=
+		lfybPpqGiKZGDIxa4GkKxSSzLQo=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
@@ -107,7 +67,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			M9qta6y6Lo+WG/yAJOFHPIaCGjLkDiK6pEEbaN6rlEc=
+			TDKMUvMM1hkB7Z98WhHhgDrOk0G2m28l9+Lmi1itGqk=
 			</data>
 		</dict>
 		<key>Config.xcconfig</key>
@@ -115,76 +75,6 @@
 			<key>hash2</key>
 			<data>
 			aIX+3SZtksiwnly9VUtiXSF22vkEP3olizbtpuXl4k8=
-			</data>
-		</dict>
-		<key>Frameworks/VSMSDK.framework/Info.plist</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			Au/JR5PRnnj1uQURxpitHaLhqeDok6oS3Ox3JhGe+m4=
-			</data>
-		</dict>
-		<key>Frameworks/VSMSDK.framework/NaviRenderer.bundle/AlterRouteBubblePopupView.nib</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			v/Y30k6lEniCGlVweb8u/QDKmh3tBLbBnmaM9XmVSVI=
-			</data>
-		</dict>
-		<key>Frameworks/VSMSDK.framework/NaviRenderer.bundle/Info.plist</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			tQVMSbazgmP21QpQWrfdW8Q40ty0MXjOMsc2bluPz6c=
-			</data>
-		</dict>
-		<key>Frameworks/VSMSDK.framework/NaviRenderer.bundle/_CodeSignature/CodeDirectory</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			40CuH7EniMFi2QeAOb6EhHUp5/Ext6cya5w+dOR7z6M=
-			</data>
-		</dict>
-		<key>Frameworks/VSMSDK.framework/NaviRenderer.bundle/_CodeSignature/CodeRequirements</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			nPDLQRUjQUra6mMrREPibUF5oLwyvk5auJFENBtZG0M=
-			</data>
-		</dict>
-		<key>Frameworks/VSMSDK.framework/NaviRenderer.bundle/_CodeSignature/CodeRequirements-1</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			qj5LRCLpSvRD1EnLHUfg57rxbOqSlH/fKbQL+DwC5oo=
-			</data>
-		</dict>
-		<key>Frameworks/VSMSDK.framework/NaviRenderer.bundle/_CodeSignature/CodeResources</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			6Bn5i2CULyxgUXb73wF30/olv4MyMn2ofAff3xD/UUA=
-			</data>
-		</dict>
-		<key>Frameworks/VSMSDK.framework/NaviRenderer.bundle/_CodeSignature/CodeSignature</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			+RY2o2uYliZkiTcGKgg/amKVh5lOAPzTkyVmCZpKRtI=
-			</data>
-		</dict>
-		<key>Frameworks/VSMSDK.framework/VSMSDK</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			bCuNs7emsWwsAnPWP62ML1Y2cQpdVLfgSocJoXPP5wc=
-			</data>
-		</dict>
-		<key>Frameworks/VSMSDK.framework/_CodeSignature/CodeResources</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			t4XmWJnzmqGtQF7MLUurDNq5HBzUpW2/NU7sHAqJmIM=
 			</data>
 		</dict>
 		<key>Headers/TMapSDK-Swift.h</key>
@@ -212,21 +102,21 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			FzBeAEIH2lhNXyqYGEaIKzb3nYjSJ9K22EG+caHJuCw=
+			PrM7Mmhbxd9GxTF+OAx6xVj6UVh8ajuvgbhZ4Qh7nWI=
 			</data>
 		</dict>
 		<key>Modules/TMapSDK.swiftmodule/arm64-apple-ios.abi.json</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			KkRmGsKqNcRv41uqSvol2YWMaTomooQRs6qzhOP41q0=
+			9k5G7ogAb6iGta/Q82cRPmYc5Ou0zdnBJZDxOYm2fXM=
 			</data>
 		</dict>
 		<key>Modules/TMapSDK.swiftmodule/arm64-apple-ios.private.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			medG+lxA0Aa5w/Jd/Pedqbc+HE99zWMHtBTQdnTwEPY=
+			1dkLu0olpUt5T7ir2zYoN5a1mzaLi1YQcHZt6Gy8z54=
 			</data>
 		</dict>
 		<key>Modules/TMapSDK.swiftmodule/arm64-apple-ios.swiftdoc</key>
@@ -240,14 +130,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			medG+lxA0Aa5w/Jd/Pedqbc+HE99zWMHtBTQdnTwEPY=
+			1dkLu0olpUt5T7ir2zYoN5a1mzaLi1YQcHZt6Gy8z54=
 			</data>
 		</dict>
 		<key>Modules/TMapSDK.swiftmodule/arm64-apple-ios.swiftmodule</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			dNXtj9MozfTL8aBcNrDLB1tdhcfAB7n1KJ703y8SDD0=
+			tSxaZdwoVgrTILDcpTNGrg92PSX5ge1vUhioCb4DitU=
 			</data>
 		</dict>
 		<key>Modules/module.modulemap</key>

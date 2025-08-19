@@ -23,6 +23,10 @@ final public class UserDefaultsWrapper {
         userDefaults.set(value, forKey: key)
     }
     
+    public func set(_ value: Float, forKey key: String) {
+        userDefaults.set(value, forKey: key)
+    }
+    
     public func set(_ value: String, forKey key: String) {
         userDefaults.set(value, forKey: key)
     }
@@ -49,6 +53,10 @@ final public class UserDefaultsWrapper {
     
     public func double(forKey key: String) -> Double? {
         return userDefaults.value(forKey: key) as? Double
+    }
+    
+    public func float(forKey key: String) -> Float? {
+        return userDefaults.value(forKey: key) as? Float
     }
     
     public func string(forKey key: String) -> String? {

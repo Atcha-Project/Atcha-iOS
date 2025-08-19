@@ -19109,6 +19109,43 @@
             "moduleName": "TMapSDK"
           },
           {
+            "kind": "Var",
+            "name": "Public",
+            "printedName": "Public",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(TMapSDK.MapType.Type) -> TMapSDK.MapType",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "MapType",
+                    "printedName": "TMapSDK.MapType",
+                    "usr": "s:7TMapSDK7MapTypeO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "TMapSDK.MapType.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "MapType",
+                        "printedName": "TMapSDK.MapType",
+                        "usr": "s:7TMapSDK7MapTypeO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:7TMapSDK7MapTypeO6PublicyA2CmF",
+            "mangledName": "$s7TMapSDK7MapTypeO6PublicyA2CmF",
+            "moduleName": "TMapSDK"
+          },
+          {
             "kind": "Function",
             "name": "==",
             "printedName": "==(_:_:)",
@@ -25907,1176 +25944,1176 @@
   },
   "ConstValues": [
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapOverlayImage.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapOverlayImage.swift",
       "kind": "FloatLiteral",
       "offset": 271,
       "length": 3,
       "value": "1.0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapOverlayImage.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapOverlayImage.swift",
       "kind": "IntegerLiteral",
       "offset": 305,
       "length": 4,
       "value": "9999"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 690,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 715,
       "length": 1,
       "value": "1"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 737,
       "length": 1,
       "value": "2"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 762,
       "length": 1,
       "value": "3"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 786,
       "length": 1,
       "value": "4"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 837,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 847,
       "length": 1,
       "value": "5"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 893,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 903,
       "length": 1,
       "value": "5"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 950,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 960,
       "length": 1,
       "value": "5"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 1007,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 1017,
       "length": 1,
       "value": "5"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 1064,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 1074,
       "length": 1,
       "value": "5"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 1106,
       "length": 12,
       "value": "0.0000000001"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 1167,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 1177,
       "length": 1,
       "value": "5"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 1228,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 1238,
       "length": 1,
       "value": "5"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 1300,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 1310,
       "length": 1,
       "value": "5"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 1365,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 1375,
       "length": 1,
       "value": "5"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 1430,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 1440,
       "length": 1,
       "value": "5"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 1499,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 1509,
       "length": 1,
       "value": "5"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 1567,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 1577,
       "length": 1,
       "value": "5"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 1636,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 1646,
       "length": 1,
       "value": "3"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 10670,
       "length": 1,
       "value": "6"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 10710,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 10831,
       "length": 3,
       "value": "0.5"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 10842,
       "length": 3,
       "value": "1.0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 11036,
       "length": 3,
       "value": "1.0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 11052,
       "length": 3,
       "value": "1.0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 11142,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 11174,
       "length": 2,
       "value": "-1"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 11226,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 11238,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 11682,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "BooleanLiteral",
       "offset": 11708,
       "length": 4,
       "value": "true"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 11788,
       "length": 3,
       "value": "2.0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 11830,
       "length": 3,
       "value": "4.0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 11872,
       "length": 3,
       "value": "6.0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 12254,
       "length": 1,
       "value": "1"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "IntegerLiteral",
       "offset": 12310,
       "length": 1,
       "value": "2"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 12590,
       "length": 3,
       "value": "1.0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 12707,
       "length": 3,
       "value": "1.0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 12878,
       "length": 3,
       "value": "0.5"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 12889,
       "length": 4,
       "value": "24.0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 12897,
       "length": 3,
       "value": "5.0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 12903,
       "length": 3,
       "value": "3.0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 12913,
       "length": 4,
       "value": "10.0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 12924,
       "length": 3,
       "value": "4.0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 12935,
       "length": 3,
       "value": "9.0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 12963,
       "length": 4,
       "value": "30.0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 12971,
       "length": 4,
       "value": "61.0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 12978,
       "length": 4,
       "value": "90.0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 12989,
       "length": 5,
       "value": "298.0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 13001,
       "length": 4,
       "value": "45.0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 13013,
       "length": 5,
       "value": "252.0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 13038,
       "length": 3,
       "value": "3.0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 13104,
       "length": 3,
       "value": "1.0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 13115,
       "length": 3,
       "value": "6.0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 13122,
       "length": 3,
       "value": "1.0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 13128,
       "length": 3,
       "value": "2.0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 13147,
       "length": 4,
       "value": "20.0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 13155,
       "length": 3,
       "value": "5.0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 13161,
       "length": 3,
       "value": "2.0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 13171,
       "length": 4,
       "value": "28.0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 13182,
       "length": 3,
       "value": "3.0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 13193,
       "length": 3,
       "value": "8.0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 13216,
       "length": 4,
       "value": "24.0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 13300,
       "length": 3,
       "value": "0.5"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 15375,
       "length": 3,
       "value": "0.5"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 15425,
       "length": 19,
       "value": "0.38268343236508977"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/GeoTrans.swift",
       "kind": "FloatLiteral",
       "offset": 15505,
       "length": 9,
       "value": "1.0026000"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Control\/ScaleBar.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Control\/ScaleBar.swift",
       "kind": "Array",
       "offset": 287,
       "length": 2,
       "value": "[]"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapMarker.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapMarker.swift",
       "kind": "BooleanLiteral",
       "offset": 352,
       "length": 4,
       "value": "true"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapMarker.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapMarker.swift",
       "kind": "IntegerLiteral",
       "offset": 379,
       "length": 2,
       "value": "10"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapMarker.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapMarker.swift",
       "kind": "IntegerLiteral",
       "offset": 412,
       "length": 4,
       "value": "9999"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapMarker.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapMarker.swift",
       "kind": "FloatLiteral",
       "offset": 444,
       "length": 3,
       "value": "1.0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/MeasureInfo.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/MeasureInfo.swift",
       "kind": "BooleanLiteral",
       "offset": 178,
       "length": 5,
       "value": "false"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/MeasureInfo.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/MeasureInfo.swift",
       "kind": "BooleanLiteral",
       "offset": 213,
       "length": 5,
       "value": "false"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/MeasureInfo.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/MeasureInfo.swift",
       "kind": "Array",
       "offset": 298,
       "length": 2,
       "value": "[]"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/MeasureInfo.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/MeasureInfo.swift",
       "kind": "Array",
       "offset": 337,
       "length": 2,
       "value": "[]"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/MeasureInfo.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/MeasureInfo.swift",
       "kind": "Array",
       "offset": 380,
       "length": 2,
       "value": "[]"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/MeasureInfo.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/MeasureInfo.swift",
       "kind": "Array",
       "offset": 421,
       "length": 2,
       "value": "[]"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/MeasureInfo.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/MeasureInfo.swift",
       "kind": "IntegerLiteral",
       "offset": 460,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/MeasureInfo.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Extension\/MeasureInfo.swift",
       "kind": "Array",
       "offset": 502,
       "length": 2,
       "value": "[]"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
       "kind": "StringLiteral",
       "offset": 174,
       "length": 34,
       "value": "\"https:\/\/apis.openapi.sk.com\/tmap\""
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
       "kind": "StringLiteral",
       "offset": 241,
       "length": 34,
       "value": "\"https:\/\/apis.openapi.sk.com\/tmap\""
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
       "kind": "StringLiteral",
       "offset": 309,
       "length": 34,
       "value": "\"https:\/\/apis.openapi.sk.com\/tmap\""
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
       "kind": "StringLiteral",
       "offset": 380,
       "length": 34,
       "value": "\"https:\/\/apis.openapi.sk.com\/tmap\""
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
       "kind": "StringLiteral",
       "offset": 451,
       "length": 36,
       "value": "\"https:\/\/openapi.tmap.co.kr\/tmapv20\""
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
       "kind": "BooleanLiteral",
       "offset": 754,
       "length": 4,
       "value": "true"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
       "kind": "StringLiteral",
       "offset": 792,
       "length": 2,
       "value": "\"\""
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
       "kind": "StringLiteral",
       "offset": 819,
       "length": 2,
       "value": "\"\""
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
       "kind": "StringLiteral",
       "offset": 847,
       "length": 2,
       "value": "\"\""
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
       "kind": "StringLiteral",
       "offset": 888,
       "length": 4,
       "value": "\"A0\""
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
       "kind": "StringLiteral",
       "offset": 931,
       "length": 4,
       "value": "\"A1\""
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
       "kind": "StringLiteral",
       "offset": 971,
       "length": 4,
       "value": "\"B0\""
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
       "kind": "StringLiteral",
       "offset": 1009,
       "length": 4,
       "value": "\"C0\""
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
       "kind": "StringLiteral",
       "offset": 1047,
       "length": 4,
       "value": "\"D0\""
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
       "kind": "StringLiteral",
       "offset": 1088,
       "length": 4,
       "value": "\"D1\""
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
       "kind": "StringLiteral",
       "offset": 1129,
       "length": 4,
       "value": "\"F0\""
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
       "kind": "StringLiteral",
       "offset": 1168,
       "length": 4,
       "value": "\"F1\""
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
       "kind": "StringLiteral",
       "offset": 1209,
       "length": 4,
       "value": "\"su\""
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Network\/Network.swift",
       "kind": "StringLiteral",
       "offset": 1246,
       "length": 4,
       "value": "\"fa\""
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapPolygon.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapPolygon.swift",
       "kind": "FloatLiteral",
       "offset": 393,
       "length": 3,
       "value": "0.9"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapPolygon.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapPolygon.swift",
       "kind": "IntegerLiteral",
       "offset": 427,
       "length": 4,
       "value": "9999"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapText.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapText.swift",
       "kind": "IntegerLiteral",
       "offset": 298,
       "length": 2,
       "value": "15"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapText.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapText.swift",
       "kind": "IntegerLiteral",
       "offset": 363,
       "length": 1,
       "value": "1"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapText.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapText.swift",
       "kind": "IntegerLiteral",
       "offset": 438,
       "length": 1,
       "value": "2"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapText.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapText.swift",
       "kind": "IntegerLiteral",
       "offset": 555,
       "length": 4,
       "value": "9999"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
       "kind": "BooleanLiteral",
       "offset": 269,
       "length": 5,
       "value": "false"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
       "kind": "FloatLiteral",
       "offset": 975,
       "length": 9,
       "value": "32.166012"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
       "kind": "FloatLiteral",
       "offset": 997,
       "length": 10,
       "value": "124.162992"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
       "kind": "FloatLiteral",
       "offset": 1064,
       "length": 9,
       "value": "40.673115"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
       "kind": "FloatLiteral",
       "offset": 1086,
       "length": 10,
       "value": "132.711360"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
       "kind": "FloatLiteral",
       "offset": 1170,
       "length": 9,
       "value": "32.166012"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
       "kind": "FloatLiteral",
       "offset": 1192,
       "length": 10,
       "value": "124.162992"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
       "kind": "FloatLiteral",
       "offset": 1242,
       "length": 9,
       "value": "40.673115"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
       "kind": "FloatLiteral",
       "offset": 1264,
       "length": 10,
       "value": "132.711360"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
       "kind": "IntegerLiteral",
       "offset": 1340,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
       "kind": "IntegerLiteral",
       "offset": 1354,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
       "kind": "Dictionary",
       "offset": 1401,
       "length": 3,
       "value": "[]"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
       "kind": "BooleanLiteral",
       "offset": 1713,
       "length": 5,
       "value": "false"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
       "kind": "BooleanLiteral",
       "offset": 1744,
       "length": 5,
       "value": "false"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
       "kind": "BooleanLiteral",
       "offset": 1783,
       "length": 4,
       "value": "true"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
       "kind": "BooleanLiteral",
       "offset": 1820,
       "length": 4,
       "value": "true"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
       "kind": "BooleanLiteral",
       "offset": 1854,
       "length": 4,
       "value": "true"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
       "kind": "BooleanLiteral",
       "offset": 1894,
       "length": 5,
       "value": "false"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
       "kind": "BooleanLiteral",
       "offset": 1930,
       "length": 4,
       "value": "true"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
       "kind": "BooleanLiteral",
       "offset": 1965,
       "length": 4,
       "value": "true"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
       "kind": "IntegerLiteral",
       "offset": 15935,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/TMapView.swift",
       "kind": "IntegerLiteral",
       "offset": 15941,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapPolyline.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapPolyline.swift",
       "kind": "FloatLiteral",
       "offset": 396,
       "length": 3,
       "value": "0.9"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapPolyline.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapPolyline.swift",
       "kind": "IntegerLiteral",
       "offset": 468,
       "length": 4,
       "value": "9999"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Cluster\/TMapClusterManager.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Cluster\/TMapClusterManager.swift",
       "kind": "Array",
       "offset": 229,
       "length": 2,
       "value": "[]"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Cluster\/TMapClusterManager.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Cluster\/TMapClusterManager.swift",
       "kind": "Array",
       "offset": 286,
       "length": 2,
       "value": "[]"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Cluster\/TMapClusterManager.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Cluster\/TMapClusterManager.swift",
       "kind": "Array",
       "offset": 343,
       "length": 2,
       "value": "[]"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Cluster\/TMapClusterManager.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Cluster\/TMapClusterManager.swift",
       "kind": "IntegerLiteral",
       "offset": 429,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Cluster\/TMapClusterManager.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Cluster\/TMapClusterManager.swift",
       "kind": "IntegerLiteral",
       "offset": 582,
       "length": 2,
       "value": "14"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Cluster\/TMapClusterManager.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Cluster\/TMapClusterManager.swift",
       "kind": "IntegerLiteral",
       "offset": 625,
       "length": 4,
       "value": "1000"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/Shape.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/Shape.swift",
       "kind": "StringLiteral",
       "offset": 172,
       "length": 2,
       "value": "\"\""
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Common.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Common.swift",
       "kind": "StringLiteral",
       "offset": 196,
       "length": 47,
       "value": "\"http:\/\/farm41.ids.onestore.co.kr:8012\/hub\/vsm\""
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Common.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Common.swift",
       "kind": "StringLiteral",
       "offset": 272,
       "length": 17,
       "value": "\"TMAP_2020B.conf\""
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapRectangle.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapRectangle.swift",
       "kind": "FloatLiteral",
       "offset": 401,
       "length": 3,
       "value": "0.6"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapRectangle.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapRectangle.swift",
       "kind": "IntegerLiteral",
       "offset": 435,
       "length": 4,
       "value": "9999"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapCustomMarker.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapCustomMarker.swift",
       "kind": "FloatLiteral",
       "offset": 286,
       "length": 3,
       "value": "1.0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapCustomMarker.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapCustomMarker.swift",
       "kind": "IntegerLiteral",
       "offset": 343,
       "length": 4,
       "value": "9999"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapCircle.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapCircle.swift",
       "kind": "IntegerLiteral",
       "offset": 308,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapCircle.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapCircle.swift",
       "kind": "FloatLiteral",
       "offset": 404,
       "length": 3,
       "value": "0.6"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapCircle.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapCircle.swift",
       "kind": "IntegerLiteral",
       "offset": 438,
       "length": 4,
       "value": "9999"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapTrafficLine.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapTrafficLine.swift",
       "kind": "BooleanLiteral",
       "offset": 401,
       "length": 4,
       "value": "true"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapTrafficLine.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapTrafficLine.swift",
       "kind": "BooleanLiteral",
       "offset": 440,
       "length": 4,
       "value": "true"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapTrafficLine.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapTrafficLine.swift",
       "kind": "IntegerLiteral",
       "offset": 468,
       "length": 1,
       "value": "9"
     },
     {
-      "filePath": "\/Users\/choiboram\/Desktop\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapTrafficLine.swift",
+      "filePath": "\/Volumes\/PeelySSD\/TOP\/SOURCE\/SK_TOP_VSM_IOS_ORG\/SK_TOP_VSM_IOS\/TMapSDK\/Shape\/TMapTrafficLine.swift",
       "kind": "IntegerLiteral",
       "offset": 500,
       "length": 1,
       "value": "2"
     },
     {
-      "filePath": "\/Users\/choiboram\/Library\/Developer\/Xcode\/DerivedData\/SK_TOP_VSM_IOS-bqzgyjaqhnzfruecogdovypikvih\/Build\/Intermediates.noindex\/TMapSDK.build\/Release-iphoneos\/TMapSDK.build\/DerivedSources\/GeneratedAssetSymbols.swift",
+      "filePath": "\/Users\/choiboram\/Library\/Developer\/Xcode\/DerivedData\/SK_TOP_VSM_IOS-gwyjibkujmrqnbepykehqshfflnn\/Build\/Intermediates.noindex\/TMapSDK.build\/Release-iphoneos\/TMapSDK.build\/DerivedSources\/GeneratedAssetSymbols.swift",
       "kind": "StringLiteral",
       "offset": 727,
       "length": 9,
       "value": "\"compass\""
     },
     {
-      "filePath": "\/Users\/choiboram\/Library\/Developer\/Xcode\/DerivedData\/SK_TOP_VSM_IOS-bqzgyjaqhnzfruecogdovypikvih\/Build\/Intermediates.noindex\/TMapSDK.build\/Release-iphoneos\/TMapSDK.build\/DerivedSources\/GeneratedAssetSymbols.swift",
+      "filePath": "\/Users\/choiboram\/Library\/Developer\/Xcode\/DerivedData\/SK_TOP_VSM_IOS-gwyjibkujmrqnbepykehqshfflnn\/Build\/Intermediates.noindex\/TMapSDK.build\/Release-iphoneos\/TMapSDK.build\/DerivedSources\/GeneratedAssetSymbols.swift",
       "kind": "StringLiteral",
       "offset": 856,
       "length": 7,
       "value": "\"house\""
     },
     {
-      "filePath": "\/Users\/choiboram\/Library\/Developer\/Xcode\/DerivedData\/SK_TOP_VSM_IOS-bqzgyjaqhnzfruecogdovypikvih\/Build\/Intermediates.noindex\/TMapSDK.build\/Release-iphoneos\/TMapSDK.build\/DerivedSources\/GeneratedAssetSymbols.swift",
+      "filePath": "\/Users\/choiboram\/Library\/Developer\/Xcode\/DerivedData\/SK_TOP_VSM_IOS-gwyjibkujmrqnbepykehqshfflnn\/Build\/Intermediates.noindex\/TMapSDK.build\/Release-iphoneos\/TMapSDK.build\/DerivedSources\/GeneratedAssetSymbols.swift",
       "kind": "StringLiteral",
       "offset": 991,
       "length": 11,
       "value": "\"indicator\""
     },
     {
-      "filePath": "\/Users\/choiboram\/Library\/Developer\/Xcode\/DerivedData\/SK_TOP_VSM_IOS-bqzgyjaqhnzfruecogdovypikvih\/Build\/Intermediates.noindex\/TMapSDK.build\/Release-iphoneos\/TMapSDK.build\/DerivedSources\/GeneratedAssetSymbols.swift",
+      "filePath": "\/Users\/choiboram\/Library\/Developer\/Xcode\/DerivedData\/SK_TOP_VSM_IOS-gwyjibkujmrqnbepykehqshfflnn\/Build\/Intermediates.noindex\/TMapSDK.build\/Release-iphoneos\/TMapSDK.build\/DerivedSources\/GeneratedAssetSymbols.swift",
       "kind": "StringLiteral",
       "offset": 1120,
       "length": 6,

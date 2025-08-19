@@ -72,12 +72,12 @@ final class MainCoordinator {
             }
             vm.getDetailTapped = { [weak self] address, infos in
                 guard let self else { return }
-                handle(route: .detailRoute(address: address, infos: infos))
+                handle(route: .detailRoute(address: address, infos: infos, context: .beforeRegister))
             }
             self.navigationController.pushViewController(vc, animated: true)
-        case .changeCourse:
+        case let .changeCourse(location):
             let courseDI = diContainer.makeCourseDIContainer()
-            let modifyVM = courseDI.makeCourseModifyViewModel()
+            let modifyVM = courseDI.makeCourseModifyViewModel(location: location)
             
             modifyVM.onLocationSelected = { [weak self] location in
                 guard let self else { return }
@@ -112,7 +112,7 @@ final class MainCoordinator {
                 }
                 searchVM.getDetailTapped = { [weak self] address, infos in
                     guard let self else { return }
-                    self.handle(route: .detailRoute(address: address, infos: infos))
+                    self.handle(route: .detailRoute(address: address, infos: infos, context: .beforeRegister))
                 }
                 
                 let searchVC = courseDI.makeCourseSearchViewController(viewModel: searchVM)
@@ -122,9 +122,9 @@ final class MainCoordinator {
             let modifyVC = CourseModifyViewController(viewModel: modifyVM)
             self.navigationController.pushViewController(modifyVC, animated: true)
             
-        case .detailRoute(let address, let infos):
+        case .detailRoute(let address, let infos, let context):
             let routeDI = diContainer.makeRouteDIContainer()
-            let vm = routeDI.makeDetailRouteViewModel(address: address, infos: infos)
+            let vm = routeDI.makeDetailRouteViewModel(address: address, infos: infos, context: context)
             let vc = routeDI.makeDetailRouteViewController(viewModel: vm)
             
             vm.onBusDetail = { [weak self] busDetailInfo in
@@ -137,6 +137,22 @@ final class MainCoordinator {
                 self.busDetailCoordinator = busCoord
                 busCoord.start(busDetailInfo: busDetailInfo)
             }
+            
+            vm.getAlarmTapped = { [weak self] address, infos in
+                guard let self else { return }
+                mainViewModel?.courseSearchResultHandler?(address, infos)
+                let nav = self.navigationController
+                let vcs = nav.viewControllers
+         
+                let targetIndex = vcs.count - 4
+                
+                if targetIndex >= 0 {
+                    nav.popToViewController(vcs[targetIndex], animated: true)
+                } else {
+                    nav.popToRootViewController(animated: true)
+                }
+            }
+            
             navigationController.pushViewController(vc, animated: false)
             
         case .lockScreen:
@@ -152,6 +168,12 @@ final class MainCoordinator {
             let vc = lockScreenDI.makeLockScreenViewController(viewModel: vm)
             vc.modalPresentationStyle = .overFullScreen
             navigationController.present(vc, animated: false)
+        case .proximity:
+            let proximityDI = diContainer.makeProximityDIContainer()
+            let vm = proximityDI.makeProximityViewModel()
+            let vc = proximityDI.makeProximityViewController(viewModel: vm)
+            
+            navigationController.presentPanModal(vc)
         }
         
         routeHandler?(route)

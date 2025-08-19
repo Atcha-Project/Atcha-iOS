@@ -18,6 +18,13 @@ final class SearchLocationViewController: BaseViewController<SearchLocationViewM
     
     private var tableViewTopConstraint: Constraint?
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        DispatchQueue.main.async { [weak self] in
+            self?.searchNavigationBar.focusTextField()
+        }
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -171,7 +178,18 @@ extension SearchLocationViewController: UITableViewDataSource, UITableViewDelega
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let location = viewModel.selectedLocation(at: indexPath)
-        viewModel.saveNewLocation(location: location)
+
+        Task { [weak self] in
+            guard let self else { return }
+            let ok = await viewModel.checkServiceRegion(lat: location.lat, lon: location.lon)
+
+            if ok {
+                viewModel.saveNewLocation(location: location)
+            } else {
+                AtchaToast(message: "앗차는 현재 서울, 경기, 인천에서만 이용 가능해요")
+                    .show(in: self.view)
+            }
+        }
     }
     
     @objc private func handleCurrentLocationTapped() {

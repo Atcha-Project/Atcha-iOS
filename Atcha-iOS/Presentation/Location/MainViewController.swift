@@ -135,6 +135,7 @@ extension MainViewController {
         bindAddressDescriptionUpdates()
         bindLegPathUpdates()
         bindTaxiFareUpdates()
+        bindServiceRegionUpdates()
         bindLockView()
     }
     
@@ -172,8 +173,30 @@ extension MainViewController {
     private func handleSearchViewAction(_ action: LastTrainSearchBottomView.Action) {
         switch action {
         case .currentTapped:
-            viewModel.handleRoute(route: .changeCourse)
+            viewModel.handleRoute(route: .changeCourse(
+                location: Location(name: "", lat: 0.0, lon: 0.0, businessCategory: "", address: "", radius: "")))
         case .searchTapped:
+            
+            guard let startCoord = viewModel.currentLocation else {
+                view.showToast(message: "현재 위치를 확인 중이에요. 잠시 후 다시 시도해 주세요.")
+                return
+            }
+            
+            let wrapper = UserDefaultsWrapper.shared
+            let endLatStr = wrapper.string(forKey: UserDefaultsWrapper.Key.homeLat.rawValue) ?? "37.554722"
+            let endLonStr = wrapper.string(forKey: UserDefaultsWrapper.Key.homeLon.rawValue) ?? "126.970833"
+            
+            guard let endLat = Double(endLatStr), let endLon = Double(endLonStr) else {
+                view.showToast(message: "저장된 목적지 좌표가 잘못되었어요.")
+                return
+            }
+            let endCoord = CLLocationCoordinate2D(latitude: endLat, longitude: endLon)
+            
+            if ProximityManager.shared.isWithinThreshold(from: startCoord, to: endCoord) {
+                viewModel.handleRoute(route: .proximity)
+                return
+            }
+            
             viewModel.handleRoute(route: .courseSearch(
                 startLat: "", startLon: "", startAddress: ""
             ))
@@ -184,10 +207,11 @@ extension MainViewController {
         switch action {
         case .refreshBusTime, .reloadTapped: viewModel.getBusRealTime()
         case .exitTapped:
-            viewModel.alarmDelete()
-            exitButtonTapped(showToast: true)
+            showAlarmExitPopup()
         case .detailRoadMapTapped: viewModel.handleRoute(route: .detailRoute(address: "",
-                                                                             infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: [])))
+                                                                             infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: []),
+                                                                             context: .afterReigster)
+        )
         case .finishAlarm: viewModel.bottomType = .finish
         }
     }
@@ -195,15 +219,16 @@ extension MainViewController {
     private func handleTrainDepartAction(_ action: LastTrainDepartBottomView.Action) {
         switch action {
         case .exitTapped:
-            viewModel.alarmDelete()
-            exitButtonTapped(showToast: true)
+            showAlarmExitPopup()
         case .detailRoadMapTapped:
             viewModel.handleRoute(route: .detailRoute(address: "",
-                                                      infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: [])))
+                                                      infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: []),
+                                                      context: .afterReigster)
+            )
         case .locationTapped:
             ballonView.setupTitle(bottomMessage: "위치를 변경하려면 알림을 종료해야 해요")
         case .reloadTapped:
-            viewModel.getBusRealTime()
+            viewModel.refreshDepatrueTime()
         case .timeTapped:
             ballonView.setupTitle(topMessage: "이때쯤 자리에서 출발하면 돼요",
                                   bottomMessage: "현재 교통 상황 기준으로,\n출발 시간이 가까워질수록 더 정확해져요")
@@ -213,11 +238,30 @@ extension MainViewController {
     private func handleArrivalViewAction(_ action: LastTrainArrivalBottomView.Action) {
         switch action {
         case .exitTapped:
-            viewModel.alarmDelete()
-            exitButtonTapped(showToast: true)
+            showAlarmExitPopup()
         case .detailRoadMapTapped: viewModel.handleRoute(route: .detailRoute(address: "",
-                                                                             infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: [])))
+                                                                             infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: []), context: .afterReigster))
         }
+    }
+    
+    private func showAlarmExitPopup() {
+        let popupVM = AtchaPopupViewModel(info: .alarm)
+        let popupVC = AtchaPopupViewController(viewModel: popupVM)
+        
+        popupVC.confirmButton.addAction(UIAction { [weak popupVC] _ in
+            popupVC?.dismiss(animated: true)
+        }, for: .touchUpInside)
+        
+        popupVC.cancelButton.addAction(UIAction { [weak self, weak popupVC] _ in
+            guard let self else { return }
+            popupVC?.dismiss(animated: true)
+            
+            self.viewModel.alarmDelete()
+            self.exitButtonTapped()
+        }, for: .touchUpInside)
+        
+        popupVC.modalPresentationStyle = .overFullScreen
+        present(popupVC, animated: false)
     }
     
     private func exitButtonTapped() {
@@ -228,11 +272,9 @@ extension MainViewController {
         
         mapContainerView.clearMapView()
         
-        if showToast {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-                guard let self else { return }
-                view.showToast(message: "알림이 종료되었어요")
-            }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            guard let self else { return }
+            view.showToast(message: "알림이 종료되었어요")
         }
     }
     
@@ -291,7 +333,7 @@ extension MainViewController {
             .sink { [weak self] info, bottomType in
                 self?.commonAlarmSetupView()
                 self?.addRouteLine(pathInfos: info?.pathInfo ?? [])
-
+                
                 switch bottomType {
                 case .departure:
                     self?.lastTrainDepartView.setupLegInfo(info: info)
@@ -321,6 +363,14 @@ extension MainViewController {
                 self?.lastTrainRealTimeView.setupBusRealTime(realTime: info)
             }
             .store(in: &cancellables)
+        
+        viewModel.$departureTime
+            .compactMap { $0 }
+            .receive(on: RunLoop.main)
+            .sink { [weak self] time in
+                self?.lastTrainDepartView.refreshDepartureTime(departureStr: time)
+            }
+            .store(in: &cancellables)
     }
     
     private func commonAlarmSetupView() {
@@ -343,6 +393,7 @@ extension MainViewController {
         case .search:
             lastTrainSearchView.isHidden = false
             flagImageView.isHidden = false
+            mapContainerView.clearMapView()
             updateAtchaImageConstraint(relativeTo: lastTrainSearchView)
         case .finish:
             lastTrainArrivalView.isHidden = false
@@ -361,16 +412,45 @@ extension MainViewController {
     
     private func bindTaxiFareUpdates() {
         viewModel.$taxiFare
-            .removeDuplicates()
             .compactMap { $0 }
+            .combineLatest(viewModel.$isServiceRegion)
+            .filter { _, isService in isService == true }
+            .map { fare, _ in fare }
+            .removeDuplicates()
             .receive(on: RunLoop.main)
-            .sink { [weak self] in self?.updateTaxiFare($0) }
+            .sink { [weak self] fare in
+                self?.updateTaxiFare(fare)
+            }
             .store(in: &cancellables)
     }
     
     private func updateTaxiFare(_ fare: Double) {
         let fareStr = String(format: "%.0f", fare)
         ballonView.setupTitle(bottomMessage: "여기서 막차 놓치면 택시비 : 약 \(fareStr)원")
+    }
+    
+    private func bindServiceRegionUpdates() {
+        viewModel.$isServiceRegion
+            .removeDuplicates()
+            .receive(on: RunLoop.main)
+            .sink { [weak self] ok in
+                guard let self else { return }
+                switch ok {
+                case .some(true):
+                    self.lastTrainSearchView.updateSearchEnabled(true)
+                    if let fare = self.viewModel.taxiFare {
+                        self.updateTaxiFare(fare)
+                    }
+                    
+                case .some(false):
+                    self.lastTrainSearchView.updateSearchEnabled(false)
+                    self.ballonView.setupTitle(bottomMessage: "서울, 경기, 인천에서만 이용 가능해요")
+                    
+                case .none:
+                    self.lastTrainSearchView.updateSearchEnabled(false)
+                }
+            }
+            .store(in: &cancellables)
     }
     
     // MARK: - Constraint Helper
@@ -392,6 +472,7 @@ extension MainViewController {
 // MARK: Add Line
 extension MainViewController {
     private func addRouteLine(pathInfos: [LegPathInfo]) {
+        mapContainerView.clearMapView()
         var shapeStrings: [String] = []
         var colors: [UIColor] = []
         var images: [UIImage] = []

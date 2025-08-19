@@ -20,7 +20,8 @@ final class LastTrainRealTimeBottomView: UIView {
     private var countdownCancellable: AnyCancellable?
     private var busRefreshCancellable: AnyCancellable?
     
-    private var remainingTimeInSeconds: Int = 0
+    private var remainingTimeInSeconds: Int = .max
+    private var firstTarnsMode: TransportMode?
     
     let actionPublisher = PassthroughSubject<Action, Never>()
     
@@ -194,9 +195,10 @@ final class LastTrainRealTimeBottomView: UIView {
 // MARK: Binding Leg Info
 extension LastTrainRealTimeBottomView {
     func setupLegInfo(info: LegInfo?) {
-        guard let info, let departureStr = info.pathInfo.first?.departureDateTime else { return }
+        guard let info else { return }
         
         if let firstNonWalkMode = info.pathInfo.first(where: { $0.mode != .walk }) {
+            firstTarnsMode = firstNonWalkMode.mode
             switch firstNonWalkMode.mode {
             case .bus:
                 let busDetailInfo = info.busInfo.filter { $0.routeName?.isEmpty == false }
@@ -211,13 +213,13 @@ extension LastTrainRealTimeBottomView {
                     trainInfoLabel.attributedText = AtchaFont.B4_R_15("\(firstBusLeg.busName ?? "")", color: .white)
                 }
             case .subway:
-                setupSubwayTime(departureStr: departureStr)
                 if let firstSubwayLeg = info.trafficInfo.first(where: { $0.mode == .subway }),
-                   let firstStationName = firstSubwayLeg.passStopList?.first?.stationName {
+                   let firstStationName = firstSubwayLeg.passStopList?.first?.stationName,
+                   let time = firstSubwayLeg.subwayStartTime {
+                    setupSubwayTime(departureStr: time)
                     iconImageView.image = UIImage.route16PxSubway
                     iconImageView.tintColor = firstSubwayLeg.mode?.getColor(for: firstSubwayLeg.type ?? "")
-                    trainInfoLabel.attributedText = AtchaFont.B4_R_15("\(firstStationName)역",
-                                                                      color: .white)
+                    trainInfoLabel.attributedText = AtchaFont.B4_R_15("\(firstStationName)역", color: .white)
                 }
             default: do {}
             }
@@ -288,7 +290,9 @@ extension LastTrainRealTimeBottomView {
                 UserDefaultsWrapper.shared.set(remainingTimeInSeconds, forKey: UserDefaultsWrapper.Key.trainRealTime.rawValue)
                 
                 if self.remainingTimeInSeconds == 0 {
-                    self.actionPublisher.send(.refreshBusTime)
+                    cancelTimer()
+                    UserDefaultsWrapper.shared.remove(forKey: UserDefaultsWrapper.Key.trainRealTime.rawValue)
+                    self.actionPublisher.send(.finishAlarm)
                 }
 
                 if self.remainingTimeInSeconds <= 60 && self.remainingTimeInSeconds > 0 {

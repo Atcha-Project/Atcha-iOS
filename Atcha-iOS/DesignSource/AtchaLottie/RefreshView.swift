@@ -58,6 +58,5 @@ final class RefreshView: UIView {
     
     func stop() {
         animationView.stop()
-        removeFromSuperview()
     }
 }

@@ -19,9 +19,12 @@ final class MainViewModel: BaseViewModel {
     @Published var selectedLocation: CLLocationCoordinate2D?
     @Published var address: String?
     @Published var taxiFare: Double?
+    @Published var isServiceRegion: Bool?
     
     @Published var legInfo: LegInfo?
     @Published var addressDesc: String?
+    
+    @Published var departureTime: String?
     @Published var busRealTimeInfo: BusRealTimeInfo?
     
     @Published var bottomType: MapBottomType?
@@ -31,28 +34,29 @@ final class MainViewModel: BaseViewModel {
     private let authorizationUseCase: RequestLocationAuthorizationUseCase
     private let fetchTaxiFareUseCase: FetchTaxiFareUseCase
     private let streamUseCase: ObserveLocationStreamUseCase
-    private let alarmUseCase: AlarmUseCase
     private let locationStateHolder: LocationStateHolder
     private let busInfoUseCase: BusInfoUseCase
+    private let alarmUseCase: AlarmUseCase
     private var streamTask: Task<Void, Never>?
     
     var routeHandler: ((MainRoute) -> Void)?
     var courseSearchResultHandler: ((String, LegInfo) -> Void)?
+    @Published private(set) var lastReverseGeocode: Location?
     
     init(authorizationUseCase: RequestLocationAuthorizationUseCase,
          streamUseCase: ObserveLocationStreamUseCase,
          fetchTaxiFareUseCase: FetchTaxiFareUseCase,
          searchAddressUseCase: SearchAddressUseCase,
-         alarmUseCase: AlarmUseCase,
          locationStateHolder: LocationStateHolder,
-         busInfoUseCase: BusInfoUseCase) {
+         busInfoUseCase: BusInfoUseCase,
+         alarmUseCase: AlarmUseCase) {
         self.authorizationUseCase = authorizationUseCase
         self.streamUseCase = streamUseCase
         self.fetchTaxiFareUseCase = fetchTaxiFareUseCase
         self.searchAddressUseCase = searchAddressUseCase
-        self.alarmUseCase = alarmUseCase
         self.locationStateHolder = locationStateHolder
         self.busInfoUseCase = busInfoUseCase
+        self.alarmUseCase = alarmUseCase
         
         super.init()
         self.bind()
@@ -101,6 +105,7 @@ final class MainViewModel: BaseViewModel {
     func requestPermissionAndStartTracking() {
         Task {
             let status = await authorizationUseCase.askLocationPermission()
+            let _ = await authorizationUseCase.askPushPermission()
             guard status == .authorizedAlways || status == .authorizedWhenInUse else { return }
             
             streamTask = Task {
@@ -112,10 +117,33 @@ final class MainViewModel: BaseViewModel {
                         self.currentLocation = currentLocation
                         didSendInitialLocation = true
                     }
-                    
+                
+                    getNearstToast(currentLocation: currentLocation)
                     selectedLocation = currentLocation
                 }
             }
+        }
+    }
+    
+    func getNearstToast(currentLocation: CLLocationCoordinate2D) {
+        guard let legInfo = legInfo else { return }
+        
+        if let firstNonWalkMode = legInfo.trafficInfo.first(where: { $0.mode != .walk }),
+           let latStr = firstNonWalkMode.passStopList?.first?.lat,
+           let lonStr = firstNonWalkMode.passStopList?.first?.lon,
+           let lat = Double(latStr),
+           let lon = Double(lonStr) {
+            
+            // CLLocationCoordinate2D → CLLocation 변환
+            let stopCoordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
+            
+            let current = CLLocation(latitude: currentLocation.latitude, longitude: currentLocation.longitude)
+            let stop = CLLocation(latitude: stopCoordinate.latitude, longitude: stopCoordinate.longitude)
+            
+            let distanceMeters = current.distance(from: stop) // m 단위
+            print("현재 위치와 첫 정류장까지 거리: \(Int(distanceMeters)) m")
+        } else {
+            print("좌표를 가져오지 못했습니다.")
         }
     }
     
@@ -144,6 +172,17 @@ final class MainViewModel: BaseViewModel {
                         }
                     }
                 }
+            }
+        }
+    }
+    
+    func refreshDepatrueTime() {
+        Task {
+            do {
+                let info = try await realodDepartureTime()
+                departureTime = info.departureTime
+            } catch {
+                print("도착 시간 실시간 조회 실패")
             }
         }
     }
@@ -185,7 +224,6 @@ extension MainViewModel {
         let wrapper = UserDefaultsWrapper.shared
         if let departureTime: String = wrapper.string(forKey: UserDefaultsWrapper.Key.departureTime.rawValue) {
             if !checkFutureTimeOver(dateString: departureTime) {
-                print("과거")
                 showLockView = true
                 stopAlarmTimer()
             } else {
@@ -208,14 +246,14 @@ extension MainViewModel {
         
         let currentDate = Date()
         let timeInterval = inputDate.timeIntervalSince(currentDate)
-        let isFuture = timeInterval > 0
+        let isFuture = timeInterval >= 60
         
         return isFuture
     }
     
     func startAlarmTimer() {
         alarmTimerCancellable = Timer
-            .publish(every: 10.0, on: .main, in: .common)
+            .publish(every: 5.0, on: .main, in: .common)
             .autoconnect()
             .sink { [weak self] _ in
                 self?.checkAlarmTime()
@@ -278,7 +316,14 @@ extension MainViewModel {
     func handleRoute(route: MainRoute) {
         switch route {
         case .changeCourse:
-            routeHandler?(.changeCourse)
+            routeHandler?(.changeCourse(location: Location(
+                name: lastReverseGeocode?.name,
+                lat: lastReverseGeocode?.lat ?? 0.0,
+                lon: lastReverseGeocode?.lon ?? 0.0,
+                businessCategory: lastReverseGeocode?.businessCategory,
+                address: lastReverseGeocode?.address,
+                radius: lastReverseGeocode?.radius)))
+            
         case .courseSearch:
             guard let currentLocation else { return }
             let lat: String = "\(currentLocation.latitude)"
@@ -293,10 +338,12 @@ extension MainViewModel {
             
         case .detailRoute:
             guard let address, let legInfo else { return }
-            routeHandler?(.detailRoute(address: address, infos: legInfo))
+            routeHandler?(.detailRoute(address: address, infos: legInfo, context: .afterReigster))
         case .lockScreen:
             guard let address, let legInfo else { return }
             routeHandler?(.lockScreen(info: legInfo, address: address))
+        case .proximity:
+            routeHandler?(.proximity)
         }
     }
 }
@@ -310,6 +357,7 @@ extension MainViewModel {
         }
         
         Task {
+            await checkServiceRegion(currentLocation: location)
             await updateAddressAndFare(for: location)
         }
     }
@@ -317,6 +365,7 @@ extension MainViewModel {
     private func updateAddressAndFare(for location: CLLocationCoordinate2D) async {
         do {
             let info = try await fetchCurrentAddress(lat: location.latitude, lon: location.longitude)
+            self.lastReverseGeocode = info
             
             address = info?.name?.isEmpty == false ? info?.name : info?.address
             
@@ -330,6 +379,17 @@ extension MainViewModel {
             taxiFare = try? await fetchTaxiFare(request: request)
         } catch {
             print("❌ 주소 또는 요금 정보 업데이트 실패: \(error)")
+        }
+    }
+    
+    // MARK: - 서비즈 지역 확인
+    private func checkServiceRegion(currentLocation: CLLocationCoordinate2D) async {
+        let req = CheckServiceRegionRequest(lat: currentLocation.latitude, lon: currentLocation.longitude)
+        
+        do {
+            isServiceRegion = try await searchAddressUseCase.checkServiceRegion(req)
+        } catch {
+            print("서비스 지역 확인 실패:", error)
         }
     }
 }
@@ -347,5 +407,9 @@ extension MainViewModel {
     
     private func busRealTimeInfo(request: BusRealTimeInfoRequest) async throws -> BusRealTimeInfo {
         return try await busInfoUseCase.busRealTimeInfo(request)
+    }
+    
+    private func realodDepartureTime() async throws -> AlarmRefresh {
+        return try await alarmUseCase.alarmRefresh()
     }
 }

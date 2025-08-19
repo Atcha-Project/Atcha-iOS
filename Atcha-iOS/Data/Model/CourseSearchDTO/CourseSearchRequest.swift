@@ -12,5 +12,4 @@ struct CourseSearchRequest: Codable {
     let startLon: String
     let endLat: String
     let endLon: String
-    let sortType: Int
 }

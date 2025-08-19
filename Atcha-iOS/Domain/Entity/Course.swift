@@ -47,7 +47,8 @@ struct Course: Codable, Hashable {
                     lat: $0.lat,
                     lon: $0.lon
                 )
-            }
+            },
+            targetBusStation: leg.targetBusStation
         )
     }
     
@@ -102,6 +103,9 @@ struct Legs: Codable, Hashable {
     let passStopList: [PassStopList]?
     let step: [Step]?
     let passShape: String? // 경로그리기
+    let subwayFinalStation: String?
+    let subwayDirection: String?
+    let targetBusStation: [TargetBusStation]?
     
     var formattedSectionTimeRounded: String {
         guard let totalTime = sectionTime else { return "N/A" }
@@ -140,8 +144,10 @@ struct LegTrafficInfo: Hashable, Codable {
     let passStopList: [PassStopList]?
     let steps: [Step]? // 보행자 이동 거리 (미터)
     let busName: String?
+    var subwayStartTime: String?
     let route: String?
     var timeText: String?
+    let targetBusStation: [TargetBusStation]?
 }
 
 extension Course {
@@ -159,8 +165,11 @@ extension Course {
                            passStopList: leg.passStopList,
                            steps: leg.step,
                            busName: leg.busName,
+                           subwayStartTime: leg.departureDateTime,
                            route: leg.route,
-                           timeText: timeText)
+                           timeText: timeText,
+                           targetBusStation: leg.targetBusStation
+            )
         }
     }
     
@@ -176,7 +185,8 @@ extension Course {
                         lat: $0.lat,
                         lon: $0.lon
                     )
-                }
+                },
+                targetBusStation: leg.targetBusStation
             )
         }
     }
@@ -223,6 +233,12 @@ struct Step: Codable, Hashable{
     let distance: Double?
     let description: String?
     let linestring: String?
+}
+
+struct TargetBusStation: Codable, Hashable {
+    let busStationId: String?
+    let busStationNumber: String?
+    let busStationName: String?
 }
 
 enum TransportMode: String, Codable {
@@ -304,4 +320,5 @@ struct BusDetailInfo: Codable {
     let routeName: String?
     let start: AddressInfo?
     let passStations: [PassStations]?
+    let targetBusStation: [TargetBusStation]?
 }
