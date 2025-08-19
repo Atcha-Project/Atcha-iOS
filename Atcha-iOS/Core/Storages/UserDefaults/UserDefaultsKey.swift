@@ -30,4 +30,6 @@ public extension UserDefaultsWrapper.Key {
     static let departureTime: UserDefaultsWrapper.Key = "departureTime"
     static let arrivalTime: UserDefaultsWrapper.Key = "arrivalTime"
     static let trainRealTime: UserDefaultsWrapper.Key = "trainRealTime"
+    
+    static let alarmVolume: UserDefaultsWrapper.Key = "alarmVolume"
 }

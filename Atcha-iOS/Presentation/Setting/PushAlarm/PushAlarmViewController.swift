@@ -15,37 +15,26 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
     })
     
     private let titleLabel: UILabel = UILabel()
-    private let pushImageView: UIImageView = UIImageView()
     
     private let alarmListStackView: UIStackView = UIStackView()
     private var alarmCheckmarkLists: [AtchaList] = []
-    private lazy var nextButton: AtchaButton = AtchaButton(text: "다음",
+    private var selectedOption: PushAlarmOption?
+    private let settingBottomView: PushAlarmBottomView = PushAlarmBottomView()
+    private lazy var nextButton: AtchaButton = AtchaButton(text: "설정 완료",
                                                            size: .h52,
-                                                           style: .filled(.primary)) { [weak self] in
+                                                           style: .filled(.disabled)) { [weak self] in
         guard let self else { return }
-        let options = AlarmTimeOption.displayOptions
-        let selectedAlarms = alarmCheckmarkLists.map { $0.isCheckmarkSelected() }
-        
-        let selectedOptions = zip(options, selectedAlarms)
-            .compactMap { option, isSelected in
-                isSelected ? option : nil
-            }
-        
-        let finalOptions: [AlarmTimeOption] = [.oneMinute] + selectedOptions
+        let selectedVolume = settingBottomView.currentVolume
+        AlarmManager.shared.stopPreview()
+        AlarmManager.shared.updateVolume(to: selectedVolume)
+        UserDefaultsWrapper.shared.set(selectedVolume, forKey: UserDefaultsWrapper.Key.alarmVolume.rawValue)
         
         switch self.viewModel.context {
         case .onboarding:
-            self.viewModel.signUp(selectedAlarms: finalOptions)
+            self.viewModel.signUp()
         case .myPage:
-            Task {
-                do {
-                    try await self.viewModel.pushAlarmPatch(selectedAlarms: finalOptions)
-                    AtchaToast(message: "푸시 알림 설정이 변경되었어요").show(in: self.view)
-                } catch {
-                    AtchaToast(message: "푸시 알림 설정에 실패했어요").show(in: self.view)
-                }
-                self.alarmCheckmarkLists.forEach { $0.setCheckmark(false) }
-            }
+            AtchaToast(message: "알림 설정이 변경되었어요")
+                .show(in: self.view)
         }
     }
     
@@ -79,67 +68,29 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
     }
     
     private func setupOnbaordingUI() {
-        view.addSubViews(titleLabel, pushImageView)
-        titleLabel.attributedText = AtchaFont.H2_B_22("출발 알람을 받기 전,\n푸시로 미리 알려드려요",
-                                                      color: AtchaColor.white)
-        titleLabel.numberOfLines = 0
-        titleLabel.textAlignment = .left
-        
-        pushImageView.image = UIImage.imgNotification
-        pushImageView.contentMode = .scaleAspectFill
-        
         topNavigationBar.updateTitle("")
-        nextButton.updateStyle(text: "확인", style: .filled(.primary))
-        
-        titleLabel.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).inset(72)
-            make.leading.equalTo(view.snp.leading).inset(16)
-        }
-        
-        pushImageView.snp.makeConstraints { make in
-            make.top.equalTo(titleLabel.snp.bottom).offset(20)
-            make.leading.equalToSuperview().offset(16)
-            make.trailing.equalToSuperview().inset(16)
-        }
-        
-        alarmListStackView.snp.remakeConstraints { make in
-            make.top.equalTo(pushImageView.snp.bottom).offset(32)
-            make.leading.trailing.equalToSuperview()
-            make.bottom.lessThanOrEqualTo(nextButton.snp.top).offset(-155.12)
-        }
     }
     
     private func setupMyPageUI() {
-        view.addSubViews(titleLabel)
-        
-        titleLabel.attributedText = AtchaFont.B4_R_15(lineHeight: 0, "출발 알림을 받기 전, 푸시로 미리 알려드려요", color: AtchaColor.white)
-        titleLabel.numberOfLines = 1
-        titleLabel.textAlignment = .left
-        
-        topNavigationBar.updateTitle("푸시 알림 설정")
-        nextButton.updateStyle(text: "저장", style: .filled(.primary))
-        
-        titleLabel.snp.makeConstraints { make in
-            make.top.equalTo(topNavigationBar.snp.bottom).offset(24)
-            make.leading.equalToSuperview().offset(16)
-        }
-        
-        alarmListStackView.snp.remakeConstraints { make in
-            make.top.equalTo(titleLabel.snp.bottom).offset(36)
-            make.leading.trailing.equalToSuperview()
-            make.bottom.lessThanOrEqualTo(nextButton.snp.top).offset(-253)
-        }
+        topNavigationBar.updateTitle("알림 설정")
     }
     
     // MARK: - Push Alarm 기본 UI
     private func setupUI() {
-        view.addSubViews(topNavigationBar, alarmListStackView, nextButton)
+        view.addSubViews(topNavigationBar, titleLabel, alarmListStackView, settingBottomView, nextButton)
         topNavigationBar.hideCloseButton()
+        
+        titleLabel.attributedText = AtchaFont.H2_B_22("출발 알림 받을 방법을\n설정해주세요",
+                                                      color: AtchaColor.white)
+        titleLabel.numberOfLines = 0
+        titleLabel.textAlignment = .left
         
         alarmListStackView.axis = .vertical
         alarmListStackView.spacing = 0
         alarmListStackView.alignment = .fill
         alarmListStackView.distribution = .fill
+        
+        settingBottomView.isHidden = true
     }
     
     private func setupAutoLayout() {
@@ -148,8 +99,21 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
             make.leading.trailing.equalToSuperview()
         }
         
+        titleLabel.snp.makeConstraints { make in
+            make.top.equalTo(topNavigationBar.snp.bottom).offset(12)
+            make.leading.equalToSuperview().offset(16)
+        }
+        
         alarmListStackView.snp.makeConstraints { make in
+            make.top.equalTo(titleLabel.snp.bottom).offset(16)
             make.leading.trailing.equalToSuperview()
+            make.bottom.lessThanOrEqualTo(nextButton.snp.top).offset(-341)
+        }
+        
+        settingBottomView.snp.makeConstraints { make in
+            make.horizontalEdges.equalToSuperview()
+            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
+            make.height.equalTo(214)
         }
         
         nextButton.snp.makeConstraints { make in
@@ -161,19 +125,44 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
     
     // MARK: - 알림 리스트 UI
     private func setupAlarmLists() {
-        AlarmTimeOption.displayOptions.enumerated().forEach { index, alarm in
-            let listView: AtchaList
-            switch index {
-            default:
-                listView = AtchaList(title: alarm.title, listType: .checkmark(isOn: false))
+        PushAlarmOption.allCases.enumerated().forEach { index, option in
+            let listView = AtchaList(
+                title: option.rawValue,
+                listType: .radioButton(isOn: false)
+            )
+            listView.onSelect = { [weak self] selected in
+                guard let self else { return }
+
+                self.alarmCheckmarkLists.forEach { $0.setRadio(false) }
+                selected.setRadio(true)
+
+                self.selectedOption = option
+                self.nextButton.updateStyle(text: "설정 완료", style: .filled(.primary))
+
+                switch option {
+                case .onlyVibration:
+                    self.toggleBottomView(show: false)
+                    AlarmManager.shared.stopPreview()
+                case .onlySound, .both:
+                    self.toggleBottomView(show: true)
+                }
             }
+            
             listView.snp.makeConstraints { make in
                 make.height.equalTo(52)
             }
-            
             alarmListStackView.addArrangedSubview(listView)
             alarmCheckmarkLists.append(listView)
         }
     }
+    
+    private func toggleBottomView(show: Bool) {
+        if show {
+            settingBottomView.isHidden = false
+        } else {
+            settingBottomView.isHidden = true
+        }
+    }
+
 }
 

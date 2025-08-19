@@ -128,6 +128,7 @@
 		6DD632B92E52E8E300C6A66E /* ProximityViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DD632B82E52E8E300C6A66E /* ProximityViewController.swift */; };
 		6DD632BD2E52EA5800C6A66E /* ProximityViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DD632BC2E52EA5800C6A66E /* ProximityViewModel.swift */; };
 		6DD632C02E52EBFB00C6A66E /* ProximityDIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DD632BF2E52EBFB00C6A66E /* ProximityDIContainer.swift */; };
+		6DD632C22E544DB500C6A66E /* PushAlarmBottomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DD632C12E544DB500C6A66E /* PushAlarmBottomView.swift */; };
 		6DFF29912E0CBE820039399F /* RegisterLocationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFF29902E0CBE820039399F /* RegisterLocationViewController.swift */; };
 		6DFF29932E0CBE8A0039399F /* RegisterLocationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFF29922E0CBE8A0039399F /* RegisterLocationViewModel.swift */; };
 		6DFF29B42E0CDA0E0039399F /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFF29B32E0CDA0E0039399F /* LocationService.swift */; };
@@ -182,7 +183,7 @@
 		B66401832E22449000A397AE /* SearchLocationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = B66401822E22449000A397AE /* SearchLocationResponse.swift */; };
 		B66401852E2244CF00A397AE /* Location.swift in Sources */ = {isa = PBXBuildFile; fileRef = B66401842E2244CF00A397AE /* Location.swift */; };
 		B66401892E22768000A397AE /* PushRegisterDIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B66401882E22768000A397AE /* PushRegisterDIContainer.swift */; };
-		B664018B2E2277A900A397AE /* AlarmTimeOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = B664018A2E2277A900A397AE /* AlarmTimeOption.swift */; };
+		B664018B2E2277A900A397AE /* PushAlarmOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = B664018A2E2277A900A397AE /* PushAlarmOption.swift */; };
 		B66401942E22790300A397AE /* SignUpUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B66401932E22790300A397AE /* SignUpUseCase.swift */; };
 		B66401972E227E5E00A397AE /* HomeRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B66401962E227E5E00A397AE /* HomeRouter.swift */; };
 		B66401992E229EB000A397AE /* SplashRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B66401982E229EB000A397AE /* SplashRouter.swift */; };
@@ -409,6 +410,7 @@
 		6DD632B82E52E8E300C6A66E /* ProximityViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProximityViewController.swift; sourceTree = "<group>"; };
 		6DD632BC2E52EA5800C6A66E /* ProximityViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProximityViewModel.swift; sourceTree = "<group>"; };
 		6DD632BF2E52EBFB00C6A66E /* ProximityDIContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProximityDIContainer.swift; sourceTree = "<group>"; };
+		6DD632C12E544DB500C6A66E /* PushAlarmBottomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushAlarmBottomView.swift; sourceTree = "<group>"; };
 		6DE42B8D2DFDE6360041344C /* Atcha-iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Atcha-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6DFF29902E0CBE820039399F /* RegisterLocationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterLocationViewController.swift; sourceTree = "<group>"; };
 		6DFF29922E0CBE8A0039399F /* RegisterLocationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterLocationViewModel.swift; sourceTree = "<group>"; };
@@ -464,7 +466,7 @@
 		B66401822E22449000A397AE /* SearchLocationResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchLocationResponse.swift; sourceTree = "<group>"; };
 		B66401842E2244CF00A397AE /* Location.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Location.swift; sourceTree = "<group>"; };
 		B66401882E22768000A397AE /* PushRegisterDIContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushRegisterDIContainer.swift; sourceTree = "<group>"; };
-		B664018A2E2277A900A397AE /* AlarmTimeOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmTimeOption.swift; sourceTree = "<group>"; };
+		B664018A2E2277A900A397AE /* PushAlarmOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushAlarmOption.swift; sourceTree = "<group>"; };
 		B66401932E22790300A397AE /* SignUpUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpUseCase.swift; sourceTree = "<group>"; };
 		B66401962E227E5E00A397AE /* HomeRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeRouter.swift; sourceTree = "<group>"; };
 		B66401982E229EB000A397AE /* SplashRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashRouter.swift; sourceTree = "<group>"; };
@@ -627,7 +629,8 @@
 			children = (
 				6D1EE2E42E09A42F00F7BBF1 /* PushAlarmViewController.swift */,
 				6D1EE2E62E09A43700F7BBF1 /* PushAlarmViewModel.swift */,
-				B664018A2E2277A900A397AE /* AlarmTimeOption.swift */,
+				B664018A2E2277A900A397AE /* PushAlarmOption.swift */,
+				6DD632C12E544DB500C6A66E /* PushAlarmBottomView.swift */,
 			);
 			path = PushAlarm;
 			sourceTree = "<group>";
@@ -1963,7 +1966,7 @@
 				6D6879C92E41B43000E59C55 /* UITextView+Ext.swift in Sources */,
 				B6713CC22E129AEC00AF8486 /* RequestLocationAuthorizationRepository.swift in Sources */,
 				6D91A9012E33E3620081BAFC /* LoadingView.swift in Sources */,
-				B664018B2E2277A900A397AE /* AlarmTimeOption.swift in Sources */,
+				B664018B2E2277A900A397AE /* PushAlarmOption.swift in Sources */,
 				B65C13082E057C590016D2F0 /* APIService.swift in Sources */,
 				6D6879D02E4211B800E59C55 /* HomePatchRequest.swift in Sources */,
 				6D9283742E3AFF6A0090889B /* BusRouteCell.swift in Sources */,
@@ -2035,6 +2038,7 @@
 				6D6879C02E40684C00E59C55 /* RefreshView.swift in Sources */,
 				6D2B8CB32E39AC4B00608104 /* BusPositionInfoRequest.swift in Sources */,
 				6D1EE2E02E090A6B00F7BBF1 /* SearchLocationViewModel.swift in Sources */,
+				6DD632C22E544DB500C6A66E /* PushAlarmBottomView.swift in Sources */,
 				6D5E03D02E28853E0065AFBE /* CourseSearchResponse.swift in Sources */,
 				6D91A8E62E29F5BC0081BAFC /* CourseSettingViewModel.swift in Sources */,
 				B673C4912E0424FD00EE4AD0 /* SplashViewModel.swift in Sources */,

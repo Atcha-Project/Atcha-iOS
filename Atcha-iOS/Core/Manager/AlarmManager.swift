@@ -19,9 +19,22 @@ class AlarmManager {
     private var audioPlayer: AVAudioPlayer?
     private var timerCancellable: AnyCancellable?
     
+    var currentVolume: Float {
+        return alarmVolume
+    }
+    private var alarmVolume: Float = 1.0
+    private var currentSoundFile: String?
+    
     private init() {
+        loadStoredVolume()
         setupAudioSession()
         playLocalMusic(named: "silent", withExtension: "mp3")
+    }
+    
+    func updateVolume(to value: Float) {
+        alarmVolume = value
+        print("🔊 알람 볼륨 설정됨: \(value)")
+        audioPlayer?.volume = value
     }
     
     func startAlarm(after departureDateTime: String,
@@ -78,6 +91,12 @@ class AlarmManager {
 }
 
 extension AlarmManager {
+    private func loadStoredVolume() {
+        let storedVolume = UserDefaultsWrapper.shared.float(forKey: UserDefaultsWrapper.Key.alarmVolume.rawValue) ?? 1.0
+        print(storedVolume)
+        alarmVolume = storedVolume
+    }
+    
     private func setupAudioSession() {
         do {
             try AVAudioSession.sharedInstance().setCategory(.playback, options: [.mixWithOthers])
@@ -89,6 +108,8 @@ extension AlarmManager {
     }
     
     private func playLocalMusic(named fileName: String, withExtension fileExtension: String) {
+        self.currentSoundFile = fileName
+        
         DispatchQueue.main.async {
             if let player = self.audioPlayer, player.isPlaying {
                 player.stop()
@@ -103,6 +124,7 @@ extension AlarmManager {
             do {
                 let player = try AVAudioPlayer(contentsOf: url)
                 player.numberOfLoops = -1
+                player.volume = self.alarmVolume
                 player.prepareToPlay()
                 player.play()
                 self.audioPlayer = player
@@ -157,6 +179,25 @@ extension AlarmManager {
                 print("✅ 푸시 전송됨: \(title) - \(body)")
             }
         }
+    }
+    
+    func previewAlarmVolume(_ volume: Float) {
+        alarmVolume = volume
+
+        if currentSoundFile == "siren", let player = audioPlayer, player.isPlaying {
+            player.volume = volume
+            print("🔁 미리듣기 볼륨만 조정: \(volume)")
+        } else {
+            playLocalMusic(named: "siren", withExtension: "mp3")
+            print("▶️ 미리듣기 시작 (볼륨: \(volume))")
+        }
+    }
+
+    
+    func stopPreview() {
+        audioPlayer?.stop()
+        audioPlayer = nil
+        print(" 미리듣기 완전 종료")
     }
 }
 
