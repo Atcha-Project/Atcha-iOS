@@ -32,4 +32,5 @@ public extension UserDefaultsWrapper.Key {
     static let trainRealTime: UserDefaultsWrapper.Key = "trainRealTime"
     
     static let alarmVolume: UserDefaultsWrapper.Key = "alarmVolume"
+    static let alarmOption: UserDefaultsWrapper.Key = "alarmOption"
 }

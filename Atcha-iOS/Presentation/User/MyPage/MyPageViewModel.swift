@@ -11,7 +11,8 @@ import Combine
 
 final class MyPageViewModel: BaseViewModel {
     let navigationTarget = PassthroughSubject<MyPageNavigationTarget, Never>()
-
+    @Published var didChangeAlarmSetting: Bool = false
+    
     func didSelectItem(_ item: MyPageItem) {
         switch item {
         case .account:

@@ -10,6 +10,7 @@ import AVFAudio
 import Combine
 import UserNotifications
 import AudioToolbox
+import UIKit
 
 class AlarmManager {
     static let shared: AlarmManager = .init()
@@ -24,16 +25,19 @@ class AlarmManager {
     }
     private var alarmVolume: Float = 1.0
     private var currentSoundFile: String?
+    var selectedOption: PushAlarmOption = .onlySound // 기본값
+    private var repeatingVibrationTimer: Timer?
     
     private init() {
         loadStoredVolume()
+        loadStoredAlarmOption()
         setupAudioSession()
         playLocalMusic(named: "silent", withExtension: "mp3")
     }
     
     func updateVolume(to value: Float) {
         alarmVolume = value
-        print("🔊 알람 볼륨 설정됨: \(value)")
+        UserDefaultsWrapper.shared.set(value, forKey: UserDefaultsWrapper.Key.alarmVolume.rawValue)
         audioPlayer?.volume = value
     }
     
@@ -83,9 +87,10 @@ class AlarmManager {
     }
     
     func stopAlarm() {
-        AlarmManager.shared.playLocalMusic(named: "silent", withExtension: "mp3")
+        playLocalMusic(named: "silent", withExtension: "mp3")
         timerCancellable?.cancel()
         timerCancellable = nil
+        stopRepeatingVibration()
         print("🛑 푸시 타이머 중지됨")
     }
 }
@@ -95,6 +100,16 @@ extension AlarmManager {
         let storedVolume = UserDefaultsWrapper.shared.float(forKey: UserDefaultsWrapper.Key.alarmVolume.rawValue) ?? 1.0
         print(storedVolume)
         alarmVolume = storedVolume
+    }
+    
+    private func loadStoredAlarmOption() {
+        if let option: PushAlarmOption = UserDefaultsWrapper.shared.object(forKey: UserDefaultsWrapper.Key.alarmOption.rawValue, of: PushAlarmOption.self) {
+            self.selectedOption = option
+            print("✅ 알람 타입 불러오기: \(option)")
+        } else {
+            self.selectedOption = .onlySound
+            print("ℹ️ 알람 타입 기본값 사용: onlySound")
+        }
     }
     
     private func setupAudioSession() {
@@ -135,29 +150,41 @@ extension AlarmManager {
         }
     }
     
-    private func startRepeatingPush(title: String,
-                                    body: String) {
-        isFirstPushSent = false // 시작 전 초기화
-        
-        // 타이머 시작
+    private func startRepeatingPush(title: String, body: String) {
+        isFirstPushSent = false
+
         timerCancellable = Timer.publish(every: 2.0, on: .main, in: .common)
             .autoconnect()
             .sink { _ in
                 if !self.isFirstPushSent {
-                    self.playLocalMusic(named: "siren", withExtension: "mp3")
+                    switch self.selectedOption {
+                    case .onlySound:
+                        self.playLocalMusic(named: "siren", withExtension: "mp3")
+
+                    case .onlyVibration:
+                        self.startRepeatingVibration()
+
+                    case .both:
+                        self.playLocalMusic(named: "siren", withExtension: "mp3")
+                        self.startRepeatingVibration()
+                    }
+
                     self.isFirstPushSent = true
                 }
+
                 self.sendLocalPush(title: title, body: body)
             }
-        
-        // 2분(120초) 후 타이머 종료
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 120) {
             self.playLocalMusic(named: "silent", withExtension: "mp3")
             self.timerCancellable?.cancel()
             self.timerCancellable = nil
+            self.stopRepeatingVibration()
             print("⏹ 푸시 반복이 종료되었습니다. (2분 경과)")
         }
     }
+
+
     
     private func sendLocalPush(title: String,
                                body: String) {
@@ -184,26 +211,64 @@ extension AlarmManager {
     func previewAlarmVolume(_ volume: Float) {
         alarmVolume = volume
 
-        if currentSoundFile == "siren", let player = audioPlayer, player.isPlaying {
-            player.volume = volume
-            print("🔁 미리듣기 볼륨만 조정: \(volume)")
-        } else {
-            playLocalMusic(named: "siren", withExtension: "mp3")
-            print("▶️ 미리듣기 시작 (볼륨: \(volume))")
+        switch selectedOption {
+        case .onlySound:
+            if currentSoundFile == "siren", let player = audioPlayer, player.isPlaying {
+                player.volume = volume
+                print("사운드 미리듣기 볼륨만 조정: \(volume)")
+            } else {
+                playLocalMusic(named: "siren", withExtension: "mp3")
+                print("사운드 미리듣기 시작 (볼륨: \(volume))")
+            }
+
+        case .onlyVibration:
+            self.startRepeatingVibration()
+            print("진동 미리듣기")
+
+        case .both:
+            if currentSoundFile == "siren", let player = audioPlayer, player.isPlaying {
+                player.volume = volume
+                print("사운드+진동 볼륨만 조정: \(volume)")
+            } else {
+                playLocalMusic(named: "siren", withExtension: "mp3")
+                print("사운드+진동 미리듣기 시작 (볼륨: \(volume))")
+            }
+            self.startRepeatingVibration()
         }
     }
-
+    
     
     func stopPreview() {
         audioPlayer?.stop()
         audioPlayer = nil
-        print(" 미리듣기 완전 종료")
+        stopRepeatingVibration()
+        print("미리듣기 완전 종료")
+    }
+
+    
+    func setAlarmOption(_ option: PushAlarmOption) {
+        self.selectedOption = option
+        UserDefaultsWrapper.shared.set(option, forKey: UserDefaultsWrapper.Key.alarmOption.rawValue)
+    }
+    
+    private func startRepeatingVibration() {
+        stopRepeatingVibration()
+        vibrate()
+        repeatingVibrationTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
+            self?.vibrate()
+        }
+    }
+
+    private func stopRepeatingVibration() {
+        repeatingVibrationTimer?.invalidate()
+        repeatingVibrationTimer = nil
+    }
+    
+    private func vibrate() {
+        let impact = UIImpactFeedbackGenerator(style: .heavy)
+        impact.prepare()
+        impact.impactOccurred()
+        AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
     }
 }
 
-
-//    private func vibrate() {
-//        let impact = UIImpactFeedbackGenerator(style: .heavy)
-//        impact.impactOccurred()
-//        AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
-//    }

@@ -11,14 +11,15 @@ import SnapKit
 final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
     private lazy var topNavigationBar: TitleNavigationBar = AtchaNavigationBar.title(onBack: { [weak self] in
         guard let self else { return }
+        AlarmManager.shared.stopPreview()
         navigationController?.popViewController(animated: true)
     })
     
     private let titleLabel: UILabel = UILabel()
-    
     private let alarmListStackView: UIStackView = UIStackView()
     private var alarmCheckmarkLists: [AtchaList] = []
     private var selectedOption: PushAlarmOption?
+    var onSettingComplete: ((Bool) -> Void)?
     private let settingBottomView: PushAlarmBottomView = PushAlarmBottomView()
     private lazy var nextButton: AtchaButton = AtchaButton(text: "설정 완료",
                                                            size: .h52,
@@ -27,14 +28,16 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
         let selectedVolume = settingBottomView.currentVolume
         AlarmManager.shared.stopPreview()
         AlarmManager.shared.updateVolume(to: selectedVolume)
-        UserDefaultsWrapper.shared.set(selectedVolume, forKey: UserDefaultsWrapper.Key.alarmVolume.rawValue)
+        if let selectedOption = self.selectedOption {
+            AlarmManager.shared.setAlarmOption(selectedOption)
+        }
         
         switch self.viewModel.context {
         case .onboarding:
             self.viewModel.signUp()
-        case .myPage:
-            AtchaToast(message: "알림 설정이 변경되었어요")
-                .show(in: self.view)
+        case .myPage:            
+            self.onSettingComplete?(true)
+            self.navigationController?.popViewController(animated: true)
         }
     }
     
@@ -125,26 +128,41 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
     
     // MARK: - 알림 리스트 UI
     private func setupAlarmLists() {
+            let preselectOption: PushAlarmOption? = (viewModel.context == .myPage)
+                ? AlarmManager.shared.selectedOption
+                : nil
+        
         PushAlarmOption.allCases.enumerated().forEach { index, option in
+            let isSelected = (option == preselectOption)
+            
             let listView = AtchaList(
                 title: option.rawValue,
-                listType: .radioButton(isOn: false)
+                listType: .radioButton(isOn: isSelected)
             )
             listView.onSelect = { [weak self] selected in
                 guard let self else { return }
-
+                
                 self.alarmCheckmarkLists.forEach { $0.setRadio(false) }
                 selected.setRadio(true)
-
+                
                 self.selectedOption = option
                 self.nextButton.updateStyle(text: "설정 완료", style: .filled(.primary))
-
+                
+                AlarmManager.shared.stopPreview()
+                AlarmManager.shared.setAlarmOption(option)
+                
                 switch option {
                 case .onlyVibration:
                     self.toggleBottomView(show: false)
-                    AlarmManager.shared.stopPreview()
-                case .onlySound, .both:
+                    AlarmManager.shared.previewAlarmVolume(0)  // 진동만 테스트
+                    
+                case .onlySound:
                     self.toggleBottomView(show: true)
+                    AlarmManager.shared.previewAlarmVolume(self.settingBottomView.currentVolume)
+                    
+                case .both:
+                    self.toggleBottomView(show: true)
+                    AlarmManager.shared.previewAlarmVolume(self.settingBottomView.currentVolume)
                 }
             }
             
@@ -163,6 +181,5 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
             settingBottomView.isHidden = true
         }
     }
-
 }
 

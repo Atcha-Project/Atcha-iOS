@@ -34,6 +34,7 @@ final class MyPageViewController: BaseViewController<MyPageViewModel> {
         setupUI()
         setupAutoLayout()
         addGesture()
+        bindViewModel()
     }
     
     private func setupUI() {
@@ -45,6 +46,17 @@ final class MyPageViewController: BaseViewController<MyPageViewModel> {
         bannerImageView.image = UIImage.banner
         footerLabel.attributedText = AtchaFont.R_12("티맵 API와 공공데이터로 막차 정보를 제공합니다.",
                                                     color: .gray300)
+    }
+    
+    private func bindViewModel() {
+        viewModel.$didChangeAlarmSetting
+            .receive(on: RunLoop.main)
+            .sink { [weak self] didChange in
+                guard let self, didChange else { return }
+                AtchaToast(message: "알림 설정이 변경되었어요").show(in: self.view)
+                self.viewModel.didChangeAlarmSetting = false
+            }
+            .store(in: &cancellables)
     }
     
     private func setupAutoLayout() {
