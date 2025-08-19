@@ -14,7 +14,8 @@ final class MyPageCoordinator {
     private var cancellables = Set<AnyCancellable>()
     private let diContainer: MyPageDIContainer
     private let router: MyPageRouter
-
+    private var myPageViewModelRef: MyPageViewModel?
+    
     var signoutFinish: (() -> Void)?
     
     init(navigationController: UINavigationController,
@@ -23,14 +24,15 @@ final class MyPageCoordinator {
         self.diContainer = diContainer
         self.router = DefaultMyPageRouter(navigationController: navigationController)
     }
-
+    
     func start() {
         let viewModel = diContainer.makeMyPageViewModel()
+        self.myPageViewModelRef = viewModel
         let viewController = MyPageViewController(viewModel: viewModel)
         bind(viewModel: viewModel)
         navigationController.pushViewController(viewController, animated: true)
     }
-
+    
     private func bind(viewModel: MyPageViewModel) {
         viewModel.navigationTarget
             .receive(on: DispatchQueue.main)
@@ -39,7 +41,7 @@ final class MyPageCoordinator {
             }
             .store(in: &cancellables)
     }
-
+    
     private func navigate(to target: MyPageNavigationTarget) {
         switch target {
         case .banner:
@@ -63,18 +65,25 @@ final class MyPageCoordinator {
             let vc = diContainer.makeHomeRegisterViewController(viewModel: vm)
             navigationController.pushViewController(vc, animated: true)
         case .notification:
-            let vm = diContainer.makeAlarmSettingViewModel()
-            vm.onItemSelected = { [weak self] item in
-                switch item {
-                case .frequent:
-                    self?.showPushAlarm()
-                case .soundType:
-                    let soundTypeVM = AlarmSoundTypeViewModel()
-                    let soundTypeVC = AlarmSoundTypeViewController(viewModel: soundTypeVM)
-                    self?.navigationController.pushViewController(soundTypeVC, animated: true)
-                }
+            //            let vm = diContainer.makeAlarmSettingViewModel()
+            //            vm.onItemSelected = { [weak self] item in
+            //                switch item {
+            //                case .frequent:
+            //                    self?.showPushAlarm()
+            //                case .soundType:
+            //                    let soundTypeVM = AlarmSoundTypeViewModel()
+            //                    let soundTypeVC = AlarmSoundTypeViewController(viewModel: soundTypeVM)
+            //                    self?.navigationController.pushViewController(soundTypeVC, animated: true)
+            //                }
+            //            }
+            //            let vc = diContainer.makeAlarmSettingViewController(viewModel: vm)
+            
+            let vm = diContainer.makePushAlarmViewModel(context: .myPage)
+            let vc = diContainer.makePushAlarmViewController(viewModel: vm)
+            vc.onSettingComplete = { [weak self] didChange in
+                guard let self, didChange else { return }
+                self.myPageViewModelRef?.didChangeAlarmSetting = true
             }
-            let vc = diContainer.makeAlarmSettingViewController(viewModel: vm)
             navigationController.pushViewController(vc, animated: true)
         case .term:
             let vc = WebViewController(type: .term)
