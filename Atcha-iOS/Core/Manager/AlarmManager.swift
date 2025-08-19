@@ -15,7 +15,7 @@ import UIKit
 class AlarmManager {
     static let shared: AlarmManager = .init()
     
-    private var isFirstPushSent = false
+    //    private var isFirstPushSent = false
     
     private var audioPlayer: AVAudioPlayer?
     private var timerCancellable: AnyCancellable?
@@ -123,68 +123,72 @@ extension AlarmManager {
     }
     
     private func playLocalMusic(named fileName: String, withExtension fileExtension: String) {
+        // 같은 노래가 이미 재생 중이면 재생하지 않음
+        if let player = self.audioPlayer,
+           player.isPlaying,
+           self.currentSoundFile == fileName {
+            print("🎵 같은 노래가 이미 재생 중이므로 재생 무시: \(fileName).\(fileExtension)")
+            return
+        }
+        
         self.currentSoundFile = fileName
         
         DispatchQueue.main.async {
+            // 기존 재생 중인 음악 정지
             if let player = self.audioPlayer, player.isPlaying {
                 player.stop()
             }
             self.audioPlayer = nil
             
+            // 리소스 경로 확인
             guard let url = Bundle.main.url(forResource: fileName, withExtension: fileExtension) else {
-                print("파일을 찾을 수 없습니다: \(fileName).\(fileExtension)")
+                print("❌ 파일을 찾을 수 없습니다: \(fileName).\(fileExtension)")
                 return
             }
             
             do {
                 let player = try AVAudioPlayer(contentsOf: url)
-                player.numberOfLoops = -1
+                player.numberOfLoops = -1 // 무한 반복
                 player.volume = self.alarmVolume
                 player.prepareToPlay()
                 player.play()
                 self.audioPlayer = player
-                print("🎵 음악 재생 시작(교체됨): \(fileName).\(fileExtension)")
+                print("🎵 음악 재생 시작: \(fileName).\(fileExtension)")
             } catch {
-                print("오디오 재생 오류: \(error.localizedDescription)")
+                print("❌ 오디오 재생 오류: \(error.localizedDescription)")
             }
         }
     }
     
     private func startRepeatingPush(title: String, body: String) {
-        isFirstPushSent = false
-
         timerCancellable = Timer.publish(every: 2.0, on: .main, in: .common)
             .autoconnect()
             .sink { _ in
-                if !self.isFirstPushSent {
-                    switch self.selectedOption {
-                    case .onlySound:
-                        self.playLocalMusic(named: "siren", withExtension: "mp3")
-
-                    case .onlyVibration:
-                        self.startRepeatingVibration()
-
-                    case .both:
-                        self.playLocalMusic(named: "siren", withExtension: "mp3")
-                        self.startRepeatingVibration()
-                    }
-
-                    self.isFirstPushSent = true
+                switch self.selectedOption {
+                case .onlySound:
+                    self.playLocalMusic(named: "siren", withExtension: "mp3")
+                    
+                case .onlyVibration:
+                    self.startRepeatingVibration()
+                    
+                case .both:
+                    self.playLocalMusic(named: "siren", withExtension: "mp3")
+                    self.startRepeatingVibration()
                 }
-
+                
                 self.sendLocalPush(title: title, body: body)
             }
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 120) {
-            self.playLocalMusic(named: "silent", withExtension: "mp3")
-            self.timerCancellable?.cancel()
-            self.timerCancellable = nil
-            self.stopRepeatingVibration()
-            print("⏹ 푸시 반복이 종료되었습니다. (2분 경과)")
-        }
+        
+        //        DispatchQueue.main.asyncAfter(deadline: .now() + 120) {
+        //            self.playLocalMusic(named: "silent", withExtension: "mp3")
+        //            self.timerCancellable?.cancel()
+        //            self.timerCancellable = nil
+        //            self.stopRepeatingVibration()
+        //            print("⏹ 푸시 반복이 종료되었습니다. (2분 경과)")
+        //        }
     }
-
-
+    
+    
     
     private func sendLocalPush(title: String,
                                body: String) {
@@ -210,7 +214,7 @@ extension AlarmManager {
     
     func previewAlarmVolume(_ volume: Float) {
         alarmVolume = volume
-
+        
         switch selectedOption {
         case .onlySound:
             if currentSoundFile == "siren", let player = audioPlayer, player.isPlaying {
@@ -220,11 +224,11 @@ extension AlarmManager {
                 playLocalMusic(named: "siren", withExtension: "mp3")
                 print("사운드 미리듣기 시작 (볼륨: \(volume))")
             }
-
+            
         case .onlyVibration:
             self.startRepeatingVibration()
             print("진동 미리듣기")
-
+            
         case .both:
             if currentSoundFile == "siren", let player = audioPlayer, player.isPlaying {
                 player.volume = volume
@@ -244,7 +248,6 @@ extension AlarmManager {
         stopRepeatingVibration()
         print("미리듣기 완전 종료")
     }
-
     
     func setAlarmOption(_ option: PushAlarmOption) {
         self.selectedOption = option
@@ -258,7 +261,7 @@ extension AlarmManager {
             self?.vibrate()
         }
     }
-
+    
     private func stopRepeatingVibration() {
         repeatingVibrationTimer?.invalidate()
         repeatingVibrationTimer = nil
