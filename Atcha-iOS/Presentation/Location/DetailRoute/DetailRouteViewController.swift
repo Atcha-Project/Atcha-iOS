@@ -21,7 +21,7 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
     private var allCoordinates: [CLLocationCoordinate2D] = []
     private let registerContainer: UIView = UIView()
     private var registerGradient = CAGradientLayer()
-    private let alarmRegisterButton: AtchaButton = AtchaButton(text: "막차 알림 받기", size: .h52, style: .filled(.primary), image: .bellOutlined)
+    private let alarmRegisterButton: AtchaButton = AtchaButton(text: "막차 알람 받기", size: .h52, style: .filled(.primary), image: .bellOutlined)
     
     override func viewDidLoad() {
         super.viewDidLoad()

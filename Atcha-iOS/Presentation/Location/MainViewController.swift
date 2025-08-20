@@ -226,7 +226,7 @@ extension MainViewController {
                                                       context: .afterReigster)
             )
         case .locationTapped:
-            ballonView.setupTitle(bottomMessage: "위치를 변경하려면 알림을 종료해야 해요")
+            ballonView.setupTitle(bottomMessage: "위치를 변경하려면 알람을 종료해야 해요")
         case .reloadTapped:
             viewModel.refreshDepatrueTime()
         case .timeTapped:
@@ -274,7 +274,7 @@ extension MainViewController {
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
             guard let self else { return }
-            view.showToast(message: "알림이 종료되었어요")
+            view.showToast(message: "알람이 종료되었어요")
         }
     }
     

@@ -197,9 +197,9 @@ final class MainViewModel: BaseViewModel {
             do {
                 let _ = try await alarmUseCase.alarmDelete(request)
                 wrapper.remove(forKey: UserDefaultsWrapper.Key.lastRouteId.rawValue)
-                print("알림 취소 성공")
+                print("알람 취소 성공")
             } catch {
-                print("알림 취소 실패: \(error)")
+                print("알람 취소 실패: \(error)")
             }
         }
     }

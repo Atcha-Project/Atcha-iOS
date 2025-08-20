@@ -85,8 +85,8 @@ final class PermissionViewController: BaseViewController<PermissionViewModel> {
         
         locationTitleLabel.attributedText = AtchaFont.B5_SB_14("위치", color: .white)
         locationDescLabel.attributedText = AtchaFont.B6_R_14("현위치를 기준으로 빠르게 막차를 찾아요", color: .gray200)
-        alarmTitleLabel.attributedText = AtchaFont.B5_SB_14("알림", color: .white)
-        alarmDescLabel.attributedText = AtchaFont.B6_R_14("제시간에 막차를 탈 수 있게 알림을 드려요", color: .gray200)
+        alarmTitleLabel.attributedText = AtchaFont.B5_SB_14("알람", color: .white)
+        alarmDescLabel.attributedText = AtchaFont.B6_R_14("제시간에 막차를 탈 수 있게 알람을 드려요", color: .gray200)
     }
     
     private func setupAutoLayout() {

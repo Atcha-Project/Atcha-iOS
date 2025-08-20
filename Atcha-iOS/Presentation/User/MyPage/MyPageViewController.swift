@@ -53,7 +53,7 @@ final class MyPageViewController: BaseViewController<MyPageViewModel> {
             .receive(on: RunLoop.main)
             .sink { [weak self] didChange in
                 guard let self, didChange else { return }
-                AtchaToast(message: "알림 설정이 변경되었어요").show(in: self.view)
+                AtchaToast(message: "알람 설정이 변경되었어요").show(in: self.view)
                 self.viewModel.didChangeAlarmSetting = false
             }
             .store(in: &cancellables)
