@@ -182,8 +182,10 @@ final class RouteLineView: UIView {
             circleImageView.image = .busRouteCircle
             circleImageView.contentMode = .scaleAspectFit
             
-            circleImageView.snp.updateConstraints { make in
-                make.size.equalTo(circleSize)
+            circleImageView.snp.remakeConstraints { make in
+                make.centerX.equalToSuperview()
+                make.centerY.equalTo(topLine.snp.bottom).offset(6) // 11 간격의 중간
+                make.size.equalTo(14)
             }
             
         case .rotation:
