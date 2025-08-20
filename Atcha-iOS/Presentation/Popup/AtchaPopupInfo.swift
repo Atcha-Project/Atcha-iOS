@@ -16,7 +16,7 @@ enum AtcahPopuInfo {
         switch self {
         case .logout: return "로그아웃하시겠어요?"
         case .withdraw: return "탈퇴하시겠어요?"
-        case .alarm: return "막차 알림을 종료할까요?"
+        case .alarm: return "막차 알람을 종료할까요?"
         }
     }
     

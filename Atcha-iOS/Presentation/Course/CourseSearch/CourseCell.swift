@@ -39,7 +39,7 @@ final class CourseCell: UICollectionViewCell {
     private let courseCompactStack: UIStackView = UIStackView()
     private let courseDetailStack: UIStackView = UIStackView()
     private var isExpanded: Bool = false
-    private let alarmRegisterButton: AtchaButton = AtchaButton(text: "막차 알림 받기", size: .h44, style: .filled(.defaultGray), image: UIImage.bellOutlined)
+    private let alarmRegisterButton: AtchaButton = AtchaButton(text: "막차 알람 받기", size: .h44, style: .filled(.defaultGray), image: UIImage.bellOutlined)
     
     override init(frame: CGRect) {
         super.init(frame: frame)

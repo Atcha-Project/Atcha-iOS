@@ -23,7 +23,7 @@ enum MyPageItem: CaseIterable, MyPageProtocol {
         switch self {
         case .account: return "내 계정"
         case .home: return "우리집 변경"
-        case .notification: return "알림 설정"
+        case .notification: return "알람 설정"
         case .term: return "약관"
         case .version: return "현재 버전 \(AppInfoProvider.currentVersion)"
         }

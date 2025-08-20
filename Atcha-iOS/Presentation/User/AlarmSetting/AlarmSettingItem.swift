@@ -14,7 +14,7 @@ enum AlarmSettingItem: CaseIterable, MyPageProtocol {
     var title: String {
         switch self {
         case .soundType: return "진동/벨소리 설정"
-        case .frequent: return "푸시 알림 빈도 설정"
+        case .frequent: return "푸시 알람 빈도 설정"
         }
     }
     

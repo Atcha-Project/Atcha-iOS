@@ -183,7 +183,7 @@ final class CourseSearchViewModel: BaseViewModel {
                 let _ = try await alarmUseCase.alarmRegister(request)
                 saveStartInfo(request.lastRouteId)
             } catch {
-                print("알림 등록 실패: \(error)")
+                print("알람 등록 실패: \(error)")
             }
         }
     }

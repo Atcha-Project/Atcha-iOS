@@ -95,7 +95,7 @@ class BaseViewController<VM: BaseViewModel>: UIViewController {
         view.endEditing(true)
     }
     
-    func showAlert(title: String = "알림", message: String) {
+    func showAlert(title: String = "알람", message: String) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         let ok = UIAlertAction(title: "확인", style: .default, handler: nil)
         alert.addAction(ok)

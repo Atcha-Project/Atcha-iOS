@@ -8,7 +8,7 @@
 import Foundation
 
 enum PushAlarmOption: String, CaseIterable, Codable {
-    case both = "소리/진동"
+    case both = "소리 및 진동"
     case onlySound = "소리"
     case onlyVibration = "진동"
 }

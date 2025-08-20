@@ -203,8 +203,8 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         
         if !didScrollToCurrentStation,
            let stations = busRoute.busRouteStationList,
-           let currentName = viewModel.busDetailInfo.start?.name,
-           let currentIndex = stations.firstIndex(where: { $0.busStationName == currentName }) {
+           let currentStationId = viewModel.busDetailInfo.targetBusStation?.first?.busStationId,
+           let currentIndex = stations.firstIndex(where: { $0.busStationId == currentStationId }) {
             
             let indexPath = IndexPath(item: currentIndex, section: 0)
             
@@ -237,7 +237,11 @@ extension BusDetailViewController: UICollectionViewDelegate {
                         layout collectionViewLayout: UICollectionViewLayout,
                         sizeForItemAt indexPath: IndexPath) -> CGSize {
         let station = viewModel.busPositionInfo?.busRouteStationList?[indexPath.item]
-        let isCurrent = (station?.busStationName == viewModel.busDetailInfo.start?.name)
+        let isCurrent = viewModel.busDetailInfo.targetBusStation?.contains(where: { target in
+            target.busStationId == station?.busStationId &&
+            target.busStationNumber == station?.busStationNumber &&
+            target.busStationName == station?.busStationName
+        }) ?? false
         return CGSize(width: collectionView.bounds.width,
                       height: isCurrent ? 108 : 68)
     }

@@ -88,6 +88,7 @@ class BusRouteCell: UICollectionViewCell {
         let baseHeight: CGFloat = isCurrentStationFlag ? 108 : 68
         let yPosition = baseHeight * CGFloat(progress)
         busYConstraint?.update(offset: yPosition + 12)
+        contentView.insertSubview(realTimeBusStack, aboveSubview: routeStack)
         contentView.bringSubviewToFront(realTimeBusStack)
     }
     
@@ -127,6 +128,7 @@ class BusRouteCell: UICollectionViewCell {
         
         contentView.addSubview(routeStack)
         contentView.addSubview(realTimeBusStack)
+        contentView.insertSubview(realTimeBusStack, aboveSubview: routeStack)
         contentView.bringSubviewToFront(realTimeBusStack)
     }
     

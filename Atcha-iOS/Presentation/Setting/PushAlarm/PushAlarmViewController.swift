@@ -75,7 +75,7 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
     }
     
     private func setupMyPageUI() {
-        topNavigationBar.updateTitle("알림 설정")
+        topNavigationBar.updateTitle("알람 설정")
     }
     
     // MARK: - Push Alarm 기본 UI
@@ -83,7 +83,7 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
         view.addSubViews(topNavigationBar, titleLabel, alarmListStackView, settingBottomView, nextButton)
         topNavigationBar.hideCloseButton()
         
-        titleLabel.attributedText = AtchaFont.H2_B_22("출발 알림 받을 방법을\n설정해주세요",
+        titleLabel.attributedText = AtchaFont.H2_B_22("출발 알람 받을 방법을\n설정해주세요",
                                                       color: AtchaColor.white)
         titleLabel.numberOfLines = 0
         titleLabel.textAlignment = .left
