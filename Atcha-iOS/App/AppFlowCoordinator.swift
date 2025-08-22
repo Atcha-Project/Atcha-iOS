@@ -27,7 +27,7 @@ class AppFlowCoordinator {
         let navigationController = UINavigationController()
         window.rootViewController = navigationController
         window.makeKeyAndVisible()
-        
+
         let splashCoordinator = container.makeSplashCoordinator(navigationController: navigationController)
         splashCoordinator.routerHandler = { [weak self] router in
             guard let self else { return }

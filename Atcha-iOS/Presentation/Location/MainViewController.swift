@@ -33,7 +33,12 @@ final class MainViewController: BaseViewController<MainViewModel>,
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        self.onNetworkReconnect = { [weak self] in
+                self?.mapContainerView.reloadMapView()
+            }
+        
         viewModel.setLoading(true)
+        
         setupUI()
         setupAutoLayout()
         bindView()
