@@ -18,6 +18,9 @@ class BaseViewController<VM: BaseViewModel>: UIViewController {
         return indicator
     }()
     
+    private var reconnectView: NetworkReconnectView?
+    var onNetworkReconnect: (() -> Void)?
+    
     private var loadingView: LoadingView?
     
     // MARK: - Init
@@ -36,6 +39,7 @@ class BaseViewController<VM: BaseViewModel>: UIViewController {
         setupLayout()
         setupBindings()
         setupKeyboardDismiss()
+        observeNetwork()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -126,5 +130,53 @@ class BaseViewController<VM: BaseViewModel>: UIViewController {
         loadingView?.stop()
         loadingView?.removeFromSuperview()
         loadingView = nil
+    }
+    
+    
+    func observeNetwork() {
+        NetworkPatcher.shared.onStatusChange = { [weak self] isConnected in
+            guard let self else { return }
+            DispatchQueue.main.async {
+                if isConnected {
+                    self.hideReconnectView()
+                    self.onNetworkReconnect?()
+                } else {
+                    self.showReconnectView()
+                }
+            }
+        }
+    }
+    
+    func showReconnectView() {
+        if reconnectView != nil { return }
+        
+        let reconnect = NetworkReconnectView()
+        reconnect.translatesAutoresizingMaskIntoConstraints = false
+        
+        reconnect.onRetry = { [weak self] in
+            guard let self else { return }
+            
+            if NetworkPatcher.shared.isConnected {
+                self.hideReconnectView()
+            } else {
+                self.showReconnectView()
+            }
+        }
+        
+        view.addSubview(reconnect)
+        
+        NSLayoutConstraint.activate([
+            reconnect.topAnchor.constraint(equalTo: view.topAnchor),
+            reconnect.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            reconnect.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            reconnect.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+        
+        reconnectView = reconnect
+    }
+    
+    func hideReconnectView() {
+        reconnectView?.removeFromSuperview()
+        reconnectView = nil
     }
 }

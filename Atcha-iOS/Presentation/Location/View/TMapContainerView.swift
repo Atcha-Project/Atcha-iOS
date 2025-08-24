@@ -62,3 +62,13 @@ final class TMapContainerView: UIView {
         tMapWrapper.mapView.vsmMapView?.viewWillDisappear()
     }
 }
+
+extension TMapContainerView {
+    func reloadMapView() {
+        tMapWrapper.mapView.removeFromSuperview()
+        tMapWrapper = nil
+
+        // 다시 생성
+        setupTMap()
+    }
+}
