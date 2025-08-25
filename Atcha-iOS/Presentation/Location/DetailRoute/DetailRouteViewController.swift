@@ -255,7 +255,7 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
     @objc private func didTapAlarmRegister() {
         let hasNightBus = viewModel.infos.busInfo.contains { bus in
             if let routeName = bus.routeName {
-                return routeName.contains("2")
+                return routeName.contains("N")
             }
             return false
         }
