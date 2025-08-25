@@ -253,7 +253,18 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
     }
     
     @objc private func didTapAlarmRegister() {
-        viewModel.getAlarmTapped?(viewModel.address, viewModel.infos)
+        let hasNightBus = viewModel.infos.busInfo.contains { bus in
+            if let routeName = bus.routeName {
+                return routeName.contains("2")
+            }
+            return false
+        }
+        
+        if hasNightBus {
+            showCoursePopup()
+        } else {
+            viewModel.getAlarmTapped?(viewModel.address, viewModel.infos)
+        }
     }
     
     deinit {
@@ -292,5 +303,27 @@ extension DetailRouteViewController {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
             self.hideLoading()
         }
+    }
+}
+
+extension DetailRouteViewController {
+    private func showCoursePopup() {
+        let popupVM = AtchaPopupViewModel(info: .course)
+        let popupVC = AtchaPopupViewController(viewModel: popupVM)
+        
+        popupVC.confirmButton.addAction(UIAction { [weak popupVC] _ in
+            popupVC?.dismiss(animated: true)
+            
+            self.viewModel.getAlarmTapped?(self.viewModel.address, self.viewModel.infos)
+        }, for: .touchUpInside)
+        
+        popupVC.cancelButton.addAction(UIAction { [weak self, weak popupVC] _ in
+            guard let self else { return }
+            popupVC?.dismiss(animated: true)
+            
+        }, for: .touchUpInside)
+        
+        popupVC.modalPresentationStyle = .overFullScreen
+        present(popupVC, animated: false)
     }
 }
