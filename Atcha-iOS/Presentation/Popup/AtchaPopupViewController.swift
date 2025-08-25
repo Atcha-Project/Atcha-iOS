@@ -35,6 +35,7 @@ final class AtchaPopupViewController: BaseViewController<AtchaPopupViewModel> {
         containerView.addSubViews(titleLabel, buttonStackView)
         
         titleLabel.textAlignment = .center
+        titleLabel.numberOfLines = 0
         containerView.backgroundColor = .gray940
         containerView.layer.cornerRadius = 20
         cancelButton.setCornerRadius(8)

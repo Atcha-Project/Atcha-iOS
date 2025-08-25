@@ -223,9 +223,24 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
             let pathInfo: [LegPathInfo] = model.course.toLegPathInfos()
             let tafficInfo: [LegTrafficInfo] = model.course.toLegTrafficInfos()
             let busInfo: [BusDetailInfo] = model.course.toBusInfos()
-            viewModel.alarmRegister(AlarmRequest(lastRouteId: model.course.routeId))
-            viewModel.getAlarmTapped?(viewModel.startAddress, LegInfo(pathInfo: pathInfo, trafficInfo: tafficInfo, busInfo: busInfo))
-            navigationController?.popToRootViewController(animated: true)
+            
+            let alarmRequest = AlarmRequest(lastRouteId: model.course.routeId)
+            let alarmTapped = (viewModel.startAddress, LegInfo(pathInfo: pathInfo, trafficInfo: tafficInfo, busInfo: busInfo))
+            
+            let hasNightBus = busInfo.contains { bus in
+                if let routeName = bus.routeName {
+                    return routeName.contains("N")
+                }
+                return false
+            }
+
+            if hasNightBus {
+                showCoursePopup(alarmRequest, alarmTapped)
+            } else {
+                viewModel.alarmRegister(alarmRequest)
+                viewModel.getAlarmTapped?(alarmTapped.0, alarmTapped.1)
+                navigationController?.popToRootViewController(animated: true)
+            }
         }
         
         // 버튼 탭 시 경로ID와 함께 상세 화면으로 이동
@@ -305,3 +320,28 @@ extension CourseSearchViewController: UICollectionViewDelegate, UICollectionView
     }
 }
 
+extension CourseSearchViewController {
+    
+    private func showCoursePopup(_ alarmRequest: AlarmRequest, _ alarmTapped: (String, LegInfo)) {
+        let popupVM = AtchaPopupViewModel(info: .course)
+        let popupVC = AtchaPopupViewController(viewModel: popupVM)
+        
+        popupVC.confirmButton.addAction(UIAction { [weak popupVC] _ in
+            popupVC?.dismiss(animated: true)
+            
+            self.viewModel.alarmRegister(alarmRequest)
+            self.viewModel.getAlarmTapped?(alarmTapped.0, alarmTapped.1)
+            self.navigationController?.popToRootViewController(animated: true)
+            
+        }, for: .touchUpInside)
+        
+        popupVC.cancelButton.addAction(UIAction { [weak self, weak popupVC] _ in
+            guard let self else { return }
+            popupVC?.dismiss(animated: true)
+            
+        }, for: .touchUpInside)
+        
+        popupVC.modalPresentationStyle = .overFullScreen
+        present(popupVC, animated: false)
+    }
+}
