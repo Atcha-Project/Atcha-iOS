@@ -49,7 +49,7 @@ final class PushAlarmBottomView: UIView {
         volumeTitleLabel.attributedText = AtchaFont.H4_SB_17("소리 크기", color: AtchaColor.white)
         volumeSubTitleLabel.attributedText = AtchaFont.B6_R_14("설정한 크기로 알람이 울려요", color: AtchaColor.gray200)
         
-        volumeSlider.minimumValue = 1 / 15
+        volumeSlider.minimumValue = 1 / 16
         volumeSlider.maximumValue = 1.0
         volumeSlider.minimumTrackTintColor = AtchaColor.main
         volumeSlider.maximumTrackTintColor = AtchaColor.gray200
