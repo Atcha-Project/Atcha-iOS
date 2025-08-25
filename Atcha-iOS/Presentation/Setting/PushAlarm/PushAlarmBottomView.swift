@@ -49,8 +49,8 @@ final class PushAlarmBottomView: UIView {
         volumeTitleLabel.attributedText = AtchaFont.H4_SB_17("소리 크기", color: AtchaColor.white)
         volumeSubTitleLabel.attributedText = AtchaFont.B6_R_14("설정한 크기로 알람이 울려요", color: AtchaColor.gray200)
         
-        volumeSlider.minimumValue = 0.1
-        volumeSlider.maximumValue = 1
+        volumeSlider.minimumValue = 0.05
+        volumeSlider.maximumValue = 1.0
         volumeSlider.minimumTrackTintColor = AtchaColor.main
         volumeSlider.maximumTrackTintColor = AtchaColor.gray200
         volumeSlider.backgroundColor = .clear
@@ -62,6 +62,7 @@ final class PushAlarmBottomView: UIView {
         volumeSlider.addGestureRecognizer(tapGesture)
         
         addSubViews(soundLabelStackView, volumeSlider)
+        setVolume(0.7)
     }
     
     private func setupAutoLayout() {
@@ -79,16 +80,20 @@ final class PushAlarmBottomView: UIView {
     }
     
     @objc private func sliderChanged(_ sender: UISlider) {
-        AlarmManager.shared.previewAlarmVolume(sender.value)
-        setVolume(sender.value)
+        let clampedValue = max(sender.value, 0.1)
+        sender.setValue(clampedValue, animated: false)
+
+        AlarmManager.shared.previewAlarmVolume(clampedValue)
+        setVolume(clampedValue)
     }
     
     @objc func sliderTapped(_ gesture: UITapGestureRecognizer) {
         let point = gesture.location(in: volumeSlider)
         let percentage = point.x / volumeSlider.bounds.width
         let delta = Float(percentage) * (volumeSlider.maximumValue - volumeSlider.minimumValue)
-        let newValue = volumeSlider.minimumValue + delta
-        
+        var newValue = volumeSlider.minimumValue + delta
+
+        newValue = max(newValue, 0.1)
         volumeSlider.setValue(newValue, animated: true)
         setVolume(newValue)
     }
@@ -104,6 +109,8 @@ final class PushAlarmBottomView: UIView {
     }
     
     private func setVolume(_ volume: Float) {
+        let clampedVolume = max(volume, 0.2) // 최소 볼륨 제한
+
         DispatchQueue.main.async {
             let volumeView = MPVolumeView()
             
@@ -115,10 +122,10 @@ final class PushAlarmBottomView: UIView {
             let currentVolume = slider.value
             print("현재 시스템 볼륨: \(currentVolume)")
             
-            if currentVolume <= 0.1 || currentVolume < volume {
+            if currentVolume <= 0.1 || currentVolume < clampedVolume {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
-                    slider.value = volume
-                    print("볼륨이 \(volume)으로 설정되었습니다.")
+                    slider.value = clampedVolume
+                    print("볼륨이 \(clampedVolume)으로 설정되었습니다.")
                 }
             } else {
                 print("현재 볼륨이 설정하려는 값보다 높아 변경하지 않습니다.")

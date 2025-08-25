@@ -159,11 +159,11 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
                     
                 case .onlySound:
                     self.toggleBottomView(show: true)
-//                    AlarmManager.shared.previewAlarmVolume(self.settingBottomView.currentVolume)
+                    AlarmManager.shared.previewAlarmVolume(0.7)
                     
                 case .both:
                     self.toggleBottomView(show: true)
-//                    AlarmManager.shared.previewAlarmVolume(self.settingBottomView.currentVolume)
+                   AlarmManager.shared.previewAlarmVolume(0.7)
                 }
             }
             
