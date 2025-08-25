@@ -35,6 +35,7 @@ final class AtchaPopupViewController: BaseViewController<AtchaPopupViewModel> {
         containerView.addSubViews(titleLabel, buttonStackView)
         
         titleLabel.textAlignment = .center
+        titleLabel.numberOfLines = 0
         containerView.backgroundColor = .gray940
         containerView.layer.cornerRadius = 20
         cancelButton.setCornerRadius(8)
@@ -50,7 +51,6 @@ final class AtchaPopupViewController: BaseViewController<AtchaPopupViewModel> {
         titleLabel.snp.makeConstraints { make in
             make.top.equalTo(containerView.snp.top).inset(32)
             make.centerX.equalToSuperview()
-            make.height.equalTo(24)
         }
         
         buttonStackView.snp.makeConstraints { make in
@@ -72,7 +72,7 @@ final class AtchaPopupViewController: BaseViewController<AtchaPopupViewModel> {
     }
     
     private func setupPopup(_ info: AtcahPopuInfo) {
-        titleLabel.attributedText = AtchaFont.H4_SB_17(info.title, color: .white)
+        titleLabel.attributedText = AtchaFont.H4_SB_17(info.title, color: .white, alignment: .center)
         let cancelAttr  = AtchaFont.B5_SB_14(info.cancelTitle,
                                              color: info.cancelForegroundColor)
         
