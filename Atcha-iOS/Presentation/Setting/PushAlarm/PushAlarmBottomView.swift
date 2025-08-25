@@ -49,12 +49,13 @@ final class PushAlarmBottomView: UIView {
         volumeTitleLabel.attributedText = AtchaFont.H4_SB_17("소리 크기", color: AtchaColor.white)
         volumeSubTitleLabel.attributedText = AtchaFont.B6_R_14("설정한 크기로 알람이 울려요", color: AtchaColor.gray200)
         
-        volumeSlider.minimumValue = 0.05
+        volumeSlider.minimumValue = 1 / 15
         volumeSlider.maximumValue = 1.0
         volumeSlider.minimumTrackTintColor = AtchaColor.main
         volumeSlider.maximumTrackTintColor = AtchaColor.gray200
         volumeSlider.backgroundColor = .clear
         volumeSlider.isUserInteractionEnabled = true
+        volumeSlider.isContinuous = false
         volumeSlider.setThumbImage(UIImage.volumeThumb, for: .normal)
         volumeSlider.addTarget(self, action: #selector(sliderChanged(_:)), for: .valueChanged)
         
@@ -102,14 +103,15 @@ final class PushAlarmBottomView: UIView {
         volumeObservation = AVAudioSession.sharedInstance().observe(\.outputVolume, options: [.new]) { [weak self] (session, change) in
             guard let self = self, let newVolume = change.newValue else { return }
             DispatchQueue.main.async { [weak self] in
-                self?.volume = newVolume
-                self?.volumeSlider.value = newVolume
+                let clamped = max(newVolume, 0.1)
+                self?.volumeSlider.value = clamped
+                self?.setVolume(clamped)
             }
         }
     }
     
     private func setVolume(_ volume: Float) {
-        let clampedVolume = max(volume, 0.2) // 최소 볼륨 제한
+        let clampedVolume = max(volume, 0.1) // 최소 볼륨 제한
 
         DispatchQueue.main.async {
             let volumeView = MPVolumeView()
