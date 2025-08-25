@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import AVFAudio
 
 final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
     private lazy var topNavigationBar: TitleNavigationBar = AtchaNavigationBar.title(onBack: { [weak self] in
@@ -25,9 +26,9 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
                                                            size: .h52,
                                                            style: .filled(.disabled)) { [weak self] in
         guard let self else { return }
-        let selectedVolume = settingBottomView.currentVolume
+//        let selectedVolume = settingBottomView.currentVolume
         AlarmManager.shared.stopPreview()
-        AlarmManager.shared.updateVolume(to: selectedVolume)
+//        AlarmManager.shared.updateVolume(to: selectedVolume)
         if let selectedOption = self.selectedOption {
             AlarmManager.shared.setAlarmOption(selectedOption)
         }
@@ -158,11 +159,11 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
                     
                 case .onlySound:
                     self.toggleBottomView(show: true)
-                    AlarmManager.shared.previewAlarmVolume(self.settingBottomView.currentVolume)
+                    AlarmManager.shared.previewAlarmVolume(0.7)
                     
                 case .both:
                     self.toggleBottomView(show: true)
-                    AlarmManager.shared.previewAlarmVolume(self.settingBottomView.currentVolume)
+                   AlarmManager.shared.previewAlarmVolume(0.7)
                 }
             }
             
