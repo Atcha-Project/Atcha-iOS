@@ -94,7 +94,6 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
             .store(in: &cancellables)
         
         viewModel.$address
-            .removeDuplicates()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] address in
                 guard let self else { return }
@@ -103,7 +102,6 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
             .store(in: &cancellables)
         
         viewModel.$buildingName
-            .removeDuplicates()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] name in
                 guard let self else { return }
