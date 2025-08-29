@@ -61,6 +61,7 @@ final class PushAlarmBottomView: UIView {
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(sliderTapped(_:)))
         volumeSlider.addGestureRecognizer(tapGesture)
+        volumeSlider.setValue(0.7, animated: true)
         
         addSubViews(soundLabelStackView, volumeSlider)
         setVolume(0.7)
