@@ -26,17 +26,15 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
                                                            size: .h52,
                                                            style: .filled(.disabled)) { [weak self] in
         guard let self else { return }
-//        let selectedVolume = settingBottomView.currentVolume
         AlarmManager.shared.stopPreview()
-//        AlarmManager.shared.updateVolume(to: selectedVolume)
         if let selectedOption = self.selectedOption {
             AlarmManager.shared.setAlarmOption(selectedOption)
         }
-        
+        AlarmManager.shared.setAlarmVolume(settingBottomView.getVolume())
         switch self.viewModel.context {
         case .onboarding:
             self.viewModel.signUp()
-        case .myPage:            
+        case .myPage:
             self.onSettingComplete?(true)
             self.navigationController?.popViewController(animated: true)
         }
@@ -129,9 +127,9 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
     
     // MARK: - 알림 리스트 UI
     private func setupAlarmLists() {
-            let preselectOption: PushAlarmOption? = (viewModel.context == .myPage)
-                ? AlarmManager.shared.selectedOption
-                : nil
+        let preselectOption: PushAlarmOption? = (viewModel.context == .myPage)
+        ? AlarmManager.shared.selectedOption
+        : nil
         
         PushAlarmOption.allCases.enumerated().forEach { index, option in
             let isSelected = (option == preselectOption)
@@ -163,7 +161,7 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
                     
                 case .both:
                     self.toggleBottomView(show: true)
-                   AlarmManager.shared.previewAlarmVolume(0.7)
+                    AlarmManager.shared.previewAlarmVolume(0.7)
                 }
             }
             

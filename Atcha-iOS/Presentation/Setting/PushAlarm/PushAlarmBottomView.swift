@@ -61,6 +61,7 @@ final class PushAlarmBottomView: UIView {
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(sliderTapped(_:)))
         volumeSlider.addGestureRecognizer(tapGesture)
+        volumeSlider.setValue(0.7, animated: true)
         
         addSubViews(soundLabelStackView, volumeSlider)
         setVolume(0.7)
@@ -108,6 +109,10 @@ final class PushAlarmBottomView: UIView {
                 self?.setVolume(clamped)
             }
         }
+    }
+    
+    func getVolume() -> Float {
+        return volumeSlider.value
     }
     
     private func setVolume(_ volume: Float) {
