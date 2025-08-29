@@ -111,6 +111,10 @@ final class PushAlarmBottomView: UIView {
         }
     }
     
+    func getVolume() -> Float {
+        return volumeSlider.value
+    }
+    
     private func setVolume(_ volume: Float) {
         let clampedVolume = max(volume, 0.1) // 최소 볼륨 제한
 

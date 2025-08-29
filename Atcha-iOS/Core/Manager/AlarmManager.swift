@@ -178,17 +178,7 @@ extension AlarmManager {
                 
                 self.sendLocalPush(title: title, body: body)
             }
-        
-        //        DispatchQueue.main.asyncAfter(deadline: .now() + 120) {
-        //            self.playLocalMusic(named: "silent", withExtension: "mp3")
-        //            self.timerCancellable?.cancel()
-        //            self.timerCancellable = nil
-        //            self.stopRepeatingVibration()
-        //            print("⏹ 푸시 반복이 종료되었습니다. (2분 경과)")
-        //        }
     }
-    
-    
     
     private func sendLocalPush(title: String,
                                body: String) {
@@ -241,7 +231,6 @@ extension AlarmManager {
         }
     }
     
-    
     func stopPreview() {
         audioPlayer?.stop()
         audioPlayer = nil
@@ -252,6 +241,11 @@ extension AlarmManager {
     func setAlarmOption(_ option: PushAlarmOption) {
         self.selectedOption = option
         UserDefaultsWrapper.shared.set(option, forKey: UserDefaultsWrapper.Key.alarmOption.rawValue)
+    }
+    
+    func setAlarmVolume(_ volume: Float) {
+        self.alarmVolume = volume
+        UserDefaultsWrapper.shared.set(volume, forKey: UserDefaultsWrapper.Key.alarmVolume.rawValue)
     }
     
     private func startRepeatingVibration() {
