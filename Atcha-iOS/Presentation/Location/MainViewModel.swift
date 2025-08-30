@@ -60,7 +60,7 @@ final class MainViewModel: BaseViewModel {
         
         super.init()
         self.bind()
-//        self.startAlarmTimer()
+        //        self.startAlarmTimer()
     }
     
     func bind() {
@@ -117,7 +117,7 @@ final class MainViewModel: BaseViewModel {
                         self.currentLocation = currentLocation
                         didSendInitialLocation = true
                     }
-                
+                    
                     getNearstToast(currentLocation: currentLocation)
                     selectedLocation = currentLocation
                 }
@@ -140,8 +140,8 @@ final class MainViewModel: BaseViewModel {
             let current = CLLocation(latitude: currentLocation.latitude, longitude: currentLocation.longitude)
             let stop = CLLocation(latitude: stopCoordinate.latitude, longitude: stopCoordinate.longitude)
             
-            let distanceMeters = current.distance(from: stop) // m 단위
-            print("현재 위치와 첫 정류장까지 거리: \(Int(distanceMeters)) m")
+            //            let distanceMeters = current.distance(from: stop) // m 단위
+            //            print("현재 위치와 첫 정류장까지 거리: \(Int(distanceMeters)) m")
         } else {
             print("좌표를 가져오지 못했습니다.")
         }
@@ -185,6 +185,21 @@ final class MainViewModel: BaseViewModel {
                 print("도착 시간 실시간 조회 실패")
             }
         }
+    }
+    
+    override func handleRefreshNotification(_ notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let body = userInfo["body"] as? String,
+              let updatedAt = userInfo["updatedAt"] as? String else {
+            return
+        }
+        UserDefaultsWrapper.shared.set(body,
+                                       forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
+        
+        AlarmManager.shared.startAlarm(after: body,
+                                       title: "눌러서 출발 알람 끄기",
+                                       body: "자리에서 일어나야 할 시간이에요!")
+        departureTime = body
     }
     
     // MARK: - 알림 취소

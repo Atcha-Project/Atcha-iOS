@@ -28,6 +28,7 @@ final class LockViewModel: BaseViewModel {
     // MARK: - 120초 후 실행 예약
     private func scheduleLockScreen() {
         let workItem = DispatchWorkItem { [weak self] in
+            AlarmManager.shared.stopAlarm()
             self?.executeAfterTwoMinutes()
         }
         lockScreenWorkItem = workItem
