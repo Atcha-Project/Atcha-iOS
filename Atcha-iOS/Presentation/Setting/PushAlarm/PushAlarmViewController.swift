@@ -180,5 +180,9 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
             settingBottomView.isHidden = true
         }
     }
+    
+    deinit {
+        AlarmManager.shared.stopPreview()
+    }
 }
 
