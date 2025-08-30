@@ -60,7 +60,7 @@ final class MainViewModel: BaseViewModel {
         
         super.init()
         self.bind()
-//        self.startAlarmTimer()
+        //        self.startAlarmTimer()
     }
     
     func bind() {
@@ -117,7 +117,7 @@ final class MainViewModel: BaseViewModel {
                         self.currentLocation = currentLocation
                         didSendInitialLocation = true
                     }
-                
+                    
                     getNearstToast(currentLocation: currentLocation)
                     selectedLocation = currentLocation
                 }
@@ -186,6 +186,23 @@ final class MainViewModel: BaseViewModel {
                 print("도착 시간 실시간 조회 실패")
             }
         }
+    }
+    
+    override func handleRefreshNotification(_ notification: Notification) {
+        print("handleRefreshNotification")
+        guard let userInfo = notification.userInfo,
+              let title = userInfo["title"] as? String,
+              let body = userInfo["body"] as? String,
+              let updatedAt = userInfo["updatedAt"] as? String else {
+            return
+        }
+        
+        print("🔄 데이터 갱신 알림 받음")
+        print("제목: \(title), 내용: \(body), 업데이트 시각: \(updatedAt)")
+        AlarmManager.shared.startAlarm(after: updatedAt,
+                                       title: "눌러서 출발 알람 끄기",
+                                       body: "자리에서 일어나야 할 시간이에요!")
+        departureTime = updatedAt
     }
     
     // MARK: - 알림 취소

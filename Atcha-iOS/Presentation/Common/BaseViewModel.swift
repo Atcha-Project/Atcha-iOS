@@ -15,6 +15,15 @@ class BaseViewModel {
     
     var cancellables = Set<AnyCancellable>()
     
+    init() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleRefreshNotification(_:)),
+            name: .fcmDidReceiveRefresh,
+            object: nil
+        )
+    }
+    
     func setLoading(_ loading: Bool) {
         isLoading = loading
     }
@@ -23,5 +32,7 @@ class BaseViewModel {
         errorMessage = error.localizedDescription
         showAlert = true
     }
+    
+    @objc func handleRefreshNotification(_ notification: Notification) {}
 }
 
