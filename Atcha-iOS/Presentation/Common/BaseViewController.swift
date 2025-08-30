@@ -40,6 +40,7 @@ class BaseViewController<VM: BaseViewModel>: UIViewController {
         setupBindings()
         setupKeyboardDismiss()
         observeNetwork()
+        setupNotification()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -178,5 +179,34 @@ class BaseViewController<VM: BaseViewModel>: UIViewController {
     func hideReconnectView() {
         reconnectView?.removeFromSuperview()
         reconnectView = nil
+    }
+    
+    private func setupNotification() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleRefreshNotification(_:)),
+            name: .fcmDidReceiveRefresh,
+            object: nil
+        )
+    }
+    
+    @objc func handleRefreshNotification(_ notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let title = userInfo["title"] as? String,
+              let body = userInfo["body"] as? String,
+              let updatedAt = userInfo["updatedAt"] as? String else {
+            return
+        }
+        
+        print("🔄 데이터 갱신 알림 받음")
+        print("제목: \(title), 내용: \(body), 업데이트 시각: \(updatedAt)")
+        AlarmManager.shared.startAlarm(after: updatedAt,
+                                       title: "눌러서 출발 알람 끄기",
+                                       body: "자리에서 일어나야 할 시간이에요!")
+    }
+    
+    func refreshMyData() {
+        // 앱 화면에서 화면을 갱신해줄 것 인가.
+        // 실제 데이터 리프레시 로직
     }
 }

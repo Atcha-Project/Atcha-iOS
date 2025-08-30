@@ -180,6 +180,7 @@ final class MainViewModel: BaseViewModel {
         Task {
             do {
                 let info = try await realodDepartureTime()
+                print("도차 시간 변경 : \(info.departureTime)")
                 departureTime = info.departureTime
             } catch {
                 print("도착 시간 실시간 조회 실패")

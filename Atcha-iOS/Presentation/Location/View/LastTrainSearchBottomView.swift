@@ -118,10 +118,10 @@ final class LastTrainSearchBottomView: UIView {
     }
     
     func updateSearchEnabled(_ enabled: Bool) {
-            searchButton.isEnabled = enabled
-            searchButton.updateStyle(
-                text: "막차 검색하기",
-                style: .filled(enabled ? .primary : .disabled))
+        searchButton.isEnabled = enabled
+        searchButton.updateStyle(
+            text: "막차 검색하기",
+            style: .filled(enabled ? .primary : .disabled))
     }
 }
 
@@ -129,7 +129,7 @@ extension LastTrainSearchBottomView {
     @objc private func handleCurrentTap() {
         actionPublisher.send(.currentTapped)
     }
-
+    
     @objc private func handleSearchTap() {
         actionPublisher.send(.searchTapped)
     }
