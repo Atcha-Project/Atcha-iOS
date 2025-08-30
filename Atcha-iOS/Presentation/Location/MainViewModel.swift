@@ -141,7 +141,7 @@ final class MainViewModel: BaseViewModel {
             let stop = CLLocation(latitude: stopCoordinate.latitude, longitude: stopCoordinate.longitude)
             
             let distanceMeters = current.distance(from: stop) // m 단위
-            print("현재 위치와 첫 정류장까지 거리: \(Int(distanceMeters)) m")
+//            print("현재 위치와 첫 정류장까지 거리: \(Int(distanceMeters)) m")
         } else {
             print("좌표를 가져오지 못했습니다.")
         }
@@ -189,20 +189,18 @@ final class MainViewModel: BaseViewModel {
     }
     
     override func handleRefreshNotification(_ notification: Notification) {
-        print("handleRefreshNotification")
         guard let userInfo = notification.userInfo,
-              let title = userInfo["title"] as? String,
               let body = userInfo["body"] as? String,
               let updatedAt = userInfo["updatedAt"] as? String else {
             return
         }
         
         print("🔄 데이터 갱신 알림 받음")
-        print("제목: \(title), 내용: \(body), 업데이트 시각: \(updatedAt)")
-        AlarmManager.shared.startAlarm(after: updatedAt,
+        print("내용: \(body), 업데이트 시각: \(updatedAt)")
+        AlarmManager.shared.startAlarm(after: body,
                                        title: "눌러서 출발 알람 끄기",
                                        body: "자리에서 일어나야 할 시간이에요!")
-        departureTime = updatedAt
+        departureTime = body
     }
     
     // MARK: - 알림 취소
