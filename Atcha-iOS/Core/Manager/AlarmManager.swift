@@ -11,22 +11,18 @@ import Combine
 import UserNotifications
 import AudioToolbox
 import UIKit
+import MediaPlayer
 
 class AlarmManager {
     static let shared: AlarmManager = .init()
-    
-    //    private var isFirstPushSent = false
-    
     private var audioPlayer: AVAudioPlayer?
     private var timerCancellable: AnyCancellable?
-    
-    var currentVolume: Float {
-        return alarmVolume
-    }
     private var alarmVolume: Float = 1.0
     private var currentSoundFile: String?
-    var selectedOption: PushAlarmOption = .onlySound // 기본값
+    
     private var repeatingVibrationTimer: Timer?
+    
+    var selectedOption: PushAlarmOption = .onlySound // 기본값
     
     private init() {
         loadStoredVolume()
@@ -124,6 +120,7 @@ extension AlarmManager {
     
     private func playLocalMusic(named fileName: String, withExtension fileExtension: String) {
         // 같은 노래가 이미 재생 중이면 재생하지 않음
+        
         if let player = self.audioPlayer,
            player.isPlaying,
            self.currentSoundFile == fileName {
@@ -163,20 +160,20 @@ extension AlarmManager {
     private func startRepeatingPush(title: String, body: String) {
         timerCancellable = Timer.publish(every: 2.0, on: .main, in: .common)
             .autoconnect()
-            .sink { _ in
+            .sink { [weak self] _ in
+                guard let self else { return }
                 switch self.selectedOption {
                 case .onlySound:
-                    self.playLocalMusic(named: "siren", withExtension: "mp3")
-                    
+                    setVolume(alarmVolume)
+                    playLocalMusic(named: "siren", withExtension: "mp3")
                 case .onlyVibration:
-                    self.startRepeatingVibration()
-                    
+                    startRepeatingVibration()
                 case .both:
-                    self.playLocalMusic(named: "siren", withExtension: "mp3")
-                    self.startRepeatingVibration()
+                    playLocalMusic(named: "siren", withExtension: "mp3")
+                    startRepeatingVibration()
                 }
                 
-                self.sendLocalPush(title: title, body: body)
+                sendLocalPush(title: title, body: body)
             }
     }
     
@@ -185,7 +182,7 @@ extension AlarmManager {
         let content = UNMutableNotificationContent()
         content.title = title
         content.body = body
-        content.sound = .default
+        content.sound = nil
         
         let request = UNNotificationRequest(
             identifier: UUID().uuidString,
@@ -202,6 +199,67 @@ extension AlarmManager {
         }
     }
     
+    func setAlarmOption(_ option: PushAlarmOption) {
+        self.selectedOption = option
+        UserDefaultsWrapper.shared.set(option, forKey: UserDefaultsWrapper.Key.alarmOption.rawValue)
+    }
+    
+    func setAlarmVolume(_ volume: Float) {
+        self.alarmVolume = volume
+        UserDefaultsWrapper.shared.set(volume, forKey: UserDefaultsWrapper.Key.alarmVolume.rawValue)
+    }
+    
+    private func startRepeatingVibration() {
+        stopRepeatingVibration()
+        vibrate()
+        repeatingVibrationTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
+            self?.vibrate()
+        }
+    }
+    
+    private func stopRepeatingVibration() {
+        repeatingVibrationTimer?.invalidate()
+        repeatingVibrationTimer = nil
+    }
+    
+    private func vibrate() {
+        let impact = UIImpactFeedbackGenerator(style: .heavy)
+        impact.prepare()
+        impact.impactOccurred()
+        AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
+    }
+}
+
+// MARK: System
+extension AlarmManager {
+    private func setVolume(_ volume: Float) {
+        let clampedVolume = max(volume, 0.1) // 최소 볼륨 제한
+        
+        DispatchQueue.main.async {
+            let volumeView = MPVolumeView()
+            
+            guard let slider = volumeView.subviews.first(where: { $0 is UISlider }) as? UISlider else {
+                print("UISlider를 찾을 수 없습니다.")
+                return
+            }
+            
+            let currentVolume = slider.value
+            print("현재 시스템 볼륨: \(currentVolume)")
+            
+            if currentVolume <= 0.1 || currentVolume < clampedVolume {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
+                    slider.value = clampedVolume
+                    print("볼륨이 \(clampedVolume)으로 설정되었습니다.")
+                }
+            } else {
+                print("현재 볼륨이 설정하려는 값보다 높아 변경하지 않습니다.")
+            }
+        }
+    }
+}
+
+// MARK: Preview
+extension AlarmManager {
     func previewAlarmVolume(_ volume: Float) {
         alarmVolume = volume
         
@@ -236,36 +294,6 @@ extension AlarmManager {
         audioPlayer = nil
         stopRepeatingVibration()
         print("미리듣기 완전 종료")
-    }
-    
-    func setAlarmOption(_ option: PushAlarmOption) {
-        self.selectedOption = option
-        UserDefaultsWrapper.shared.set(option, forKey: UserDefaultsWrapper.Key.alarmOption.rawValue)
-    }
-    
-    func setAlarmVolume(_ volume: Float) {
-        self.alarmVolume = volume
-        UserDefaultsWrapper.shared.set(volume, forKey: UserDefaultsWrapper.Key.alarmVolume.rawValue)
-    }
-    
-    private func startRepeatingVibration() {
-        stopRepeatingVibration()
-        vibrate()
-        repeatingVibrationTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
-            self?.vibrate()
-        }
-    }
-    
-    private func stopRepeatingVibration() {
-        repeatingVibrationTimer?.invalidate()
-        repeatingVibrationTimer = nil
-    }
-    
-    private func vibrate() {
-        let impact = UIImpactFeedbackGenerator(style: .heavy)
-        impact.prepare()
-        impact.impactOccurred()
-        AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
     }
 }
 
