@@ -34,14 +34,23 @@ final class MainViewController: BaseViewController<MainViewModel>,
         super.viewDidLoad()
         
         self.onNetworkReconnect = { [weak self] in
-                self?.mapContainerView.reloadMapView()
-            }
+            self?.mapContainerView.reloadMapView()
+        }
         
         viewModel.setLoading(true)
         
         setupUI()
         setupAutoLayout()
         bindView()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            self?.viewModel.setupLocation()
+            self?.hideLoading()
+        }
     }
     
     private func setupUI() {
@@ -405,14 +414,6 @@ extension MainViewController {
             viewModel.endAlarmTimer()
         default: do {}
         }
-    }
-    
-    private func handleLegPathInfos(_ infos: [LegPathInfo]) {
-        //        ballonView.setupTitle(bottomMessage: "이때쯤 자리에서 출발하면 돼요")
-        //        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-        //            guard let self else { return }
-        //            view.showToast(message: "알림이 등록되었어요.")
-        //        }
     }
     
     private func bindTaxiFareUpdates() {
