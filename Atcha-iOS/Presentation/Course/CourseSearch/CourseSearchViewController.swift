@@ -227,14 +227,21 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
             let alarmRequest = AlarmRequest(lastRouteId: model.course.routeId)
             let alarmTapped = (viewModel.startAddress, LegInfo(pathInfo: pathInfo, trafficInfo: tafficInfo, busInfo: busInfo))
             
-            let hasNightBus = busInfo.contains { bus in
-                if let routeName = bus.routeName {
-                    return routeName.contains("N")
+            let busLongTerm = tafficInfo.contains { term in
+                if let longTerm = term.targetBusTerm {
+                    return longTerm > 40
                 }
                 return false
             }
+            
+//            let hasNightBus = busInfo.contains { bus in
+//                if let routeName = bus.routeName {
+//                    return routeName.contains("N")
+//                }
+//                return false
+//            }
 
-            if hasNightBus {
+            if busLongTerm {
                 showCoursePopup(alarmRequest, alarmTapped)
             } else {
                 viewModel.alarmRegister(alarmRequest)

@@ -94,13 +94,13 @@ final class CourseRepositoryImpl: CourseRepository {
                 for event in events {
                     guard !event.data.isEmpty,
                           let payload = event.data.data(using: .utf8) else {
-                        // 하트비트/코멘트 등
                         continue
                     }
                 
                     do {
                         let decoded = try JSONDecoder().decode(CourseSearchResponse.self, from: payload)
                         continuation.yield(decoded)
+                        print(decoded)
                     } catch {
                         print("❌ SSE Decode 실패:", error)
                     }
