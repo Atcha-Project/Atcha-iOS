@@ -49,6 +49,7 @@ struct LegResponse: Codable {
     let subwayFinalStation: String?
     let subwayDirection: String?
     let targetBusStation: TargetBusStationResponse?
+    let targetBusTerm: Int?
     
     func toEntity() -> Legs {
         return Legs(
@@ -66,7 +67,8 @@ struct LegResponse: Codable {
             passShape: passShape,
             subwayFinalStation: subwayFinalStation,
             subwayDirection: subwayDirection,
-            targetBusStation: targetBusStation.map { [$0.toEntity()] }
+            targetBusStation: targetBusStation.map { [$0.toEntity()] },
+            targetBusTerm: targetBusTerm
         )
     }
 }
