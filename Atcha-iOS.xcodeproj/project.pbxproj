@@ -73,6 +73,7 @@
 		6D73EBE62E1B51E000F8DF8B /* CourseUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D73EBE52E1B51E000F8DF8B /* CourseUseCase.swift */; };
 		6D73EBE82E1B54A500F8DF8B /* CourseRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D73EBE72E1B54A500F8DF8B /* CourseRepository.swift */; };
 		6D73EBEA2E1B551600F8DF8B /* CourseRepositoryImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D73EBE92E1B551600F8DF8B /* CourseRepositoryImpl.swift */; };
+		6D7CB4112E6810BD003AB799 /* ScrollView+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D7CB4102E6810BD003AB799 /* ScrollView+Ext.swift */; };
 		6D8157422E126C3A003688A6 /* LockViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D8157412E126C3A003688A6 /* LockViewModel.swift */; };
 		6D8157442E126C45003688A6 /* LockViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D8157432E126C45003688A6 /* LockViewController.swift */; };
 		6D8157462E127BDB003688A6 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 6D8157452E127BDB003688A6 /* GoogleService-Info.plist */; };
@@ -370,6 +371,7 @@
 		6D73EBE52E1B51E000F8DF8B /* CourseUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseUseCase.swift; sourceTree = "<group>"; };
 		6D73EBE72E1B54A500F8DF8B /* CourseRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseRepository.swift; sourceTree = "<group>"; };
 		6D73EBE92E1B551600F8DF8B /* CourseRepositoryImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseRepositoryImpl.swift; sourceTree = "<group>"; };
+		6D7CB4102E6810BD003AB799 /* ScrollView+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ScrollView+Ext.swift"; sourceTree = "<group>"; };
 		6D8157412E126C3A003688A6 /* LockViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockViewModel.swift; sourceTree = "<group>"; };
 		6D8157432E126C45003688A6 /* LockViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockViewController.swift; sourceTree = "<group>"; };
 		6D8157452E127BDB003688A6 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
@@ -1555,6 +1557,7 @@
 				B6AC8BFB2E2BF27200410ECD /* UINavigationController+Ext.swift */,
 				6D9284412E3C6ADF0090889B /* PaddingLabel.swift */,
 				6D6879C82E41B43000E59C55 /* UITextView+Ext.swift */,
+				6D7CB4102E6810BD003AB799 /* ScrollView+Ext.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -1916,6 +1919,7 @@
 				B65C132F2E0658470016D2F0 /* MyPageViewController.swift in Sources */,
 				6D8D8B172E02BBC0003DABB2 /* AtchaNavigationBar.swift in Sources */,
 				B6AC8BEC2E2BC60600410ECD /* AlarmSoundTypeViewModel.swift in Sources */,
+				6D7CB4112E6810BD003AB799 /* ScrollView+Ext.swift in Sources */,
 				B65C134C2E07A18D0016D2F0 /* MyPageNavigationTarget.swift in Sources */,
 				6D2B8CBA2E39C8E100608104 /* BusInfoUseCase.swift in Sources */,
 				6D6879D52E433AFA00E59C55 /* WithdrawRequest.swift in Sources */,

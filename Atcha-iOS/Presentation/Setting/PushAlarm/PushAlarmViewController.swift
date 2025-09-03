@@ -44,37 +44,64 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
         super.viewDidLoad()
         
         setupUI()
-        bindViewModel()
         setupAlarmLists()
         setupAutoLayout()
+        
+        applyContext(viewModel.context, animated: false)
+        bindViewModel()
     }
     
     // MARK: - ViewModel 바인딩
     private func bindViewModel() {
         viewModel.$context
+            .removeDuplicates()
+            .dropFirst()
             .receive(on: RunLoop.main)
             .sink { [weak self] context in
-                guard let self else { return }
-                setupUI(context: context)
+                self?.applyContext(context, animated: true)
             }
             .store(in: &cancellables)
     }
-    
-    private func setupUI(context: PushAlarmContext) {
-        switch context {
-        case .onboarding:
-            setupOnbaordingUI()
-        case .myPage:
-            setupMyPageUI()
+
+    // 공통 적용 함수로 통합
+    private func applyContext(_ context: PushAlarmContext, animated: Bool) {
+        let updates = {
+            switch context {
+            case .onboarding:
+                self.setupOnbaordingUI()
+            case .myPage:
+                self.setupMyPageUI()
+            }
+            self.view.layoutIfNeeded()
+        }
+
+        if animated {
+            UIView.animate(withDuration: 0.2, animations: updates)
+        } else {
+            UIView.performWithoutAnimation(updates)
         }
     }
     
     private func setupOnbaordingUI() {
         topNavigationBar.updateTitle("")
+        titleLabel.isHidden = false
+        
+        alarmListStackView.snp.remakeConstraints { make in
+            make.top.equalTo(titleLabel.snp.bottom).offset(16)
+            make.leading.trailing.equalToSuperview()
+            make.bottom.lessThanOrEqualTo(nextButton.snp.top).offset(-341)
+        }
     }
     
     private func setupMyPageUI() {
         topNavigationBar.updateTitle("알람 설정")
+        titleLabel.isHidden = true
+        
+        alarmListStackView.snp.remakeConstraints { make in
+            make.top.equalTo(topNavigationBar.snp.bottom)
+            make.leading.trailing.equalToSuperview()
+            make.bottom.lessThanOrEqualTo(nextButton.snp.top).offset(-341)
+        }
     }
     
     // MARK: - Push Alarm 기본 UI
@@ -185,4 +212,5 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
         AlarmManager.shared.stopPreview()
     }
 }
+
 

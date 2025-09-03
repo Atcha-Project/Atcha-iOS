@@ -12,6 +12,9 @@ final class WithDrawTextBox: UIView {
     
     var onTextChange: ((String) -> Void)?
     var text: String? { textView.text }
+    var onDone: (() -> Void)?
+    var onTap: (() -> Void)?
+    var isEditing: Bool { textView.isFirstResponder }
     
     private let textView = UITextView()
     private let placeholderLabel = UILabel()
@@ -37,7 +40,10 @@ final class WithDrawTextBox: UIView {
         textView.isScrollEnabled = true
         textView.textContainerInset = .zero
         textView.textContainer.lineFragmentPadding = 0
-        textView.addDoneButtonOnKeyboard(title: "완료") 
+        textView.addDoneButtonOnKeyboard(title: "완료")
+        textView.onDoneTapped = { [weak self] in
+            self?.onDone?()
+        }
         
         placeholderLabel.attributedText = AtchaFont.B6_R_14(
             "탈퇴 이유에 대해 자세히 알려주시면 서비스 개선에 큰 도움이 돼요.",
@@ -64,6 +70,10 @@ final class WithDrawTextBox: UIView {
 }
 
 extension WithDrawTextBox: UITextViewDelegate {
+    func textViewDidBeginEditing(_ textView: UITextView) {
+        onTap?()             
+    }
+    
     func textViewDidChange(_ textView: UITextView) {
         placeholderLabel.isHidden = !textView.text.isEmpty
         onTextChange?(textView.text)
@@ -71,5 +81,19 @@ extension WithDrawTextBox: UITextViewDelegate {
             "\(textView.text ?? "")",
             color: AtchaColor.white
         )
+    }
+    
+    
+    func focusTextView() {
+        textView.isHidden = false
+        textView.isUserInteractionEnabled = true
+        layoutIfNeeded()
+        textView.layoutIfNeeded()
+        
+        _ = textView.becomeFirstResponder()
+    }
+    
+    func resignTextView() {
+        _ = textView.resignFirstResponder()
     }
 }
