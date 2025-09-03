@@ -72,4 +72,18 @@ extension WithDrawTextBox: UITextViewDelegate {
             color: AtchaColor.white
         )
     }
+    
+    
+    func focusTextView() {
+        textView.isHidden = false
+        textView.isUserInteractionEnabled = true
+        layoutIfNeeded()
+        textView.layoutIfNeeded()
+        
+        _ = textView.becomeFirstResponder()
+    }
+    
+    func resignTextView() {
+        _ = textView.resignFirstResponder()
+    }
 }

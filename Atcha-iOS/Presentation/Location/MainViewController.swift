@@ -307,7 +307,7 @@ extension MainViewController {
             firstAddress = address
         }
         
-        let title = (address == firstAddress) ? "현위치 : \(address)" : address
+        let title = (address == firstAddress) ? "현위치: \(address)" : address
         lastTrainSearchView.setupCurrentLocationTitle(title)
     }
     
@@ -432,7 +432,7 @@ extension MainViewController {
     
     private func updateTaxiFare(_ fare: Double) {
         let fareStr = String(format: "%.0f", fare)
-        ballonView.setupTitle(bottomMessage: "여기서 막차 놓치면 택시비 : 약 \(fareStr)원")
+        ballonView.separationTitle(grayMessage: "여기서 막차 놓치면 택시비 ", whiteMessage: "약 \(fareStr)원")
     }
     
     private func bindServiceRegionUpdates() {

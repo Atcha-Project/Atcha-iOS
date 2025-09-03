@@ -40,7 +40,7 @@ final class LastTrainSearchBottomView: UIView {
         stack.spacing = 8
         stack.backgroundColor = .clear
         stack.isLayoutMarginsRelativeArrangement = true
-        stack.layoutMargins = UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16)
+        stack.layoutMargins = UIEdgeInsets(top: 12, left: 12, bottom: 12, right: 12)
         return stack
     }()
     
@@ -73,8 +73,8 @@ final class LastTrainSearchBottomView: UIView {
         currentDotView.layer.cornerRadius = 2
         arrivalDotView.layer.cornerRadius = 2
         
-        currentLocationLabel.attributedText = AtchaFont.B1_R_17(lineHeight: 0, "현위치 : 조회 중..", color: .main)
-        arrivalLocationLabel.attributedText = AtchaFont.B1_R_17(lineHeight: 0, "도착지 : 우리집", color: .gray200)
+        currentLocationLabel.attributedText = AtchaFont.B1_R_17(lineHeight: 0, "현위치: 조회 중..", color: .main)
+        arrivalLocationLabel.attributedText = AtchaFont.B1_R_17(lineHeight: 0, "도착지: 우리집", color: .gray200)
         
         addSubViews(currentLocationView, arrivalLocationView, searchButton)
         
