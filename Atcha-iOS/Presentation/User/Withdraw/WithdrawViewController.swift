@@ -14,73 +14,52 @@ class WithdrawViewController: BaseViewController<WithdrawViewModel> {
         guard let self else { return }
         navigationController?.popViewController(animated: true)
     })
-    
     private let scrollView = UIScrollView()
     private let contentView = UIView()
-    private let contentStackView = UIStackView()
-    
     private let withdrawListStackView: UIStackView = UIStackView()
     private var withdrawCheckmarkLists: [AtchaList] = []
-    
-    private lazy var withdrawButton: AtchaButton = AtchaButton(
-        text: "탈퇴하기",
-        size: .h52,
-        style: .filled(.disabled)
-    ) { [weak self] in
+    private lazy var withdrawButton: AtchaButton = AtchaButton(text: "탈퇴하기", size: .h52, style: .filled(.disabled)) { [weak self] in
         self?.showWithdrawPopup()
     }
-    
     private lazy var withdrawTextBox: WithDrawTextBox = AtchaTextBox.withDrawTextBox { [weak self] text in
         self?.updateWithdrawButtonStateForEtc(text)
     }
-    
-    /// 키보드 높이(+20)에 맞춰 가변 높이를 가지는 스페이서
-    private let bottomSpacer = UIView()
-    
     private var selectedOption: WithdrawOption?
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         setupUI()
         setupWithdrawLists()
         setupAutoLayout()
     }
     
-    // MARK: - UI
+    // MARK: - 탈퇴사유 UI
     private func setupUI() {
-        scrollView.isScrollEnabled = false
-        scrollView.alwaysBounceVertical = false
+        
         scrollView.showsVerticalScrollIndicator = false
         scrollView.showsHorizontalScrollIndicator = false
+        scrollView.isScrollEnabled = false
         
         view.addSubViews(topNavigationBar, scrollView, withdrawButton)
         
         scrollView.addSubview(contentView)
-        contentView.addSubview(contentStackView)
-        
-        contentStackView.axis = .vertical
-        contentStackView.spacing = 12
-        contentStackView.alignment = .fill
-        contentStackView.distribution = .fill
-        
-        // 스택 구성: 목록 -> 텍스트박스 -> 키보드 대응 스페이서
-        contentStackView.addArrangedSubview(withdrawListStackView)
-        contentStackView.addArrangedSubview(withdrawTextBox)
-        contentStackView.addArrangedSubview(bottomSpacer)
+        contentView.addSubViews(withdrawListStackView, withdrawTextBox)
         
         withdrawListStackView.axis = .vertical
         withdrawListStackView.spacing = 0
         withdrawListStackView.alignment = .fill
-        withdrawListStackView.distribution = .fill
+        withdrawListStackView.distribution = .equalSpacing
         
         withdrawTextBox.isHidden = true
+        
     }
     
-    // MARK: - AutoLayout
+    // MARK: - 탈퇴사유 AutoLayout
     private func setupAutoLayout() {
         topNavigationBar.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
-            make.leading.trailing.equalToSuperview()
+            make.trailing.leading.equalToSuperview()
         }
         
         scrollView.snp.makeConstraints { make in
@@ -94,34 +73,32 @@ class WithdrawViewController: BaseViewController<WithdrawViewModel> {
             make.width.equalTo(scrollView.frameLayoutGuide)
         }
         
-        contentStackView.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(UIEdgeInsets(top: 0, left: 16, bottom: 12, right: 16))
+        withdrawListStackView.snp.makeConstraints { make in
+            make.top.equalToSuperview()
+            make.leading.trailing.equalToSuperview()
+        }
+        
+        withdrawTextBox.snp.makeConstraints { make in
+            make.top.equalTo(withdrawListStackView.snp.bottom)
+            make.leading.equalToSuperview().offset(16)
+            make.trailing.equalToSuperview().inset(16)
+            make.bottom.equalToSuperview().inset(12)
         }
         
         withdrawButton.snp.makeConstraints { make in
             make.leading.equalToSuperview().offset(16)
             make.trailing.equalToSuperview().inset(16)
-            make.bottom.equalToSuperview().inset(40) // 고정 버튼
-        }
-        
-        // 키보드 높이에 따라 바닥 스페이서가 늘어나도록 (iOS 15+)
-        if #available(iOS 15.0, *) {
-            bottomSpacer.translatesAutoresizingMaskIntoConstraints = false
-            let guide = view.keyboardLayoutGuide
-            NSLayoutConstraint.activate([
-                bottomSpacer.heightAnchor.constraint(equalTo: guide.heightAnchor, constant: 20)
-            ])
-        } else {
-            bottomSpacer.snp.makeConstraints { $0.height.equalTo(20) }
+            make.bottom.equalToSuperview().inset(40)
         }
     }
     
-    // MARK: - 탈퇴사유 리스트
+    // MARK: - 탈퇴사유 리스트 UI
     private func setupWithdrawLists() {
         withdrawCheckmarkLists.removeAll()
         
-        WithdrawOption.allCases.forEach { withdraw in
+        WithdrawOption.allCases.enumerated().forEach { index, withdraw in
             let listView = AtchaList(title: withdraw.title, listType: .radioButton(isOn: false))
+            
             listView.setRadio(false)
             
             listView.onSelect = { [weak self] selected in
@@ -129,32 +106,21 @@ class WithdrawViewController: BaseViewController<WithdrawViewModel> {
                 
                 self.withdrawCheckmarkLists.forEach { $0.setRadio(false) }
                 selected.setRadio(true)
-                
                 let isEtc = (withdraw == .etc)
                 self.withdrawTextBox.isHidden = !isEtc
                 
                 if isEtc {
-                    self.scrollView.isScrollEnabled = true
-                    self.scrollView.alwaysBounceVertical = true
-                    
+                    scrollView.isScrollEnabled = true
                     self.withdrawTextBox.focusTextView()
                     self.withdrawButton.updateStyle(text: "탈퇴하기", style: .filled(.disabled))
                     self.withdrawButton.isEnabled = false
                     self.updateWithdrawButtonStateForEtc(self.withdrawTextBox.text ?? "")
-                    
-                    DispatchQueue.main.async { [weak self] in
-                        self?.scrollTextBoxIntoView(extra: 20)
-                    }
                 } else {
+                    scrollView.isScrollEnabled = false
                     self.withdrawTextBox.resignTextView()
-                    self.scrollView.setContentOffset(.zero, animated: true) // 선택: 상단으로 복귀
-                    self.scrollView.isScrollEnabled = false
-                    self.scrollView.alwaysBounceVertical = false
-                    
                     self.withdrawButton.updateStyle(text: "탈퇴하기", style: .filled(.white))
                     self.withdrawButton.isEnabled = true
                 }
-                
                 self.selectedOption = withdraw
             }
             
@@ -164,14 +130,6 @@ class WithdrawViewController: BaseViewController<WithdrawViewModel> {
         }
     }
     
-    // MARK: - 텍스트박스 가시화 스크롤
-    private func scrollTextBoxIntoView(extra: CGFloat = 20) {
-        let rectInContent = contentView.convert(withdrawTextBox.bounds, from: withdrawTextBox)
-        let target = rectInContent.insetBy(dx: 0, dy: -extra)
-        scrollView.scrollRectToVisible(target, animated: true)
-    }
-    
-    // MARK: - 버튼 상태 업데이트
     private func updateWithdrawButtonStateForEtc(_ text: String) {
         guard selectedOption == .etc else { return }
         let hasText = !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -179,11 +137,11 @@ class WithdrawViewController: BaseViewController<WithdrawViewModel> {
         withdrawButton.isEnabled = hasText
     }
     
-    // MARK: - 서버 요청
     private func signOutTapped() {
         guard let option = selectedOption else { return }
         
         var reason: String?
+        
         if option == .etc {
             reason = withdrawTextBox.text?.isEmpty == false ? withdrawTextBox.text : nil
         } else {
@@ -191,12 +149,14 @@ class WithdrawViewController: BaseViewController<WithdrawViewModel> {
         }
         
         let request = WithdrawRequest(reason: reason)
+        
         viewModel.signOutTapped(request)
     }
     
-    // MARK: - 팝업
     private func showWithdrawPopup() {
-        guard let option = selectedOption else { return }
+        guard let option = selectedOption else {
+            return
+        }
         if option == .etc, (withdrawTextBox.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             return
         }
@@ -207,6 +167,7 @@ class WithdrawViewController: BaseViewController<WithdrawViewModel> {
         popupVC.confirmButton.addAction(UIAction { [weak self, weak popupVC] _ in
             guard let self else { return }
             popupVC?.dismiss(animated: true)
+            
             self.withdrawButton.isEnabled = false
             self.signOutTapped()
         }, for: .touchUpInside)
@@ -219,4 +180,3 @@ class WithdrawViewController: BaseViewController<WithdrawViewModel> {
         present(popupVC, animated: false)
     }
 }
-
