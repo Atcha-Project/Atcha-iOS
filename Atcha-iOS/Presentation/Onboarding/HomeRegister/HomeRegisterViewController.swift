@@ -24,6 +24,7 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
     
     private let currentLocationButton = UIButton()
     private lazy var nextButton = AtchaButton(text: "다음", size: .h52, style: .filled(.disabled)) { [weak self] in
+        
         self?.viewModel.routeHandler?(.pushRegister)
     }
     
@@ -180,8 +181,18 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
     // MARK: - 장소 선택 UI
     private func setupSelectedStateUI(name: String, address: String) {
         searchLocationContainer.backgroundColor = .clear
-        locationNameLabel.attributedText = AtchaFont.B2_SB_15(name, color: AtchaColor.white)
-        locationAddressLabel.attributedText = AtchaFont.B6_R_14(address, color: AtchaColor.gray200)
+        
+        UserDefaultsWrapper.shared.set(name, forKey: UserDefaultsWrapper.Key.buildingName.rawValue)
+        UserDefaultsWrapper.shared.set(address, forKey: UserDefaultsWrapper.Key.homeAddress.rawValue)
+        
+        if name == "" {
+            locationNameLabel.attributedText = AtchaFont.B2_SB_15(address, color: AtchaColor.white)
+            locationAddressLabel.isHidden = true
+        } else {
+            locationNameLabel.attributedText = AtchaFont.B2_SB_15(name, color: AtchaColor.white)
+            locationAddressLabel.attributedText = AtchaFont.B6_R_14(address, color: AtchaColor.gray200)
+            locationAddressLabel.isHidden = false
+        }
         
         let stack = UIStackView(arrangedSubviews: [locationNameLabel, locationAddressLabel])
         stack.axis = .vertical

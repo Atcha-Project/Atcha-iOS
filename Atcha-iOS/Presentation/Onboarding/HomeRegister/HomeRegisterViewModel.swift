@@ -49,12 +49,12 @@ final class HomeRegisterViewModel: BaseViewModel {
     }
     
     private func setupInitialState() {
-        if let name = locationStateHolder.buildingName,
-           let address = locationStateHolder.address {
-            self.selectedState = .selected(name: name, address: address)
-        } else {
-            // fallback: UserDefaults에서 불러오기
-            let defaults = UserDefaultsWrapper.shared
+        let defaults = UserDefaultsWrapper.shared
+        
+        if let buildingName = defaults.string(forKey: UserDefaultsWrapper.Key.buildingName.rawValue),
+           let address = defaults.string(forKey: UserDefaultsWrapper.Key.homeAddress.rawValue) {
+            self.selectedState = .selected(name: buildingName, address: address)
+        }  else {
             if let lat = defaults.double(forKey: UserDefaultsWrapper.Key.homeLat.rawValue),
                let lon = defaults.double(forKey: UserDefaultsWrapper.Key.homeLon.rawValue) {
                 Task {
