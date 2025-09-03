@@ -25,6 +25,14 @@ class WithdrawViewController: BaseViewController<WithdrawViewModel> {
         self?.updateWithdrawButtonStateForEtc(text)
     }
     private var selectedOption: WithdrawOption?
+    private var lastKeyboardHeight: CGFloat = -1
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        if #available(iOS 16.0, *) {
+            view.keyboardLayoutGuide.followsUndockedKeyboard = true
+        }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -40,6 +48,7 @@ class WithdrawViewController: BaseViewController<WithdrawViewModel> {
         scrollView.showsVerticalScrollIndicator = false
         scrollView.showsHorizontalScrollIndicator = false
         scrollView.isScrollEnabled = false
+        scrollView.alwaysBounceVertical = false
         
         view.addSubViews(topNavigationBar, scrollView, withdrawButton)
         
@@ -49,10 +58,21 @@ class WithdrawViewController: BaseViewController<WithdrawViewModel> {
         withdrawListStackView.axis = .vertical
         withdrawListStackView.spacing = 0
         withdrawListStackView.alignment = .fill
-        withdrawListStackView.distribution = .equalSpacing
+        withdrawListStackView.distribution = .fill
         
         withdrawTextBox.isHidden = true
+        textboxDone()
         
+        withdrawTextBox.onTap = { [weak self] in
+                guard let self = self else { return }
+                if !self.withdrawTextBox.isEditing {
+                    self.withdrawTextBox.focusTextView()
+                }
+                // 키보드가 뜨는 타이밍 고려 → 다음 런루프에 적용
+                DispatchQueue.main.async {
+                    self.applyEtcInsetsAndScroll()
+                }
+            }
     }
     
     // MARK: - 탈퇴사유 AutoLayout
@@ -65,7 +85,7 @@ class WithdrawViewController: BaseViewController<WithdrawViewModel> {
         scrollView.snp.makeConstraints { make in
             make.top.equalTo(topNavigationBar.snp.bottom)
             make.leading.trailing.equalToSuperview()
-            make.bottom.equalTo(withdrawButton.snp.top).offset(-16)
+            make.bottom.equalTo(withdrawButton.snp.top)
         }
         
         contentView.snp.makeConstraints { make in
@@ -110,16 +130,30 @@ class WithdrawViewController: BaseViewController<WithdrawViewModel> {
                 self.withdrawTextBox.isHidden = !isEtc
                 
                 if isEtc {
-                    scrollView.isScrollEnabled = true
+                    applyEtcInsetsAndScroll()
+                    
                     self.withdrawTextBox.focusTextView()
                     self.withdrawButton.updateStyle(text: "탈퇴하기", style: .filled(.disabled))
                     self.withdrawButton.isEnabled = false
                     self.updateWithdrawButtonStateForEtc(self.withdrawTextBox.text ?? "")
                 } else {
-                    scrollView.isScrollEnabled = false
+                    scrollView.isScrollEnabled = true
+                    scrollView.alwaysBounceVertical = false
                     self.withdrawTextBox.resignTextView()
                     self.withdrawButton.updateStyle(text: "탈퇴하기", style: .filled(.white))
                     self.withdrawButton.isEnabled = true
+                    
+                    scrollView.contentInset.bottom = 0
+                    scrollView.verticalScrollIndicatorInsets.bottom = 0
+                    
+                    view.layoutIfNeeded()
+                    
+                    let topY = -scrollView.adjustedContentInset.top
+                    scrollView.setContentOffset(CGPoint(x: scrollView.contentOffset.x, y: topY), animated: true)
+                    
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        self.scrollView.isScrollEnabled = false
+                    }
                 }
                 self.selectedOption = withdraw
             }
@@ -178,5 +212,64 @@ class WithdrawViewController: BaseViewController<WithdrawViewModel> {
         
         popupVC.modalPresentationStyle = .overFullScreen
         present(popupVC, animated: false)
+    }
+    
+    private func textboxDone() {
+        withdrawTextBox.onDone = { [weak self] in
+            guard let self = self else { return }
+
+            self.scrollView.isScrollEnabled = true
+            self.scrollView.alwaysBounceVertical = false
+            self.withdrawTextBox.resignTextView()
+
+            if self.selectedOption == .etc {
+                self.updateWithdrawButtonStateForEtc(self.withdrawTextBox.text ?? "")
+            } else {
+                self.withdrawButton.updateStyle(text: "탈퇴하기", style: .filled(.white))
+                self.withdrawButton.isEnabled = true
+            }
+
+            // 인셋 원복 + 스크롤 정리
+            self.scrollView.contentInset.bottom = 0
+            self.scrollView.verticalScrollIndicatorInsets.bottom = 0
+            self.view.layoutIfNeeded()
+
+            let topY = -self.scrollView.adjustedContentInset.top
+            self.scrollView.setContentOffset(CGPoint(x: self.scrollView.contentOffset.x, y: topY), animated: true)
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                self.scrollView.isScrollEnabled = false
+            }
+        }
+    }
+    
+    private func applyEtcInsetsAndScroll() {
+        guard selectedOption == .etc else { return }
+
+        // 스크롤 가능/레이아웃 반영
+        scrollView.isScrollEnabled = true
+        scrollView.alwaysBounceVertical = true
+        view.layoutIfNeeded()
+
+        // 키보드가 '하단에서 실제로 가리는 높이' 계산 (undocked 대응)
+        let kFrame = view.keyboardLayoutGuide.layoutFrame
+        let bottomOcclusion = max(0, view.bounds.maxY - kFrame.minY)
+
+        // 인셋 적용
+        scrollView.contentInset.bottom = bottomOcclusion + 240
+        scrollView.verticalScrollIndicatorInsets.bottom = bottomOcclusion
+
+        // 최하단으로 + 텍스트박스 가시 영역 보장
+        DispatchQueue.main.async {
+            let minY = -self.scrollView.adjustedContentInset.top
+            let maxY = max(
+                minY,
+                self.scrollView.contentSize.height - self.scrollView.bounds.height + self.scrollView.adjustedContentInset.bottom
+            )
+            self.scrollView.setContentOffset(CGPoint(x: self.scrollView.contentOffset.x, y: maxY), animated: true)
+
+            let rect = self.withdrawTextBox.convert(self.withdrawTextBox.bounds, to: self.scrollView)
+            self.scrollView.scrollRectToVisible(rect.insetBy(dx: 0, dy: -16), animated: true)
+        }
     }
 }
