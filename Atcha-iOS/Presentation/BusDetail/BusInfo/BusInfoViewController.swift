@@ -16,7 +16,9 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
         ) {
             [weak self] in
             self?.navigationController?.popViewController(animated: true)
-        } onClose: {
+        } onClose: { [weak self] in
+            self?.navigationController?.popViewController(animated: true)
+            self?.navigationController?.popViewController(animated: true)
         }
     }()
     private let operationStationTitleLabel: UILabel = UILabel()
