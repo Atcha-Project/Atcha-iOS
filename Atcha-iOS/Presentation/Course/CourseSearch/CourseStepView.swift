@@ -22,6 +22,7 @@ final class CourseStepView: UIView {
     private let bottomLineImageView: UIImageView = UIImageView()
     private let titleLabel: UILabel = UILabel()
     private let timeLabel: UILabel = UILabel()
+    private let arriveTimeLabel: UILabel = UILabel()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -39,6 +40,7 @@ final class CourseStepView: UIView {
         addSubview(iconImageView)
         addSubview(titleLabel)
         addSubview(timeLabel)
+        addSubview(arriveTimeLabel)
         
         iconImageView.contentMode = .scaleAspectFit
         topLineImageView.contentMode = .scaleAspectFit
@@ -69,7 +71,8 @@ final class CourseStepView: UIView {
         time: Int?,
         topLineStyle: LineStyle,
         bottomLineStyle: LineStyle,
-        isGetOff: Bool
+        isGetOff: Bool,
+        arriveTime: String?
     ) {
         iconImageView.image = icon
         titleLabel.attributedText = AtchaFont.B7_M_13(title, color: AtchaColor.white)
@@ -163,13 +166,29 @@ final class CourseStepView: UIView {
                 timeLabel.attributedText = AtchaFont.R_12(t.toHourMinuteStringFromSeconds, color: AtchaColor.gray400)
                 
                 timeLabel.snp.remakeConstraints { make in
-                    make.top.equalTo(titleLabel.snp.bottom).offset(3)
+                    make.top.equalTo(titleLabel.snp.bottom).offset(5)
                     make.leading.equalTo(titleLabel.snp.leading)
                 }
             }
         } else {
             timeLabel.isHidden = true
             timeLabel.snp.remakeConstraints { make in
+                make.height.equalTo(0) // 숨겨졌을 때의 제약
+            }
+        }
+        
+        if let t = arriveTime {
+            
+            arriveTimeLabel.isHidden = false
+            arriveTimeLabel.attributedText = AtchaFont.R_12("\(t) 도착 예정", color: AtchaColor.gray400)
+            
+            arriveTimeLabel.snp.remakeConstraints { make in
+                make.top.equalTo(titleLabel.snp.bottom).offset(5)
+                make.leading.equalTo(titleLabel.snp.leading)
+            }
+        } else {
+            arriveTimeLabel.isHidden = true
+            arriveTimeLabel.snp.remakeConstraints { make in
                 make.height.equalTo(0) // 숨겨졌을 때의 제약
             }
         }

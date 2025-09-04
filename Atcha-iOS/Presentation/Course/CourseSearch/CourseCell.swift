@@ -197,7 +197,7 @@ final class CourseCell: UICollectionViewCell {
                 make.leading.equalToSuperview().inset(7)
                 make.trailing.lessThanOrEqualToSuperview().inset(10)
                 make.top.equalToSuperview().inset(8)
-                make.bottom.equalToSuperview().inset(8)
+                make.bottom.equalToSuperview().inset(16)
             }
         } else {
             courseStack.removeArrangedSubview(courseDetailStack)
@@ -286,6 +286,7 @@ final class CourseCell: UICollectionViewCell {
             
             var topLine: LineStyle = .none
             var bottomLine: LineStyle = .none
+            var arriveTime = course.departureDateTime?.convertedToHourMinute(with: course.totalTime ?? 0)
             
             // --------------------------
             // topLine 결정
@@ -305,8 +306,10 @@ final class CourseCell: UICollectionViewCell {
             } else {
                 if nextLeg?.mode == .walk || leg.mode == .walk {
                     bottomLine = .dotted
+                    arriveTime = nil
                 } else {
                     bottomLine = .solid
+                    arriveTime = nil
                 }
             }
             // --------------------------
@@ -320,7 +323,8 @@ final class CourseCell: UICollectionViewCell {
                     time: leg.sectionTime,
                     topLineStyle: topLine,
                     bottomLineStyle: bottomLine,
-                    isGetOff: false
+                    isGetOff: false,
+                    arriveTime: arriveTime
                 )
                 courseDetailStack.addArrangedSubview(stepView)
                 
@@ -339,10 +343,11 @@ final class CourseCell: UICollectionViewCell {
                     startStepView.configure(
                         icon: startIcon,
                         title: leg.mode == .bus ? "\(startName) 승차" : "\(startName)역 승차",
-                        time: nil,
+                        time: leg.sectionTime,
                         topLineStyle: topLine,
                         bottomLineStyle: .solid,
-                        isGetOff: false
+                        isGetOff: false,
+                        arriveTime: arriveTime
                     )
                     courseDetailStack.addArrangedSubview(startStepView)
                     
@@ -362,10 +367,11 @@ final class CourseCell: UICollectionViewCell {
                     endStepView.configure(
                         icon: getOffIcon,
                         title: leg.mode == .bus ? "\(endName) 하차" : "\(endName)역 하차",
-                        time: nil,
+                        time: leg.sectionTime,
                         topLineStyle: .solid,
                         bottomLineStyle: endBottomLine,
-                        isGetOff: true
+                        isGetOff: true,
+                        arriveTime: arriveTime
                     )
                     courseDetailStack.addArrangedSubview(endStepView)
                 }
@@ -379,7 +385,8 @@ final class CourseCell: UICollectionViewCell {
                     time: nil,
                     topLineStyle: topLine,
                     bottomLineStyle: bottomLine,
-                    isGetOff: false
+                    isGetOff: false,
+                    arriveTime: arriveTime
                 )
                 courseDetailStack.addArrangedSubview(stepView)
             }
@@ -424,8 +431,9 @@ extension CourseCell{
         
         let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .estimated(600))
         let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
-        
+
         let section = NSCollectionLayoutSection(group: group)
+        section.interGroupSpacing = -10
         
         return section
     }

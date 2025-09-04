@@ -233,13 +233,6 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
                 }
                 return false
             }
-            
-//            let hasNightBus = busInfo.contains { bus in
-//                if let routeName = bus.routeName {
-//                    return routeName.contains("N")
-//                }
-//                return false
-//            }
 
             if busLongTerm {
                 showCoursePopup(alarmRequest, alarmTapped)

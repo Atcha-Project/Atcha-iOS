@@ -17,7 +17,8 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
             viewModel.icon
         ) { [weak self] in
             self?.navigationController?.popViewController(animated: true)
-        } onClose: {
+        } onClose: { [weak self] in
+            self?.navigationController?.popViewController(animated: true)
         }
     }()
     private let headerView: BusDetailHeaderView = BusDetailHeaderView()
