@@ -221,20 +221,22 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
         cell.onGetAlarmTapped = { [weak self] in
             guard let self else { return }
             let pathInfo: [LegPathInfo] = model.course.toLegPathInfos()
-            let tafficInfo: [LegTrafficInfo] = model.course.toLegTrafficInfos()
+            let trafficInfo: [LegTrafficInfo] = model.course.toLegTrafficInfos()
             let busInfo: [BusDetailInfo] = model.course.toBusInfos()
             
             let alarmRequest = AlarmRequest(lastRouteId: model.course.routeId)
-            let alarmTapped = (viewModel.startAddress, LegInfo(pathInfo: pathInfo, trafficInfo: tafficInfo, busInfo: busInfo))
+            let alarmTapped = (viewModel.startAddress, LegInfo(pathInfo: pathInfo, trafficInfo: trafficInfo, busInfo: busInfo))
             
-            let busLongTerm = tafficInfo.contains { term in
-                if let longTerm = term.targetBusTerm {
-                    return longTerm > 40
-                }
-                return false
-            }
+            let busLegs = trafficInfo.filter { $0.mode == .bus }
+            let busCount = busLegs.count
+            let hasSubway = trafficInfo.contains { $0.mode == .subway }
+            let hasLongWaitBus = busLegs.contains { ($0.targetBusTerm ?? 0) >= 40 }
 
-            if busLongTerm {
+            let isException = (busCount == 1) && (hasSubway == false)
+
+            let shouldShowPopup = hasLongWaitBus && !isException
+
+            if shouldShowPopup {
                 showCoursePopup(alarmRequest, alarmTapped)
             } else {
                 viewModel.alarmRegister(alarmRequest)

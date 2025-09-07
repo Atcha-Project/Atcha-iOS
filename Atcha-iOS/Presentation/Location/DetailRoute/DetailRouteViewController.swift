@@ -253,21 +253,16 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
     }
     
     @objc private func didTapAlarmRegister() {
-//        let hasNightBus = viewModel.infos.busInfo.contains { bus in
-//            if let routeName = bus.routeName {
-//                return routeName.contains("N")
-//            }
-//            return false
-//        }
-        
-        let busLongTerm = viewModel.infos.trafficInfo.contains { term in
-            if let longTerm = term.targetBusTerm {
-                return longTerm > 40
-            }
-            return false
-        }
-        
-        if busLongTerm {
+        let busLegs = viewModel.legTrafficInfo.filter { $0.mode == .bus }
+        let busCount = busLegs.count
+        let hasSubway = viewModel.legTrafficInfo.contains { $0.mode == .subway }
+        let hasLongWaitBus = busLegs.contains { ($0.targetBusTerm ?? 0) >= 40 }
+
+        let isException = (busCount == 1) && (hasSubway == false)
+
+        let shouldShowPopup = hasLongWaitBus && !isException
+
+        if shouldShowPopup {
             showCoursePopup()
         } else {
             viewModel.getAlarmTapped?(viewModel.address, viewModel.infos)
