@@ -230,6 +230,7 @@
 		B68309622E005A3600E2D029 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B68309502E005A3600E2D029 /* Main.storyboard */; };
 		B68309672E005B5300E2D029 /* UIView+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B68309662E005B5300E2D029 /* UIView+Ext.swift */; };
 		B68730D02E46539F00BFB1F6 /* siren.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = B68730CF2E46539F00BFB1F6 /* siren.mp3 */; };
+		B69A04682E6D5F3400CA382C /* DetailRouteAnimationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B69A04672E6D5F3300CA382C /* DetailRouteAnimationView.swift */; };
 		B69E31A82E2681EF001040F4 /* CLLocationCoordinate2D+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B69E31A72E2681EF001040F4 /* CLLocationCoordinate2D+Ext.swift */; };
 		B69E31AC2E2683B8001040F4 /* PermissionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B69E31AB2E2683B8001040F4 /* PermissionViewController.swift */; };
 		B69E31AE2E2683C9001040F4 /* PermissionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B69E31AD2E2683C9001040F4 /* PermissionViewModel.swift */; };
@@ -520,6 +521,7 @@
 		B68309632E005ADE00E2D029 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		B68309662E005B5300E2D029 /* UIView+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Ext.swift"; sourceTree = "<group>"; };
 		B68730CF2E46539F00BFB1F6 /* siren.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = siren.mp3; sourceTree = "<group>"; };
+		B69A04672E6D5F3300CA382C /* DetailRouteAnimationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailRouteAnimationView.swift; sourceTree = "<group>"; };
 		B69E31A72E2681EF001040F4 /* CLLocationCoordinate2D+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CLLocationCoordinate2D+Ext.swift"; sourceTree = "<group>"; };
 		B69E31AB2E2683B8001040F4 /* PermissionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionViewController.swift; sourceTree = "<group>"; };
 		B69E31AD2E2683C9001040F4 /* PermissionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionViewModel.swift; sourceTree = "<group>"; };
@@ -1431,6 +1433,7 @@
 				B6793D612E3B0279001BE9F5 /* Cell */,
 				B6793D5B2E38792A001BE9F5 /* DetailRouteInfoBottomView.swift */,
 				B6793D5F2E3A5E23001BE9F5 /* DetailRouteProgressView.swift */,
+				B69A04672E6D5F3300CA382C /* DetailRouteAnimationView.swift */,
 			);
 			path = DetailRouteInfo;
 			sourceTree = "<group>";
@@ -2084,6 +2087,7 @@
 				B6793D512E35C57E001BE9F5 /* LastTrainDepartBottomView.swift in Sources */,
 				B6DC7C232E16B5C1005D8E17 /* AddressRepositoryImpl.swift in Sources */,
 				B65C130C2E057CAB0016D2F0 /* APIServiceImpl.swift in Sources */,
+				B69A04682E6D5F3400CA382C /* DetailRouteAnimationView.swift in Sources */,
 				B66401992E229EB000A397AE /* SplashRouter.swift in Sources */,
 				B644BAB32E443E5C00E64BC2 /* LastTrainArrivalBottomView.swift in Sources */,
 				B6FB20842E1BE4B80032751B /* FetchTaxiFareUseCase.swift in Sources */,

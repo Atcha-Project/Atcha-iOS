@@ -31,7 +31,7 @@ final class AlarmRepositoryImpl: AlarmRepository {
                 method: .delete,
                 parameters: [
                     "lastRouteId": request.lastRouteId
-                ]),
+                ])
         )
     }
     
