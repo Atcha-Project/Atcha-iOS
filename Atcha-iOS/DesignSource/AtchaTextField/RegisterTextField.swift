@@ -31,7 +31,7 @@ final class RegisterTextField: UIView {
     
     // MARK: - 집주소 등록 시 검색 TextField UI
     private func setupUI() {
-        textField.attributedPlaceholder = AtchaFont.B3_M_15("지번, 도로명, 건물명으로 검색", color: AtchaColor.gray400)
+        textField.attributedPlaceholder = AtchaFont.B3_M_15(lineHeight: 0, "지번, 도로명, 건물명으로 검색", color: AtchaColor.gray400)
         textField.textColor = AtchaColor.white
         textField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         textField.returnKeyType = .done // ✅ 완료 버튼 설정

@@ -73,12 +73,12 @@
 		6D73EBE62E1B51E000F8DF8B /* CourseUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D73EBE52E1B51E000F8DF8B /* CourseUseCase.swift */; };
 		6D73EBE82E1B54A500F8DF8B /* CourseRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D73EBE72E1B54A500F8DF8B /* CourseRepository.swift */; };
 		6D73EBEA2E1B551600F8DF8B /* CourseRepositoryImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D73EBE92E1B551600F8DF8B /* CourseRepositoryImpl.swift */; };
+		6D79F9AD2E6D75EC00BD8BC8 /* Alarm.json in Resources */ = {isa = PBXBuildFile; fileRef = 6D79F9AC2E6D75EC00BD8BC8 /* Alarm.json */; };
 		6D7CB4112E6810BD003AB799 /* ScrollView+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D7CB4102E6810BD003AB799 /* ScrollView+Ext.swift */; };
 		6D8157422E126C3A003688A6 /* LockViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D8157412E126C3A003688A6 /* LockViewModel.swift */; };
 		6D8157442E126C45003688A6 /* LockViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D8157432E126C45003688A6 /* LockViewController.swift */; };
 		6D8157462E127BDB003688A6 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 6D8157452E127BDB003688A6 /* GoogleService-Info.plist */; };
 		6D8157492E129A7C003688A6 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 6D8157482E129A7C003688A6 /* Lottie */; };
-		6D81574C2E129B52003688A6 /* 잠금화면.json in Resources */ = {isa = PBXBuildFile; fileRef = 6D81574B2E129B52003688A6 /* 잠금화면.json */; };
 		6D81574E2E13EC0F003688A6 /* Int+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D81574D2E13EC0F003688A6 /* Int+Ext.swift */; };
 		6D8D8AE02E013819003DABB2 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 6D8D8ADF2E013819003DABB2 /* SnapKit */; };
 		6D8D8AE32E01386D003DABB2 /* PanModal in Frameworks */ = {isa = PBXBuildFile; productRef = 6D8D8AE22E01386D003DABB2 /* PanModal */; };
@@ -372,11 +372,11 @@
 		6D73EBE52E1B51E000F8DF8B /* CourseUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseUseCase.swift; sourceTree = "<group>"; };
 		6D73EBE72E1B54A500F8DF8B /* CourseRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseRepository.swift; sourceTree = "<group>"; };
 		6D73EBE92E1B551600F8DF8B /* CourseRepositoryImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseRepositoryImpl.swift; sourceTree = "<group>"; };
+		6D79F9AC2E6D75EC00BD8BC8 /* Alarm.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = Alarm.json; sourceTree = "<group>"; };
 		6D7CB4102E6810BD003AB799 /* ScrollView+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ScrollView+Ext.swift"; sourceTree = "<group>"; };
 		6D8157412E126C3A003688A6 /* LockViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockViewModel.swift; sourceTree = "<group>"; };
 		6D8157432E126C45003688A6 /* LockViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockViewController.swift; sourceTree = "<group>"; };
 		6D8157452E127BDB003688A6 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
-		6D81574B2E129B52003688A6 /* 잠금화면.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "잠금화면.json"; sourceTree = "<group>"; };
 		6D81574D2E13EC0F003688A6 /* Int+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Int+Ext.swift"; sourceTree = "<group>"; };
 		6D8D8B122E01B338003DABB2 /* AtchaButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtchaButton.swift; sourceTree = "<group>"; };
 		6D8D8B162E02BBC0003DABB2 /* AtchaNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtchaNavigationBar.swift; sourceTree = "<group>"; };
@@ -841,9 +841,9 @@
 		6D81574A2E129B46003688A6 /* AtchaLottie */ = {
 			isa = PBXGroup;
 			children = (
+				6D79F9AC2E6D75EC00BD8BC8 /* Alarm.json */,
 				6D6879BD2E4067B400E59C55 /* Refresh.json */,
 				6D91A8FE2E33E2FA0081BAFC /* Loading.json */,
-				6D81574B2E129B52003688A6 /* 잠금화면.json */,
 				6D91A9002E33E3620081BAFC /* LoadingView.swift */,
 				6D6879BF2E40684C00E59C55 /* RefreshView.swift */,
 			);
@@ -1877,7 +1877,7 @@
 				6D8157462E127BDB003688A6 /* GoogleService-Info.plist in Resources */,
 				B68730D02E46539F00BFB1F6 /* siren.mp3 in Resources */,
 				B683095D2E005A3600E2D029 /* Pretendard-SemiBold.otf in Resources */,
-				6D81574C2E129B52003688A6 /* 잠금화면.json in Resources */,
+				6D79F9AD2E6D75EC00BD8BC8 /* Alarm.json in Resources */,
 				B683095E2E005A3600E2D029 /* Icon.xcassets in Resources */,
 				B683095F2E005A3600E2D029 /* Assets.xcassets in Resources */,
 				B68309612E005A3600E2D029 /* LaunchScreen.storyboard in Resources */,

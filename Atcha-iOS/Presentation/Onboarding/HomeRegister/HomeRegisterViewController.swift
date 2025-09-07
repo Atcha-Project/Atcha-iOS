@@ -123,7 +123,7 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
         searchLocationContainer.backgroundColor = AtchaColor.gray930
         searchLocationContainer.layer.cornerRadius = 10
         searchLocationContainer.isUserInteractionEnabled = true
-        searchLocationLabel.attributedText = AtchaFont.B1_R_17("지번, 도로명, 건물명으로 검색",
+        searchLocationLabel.attributedText = AtchaFont.B1_R_17(lineHeight: 0, "지번, 도로명, 건물명으로 검색",
                                                                color: AtchaColor.gray400)
         
         currentLocationButton.backgroundColor = .clear

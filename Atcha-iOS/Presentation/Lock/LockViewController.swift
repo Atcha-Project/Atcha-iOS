@@ -17,7 +17,7 @@ final class LockViewController: BaseViewController<LockViewModel> {
     private let startButton: AtchaButton = AtchaButton(text: "출발하기", size: .h52, style: .filled(.primary))
     private let detailRouteButton: AtchaButton = AtchaButton(text: "더 늦은 경로 확인하기", size: .h52, style: .filled(.opacity))
     private let bottomStack: UIStackView = UIStackView()
-    private var lottieAnimationView: LottieAnimationView = LottieAnimationView(name: "잠금화면")
+    private var lottieAnimationView: LottieAnimationView = LottieAnimationView(name: "Alarm")
     private let gradientView: UIView = UIView()
     private let gradient: CAGradientLayer = CAGradientLayer()
     
