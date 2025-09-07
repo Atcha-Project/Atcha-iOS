@@ -58,7 +58,7 @@ enum FilledButtonStyle {
         case .primary: return AtchaColor.main
         case .white: return AtchaColor.white
         case .defaultGray: return AtchaColor.gray910
-        case .opacity: return AtchaColor.main.withAlphaComponent(0.12)
+        case .opacity: return AtchaColor.mainOpacity
         case .disabled: return AtchaColor.opacity200
         }
     }
