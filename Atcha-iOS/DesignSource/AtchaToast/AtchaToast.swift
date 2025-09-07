@@ -74,13 +74,13 @@ extension AtchaToast {
             alpha = 1.0
             transform = .identity
         }, completion: { _ in
-            UIView.animate(withDuration: 0.3,
+            UIView.animate(withDuration: 0.8,
                            delay: duration,
                            options: [.curveEaseIn],
                            animations: { [weak self] in
                 guard let self else { return }
-                alpha = 0.0
-                transform = CGAffineTransform(translationX: 0, y: -10)
+                alpha = 1.0
+                transform = CGAffineTransform(translationX: 0, y: -parentView.bounds.height)
             }, completion: { [weak self] _ in
                 guard let self else { return }
                 removeFromSuperview()
