@@ -68,7 +68,7 @@ final class LockViewController: BaseViewController<LockViewModel> {
         gradient.endPoint = CGPoint(x: 0.5, y: 1.0)
         gradientView.layer.addSublayer(gradient)
         
-        logoImageView.image = UIImage.atchaMain
+        logoImageView.image = UIImage.imgAtchaCharacter
         titleLabel.attributedText = AtchaFont.H2_B_22("지금 안 일어나면\n택시비", color: AtchaColor.white)
         titleLabel.numberOfLines = 0
         titleLabel.textAlignment = .center
