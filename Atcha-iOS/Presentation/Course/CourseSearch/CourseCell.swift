@@ -230,20 +230,37 @@ final class CourseCell: UICollectionViewCell {
         
         courseCompactStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         
-        let maxIcons = 13
-        var addedCount = 0
+        let legs = course.legs
         
-        for (index, leg) in course.legs.enumerated() {
-            if addedCount >= maxIcons {
-                break
+        func isTransit(_ m: TransportMode?) -> Bool {
+            return m == .bus || m == .subway
+        }
+        
+        // MARK: - 교통 수단 사이 걷기는 제거
+        let visibleLegs: [Legs] = legs.enumerated().compactMap{ (idx, leg) in
+            if leg.mode == .walk {
+                let hasPrev = idx > 0
+                let hasNext = idx < legs.count - 1
+                
+                if hasPrev && hasNext {
+                    let prev = legs[idx - 1].mode
+                    let next = legs[idx + 1].mode
+                    
+                    if isTransit(prev) && isTransit(next) {
+                        return nil
+                    }
+                }
             }
             
+            return leg
+        }
+        
+        for (index, leg) in visibleLegs.enumerated() {
             switch leg.mode {
             case .walk:
                 let walkIcon = UIImageView(image: UIImage.walkGray700)
                 walkIcon.snp.makeConstraints { $0.size.equalTo(26) }
                 courseCompactStack.addArrangedSubview(walkIcon)
-                addedCount += 1
             case .bus:
                 if let type = leg.type {
                     let imageName = busIcon[type] ?? busDefaultIcon
@@ -251,7 +268,6 @@ final class CourseCell: UICollectionViewCell {
                         let busIconView = UIImageView(image: image)
                         busIconView.snp.makeConstraints { $0.size.equalTo(26) }
                         courseCompactStack.addArrangedSubview(busIconView)
-                        addedCount += 1
                     }
                 }
             case .subway:
@@ -261,20 +277,18 @@ final class CourseCell: UICollectionViewCell {
                         let subwayIconView = UIImageView(image: image)
                         subwayIconView.snp.makeConstraints { $0.size.equalTo(26) }
                         courseCompactStack.addArrangedSubview(subwayIconView)
-                        addedCount += 1
                     }
                 }
             default:
                 break
             }
             
-            if index < course.legs.count - 1 {
+            if index < visibleLegs.count - 1 {
                 let arrow = UIImageView(image: UIImage.chevronRight)
                 arrow.tintColor = AtchaColor.gray400
                 arrow.contentMode = .scaleAspectFit
                 arrow.snp.makeConstraints { $0.size.equalTo(12) }
                 courseCompactStack.addArrangedSubview(arrow)
-                addedCount += 1
             }
         }
         
