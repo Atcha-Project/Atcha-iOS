@@ -15,6 +15,7 @@ enum AtchaColor{
     
     // MARK: - Primary
     static let main = UIColor(named: "Main")!
+    static let mainOpacity = UIColor(named: "MainOpacity")!
     
     // MARK: - Gray
     static let gray100 = UIColor(named: "gray100")!

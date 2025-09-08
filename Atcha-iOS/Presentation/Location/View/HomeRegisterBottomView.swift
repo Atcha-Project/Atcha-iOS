@@ -57,6 +57,10 @@ final class HomeRegisterBottomView: UIView {
     
 
     func setupLabel() {
+        if currentName == currentAddress {
+            currentName = nil
+        }
+        
         let name = (currentName?.isEmpty == false) ? currentName : nil
         let address = (currentAddress?.isEmpty == false) ? currentAddress : nil
         

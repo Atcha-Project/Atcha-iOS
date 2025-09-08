@@ -395,8 +395,8 @@ final class CourseCell: UICollectionViewCell {
     
     private func setupGesture() {
         detailTapGesture.addTarget(self, action: #selector(detailTapped))
-        detailStack.isUserInteractionEnabled = true
-        detailStack.addGestureRecognizer(detailTapGesture)
+        containerView.isUserInteractionEnabled = true
+        containerView.addGestureRecognizer(detailTapGesture)
         
         courseTapGesture.addTarget(self, action: #selector(toggleCourseDetail))
         courseDownButton.isUserInteractionEnabled = true

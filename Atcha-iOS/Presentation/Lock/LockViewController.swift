@@ -17,7 +17,7 @@ final class LockViewController: BaseViewController<LockViewModel> {
     private let startButton: AtchaButton = AtchaButton(text: "출발하기", size: .h52, style: .filled(.primary))
     private let detailRouteButton: AtchaButton = AtchaButton(text: "더 늦은 경로 확인하기", size: .h52, style: .filled(.opacity))
     private let bottomStack: UIStackView = UIStackView()
-    private var lottieAnimationView: LottieAnimationView = LottieAnimationView(name: "잠금화면")
+    private var lottieAnimationView: LottieAnimationView = LottieAnimationView(name: "Alarm")
     private let gradientView: UIView = UIView()
     private let gradient: CAGradientLayer = CAGradientLayer()
     
@@ -68,7 +68,7 @@ final class LockViewController: BaseViewController<LockViewModel> {
         gradient.endPoint = CGPoint(x: 0.5, y: 1.0)
         gradientView.layer.addSublayer(gradient)
         
-        logoImageView.image = UIImage.atchaMain
+        logoImageView.image = UIImage.imgAtchaCharacter
         titleLabel.attributedText = AtchaFont.H2_B_22("지금 안 일어나면\n택시비", color: AtchaColor.white)
         titleLabel.numberOfLines = 0
         titleLabel.textAlignment = .center
