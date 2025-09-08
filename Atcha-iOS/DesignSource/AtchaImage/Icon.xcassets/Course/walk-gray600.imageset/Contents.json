@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "walk-gray600.svg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
