@@ -39,6 +39,13 @@ final class CourseModifyViewController: BaseViewController<CourseModifyViewModel
         setupSearchTextFieldCallbacks()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        DispatchQueue.main.async { [weak self] in
+            self?.searchTextField.focusTextField()
+        }
+    }
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
@@ -134,8 +141,6 @@ final class CourseModifyViewController: BaseViewController<CourseModifyViewModel
         emptyRecentLabel.attributedText = AtchaFont.B4_R_15("최근 내역이 없습니다.", color: AtchaColor.gray400)
         
         view.addSubViews(topNavigationBar, searchContainer, homeContainer, separator, tableView, tableHeaderView, emptyRecentLabel)
-        searchTextField.focusTextField()
-        
     }
     
     // MARK: - 경로 수정 AutoLayout
