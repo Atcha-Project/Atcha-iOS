@@ -28,6 +28,7 @@ final class CourseModifyViewController: BaseViewController<CourseModifyViewModel
     private let recentAllDeleteLabel: UILabel = UILabel()
     private let emptyRecentLabel: UILabel = UILabel()
     private var isFromSetting: Bool = false
+    private var pendingSearch: DispatchWorkItem?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -205,19 +206,54 @@ final class CourseModifyViewController: BaseViewController<CourseModifyViewModel
     }
     
     // MARK: - 검색 바 콜백
+//    private func setupSearchTextFieldCallbacks() {
+//        searchTextField.onTextChange = { [weak self] text in
+//            guard let self = self, let coordinate = viewModel.currentLocation else { return }
+//            if text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+//                print("비었으")
+//                viewModel.recentSearchLocation()
+//            } else {
+//                viewModel.searchLocation(keyword: text,
+//                                         lat: coordinate.latitude,
+//                                         lon: coordinate.longitude)
+//            }
+//        }
+//        
+//        searchTextField.onTextReset = { [weak self] in
+//            self?.viewModel.recentSearchLocation()
+//        }
+//    }
     private func setupSearchTextFieldCallbacks() {
         searchTextField.onTextChange = { [weak self] text in
-            guard let self = self, let coordinate = viewModel.currentLocation else { return }
-            if text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                viewModel.recentSearchLocation()
-            } else {
-                viewModel.searchLocation(keyword: text,
-                                         lat: coordinate.latitude,
-                                         lon: coordinate.longitude)
+            guard let self = self else { return }
+
+            let q = text.trimmingCharacters(in: .whitespacesAndNewlines)
+
+            // 연속 입력 중 이전 검색 취소
+            self.pendingSearch?.cancel()
+
+            if q.isEmpty {
+                self.viewModel.recentSearchLocation()
+                return
             }
+
+            // 좌표 필요할 때만 확인
+            guard let coord = self.viewModel.currentLocation else { return }
+
+            // 살짝 디바운스
+            let work = DispatchWorkItem { [weak self] in
+                self?.viewModel.searchLocation(
+                    keyword: q,
+                    lat: coord.latitude,
+                    lon: coord.longitude
+                )
+            }
+            self.pendingSearch = work
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: work)
         }
-        
+
         searchTextField.onTextReset = { [weak self] in
+            self?.pendingSearch?.cancel()
             self?.viewModel.recentSearchLocation()
         }
     }
@@ -241,22 +277,6 @@ final class CourseModifyViewController: BaseViewController<CourseModifyViewModel
         
         viewModel.deleteSearchHistory(request: request)
     }
-    
-//    func didReceiveLocation(locationInfo: LocationInfo, coordinate: CLLocationCoordinate2D) {
-//        isFromSetting = true
-//        
-//        searchTextField.setText(locationInfo.name ?? "주소 없음")
-//        tableView.isHidden = true
-//        tableHeaderView.isHidden = true
-//        
-//        self.showLoading()
-//        
-//        // 1초 후 ViewModel에게 전달
-//        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-//            self.hideLoading()
-//            self.viewModel.onLocationConfirmed?(locationInfo, coordinate)
-//        }
-//    }
     
     @objc private func didTapMapIcon() {
         view.endEditing(true)
