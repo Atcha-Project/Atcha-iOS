@@ -27,6 +27,15 @@ final class MainViewController: BaseViewController<MainViewModel>,
     private let loactionButton: UIButton = UIButton()
     private let atchaImageView: UIImageView = UIImageView()
     private let ballonView: AtchaBallon = AtchaBallon()
+    private let decimalFormatter: NumberFormatter = {
+        let f = NumberFormatter()
+        f.locale = Locale(identifier: "ko_KR")
+        f.numberStyle = .decimal
+        f.usesGroupingSeparator = true
+        f.maximumFractionDigits = 0
+        return f
+    }()
+
     
     private var firstAddress: String?
     
@@ -431,8 +440,13 @@ extension MainViewController {
     }
     
     private func updateTaxiFare(_ fare: Double) {
-        let fareStr = String(format: "%.0f", fare)
-        ballonView.separationTitle(grayMessage: "여기서 막차 놓치면 택시비 ", whiteMessage: "약 \(fareStr)원")
+        guard fare.isFinite else { return }
+        let fareInt = Int(fare)
+        let fareStr = decimalFormatter.string(from: NSNumber(value: fareInt)) ?? "\(fareInt)"
+        ballonView.separationTitle(
+            grayMessage: "여기서 막차 놓치면 택시비 ",
+            whiteMessage: "약 \(fareStr)원" 
+        )
     }
     
     private func bindServiceRegionUpdates() {
