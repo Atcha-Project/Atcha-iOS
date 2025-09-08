@@ -193,6 +193,6 @@ extension SearchLocationViewController: UITableViewDataSource, UITableViewDelega
     }
     
     @objc private func handleCurrentLocationTapped() {
-        viewModel.routeHandler?(.homeRegister)
+        viewModel.routeHandler?(.homeRegister(useDeviceLocation: true))
     }
 }
