@@ -237,21 +237,21 @@ final class CourseModifyViewController: BaseViewController<CourseModifyViewModel
         viewModel.deleteSearchHistory(request: request)
     }
     
-    func didReceiveLocation(locationInfo: LocationInfo, coordinate: CLLocationCoordinate2D) {
-        isFromSetting = true
-        
-        searchTextField.setText(locationInfo.name ?? "주소 없음")
-        tableView.isHidden = true
-        tableHeaderView.isHidden = true
-        
-        self.showLoading()
-        
-        // 1초 후 ViewModel에게 전달
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            self.hideLoading()
-            self.viewModel.onLocationConfirmed?(locationInfo, coordinate)
-        }
-    }
+//    func didReceiveLocation(locationInfo: LocationInfo, coordinate: CLLocationCoordinate2D) {
+//        isFromSetting = true
+//        
+//        searchTextField.setText(locationInfo.name ?? "주소 없음")
+//        tableView.isHidden = true
+//        tableHeaderView.isHidden = true
+//        
+//        self.showLoading()
+//        
+//        // 1초 후 ViewModel에게 전달
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+//            self.hideLoading()
+//            self.viewModel.onLocationConfirmed?(locationInfo, coordinate)
+//        }
+//    }
     
     @objc private func didTapMapIcon() {
         view.endEditing(true)

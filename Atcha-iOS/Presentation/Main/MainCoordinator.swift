@@ -85,12 +85,16 @@ final class MainCoordinator {
                 
                 settingVM.onTapLocationButton = { [weak self] locationInfo, coordinate in
                     guard let self else { return }
-                    self.navigationController.popViewController(animated: true)
+                    self.navigationController.popViewController(animated: false)
                     
-                    if let modifyVC = self.navigationController.viewControllers
-                        .compactMap({ $0 as? CourseModifyViewController }).last {
-                        modifyVC.didReceiveLocation(locationInfo: locationInfo, coordinate: coordinate)
-                    }
+                    let searchVM = courseDI.makeCourseSearchViewModel(
+                        startLat: "\(coordinate.latitude)",
+                        startLon: "\(coordinate.longitude)",
+                        startAddress: locationInfo.name ?? "주소 없음"
+                    )
+        
+                    let searchVC = courseDI.makeCourseSearchViewController(viewModel: searchVM)
+                    self.navigationController.pushViewController(searchVC, animated: false)
                 }
                 
                 let settingVC = courseDI.makeCourseSettingViewController(viewModel: settingVM)
