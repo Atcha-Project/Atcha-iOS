@@ -36,13 +36,13 @@ final class DetailRouteWalkCell: UICollectionViewCell {
     
     private func setupAutoLayout() {
         lineImageView.snp.makeConstraints { make in
-            make.leading.equalToSuperview().offset(22)
+            make.leading.equalToSuperview().offset(78)
             make.centerY.equalToSuperview()
             make.width.equalTo(4)
             make.height.equalToSuperview()
         }
         summaryLabel.snp.makeConstraints { make in
-            make.leading.equalTo(lineImageView.snp.trailing).offset(28)
+            make.leading.equalTo(lineImageView.snp.trailing).offset(24)
             make.trailing.equalToSuperview().inset(16)
             make.centerY.equalToSuperview()
         }

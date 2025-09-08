@@ -8,7 +8,7 @@
 import UIKit
 import SnapKit
 
-final class DetailRouteEndCell: UICollectionReusableView {
+final class DetailRouteEndCell: UICollectionViewCell {
     static let id: String = "DetailRouteEndCell"
     
     private let imageView: UIImageView = UIImageView()

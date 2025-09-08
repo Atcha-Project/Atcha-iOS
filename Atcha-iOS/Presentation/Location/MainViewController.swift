@@ -19,7 +19,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
     
     private let lastTrainSearchView: LastTrainSearchBottomView = LastTrainSearchBottomView() // 알람 등록 전
     private let lastTrainDepartView: LastTrainDepartBottomView = LastTrainDepartBottomView() // 알람 등록 이후
-    private let lastTrainRealTimeView: LastTrainRealTimeBottomView = LastTrainRealTimeBottomView() // 알람 등록 이후, 시간 지남
+    //    private let lastTrainRealTimeView: LastTrainRealTimeBottomView = LastTrainRealTimeBottomView() // 알람 등록 이후, 시간 지남
     private let lastTrainArrivalView: LastTrainArrivalBottomView = LastTrainArrivalBottomView() // 알람 등록 이후, 시간 지남
     
     private let flagImageView: UIImageView = UIImageView()
@@ -71,7 +71,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
             myPageButton,
             loactionButton,
             lastTrainDepartView,
-            lastTrainRealTimeView,
+            //            lastTrainRealTimeView,
             lastTrainArrivalView,
             ballonView
         )
@@ -113,10 +113,10 @@ extension MainViewController {
             make.horizontalEdges.equalToSuperview()
             make.bottom.equalToSuperview()
         }
-        lastTrainRealTimeView.snp.makeConstraints { make in
-            make.horizontalEdges.equalToSuperview()
-            make.bottom.equalToSuperview()
-        }
+        //        lastTrainRealTimeView.snp.makeConstraints { make in
+        //            make.horizontalEdges.equalToSuperview()
+        //            make.bottom.equalToSuperview()
+        //        }
         lastTrainArrivalView.snp.makeConstraints { make in
             make.horizontalEdges.equalToSuperview()
             make.bottom.equalToSuperview()
@@ -179,9 +179,9 @@ extension MainViewController {
             .sink { [weak self] in self?.handleSearchViewAction($0) }
             .store(in: &cancellables)
         
-        lastTrainRealTimeView.actionPublisher
-            .sink { [weak self] in self?.handleRealTimeViewAction($0) }
-            .store(in: &cancellables)
+        //        lastTrainRealTimeView.actionPublisher
+        //            .sink { [weak self] in self?.handleRealTimeViewAction($0) }
+        //            .store(in: &cancellables)
         
         lastTrainDepartView.actionPublisher
             .receive(on: RunLoop.main)
@@ -357,7 +357,7 @@ extension MainViewController {
             .sink { [weak self] desc in
                 self?.lastTrainDepartView.setupLoaction(location: desc)
                 self?.lastTrainArrivalView.setupLoaction(location: desc)
-                self?.lastTrainRealTimeView.setupLoaction(location: desc)
+                //                self?.lastTrainRealTimeView.setupLoaction(location: desc)
             }
             .store(in: &cancellables)
     }
@@ -373,8 +373,8 @@ extension MainViewController {
                 switch bottomType {
                 case .departure:
                     self?.lastTrainDepartView.setupLegInfo(info: info)
-                case .realTime:
-                    self?.lastTrainRealTimeView.setupLegInfo(info: info)
+                case .realTime: do {}
+                    //                    self?.lastTrainRealTimeView.setupLegInfo(info: info)
                 case .finish:
                     self?.lastTrainArrivalView.setupLegInfo(info: info)
                 default: do {}
@@ -392,13 +392,13 @@ extension MainViewController {
             }
             .store(in: &cancellables)
         
-        viewModel.$busRealTimeInfo
-            .compactMap { $0 }
-            .receive(on: RunLoop.main)
-            .sink { [weak self] info in
-                self?.lastTrainRealTimeView.setupBusRealTime(realTime: info)
-            }
-            .store(in: &cancellables)
+        //        viewModel.$busRealTimeInfo
+        //            .compactMap { $0 }
+        //            .receive(on: RunLoop.main)
+        //            .sink { [weak self] info in
+        //                self?.lastTrainRealTimeView.setupBusRealTime(realTime: info)
+        //            }
+        //            .store(in: &cancellables)
         
         viewModel.$departureTime
             .compactMap { $0 }
@@ -414,15 +414,15 @@ extension MainViewController {
     }
     
     private func setupBottomType(_ type: MapBottomType?) {
-        lastTrainRealTimeView.isHidden = true
+        //        lastTrainRealTimeView.isHidden = true
         flagImageView.isHidden = true
         lastTrainSearchView.isHidden = true
         lastTrainDepartView.isHidden = true
         lastTrainArrivalView.isHidden = true
         
         switch type {
-        case .realTime:
-            lastTrainRealTimeView.isHidden = false
+        case .realTime: do {}
+            //            lastTrainRealTimeView.isHidden = false
         case .departure:
             lastTrainDepartView.isHidden = false
             viewModel.startAlarmTimer()

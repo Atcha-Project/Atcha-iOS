@@ -160,21 +160,11 @@ extension DetailRouteInfoBottomView {
         
         collectionView.alwaysBounceVertical = true
         collectionView.backgroundColor = .gray950
-        collectionView.register(
-            DetailRouteStartCell.self,
-            forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
-            withReuseIdentifier: DetailRouteStartCell.id
-        )
-        
-        collectionView.register(
-            DetailRouteEndCell.self,
-            forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter,
-            withReuseIdentifier: DetailRouteEndCell.id
-        )
-        
-        collectionView.register(DetailRouteWalkCell.self, forCellWithReuseIdentifier: "DetailRouteWalkCell")
-        collectionView.register(DetailRouteBusCell.self, forCellWithReuseIdentifier: "DetailRouteBusCell")
-        collectionView.register(DetailRouteSubwayCell.self, forCellWithReuseIdentifier: "DetailRouteSubwayCell")
+        collectionView.register(DetailRouteStartCell.self, forCellWithReuseIdentifier: DetailRouteStartCell.id)
+        collectionView.register(DetailRouteEndCell.self, forCellWithReuseIdentifier: DetailRouteEndCell.id)
+        collectionView.register(DetailRouteWalkCell.self, forCellWithReuseIdentifier: DetailRouteWalkCell.id)
+        collectionView.register(DetailRouteBusCell.self, forCellWithReuseIdentifier: DetailRouteBusCell.id)
+        collectionView.register(DetailRouteSubwayCell.self, forCellWithReuseIdentifier: DetailRouteSubwayCell.id)
     }
     
     private func createLayout() -> UICollectionViewCompositionalLayout {
@@ -190,31 +180,6 @@ extension DetailRouteInfoBottomView {
             }
             
             let section = self.layout(for: item.mode ?? .bus)
-            var supplementaryItems: [NSCollectionLayoutBoundarySupplementaryItem] = []
-            
-            if sectionIndex == 0 {
-                let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                                        heightDimension: .absolute(38))
-                let header = NSCollectionLayoutBoundarySupplementaryItem(
-                    layoutSize: headerSize,
-                    elementKind: UICollectionView.elementKindSectionHeader,
-                    alignment: .top
-                )
-                supplementaryItems.append(header)
-            }
-            
-            if sectionIndex == self.dataSource.snapshot().sectionIdentifiers.count - 1 {
-                let footerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                                        heightDimension: .absolute(38))
-                let footer = NSCollectionLayoutBoundarySupplementaryItem(
-                    layoutSize: footerSize,
-                    elementKind: UICollectionView.elementKindSectionFooter,
-                    alignment: .bottom
-                )
-                supplementaryItems.append(footer)
-            }
-            
-            section.boundarySupplementaryItems = supplementaryItems
             return section
         }
     }
@@ -247,23 +212,7 @@ extension DetailRouteInfoBottomView {
         let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
                                                heightDimension: .estimated(height))
         let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
-        let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(38))
-        let header = NSCollectionLayoutBoundarySupplementaryItem(
-            layoutSize: headerSize,
-            elementKind: UICollectionView.elementKindSectionHeader,
-            alignment: .top
-        )
-        
-        let footerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(38))
-        let footer = NSCollectionLayoutBoundarySupplementaryItem(
-            layoutSize: footerSize,
-            elementKind: UICollectionView.elementKindSectionFooter,
-            alignment: .bottom
-        )
-        
         let section = NSCollectionLayoutSection(group: group)
-        section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16)
-        section.boundarySupplementaryItems = [header, footer]
         return section
     }
     
