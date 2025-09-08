@@ -93,6 +93,16 @@ final class MainCoordinator {
                         startAddress: locationInfo.name ?? "주소 없음"
                     )
         
+                    searchVM.getAlarmTapped = { [weak self] address, infos in
+                        guard let self else { return }
+                        self.mainViewModel?.courseSearchResultHandler?(address, infos)
+                        self.navigationController.popViewController(animated: true)
+                    }
+                    searchVM.getDetailTapped = { [weak self] address, infos in
+                        guard let self else { return }
+                        self.handle(route: .detailRoute(address: address, infos: infos, context: .beforeRegister))
+                    }
+                    
                     let searchVC = courseDI.makeCourseSearchViewController(viewModel: searchVM)
                     self.navigationController.pushViewController(searchVC, animated: false)
                 }

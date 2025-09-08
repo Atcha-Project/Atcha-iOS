@@ -46,20 +46,21 @@ final class CourseStepView: UIView {
         topLineImageView.contentMode = .scaleAspectFit
         bottomLineImageView.contentMode = .scaleAspectFit
         
-        iconImageView.snp.makeConstraints { make in
-            make.top.equalToSuperview()
-        }
-        
         topLineImageView.snp.makeConstraints { make in
             make.centerX.equalTo(iconImageView)
             make.bottom.equalTo(iconImageView.snp.top)
             make.top.greaterThanOrEqualToSuperview()
         }
         
+        iconImageView.snp.makeConstraints { make in
+            make.top.equalTo(topLineImageView.snp.bottom)
+            make.leading.equalToSuperview()
+            make.bottom.equalTo(bottomLineImageView.snp.top)
+        }
+        
         bottomLineImageView.snp.makeConstraints { make in
             make.top.equalTo(iconImageView.snp.bottom)
             make.centerX.equalTo(iconImageView)
-            make.height.equalTo(18)
             make.bottom.equalToSuperview().priority(.medium)
         }
     }
@@ -135,9 +136,16 @@ final class CourseStepView: UIView {
             }
         }
         
-        iconImageView.snp.remakeConstraints { make in
-            make.top.equalToSuperview()
-            make.leading.equalToSuperview().offset(isGetOff ? 6 : 0)
+        if topLineStyle == .solid || topLineStyle == .dotted {
+            iconImageView.snp.remakeConstraints { make in
+                make.top.equalTo(topLineImageView.snp.bottom)
+                make.leading.equalToSuperview().offset(isGetOff ? 6 : 0)
+            }
+        } else {
+            iconImageView.snp.remakeConstraints { make in
+                make.top.equalToSuperview()
+                make.leading.equalToSuperview().offset(isGetOff ? 6 : 0)
+            }
         }
         
 //        bottomLineImageView.snp.remakeConstraints { make in
@@ -147,7 +155,7 @@ final class CourseStepView: UIView {
 //            make.bottom.equalToSuperview().priority(.medium)
 //        }
         
-        titleLabel.snp.makeConstraints { make in
+        titleLabel.snp.remakeConstraints { make in
             make.top.equalTo(iconImageView).offset(isGetOff ? -2 : 3)
             make.leading.equalTo(iconImageView.snp.trailing).offset(isGetOff ? 12 : 6)
         }

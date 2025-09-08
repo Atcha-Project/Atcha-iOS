@@ -304,15 +304,15 @@ final class CourseCell: UICollectionViewCell {
             
             // --------------------------
             // topLine 결정
-            if index == 0 {
-                topLine = .none
-            } else {
-                if prevLeg?.mode == .walk || leg.mode == .walk {
-                    topLine = .dotted
-                } else {
-                    topLine = .solid
-                }
-            }
+//            if index == 0 {
+//                topLine = .none
+//            } else {
+//                if prevLeg?.mode == .walk || leg.mode == .walk {
+//                    topLine = .dotted
+//                } else {
+//                    topLine = .solid
+//                }
+//            }
             
             // bottomLine 결정
             if index == course.legs.count - 1 {
@@ -335,7 +335,7 @@ final class CourseCell: UICollectionViewCell {
                     icon: UIImage.walkGray700,
                     title: "걷기",
                     time: leg.sectionTime,
-                    topLineStyle: topLine,
+                    topLineStyle: .none,
                     bottomLineStyle: bottomLine,
                     isGetOff: false,
                     arriveTime: arriveTime
@@ -358,7 +358,7 @@ final class CourseCell: UICollectionViewCell {
                         icon: startIcon,
                         title: leg.mode == .bus ? "\(startName) 승차" : "\(startName)역 승차",
                         time: leg.sectionTime,
-                        topLineStyle: topLine,
+                        topLineStyle: .none,
                         bottomLineStyle: .solid,
                         isGetOff: false,
                         arriveTime: arriveTime
@@ -382,7 +382,7 @@ final class CourseCell: UICollectionViewCell {
                         icon: getOffIcon,
                         title: leg.mode == .bus ? "\(endName) 하차" : "\(endName)역 하차",
                         time: leg.sectionTime,
-                        topLineStyle: .solid,
+                        topLineStyle: .none,
                         bottomLineStyle: endBottomLine,
                         isGetOff: true,
                         arriveTime: arriveTime
