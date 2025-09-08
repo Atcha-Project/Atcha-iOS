@@ -41,7 +41,7 @@ final class SearchTextField: UIView {
         let spacer12 = UIView()
         spacer10.setContentHuggingPriority(.required, for: .horizontal)
         
-        textField.attributedPlaceholder = AtchaFont.B3_M_15(lineHeight: 0, "지번, 도로명, 건물명으로 검색", color: AtchaColor.gray400)
+        textField.attributedPlaceholder = AtchaFont.B1_R_17(lineHeight: 0, "지번, 도로명, 건물명으로 검색", color: AtchaColor.gray400)
         textField.textColor = AtchaColor.white
         textField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         
@@ -107,5 +107,18 @@ final class SearchTextField: UIView {
     func setText(_ text: String) {
         textField.text = text
         resetButton.isHidden = text.isEmpty
+    }
+    
+    func focusTextField() {
+        textField.isHidden = false
+        textField.isUserInteractionEnabled = true
+        layoutIfNeeded()
+        textField.layoutIfNeeded()
+        
+        _ = textField.becomeFirstResponder()
+    }
+    
+    func resignTextField() {
+        _ = textField.resignFirstResponder()
     }
 }
