@@ -113,6 +113,13 @@ final class SearchLocationViewController: BaseViewController<SearchLocationViewM
             guard let self = self, let coordinate = viewModel.currentLocation else { return }
             self.handleTextSubmit(text: text, coordinate: coordinate)
         }
+        
+        searchNavigationBar.onBeginEditing = { [weak self] in
+            print("키보드 사용")
+        }
+        searchNavigationBar.onEndEditing = { [weak self] in
+            print("키보드 중지")
+        }
     }
     
     // MARK: - 텍스트 변화

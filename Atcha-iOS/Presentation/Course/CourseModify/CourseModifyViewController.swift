@@ -45,6 +45,10 @@ final class CourseModifyViewController: BaseViewController<CourseModifyViewModel
         DispatchQueue.main.async { [weak self] in
             self?.searchTextField.focusTextField()
         }
+        
+        if #available(iOS 16.0, *) {
+            view.keyboardLayoutGuide.followsUndockedKeyboard = true
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -142,6 +146,13 @@ final class CourseModifyViewController: BaseViewController<CourseModifyViewModel
         emptyRecentLabel.attributedText = AtchaFont.B4_R_15("최근 내역이 없습니다.", color: AtchaColor.gray400)
         
         view.addSubViews(topNavigationBar, searchContainer, homeContainer, separator, tableView, tableHeaderView, emptyRecentLabel)
+        
+        searchTextField.onBeginEditing = { [weak self] in
+            self?.setKeyboardVisible(true)
+        }
+        searchTextField.onEndEditing = { [weak self] in
+            self?.setKeyboardVisible(false)
+        }
     }
     
     // MARK: - 경로 수정 AutoLayout
@@ -206,41 +217,22 @@ final class CourseModifyViewController: BaseViewController<CourseModifyViewModel
     }
     
     // MARK: - 검색 바 콜백
-//    private func setupSearchTextFieldCallbacks() {
-//        searchTextField.onTextChange = { [weak self] text in
-//            guard let self = self, let coordinate = viewModel.currentLocation else { return }
-//            if text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-//                print("비었으")
-//                viewModel.recentSearchLocation()
-//            } else {
-//                viewModel.searchLocation(keyword: text,
-//                                         lat: coordinate.latitude,
-//                                         lon: coordinate.longitude)
-//            }
-//        }
-//        
-//        searchTextField.onTextReset = { [weak self] in
-//            self?.viewModel.recentSearchLocation()
-//        }
-//    }
     private func setupSearchTextFieldCallbacks() {
         searchTextField.onTextChange = { [weak self] text in
             guard let self = self else { return }
-
+            
             let q = text.trimmingCharacters(in: .whitespacesAndNewlines)
-
+            
             // 연속 입력 중 이전 검색 취소
             self.pendingSearch?.cancel()
-
+            
             if q.isEmpty {
                 self.viewModel.recentSearchLocation()
                 return
             }
-
-            // 좌표 필요할 때만 확인
+            
             guard let coord = self.viewModel.currentLocation else { return }
-
-            // 살짝 디바운스
+            
             let work = DispatchWorkItem { [weak self] in
                 self?.viewModel.searchLocation(
                     keyword: q,
@@ -251,7 +243,7 @@ final class CourseModifyViewController: BaseViewController<CourseModifyViewModel
             self.pendingSearch = work
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: work)
         }
-
+        
         searchTextField.onTextReset = { [weak self] in
             self?.pendingSearch?.cancel()
             self?.viewModel.recentSearchLocation()
@@ -282,6 +274,26 @@ final class CourseModifyViewController: BaseViewController<CourseModifyViewModel
         view.endEditing(true)
         guard let loc = viewModel.initialLocation else { return }
         viewModel.onLocationSelected?(loc)
+    }
+    
+    private func setKeyboardVisible(_ visible: Bool){
+        if visible {
+            tableView.snp.remakeConstraints { make in
+                self.tableViewTopConstraint = make.top.equalTo(tableHeaderView.snp.bottom).constraint
+                make.leading.trailing.equalToSuperview()
+                
+                if #available(iOS 15.0, *) {
+                    make.bottom.equalTo(view.keyboardLayoutGuide.snp.top)
+                } else {
+                    make.bottom.equalToSuperview()
+                }
+            }
+        } else {
+            tableView.snp.remakeConstraints { make in
+                self.tableViewTopConstraint = make.top.equalTo(tableHeaderView.snp.bottom).constraint
+                make.leading.trailing.bottom.equalToSuperview()
+            }
+        }
     }
 }
 
@@ -366,7 +378,7 @@ extension CourseModifyViewController: UITableViewDataSource, UITableViewDelegate
             Task { [weak self] in
                 guard let self else { return }
                 let ok = await viewModel.checkServiceRegion(lat: loc.lat, lon: loc.lon)
-
+                
                 if ok {
                     viewModel.addRecentSearchLocation(request: RecentSearchRequest(name: loc.name, lat: loc.lat, lon: loc.lon, businessCategory: loc.businessCategory, address: loc.address))
                     
