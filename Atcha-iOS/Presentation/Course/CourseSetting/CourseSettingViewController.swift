@@ -41,7 +41,10 @@ final class CourseSettingViewController: BaseViewController<CourseSettingViewMod
         flagImageView.isUserInteractionEnabled = false
         configureButton(currentLoactionButton, imageName: "mylocation-filled", action: #selector(didTapLocationButton))
         backButton.setImage(UIImage.chevronLeft, for: .normal)
-        backButton.tintColor = .gray300
+        backButton.tintColor = .white
+        backButton.backgroundColor = .black
+        backButton.clipsToBounds = true
+        backButton.setCornerRadius(18)
     }
     
     private func configureButton(_ button: UIButton, imageName: String, action: Selector) {
@@ -129,9 +132,9 @@ final class CourseSettingViewController: BaseViewController<CourseSettingViewMod
         }
         
         backButton.snp.makeConstraints { make in
-            make.leading.equalToSuperview().inset(16)
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).inset(18)
-            make.size.equalTo(24)
+            make.leading.equalToSuperview().offset(16)
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(12)
+            make.width.height.equalTo(36)
         }
     }
 }
@@ -151,7 +154,6 @@ extension CourseSettingViewController {
                              action: #selector(backButtonTapped),
                              for: .touchUpInside)
     }
-    
     
     @objc private func backButtonTapped() {
         navigationController?.popViewController(animated: true)

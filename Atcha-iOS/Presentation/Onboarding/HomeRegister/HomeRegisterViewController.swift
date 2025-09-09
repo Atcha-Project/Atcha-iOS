@@ -225,7 +225,7 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
     
     // MARK: - 현위치 찾기
     @objc private func handleCurrentLocationTapped() {
-        viewModel.routeHandler?(.homeRegister)
+        viewModel.routeHandler?(.homeRegister(useDeviceLocation: true))
     }
     
     // MARK: - UI 렌더링

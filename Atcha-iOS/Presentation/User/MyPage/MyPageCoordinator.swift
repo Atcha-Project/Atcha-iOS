@@ -97,8 +97,8 @@ final class MyPageCoordinator {
         switch route {
         case .searchAdress:
             showSearchAddress()
-        case .homeRegister:
-            showHomeFind()
+        case let .homeRegister(useDeviceLocation):
+            showHomeFind(useDeviceLocation: useDeviceLocation)
         default: do {}
         }
     }
@@ -110,8 +110,9 @@ final class MyPageCoordinator {
         navigationController.pushViewController(vc, animated: true)
     }
     
-    private func showHomeFind() {
+    private func showHomeFind(useDeviceLocation: Bool) {
         let vm = diContainer.makeHomeFindViewModel()
+        vm.forceDeviceLocation = useDeviceLocation
         vm.routeHandler = { [weak self] route in self?.handle(route: route) }
         let vc = diContainer.makeHomeFindViewController(viewModel: vm)
         navigationController.pushViewController(vc, animated: true)
@@ -119,8 +120,8 @@ final class MyPageCoordinator {
     
     private func handle(route: HomeRouter) {
         switch route {
-        case .homeRegister:
-            showHomeFind()
+        case let .homeRegister(useDeviceLocation):
+            showHomeFind(useDeviceLocation: useDeviceLocation)
         case .searchAdress:
             showSearchAddress()
         default: do {}

@@ -16,6 +16,7 @@ final class HomeFindViewModel: BaseViewModel {
     @Published var currentLocation: CLLocationCoordinate2D?
     var routeHandler: ((HomeRouter) -> Void)?
     var isInitialReqeust: Bool = false
+    var forceDeviceLocation = false
     
     private let searchAddressUseCase: SearchAddressUseCase
     private let homePatchUseCase: HomePatchUseCase
@@ -93,11 +94,23 @@ final class HomeFindViewModel: BaseViewModel {
     }
     
     func setupLocation() {
-        if let savedLocation = locationStateHolder.currentLocation {
-            currentLocation = savedLocation
+        if forceDeviceLocation {
+            requestMyLocation()
+            forceDeviceLocation = false
+            isInitialReqeust = true
+            return
+        }
+        if let saved = locationStateHolder.currentLocation {
+            currentLocation = saved
         } else {
             requestMyLocation()
         }
+//
+//        if let savedLocation = locationStateHolder.currentLocation {
+//            currentLocation = savedLocation
+//        } else {
+//            requestMyLocation()
+//        }
     }
     
     private func requestMyLocation() {
