@@ -14,6 +14,8 @@ final class RegisterTextField: UIView {
     var onTextChange: ((String) -> Void)?
     var onTextReset: (() -> Void)?
     var onTextSubmit: ((String) -> Void)?
+    var onBeginEditing: (() -> Void)?
+    var onEndEditing: (() -> Void)?
     
     private let textField = UITextField()
     private let resetButton = UIButton()
@@ -34,7 +36,9 @@ final class RegisterTextField: UIView {
         textField.attributedPlaceholder = AtchaFont.B3_M_15(lineHeight: 0, "지번, 도로명, 건물명으로 검색", color: AtchaColor.gray400)
         textField.textColor = AtchaColor.white
         textField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
-        textField.returnKeyType = .done // ✅ 완료 버튼 설정
+        textField.addTarget(self, action: #selector(editingDidBegin), for: .editingDidBegin)
+        textField.addTarget(self, action: #selector(editingDidEnd), for: .editingDidEnd)
+        textField.returnKeyType = .done
         textField.delegate = self
         
         resetButton.setImage(UIImage.xCircleGray200, for: .normal)
@@ -66,6 +70,14 @@ final class RegisterTextField: UIView {
     }
     
     // MARK: - Action Method
+    @objc private func editingDidBegin(_ sender: UITextField) {
+        onBeginEditing?()
+    }
+    
+    @objc private func editingDidEnd(_ sender: UITextField) {
+        onEndEditing?()
+    }
+    
     @objc private func textFieldDidChange(_ sender: UITextField) {
         let address = sender.text ?? ""
         

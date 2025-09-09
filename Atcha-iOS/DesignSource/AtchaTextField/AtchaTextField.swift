@@ -12,11 +12,15 @@ enum AtchaTextField {
     static func registerTextField(
         onTextChange: ((String) -> Void)? = nil,
         onTextReset: (() -> Void)? = nil,
-        onTextSubmit: ((String) -> Void)? = nil
+        onTextSubmit: ((String) -> Void)? = nil,
+        onBeginEditing: (() -> Void)? = nil,
+        onEndEditing: (() -> Void)? = nil
     ) -> RegisterTextField {
         let textField = RegisterTextField(onTextChange: onTextChange)
         textField.onTextReset = onTextReset
         textField.onTextSubmit = onTextSubmit
+        textField.onBeginEditing = onBeginEditing
+        textField.onEndEditing = onEndEditing
         return textField
     }
     

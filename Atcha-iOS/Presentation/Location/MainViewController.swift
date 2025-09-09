@@ -271,11 +271,11 @@ extension MainViewController {
         let popupVM = AtchaPopupViewModel(info: .alarm)
         let popupVC = AtchaPopupViewController(viewModel: popupVM)
         
-        popupVC.confirmButton.addAction(UIAction { [weak popupVC] _ in
+        popupVC.cancelButton.addAction(UIAction { [weak popupVC] _ in
             popupVC?.dismiss(animated: true)
         }, for: .touchUpInside)
         
-        popupVC.cancelButton.addAction(UIAction { [weak self, weak popupVC] _ in
+        popupVC.confirmButton.addAction(UIAction { [weak self, weak popupVC] _ in
             guard let self else { return }
             popupVC?.dismiss(animated: true)
             

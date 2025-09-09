@@ -25,7 +25,6 @@ class WithdrawViewController: BaseViewController<WithdrawViewModel> {
         self?.updateWithdrawButtonStateForEtc(text)
     }
     private var selectedOption: WithdrawOption?
-    private var lastKeyboardHeight: CGFloat = -1
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)

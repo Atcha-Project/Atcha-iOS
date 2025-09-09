@@ -26,7 +26,7 @@ enum AtcahPopuInfo {
         switch self {
         case .logout: return "로그아웃"
         case .withdraw: return "탈퇴하기"
-        case .alarm: return "돌아가기"
+        case .alarm: return "종료하기"
         case .course: return "알람 받기"
         }
     }
@@ -44,7 +44,7 @@ enum AtcahPopuInfo {
     
     var cancelTitle: String {
         switch self {
-        case .alarm: return "종료하기"
+        case .alarm: return "돌아가기"
         case .course: return "돌아가기"
         default: return "취소"
         }
