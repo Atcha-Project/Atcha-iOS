@@ -12,6 +12,7 @@ final class PermissionViewController: BaseViewController<PermissionViewModel> {
     private let titleLabel: UILabel = UILabel()
     
     private let locationIconImageVIew: UIImageView = UIImageView()
+    private let locationIconContainer: UIView = UIView()
     private let locationTitleLabel: UILabel = UILabel()
     private let locationDescLabel: UILabel = UILabel()
     
@@ -24,7 +25,7 @@ final class PermissionViewController: BaseViewController<PermissionViewModel> {
     }()
     
     private lazy var locationSectionStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [locationIconImageVIew, locationTextStackView])
+        let stackView = UIStackView(arrangedSubviews: [locationIconContainer, locationTextStackView])
         stackView.axis = .horizontal
         stackView.spacing = 12
         stackView.alignment = .top
@@ -32,6 +33,7 @@ final class PermissionViewController: BaseViewController<PermissionViewModel> {
     }()
     
     private let alarmIconImageView: UIImageView = UIImageView()
+    private let alarmIconContainer: UIView = UIView()
     private let alarmTitleLabel: UILabel = UILabel()
     private let alarmDescLabel: UILabel = UILabel()
     
@@ -44,7 +46,7 @@ final class PermissionViewController: BaseViewController<PermissionViewModel> {
     }()
     
     private lazy var alarmSectionStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [alarmIconImageView, alarmTextStackView])
+        let stackView = UIStackView(arrangedSubviews: [alarmIconContainer, alarmTextStackView])
         stackView.axis = .horizontal
         stackView.spacing = 12
         stackView.alignment = .top
@@ -80,8 +82,11 @@ final class PermissionViewController: BaseViewController<PermissionViewModel> {
         
         locationIconImageVIew.image = UIImage.placeOutlined
         locationIconImageVIew.tintColor = .white
+        locationIconContainer.addSubview(locationIconImageVIew)
+        
         alarmIconImageView.image = UIImage.bellFilled
         alarmIconImageView.tintColor = .white
+        alarmIconContainer.addSubview(alarmIconImageView)
         
         locationTitleLabel.attributedText = AtchaFont.B5_SB_14(lineHeight: 0, "위치", color: .white)
         locationDescLabel.attributedText = AtchaFont.B6_R_14("현위치를 기준으로 빠르게 막차를 찾아요", color: .gray200)
@@ -96,11 +101,25 @@ final class PermissionViewController: BaseViewController<PermissionViewModel> {
         }
         
         locationIconImageVIew.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(1)
+            make.centerX.equalToSuperview()
             make.width.height.equalTo(16)
         }
         
+        locationIconContainer.snp.makeConstraints { make in
+            make.height.equalTo(17)
+            make.width.equalTo(16)
+        }
+        
         alarmIconImageView.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(1)
+            make.centerX.equalToSuperview()
             make.width.height.equalTo(16)
+        }
+        
+        alarmIconContainer.snp.makeConstraints { make in
+            make.height.equalTo(17)
+            make.width.equalTo(16)
         }
         
         infoStackView.snp.makeConstraints { make in
