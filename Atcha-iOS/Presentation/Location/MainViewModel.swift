@@ -190,11 +190,12 @@ final class MainViewModel: BaseViewModel {
     override func handleRefreshNotification(_ notification: Notification) {
         guard let userInfo = notification.userInfo,
               let body = userInfo["body"] as? String,
-              let updatedAt = userInfo["updatedAt"] as? String else {
+              let _ = userInfo["updatedAt"] as? String else {
             return
         }
-        UserDefaultsWrapper.shared.set(body,
-                                       forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
+        
+        UserDefaultsWrapper.shared.remove(forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
+        UserDefaultsWrapper.shared.set(body, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
         
         AlarmManager.shared.startAlarm(after: body,
                                        title: "눌러서 출발 알람 끄기",
