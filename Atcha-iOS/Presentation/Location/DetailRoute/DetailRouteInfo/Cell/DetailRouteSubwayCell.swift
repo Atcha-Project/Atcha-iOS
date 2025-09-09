@@ -18,8 +18,11 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
     
     // MARK: - Top (승차 정보)
     private let startLabel: UILabel = UILabel()
-    
     private let stationListStackView = UIStackView()
+    
+    // MARK: 도착 예정 시간
+    private let timeStartLabel: UILabel = UILabel()
+    private let timeEndLabel: UILabel = UILabel()
     
     // MARK: - Summary
     private let summaryLabel: UILabel = UILabel()
@@ -50,7 +53,7 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
     
     private func setupUI() {
         contentView.addSubViews(iconImageView, stickView, circleView,
-                                startLabel,
+                                startLabel, timeStartLabel, timeEndLabel,
                                 summaryLabel, summaryButton, stationListStackView,
                                 endLabel)
         
@@ -63,31 +66,42 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
         stationListStackView.axis = .vertical
         stationListStackView.spacing = 10
         stationListStackView.isHidden = true
+        
+        timeStartLabel.attributedText = AtchaFont.M_11("22:32", color: .gray200)
+        timeStartLabel.textAlignment = .center
+        timeStartLabel.setCornerRadius(4)
+        timeStartLabel.backgroundColor = .gray920
+        
+        timeEndLabel.attributedText = AtchaFont.M_11("22:32", color: .gray200)
+        timeEndLabel.textAlignment = .center
+        timeEndLabel.setCornerRadius(4)
+        timeEndLabel.backgroundColor = .gray920
     }
     
     private func setupConstraints() {
-        iconImageView.snp.makeConstraints {
+        timeStartLabel.snp.makeConstraints {
+            $0.leading.equalToSuperview().inset(16)
             $0.top.equalToSuperview()
-            $0.leading.equalToSuperview().offset(16)
+            $0.width.equalTo(38)
+            $0.height.equalTo(18)
         }
         
-        stickView.snp.makeConstraints {
-            $0.top.equalTo(iconImageView.snp.bottom).inset(5)
-            $0.centerX.equalTo(iconImageView)
-            $0.bottom.equalTo(circleView.snp.top)
-            $0.width.equalTo(4)
-        }
-        
-        circleView.snp.makeConstraints {
-            $0.leading.equalTo(iconImageView)
+        timeEndLabel.snp.makeConstraints {
+            $0.leading.equalToSuperview().inset(16)
             $0.bottom.equalToSuperview()
-            $0.centerX.equalTo(iconImageView)
-            $0.size.equalTo(16)
+            $0.width.equalTo(38)
+            $0.height.equalTo(18)
+        }
+        
+        iconImageView.snp.makeConstraints {
+            $0.leading.equalTo(timeStartLabel.snp.trailing).offset(10)
+            $0.centerY.equalTo(timeStartLabel.snp.centerY)
+            $0.size.equalTo(36)
         }
         
         startLabel.snp.makeConstraints {
-            $0.top.equalToSuperview().offset(5)
-            $0.leading.equalTo(iconImageView.snp.trailing).offset(18)
+            $0.leading.equalTo(iconImageView.snp.trailing).offset(10)
+            $0.centerY.equalTo(timeStartLabel.snp.centerY)
             $0.height.equalTo(20)
         }
         
@@ -102,12 +116,25 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
             make.size.equalTo(10)
         }
         
+        stickView.snp.makeConstraints {
+            $0.centerX.equalTo(iconImageView.snp.centerX)
+            $0.top.equalTo(iconImageView.snp.bottom).inset(5)
+            $0.bottom.equalTo(circleView.snp.top).inset(5)
+            $0.width.equalTo(4)
+        }
+        
         stationListStackView.snp.makeConstraints {
             $0.leading.equalTo(startLabel)
             stationListStackViewTopConstraint = $0.top.equalTo(summaryLabel.snp.bottom).offset(16).constraint
             stationListStackViewBottomConstraint = $0.bottom.equalTo(endLabel.snp.top).offset(-12).constraint
         }
-
+        
+        circleView.snp.makeConstraints {
+            $0.size.equalTo(16)
+            $0.centerX.equalTo(iconImageView.snp.centerX)
+            $0.bottom.equalTo(endLabel.snp.bottom)
+        }
+        
         endLabel.snp.makeConstraints {
             endLabelTopConstraintWithoutStack = $0.top.equalTo(summaryLabel.snp.bottom).offset(36).constraint
             $0.leading.trailing.equalTo(stationListStackView)
@@ -128,14 +155,14 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
     @objc private func handleSummaryButton() {
         isExpanded.toggle()
         stationListStackView.isHidden = !isExpanded
-
+        
         stationListStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         addStationNameLabel(info: stationInfos)
-
+        
         stationListStackViewTopConstraint?.isActive = isExpanded
         stationListStackViewBottomConstraint?.isActive = isExpanded
         endLabelTopConstraintWithoutStack?.isActive = !isExpanded
-
+        
         UIView.animate(withDuration: 0.3) { self.layoutIfNeeded() }
         didTapSummary?()
     }

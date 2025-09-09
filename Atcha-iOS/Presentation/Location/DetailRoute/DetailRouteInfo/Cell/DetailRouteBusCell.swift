@@ -81,7 +81,8 @@ final class DetailRouteBusCell: UICollectionViewCell {
     private func setupConstraints() {
         iconImageView.snp.makeConstraints {
             $0.top.equalToSuperview()
-            $0.leading.equalToSuperview().offset(16)
+            $0.leading.equalToSuperview()
+            $0.size.equalTo(36)
         }
         
         stickView.snp.makeConstraints {

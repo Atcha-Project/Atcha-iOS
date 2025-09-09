@@ -198,9 +198,9 @@ extension DetailRouteInfoBottomView {
         case .walk:
             height = 70
         case .bus:
-            height = 170
+            height = 175
         case .subway:
-            height = 160
+            height = 154
         default:
             height = 38
         }
