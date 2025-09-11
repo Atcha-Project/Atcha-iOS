@@ -13,6 +13,18 @@ enum SearchResultItem {
     case result(location: Location)
 }
 
+enum SearchResultSection: Int, CaseIterable {
+    case region
+    case place
+    
+    var title: String {
+        switch self {
+        case .region: return "주소 결과"
+        case .place:  return "장소 결과"
+        }
+    }
+}
+
 enum SearchMode {
     case recent
     case result
@@ -20,7 +32,10 @@ enum SearchMode {
 
 final class CourseModifyViewModel: BaseViewModel {
     @Published private(set) var items: [SearchResultItem] = []
+    @Published private(set) var sectionedItems: [[SearchResultItem]] = []
     private(set) var mode: SearchMode = .recent
+    private(set) var isSectioned: Bool = false
+    
     private(set) var currentLocation: CLLocationCoordinate2D?
     private(set) var initialLocation: Location?
     var onLocationSelected: ((Location) -> Void)?
@@ -39,8 +54,6 @@ final class CourseModifyViewModel: BaseViewModel {
         self.authorizationUseCase = authorizationUseCase
         self.locationStateHolder = locationStateHolder
         
-//        self.currentLocation = CLLocationCoordinate2D(latitude: 37.554722,
-//                                                      longitude: 126.970833)
         self.initialLocation = initialLocation
         self.currentLocation = CLLocationCoordinate2D(latitude: initialLocation.lat, longitude: initialLocation.lon)
         self.mode = .recent
@@ -119,13 +132,49 @@ final class CourseModifyViewModel: BaseViewModel {
                 let request = SearchLocationRequest(keyword: keyword, lat: lat, lon: lon)
                 let response = try await searchAddressUseCase.searchAddress(request)
                 self.mode = .result
+                self.isSectioned = false
                 self.items = response.map { .result(location: $0) }
+                self.sectionedItems = []
             } catch {
                 print("장소 검색 실패")
             }
         }
     }
     
+    
+    // MARK: - 지역 카테고리 판별
+    private func isRegionCategory(_ category: String?) -> Bool {
+        guard let c = category?.trimmingCharacters(in: .whitespacesAndNewlines) else { return false }
+        return c.contains("지역")
+    }
+    
+    // MARK: 지역 분리 테스트용
+    private func mapResultsRegionFirst(_ locations: [Location]) -> [SearchResultItem] {
+        let regions = locations.filter { isRegionCategory($0.businessCategory) }
+        let others  = locations.filter { !isRegionCategory($0.businessCategory) }
+        return (regions + others).map { .result(location: $0) }
+    }
+    
+    // MARK: 지역 분리 테스트용
+    @MainActor
+    func prioritizeRegionInCurrentResults() {
+        guard mode == .result else { return }
+        
+        let locs: [Location] = items.compactMap {
+            if case let .result(loc) = $0 { return loc }
+            return nil
+        }
+        
+        let regionLocs = locs.filter { isRegionCategory($0.businessCategory) }
+        let placeLocs  = locs.filter { !isRegionCategory($0.businessCategory) }
+        
+        let regionSection: [SearchResultItem] = regionLocs.map { .result(location: $0) }
+        let placeSection:  [SearchResultItem] = placeLocs.map { .result(location: $0) }
+        
+        self.isSectioned = true
+        self.sectionedItems = [regionSection, placeSection]
+        self.items = (regionSection + placeSection)
+    }
     
     func saveNewLocation(location: Location) {
         locationStateHolder.address = location.address
@@ -149,14 +198,30 @@ final class CourseModifyViewModel: BaseViewModel {
 }
 
 extension CourseModifyViewModel {
-    func numberOfSections() -> Int {
-        return items.isEmpty ? 0 : 1
-    }
-    
     func selectedLocation(at indexPath: IndexPath) -> Location {
         switch items[indexPath.row] {
         case .recent(let loc), .result(let loc):
             return loc
         }
+    }
+    
+    func numberOfSections() -> Int {
+        if mode == .recent { return items.isEmpty ? 0 : 1 }
+        return isSectioned ? SearchResultSection.allCases.count : (items.isEmpty ? 0 : 1)
+    }
+    
+    func numberOfRows(in section: Int) -> Int {
+        if mode == .recent { return items.count }
+        return isSectioned ? sectionedItems[section].count : items.count
+    }
+    
+    func item(at indexPath: IndexPath) -> SearchResultItem {
+        if mode == .recent { return items[indexPath.row] }
+        return isSectioned ? sectionedItems[indexPath.section][indexPath.row] : items[indexPath.row]
+    }
+    
+    func titleForHeader(in section: Int) -> String? {
+        guard mode == .result, isSectioned else { return nil }
+        return SearchResultSection(rawValue: section)?.title
     }
 }

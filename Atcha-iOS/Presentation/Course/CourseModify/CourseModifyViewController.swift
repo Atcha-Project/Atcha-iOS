@@ -22,7 +22,6 @@ final class CourseModifyViewController: BaseViewController<CourseModifyViewModel
     private let separator: UIView = UIView()
     private var items: [SearchResultItem] = []
     private let tableView: UITableView = UITableView()
-    private var tableViewTopConstraint: Constraint?
     private let tableHeaderView: UIView = UIView()
     private let recentLabel: UILabel = UILabel()
     private let recentAllDeleteLabel: UILabel = UILabel()
@@ -88,11 +87,19 @@ final class CourseModifyViewController: BaseViewController<CourseModifyViewModel
                         tableHeaderView.isHidden = false
                         emptyRecentLabel.isHidden = true
                     }
-                    tableViewTopConstraint?.update(offset: 0)
+                    
+                    tableView.snp.remakeConstraints { make in
+                        make.top.equalTo(self.tableHeaderView.snp.bottom)
+                        make.leading.trailing.bottom.equalToSuperview()
+                    }
                 case .result:
                     tableHeaderView.isHidden = true
                     emptyRecentLabel.isHidden = true
-                    tableViewTopConstraint?.update(offset: -(tableHeaderView.frame.height))
+                    
+                    tableView.snp.remakeConstraints { make in
+                        make.top.equalTo(self.separator.snp.bottom).offset(self.viewModel.isSectioned ? 14 : 0)
+                        make.leading.trailing.bottom.equalToSuperview()
+                    }
                 }
                 
                 tableView.reloadData()
@@ -134,6 +141,11 @@ final class CourseModifyViewController: BaseViewController<CourseModifyViewModel
         tableView.dataSource = self
         tableView.delegate = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+        tableView.keyboardDismissMode = .onDrag
+        if #available(iOS 15.0, *) {
+            tableView.sectionHeaderTopPadding = 0
+        }
+        tableView.estimatedSectionHeaderHeight = 0
         
         recentLabel.attributedText = AtchaFont.B6_R_14("최근 내역", color: AtchaColor.gray400)
         recentAllDeleteLabel.attributedText = AtchaFont.B6_R_14("전체 삭제", color: AtchaColor.gray400)
@@ -146,13 +158,6 @@ final class CourseModifyViewController: BaseViewController<CourseModifyViewModel
         emptyRecentLabel.attributedText = AtchaFont.B4_R_15("최근 내역이 없습니다.", color: AtchaColor.gray400)
         
         view.addSubViews(topNavigationBar, searchContainer, homeContainer, separator, tableView, tableHeaderView, emptyRecentLabel)
-        
-        searchTextField.onBeginEditing = { [weak self] in
-            self?.setKeyboardVisible(true)
-        }
-        searchTextField.onEndEditing = { [weak self] in
-            self?.setKeyboardVisible(false)
-        }
     }
     
     // MARK: - 경로 수정 AutoLayout
@@ -206,7 +211,7 @@ final class CourseModifyViewController: BaseViewController<CourseModifyViewModel
         }
         
         tableView.snp.makeConstraints { make in
-            self.tableViewTopConstraint = make.top.equalTo(tableHeaderView.snp.bottom).constraint
+            make.top.equalTo(tableHeaderView.snp.bottom)
             make.leading.trailing.bottom.equalToSuperview()
         }
         
@@ -248,6 +253,14 @@ final class CourseModifyViewController: BaseViewController<CourseModifyViewModel
             self?.pendingSearch?.cancel()
             self?.viewModel.recentSearchLocation()
         }
+        
+        searchTextField.onTextSubmit = { [weak self] in
+            guard let self else { return }
+            
+            self.viewModel.prioritizeRegionInCurrentResults()
+            
+        }
+        
     }
     
     // MARK: - 최근 검색 전체 삭제 메서드
@@ -275,33 +288,13 @@ final class CourseModifyViewController: BaseViewController<CourseModifyViewModel
         guard let loc = viewModel.initialLocation else { return }
         viewModel.onLocationSelected?(loc)
     }
-    
-    private func setKeyboardVisible(_ visible: Bool){
-        if visible {
-            tableView.snp.remakeConstraints { make in
-                self.tableViewTopConstraint = make.top.equalTo(tableHeaderView.snp.bottom).constraint
-                make.leading.trailing.equalToSuperview()
-                
-                if #available(iOS 15.0, *) {
-                    make.bottom.equalTo(view.keyboardLayoutGuide.snp.top)
-                } else {
-                    make.bottom.equalToSuperview()
-                }
-            }
-        } else {
-            tableView.snp.remakeConstraints { make in
-                self.tableViewTopConstraint = make.top.equalTo(tableHeaderView.snp.bottom).constraint
-                make.leading.trailing.bottom.equalToSuperview()
-            }
-        }
-    }
 }
 
 extension CourseModifyViewController: UITableViewDataSource, UITableViewDelegate {
     
     // MARK: - Cell 갯수
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return items.count
+        return viewModel.numberOfRows(in: section)
     }
     
     // MARK: - Cell UI
@@ -315,7 +308,7 @@ extension CourseModifyViewController: UITableViewDataSource, UITableViewDelegate
         let titleLabel = UILabel()
         let detailLabel = UILabel()
         
-        let labelStack = UIStackView(arrangedSubviews: [titleLabel, detailLabel])
+        let labelStack = UIStackView(arrangedSubviews: [titleLabel])
         labelStack.axis = .vertical
         labelStack.spacing = 4
         labelStack.alignment = .leading
@@ -331,6 +324,7 @@ extension CourseModifyViewController: UITableViewDataSource, UITableViewDelegate
             
             let addressText = "\(location.radius ?? "" ) • \(location.address ?? "주소 없음")"
             detailLabel.attributedText = AtchaFont.B6_R_14(addressText, color: AtchaColor.gray200)
+            labelStack.addArrangedSubview(detailLabel)
             
             let recentStack = UIStackView(arrangedSubviews: [labelStack, deleteImageViewImage])
             recentStack.axis = .horizontal
@@ -349,11 +343,14 @@ extension CourseModifyViewController: UITableViewDataSource, UITableViewDelegate
             
         case .result(location: let location):
             titleLabel.attributedText = AtchaFont.B4_R_15(location.name ?? "이름 없음", color: AtchaColor.white)
-            
-            let addressText = "\(location.radius ?? "" ) • \(location.address ?? "주소 없음")"
-            detailLabel.attributedText = AtchaFont.B6_R_14(addressText, color: AtchaColor.gray200)
+            if location.businessCategory?.contains("지역") == false {
+                let addressText = "\(location.radius ?? "" ) • \(location.address ?? "주소 없음")"
+                detailLabel.attributedText = AtchaFont.B6_R_14(addressText, color: AtchaColor.gray200)
+                labelStack.addArrangedSubview(detailLabel)
+            }
             
             cell.contentView.addSubview(labelStack)
+            
             labelStack.snp.makeConstraints {
                 $0.top.bottom.equalToSuperview().inset(19)
                 $0.leading.trailing.equalToSuperview().inset(16)
@@ -393,6 +390,19 @@ extension CourseModifyViewController: UITableViewDataSource, UITableViewDelegate
     
     func numberOfSections(in tableView: UITableView) -> Int {
         return viewModel.numberOfSections()
+    }
+    
+    // 섹션 헤더 타이틀
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        return viewModel.titleForHeader(in: section)
+    }
+    
+    func tableView(_ tableView: UITableView,
+                   willDisplayHeaderView view: UIView, forSection section: Int) {
+        guard let header = view as? UITableViewHeaderFooterView else { return }
+        header.contentView.backgroundColor = AtchaColor.gray950
+        header.backgroundView?.backgroundColor = AtchaColor.gray950
+        header.textLabel?.textColor = AtchaColor.gray400
     }
 }
 

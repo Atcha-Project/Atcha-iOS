@@ -10,11 +10,10 @@ import UIKit
 import SnapKit
 
 // MARK: - 주소 검색 TextField
-final class SearchTextField: UIView {
+final class SearchTextField: UIView, UITextFieldDelegate {
     var onTextChange: ((String) -> Void)?
     var onTextReset: (() -> Void)?
-    var onBeginEditing: (() -> Void)?
-    var onEndEditing: (() -> Void)?
+    var onTextSubmit: (() -> Void)?
     
     var text: String? {
         return textField.text
@@ -47,8 +46,8 @@ final class SearchTextField: UIView {
         textField.attributedPlaceholder = AtchaFont.B1_R_17(lineHeight: 0, "지번, 도로명, 건물명으로 검색", color: AtchaColor.gray400)
         textField.textColor = AtchaColor.white
         textField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
-        textField.addTarget(self, action: #selector(editingDidBegin), for: .editingDidBegin)
-        textField.addTarget(self, action: #selector(editingDidEnd), for: .editingDidEnd)
+        textField.returnKeyType = .done
+        textField.delegate = self
         
         resetButton.setImage(UIImage.xCircleGray200, for: .normal)
         resetButton.tintColor = AtchaColor.gray200
@@ -95,14 +94,6 @@ final class SearchTextField: UIView {
     }
     
     // MARK: - Action Method
-    @objc private func editingDidBegin(_ sender: UITextField) {
-        onBeginEditing?()
-    }
-    
-    @objc private func editingDidEnd(_ sender: UITextField) {
-        onEndEditing?()
-    }
-    
     @objc private func textFieldDidChange(_ sender: UITextField) {
         let address = sender.text ?? ""
         
@@ -133,5 +124,11 @@ final class SearchTextField: UIView {
     
     func resignTextField() {
         _ = textField.resignFirstResponder()
+    }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        onTextSubmit?()
+        textField.resignFirstResponder()
+        return true
     }
 }
