@@ -28,6 +28,7 @@ final class CourseModifyViewController: BaseViewController<CourseModifyViewModel
     private let emptyRecentLabel: UILabel = UILabel()
     private var isFromSetting: Bool = false
     private var pendingSearch: DispatchWorkItem?
+    private var didFocusOnce = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -41,8 +42,12 @@ final class CourseModifyViewController: BaseViewController<CourseModifyViewModel
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        DispatchQueue.main.async { [weak self] in
-            self?.searchTextField.focusTextField()
+        
+        if !didFocusOnce {
+            DispatchQueue.main.async { [weak self] in
+                self?.searchTextField.focusTextField()
+            }
+            didFocusOnce = true
         }
         
         if #available(iOS 16.0, *) {
@@ -59,15 +64,13 @@ final class CourseModifyViewController: BaseViewController<CourseModifyViewModel
         }
         
         tableView.isHidden = false
-        tableHeaderView.isHidden = false
-        let text = searchTextField.text?.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines) ?? ""
         
-        guard !text.isEmpty,
-              let coordinate = viewModel.currentLocation else { return }
-        
-        viewModel.searchLocation(keyword: text,
-                                 lat: coordinate.latitude,
-                                 lon: coordinate.longitude)
+        switch viewModel.mode {
+        case .recent:
+            viewModel.recentSearchLocation()
+        case .result:
+            viewModel.prioritizeRegionInCurrentResults()
+        }
     }
     
     // MARK: - ViewModel 바인딩
@@ -299,7 +302,7 @@ extension CourseModifyViewController: UITableViewDataSource, UITableViewDelegate
     
     // MARK: - Cell UI
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let item = items[indexPath.row]
+        let item = viewModel.item(at: indexPath)
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         
         // 기존 content 제거
@@ -364,7 +367,7 @@ extension CourseModifyViewController: UITableViewDataSource, UITableViewDelegate
     
     // MARK: -  Cell 선택 시 이벤트
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let item = items[indexPath.row]
+        let item = viewModel.item(at: indexPath)
         switch item {
         case .recent(let loc):
             viewModel.addRecentSearchLocation(request: RecentSearchRequest(name: loc.name, lat: loc.lat, lon: loc.lon, businessCategory: loc.businessCategory, address: loc.address))

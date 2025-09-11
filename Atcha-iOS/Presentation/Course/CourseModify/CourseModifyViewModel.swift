@@ -149,13 +149,6 @@ final class CourseModifyViewModel: BaseViewModel {
     }
     
     // MARK: 지역 분리 테스트용
-    private func mapResultsRegionFirst(_ locations: [Location]) -> [SearchResultItem] {
-        let regions = locations.filter { isRegionCategory($0.businessCategory) }
-        let others  = locations.filter { !isRegionCategory($0.businessCategory) }
-        return (regions + others).map { .result(location: $0) }
-    }
-    
-    // MARK: 지역 분리 테스트용
     @MainActor
     func prioritizeRegionInCurrentResults() {
         guard mode == .result else { return }
