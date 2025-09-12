@@ -10,10 +10,10 @@ import UIKit
 import SnapKit
 
 // MARK: - 집주소 등록 시 검색 TextField
-final class RegisterTextField: UIView {
+final class RegisterTextField: UIView, UITextFieldDelegate {
     var onTextChange: ((String) -> Void)?
     var onTextReset: (() -> Void)?
-    var onTextSubmit: ((String) -> Void)?
+    var onTextSubmit: (() -> Void)?
     
     private let textField = UITextField()
     private let resetButton = UIButton()
@@ -97,12 +97,10 @@ final class RegisterTextField: UIView {
     // 선택: 외부에서 쓰기 좋은 편의 메서드
     func focus() { _ = becomeFirstResponder() }
     func unfocus() { _ = resignFirstResponder() }
-}
-
-extension RegisterTextField: UITextFieldDelegate {
+    
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        textField.resignFirstResponder()  // 키보드 내림
-        onTextSubmit?(textField.text ?? "")
+        onTextSubmit?()
+        textField.resignFirstResponder()
         return true
     }
 }
