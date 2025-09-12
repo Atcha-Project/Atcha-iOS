@@ -145,7 +145,7 @@ final class CourseModifyViewModel: BaseViewModel {
     // MARK: - 지역 카테고리 판별
     private func isRegionCategory(_ category: String?) -> Bool {
         guard let c = category?.trimmingCharacters(in: .whitespacesAndNewlines) else { return false }
-        return c.contains("지역")
+        return c.contains("지역") || c == ","
     }
     
     // MARK: 지역 분리 테스트용
@@ -215,6 +215,11 @@ extension CourseModifyViewModel {
     
     func titleForHeader(in section: Int) -> String? {
         guard mode == .result, isSectioned else { return nil }
+        
+        if sectionedItems[section].isEmpty {
+            return nil
+        }
+        
         return SearchResultSection(rawValue: section)?.title
     }
 }

@@ -15,15 +15,4 @@ enum AtchaTextBox {
         let textField = WithDrawTextBox(onTextChange: onTextChange)
         return textField
     }
-    
-    // MARK: - 사용 예시
-    //
-    //  registerTextField = AtchaTextField.registerTextField(
-    //      onTextChange: { text in
-    //          print("입력값: \(text)")
-    //      },
-    //      onTextReset: {
-    //          print("리셋 버튼 클릭됨")
-    //      }
-    //  )
 }

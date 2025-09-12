@@ -261,6 +261,7 @@ final class CourseModifyViewController: BaseViewController<CourseModifyViewModel
             guard let self else { return }
             
             self.viewModel.prioritizeRegionInCurrentResults()
+            self.tableView.reloadData()
             
         }
         
@@ -346,7 +347,7 @@ extension CourseModifyViewController: UITableViewDataSource, UITableViewDelegate
             
         case .result(location: let location):
             titleLabel.attributedText = AtchaFont.B4_R_15(location.name ?? "이름 없음", color: AtchaColor.white)
-            if location.businessCategory?.contains("지역") == false {
+            if location.businessCategory?.contains("지역") == false && location.businessCategory != (",") {
                 let addressText = "\(location.radius ?? "" ) • \(location.address ?? "주소 없음")"
                 detailLabel.attributedText = AtchaFont.B6_R_14(addressText, color: AtchaColor.gray200)
                 labelStack.addArrangedSubview(detailLabel)

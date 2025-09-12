@@ -11,17 +11,24 @@ import CoreLocation
 
 final class SearchLocationViewController: BaseViewController<SearchLocationViewModel> {
     private let searchNavigationBar: SearchNavigationBar = AtchaNavigationBar.search()
-    private let headerView: UIView = UIView()
     private let separator: UIView = UIView()
-    private let headerLabel: UILabel = UILabel()
     private let tableView = UITableView()
+    private var didFocusOnce = false
     
     private var tableViewTopConstraint: Constraint?
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        DispatchQueue.main.async { [weak self] in
-            self?.searchNavigationBar.focusTextField()
+        
+        if !didFocusOnce {
+            DispatchQueue.main.async { [weak self] in
+                self?.searchNavigationBar.focusTextField()
+            }
+            didFocusOnce = true
+        }
+        
+        if #available(iOS 16.0, *) {
+            view.keyboardLayoutGuide.followsUndockedKeyboard = true
         }
     }
     
@@ -41,6 +48,11 @@ final class SearchLocationViewController: BaseViewController<SearchLocationViewM
             .receive(on: RunLoop.main)
             .sink { [weak self] locations in
                 guard let self else { return }
+                tableView.snp.remakeConstraints { make in
+                    make.top.equalTo(self.separator.snp.bottom).offset(self.viewModel.isSectioned ? 14 : 0)
+                    make.leading.trailing.bottom.equalToSuperview()
+                }
+                
                 tableView.reloadData()
             }
             .store(in: &cancellables)
@@ -48,19 +60,21 @@ final class SearchLocationViewController: BaseViewController<SearchLocationViewM
     
     // MARK: - 장소 검색 UI
     private func setupUI() {
-        view.addSubViews(searchNavigationBar, headerView, tableView)
-        headerView.addSubViews(separator, headerLabel)
-        headerView.backgroundColor = .clear
-        headerLabel.attributedText = AtchaFont.B6_R_14("장소 결과", color: AtchaColor.gray400)
-        headerView.isHidden = true
+        view.addSubViews(searchNavigationBar, separator, tableView)
         
         separator.backgroundColor = AtchaColor.black
+        separator.isHidden = true
         
         tableView.separatorStyle = .none
         tableView.backgroundColor = .clear
         tableView.dataSource = self
         tableView.delegate = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+        tableView.keyboardDismissMode = .onDrag
+        if #available(iOS 15.0, *) {
+            tableView.sectionHeaderTopPadding = 0
+        }
+        tableView.estimatedSectionHeaderHeight = 0
     }
     
     private func setupAutoLayout() {
@@ -70,25 +84,13 @@ final class SearchLocationViewController: BaseViewController<SearchLocationViewM
         }
         
         separator.snp.makeConstraints { make in
-            make.top.equalTo(headerView.snp.top)
-            make.leading.equalTo(headerView.snp.leading)
-            make.trailing.equalTo(headerView.snp.trailing)
+            make.top.equalTo(searchNavigationBar.snp.bottom)
+            make.leading.trailing.equalToSuperview()
             make.height.equalTo(10)
         }
         
-        headerLabel.snp.makeConstraints { make in
-            make.top.equalTo(separator.snp.bottom).offset(14)
-            make.leading.equalTo(headerView.snp.leading).inset(16)
-        }
-        
-        headerView.snp.makeConstraints { make in
-            make.top.equalTo(searchNavigationBar.snp.bottom)
-            make.leading.trailing.equalToSuperview()
-            make.bottom.equalTo(headerLabel.snp.bottom).offset(4)
-        }
-        
         tableView.snp.makeConstraints { make in
-            self.tableViewTopConstraint = make.top.equalTo(searchNavigationBar.snp.bottom).constraint
+            make.top.equalTo(searchNavigationBar.snp.bottom)
             make.leading.trailing.bottom.equalToSuperview()
         }
     }
@@ -107,17 +109,32 @@ final class SearchLocationViewController: BaseViewController<SearchLocationViewM
             guard let self = self else { return }
             let coordinate = viewModel.currentLocation ?? CLLocationCoordinate2D(latitude: 37.5665, longitude: 126.9780)
             self.handleTextChange(text: text, coordinate: coordinate)
+            
+            separator.isHidden = true
+            
+            tableView.snp.remakeConstraints { make in
+                make.top.equalTo(self.separator.snp.bottom)
+                make.leading.trailing.bottom.equalToSuperview()
+            }
         }
         
-        searchNavigationBar.onTextSubmit = { [weak self] text in
-            guard let self = self, let coordinate = viewModel.currentLocation else { return }
-            self.handleTextSubmit(text: text, coordinate: coordinate)
+        searchNavigationBar.onTextSubmit = { [weak self] in
+            guard let self else { return }
+            self.viewModel.prioritizeRegionInCurrentResults()
+            
+            separator.isHidden = false
+            
+            tableView.snp.remakeConstraints { make in
+                make.top.equalTo(self.separator.snp.bottom).offset(14)
+                make.leading.trailing.bottom.equalToSuperview()
+            }
+            
+            self.tableView.reloadData()
         }
     }
     
     // MARK: - 텍스트 변화
     private func handleTextChange(text: String, coordinate: CLLocationCoordinate2D) {
-        headerView.isHidden = true
         tableView.snp.remakeConstraints { make in
             make.top.equalTo(searchNavigationBar.snp.bottom)
             make.leading.trailing.bottom.equalToSuperview()
@@ -130,40 +147,40 @@ final class SearchLocationViewController: BaseViewController<SearchLocationViewM
                                  lat: coordinate.latitude,
                                  lon: coordinate.longitude)
     }
-    
-    // MARK: - 텍스트 제출 처리
-    private func handleTextSubmit(text: String, coordinate: CLLocationCoordinate2D) {
-        headerView.isHidden = false
-        tableView.snp.remakeConstraints { make in
-            make.top.equalTo(headerView.snp.bottom)
-            make.leading.trailing.bottom.equalToSuperview()
-        }
-        viewModel.searchLocation(keyword: text, lat: coordinate.latitude, lon: coordinate.longitude)
-    }
 }
 
 extension SearchLocationViewController: UITableViewDataSource, UITableViewDelegate {
+    
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return viewModel.numberOfSections()
+    }
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return viewModel.locations.count
+            return viewModel.numberOfRows(in: section)
     }
     
     // MARK: - Cell UI
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-        let location = viewModel.selectedLocation(at: indexPath)
+        let location = viewModel.item(at: indexPath)
         
         cell.contentView.subviews.forEach { $0.removeFromSuperview() }
         
         let titleLabel = UILabel()
         titleLabel.attributedText = AtchaFont.B4_R_15(location.name ?? "이름 없음", color: AtchaColor.white)
-        let detailLabel = UILabel()
-        let addressText = "\(location.radius ?? "" ) • \(location.address ?? "주소 없음")"
-        detailLabel.attributedText = AtchaFont.B6_R_14(addressText, color: AtchaColor.gray200)
         
-        let labelStack = UIStackView(arrangedSubviews: [titleLabel, detailLabel])
+        let labelStack = UIStackView(arrangedSubviews: [titleLabel])
         labelStack.axis = .vertical
         labelStack.spacing = 4
         labelStack.alignment = .leading
+        
+        
+        if location.businessCategory?.contains("지역") == false && location.businessCategory != (",") {
+            let detailLabel = UILabel()
+            let addressText = "\(location.radius ?? "" ) • \(location.address ?? "주소 없음")"
+            detailLabel.attributedText = AtchaFont.B6_R_14(addressText, color: AtchaColor.gray200)
+            labelStack.addArrangedSubview(detailLabel)
+        }
         
         cell.contentView.addSubview(labelStack)
         labelStack.snp.makeConstraints {
@@ -190,6 +207,18 @@ extension SearchLocationViewController: UITableViewDataSource, UITableViewDelega
                     .show(in: self.view)
             }
         }
+    }
+    
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        return viewModel.titleForHeader(in: section)
+    }
+    
+    func tableView(_ tableView: UITableView,
+                   willDisplayHeaderView view: UIView, forSection section: Int) {
+        guard let header = view as? UITableViewHeaderFooterView else { return }
+        header.contentView.backgroundColor = AtchaColor.gray950
+        header.backgroundView?.backgroundColor = AtchaColor.gray950
+        header.textLabel?.textColor = AtchaColor.gray400
     }
     
     @objc private func handleCurrentLocationTapped() {

@@ -11,6 +11,9 @@ import CoreLocation
 
 final class SearchLocationViewModel: BaseViewModel {
     @Published private(set) var locations: [Location] = []
+    @Published private(set) var sectionedItems: [[Location]] = []
+    private(set) var isSectioned: Bool = false
+    
     private(set) var currentLocation: CLLocationCoordinate2D?
     
     var routeHandler: ((HomeRouter) -> Void)?
@@ -45,6 +48,9 @@ final class SearchLocationViewModel: BaseViewModel {
     func searchLocation(keyword: String, lat: Double, lon: Double) {
         Task {
             do {
+                self.isSectioned = false
+                self.sectionedItems = []
+                
                 let request = SearchLocationRequest(keyword: keyword, lat: lat, lon: lon)
                 let response = try await searchAddressUseCase.searchAddress(request)
                 self.locations = response
@@ -52,6 +58,25 @@ final class SearchLocationViewModel: BaseViewModel {
                 print("장소 검색 실패")
             }
         }
+    }
+    
+    // MARK: - 지역 카테고리 판별
+    private func isRegionCategory(_ category: String?) -> Bool {
+        guard let c = category?.trimmingCharacters(in: .whitespacesAndNewlines) else { return false }
+        return c.contains("지역") || c == ","
+    }
+    
+    // MARK: 지역 분리 테스트용
+    @MainActor
+    func prioritizeRegionInCurrentResults() {
+        let locs: [Location] = locations
+        
+        let regionLocs = locs.filter { isRegionCategory($0.businessCategory) }
+        let placeLocs  = locs.filter { !isRegionCategory($0.businessCategory) }
+        
+        self.isSectioned = true
+        self.sectionedItems = [regionLocs, placeLocs]
+        self.locations = (regionLocs + placeLocs)
     }
     
     func saveNewLocation(location: Location) {
@@ -77,11 +102,29 @@ final class SearchLocationViewModel: BaseViewModel {
 }
 
 extension SearchLocationViewModel {
-    func numberOfSections() -> Int {
-        return locations.isEmpty ? 0 : 1
-    }
-    
     func selectedLocation(at indexPath: IndexPath) -> Location {
         return locations[indexPath.row]
+    }
+    
+    func numberOfSections() -> Int {
+        return isSectioned ? SearchResultSection.allCases.count : (locations.isEmpty ? 0 : 1)
+    }
+    
+    func numberOfRows(in section: Int) -> Int {
+        return isSectioned ? sectionedItems[section].count : locations.count
+    }
+    
+    func item(at indexPath: IndexPath) -> Location {
+        return isSectioned ? sectionedItems[indexPath.section][indexPath.row]
+        : locations[indexPath.row]
+    }
+    
+    func titleForHeader(in section: Int) -> String? {
+        guard isSectioned else { return nil }
+        
+        if sectionedItems[section].isEmpty {
+            return nil
+        }
+        return SearchResultSection(rawValue: section)?.title
     }
 }
