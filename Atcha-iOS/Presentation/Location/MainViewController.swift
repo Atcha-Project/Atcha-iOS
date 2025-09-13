@@ -35,7 +35,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
         f.maximumFractionDigits = 0
         return f
     }()
-
+    
     
     private var firstAddress: String?
     
@@ -160,6 +160,7 @@ extension MainViewController {
         bindTaxiFareUpdates()
         bindServiceRegionUpdates()
         bindLockView()
+        bindToastEvent()
     }
     
     // MARK: - bind Lock View
@@ -192,6 +193,18 @@ extension MainViewController {
             .sink { [weak self] in self?.handleArrivalViewAction($0) }
             .store(in: &cancellables)
     }
+    
+    private func bindToastEvent() {
+        viewModel.$pendingToast
+            .compactMap { $0 }
+            .receive(on: RunLoop.main)
+            .sink { [weak self] message in
+                self?.view.showToast(message: message)
+                self?.viewModel.pendingToast = nil
+            }
+            .store(in: &cancellables)
+    }
+    
     
     private func handleSearchViewAction(_ action: LastTrainSearchBottomView.Action) {
         switch action {
@@ -445,7 +458,7 @@ extension MainViewController {
         let fareStr = decimalFormatter.string(from: NSNumber(value: fareInt)) ?? "\(fareInt)"
         ballonView.separationTitle(
             grayMessage: "여기서 막차 놓치면 택시비 ",
-            whiteMessage: "약 \(fareStr)원" 
+            whiteMessage: "약 \(fareStr)원"
         )
     }
     

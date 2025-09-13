@@ -68,6 +68,7 @@ final class MainCoordinator {
             vm.getAlarmTapped = { [weak self] address, infos in
                 guard let self else { return }
                 self.mainViewModel?.courseSearchResultHandler?(address, infos)
+                self.mainViewModel?.enqueueToast("알림이 등록되었습니다.")
                 navigationController.popViewController(animated: true)
             }
             vm.getDetailTapped = { [weak self] address, infos in
@@ -92,11 +93,12 @@ final class MainCoordinator {
                         startLon: "\(coordinate.longitude)",
                         startAddress: locationInfo.name ?? "주소 없음"
                     )
-        
+                    
                     searchVM.getAlarmTapped = { [weak self] address, infos in
                         guard let self else { return }
                         self.mainViewModel?.courseSearchResultHandler?(address, infos)
-                        self.navigationController.popViewController(animated: true)
+                        self.mainViewModel?.enqueueToast("알림이 등록되었습니다.")
+                        self.navigationController.popToMainViewControllerNoAnimation()
                     }
                     searchVM.getDetailTapped = { [weak self] address, infos in
                         guard let self else { return }
@@ -122,7 +124,8 @@ final class MainCoordinator {
                 searchVM.getAlarmTapped = { [weak self] address, infos in
                     guard let self else { return }
                     self.mainViewModel?.courseSearchResultHandler?(address, infos)
-                    self.navigationController.popViewController(animated: true)
+                    self.mainViewModel?.enqueueToast("알림이 등록되었습니다.")
+                    self.navigationController.popToMainViewControllerNoAnimation()
                 }
                 searchVM.getDetailTapped = { [weak self] address, infos in
                     guard let self else { return }
@@ -155,16 +158,8 @@ final class MainCoordinator {
             vm.getAlarmTapped = { [weak self] address, infos in
                 guard let self else { return }
                 mainViewModel?.courseSearchResultHandler?(address, infos)
-                let nav = self.navigationController
-                let vcs = nav.viewControllers
-         
-                let targetIndex = vcs.count - 4
-                
-                if targetIndex >= 0 {
-                    nav.popToViewController(vcs[targetIndex], animated: true)
-                } else {
-                    nav.popToRootViewController(animated: true)
-                }
+                self.mainViewModel?.enqueueToast("알림이 등록되었습니다.")
+                self.navigationController.popToMainViewControllerNoAnimation()
             }
             
             navigationController.pushViewController(vc, animated: false)
@@ -191,5 +186,17 @@ final class MainCoordinator {
         }
         
         routeHandler?(route)
+    }
+}
+
+extension UINavigationController {
+    func popToMainViewControllerNoAnimation() {
+        UIView.performWithoutAnimation {
+            if let target = viewControllers.first(where: { $0 is MainViewController }) {
+                popToViewController(target, animated: true)
+            } else {
+                popToRootViewController(animated: true)
+            }
+        }
     }
 }
