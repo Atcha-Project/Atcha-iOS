@@ -22,7 +22,7 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         }
     }()
     private let headerView: BusDetailHeaderView = BusDetailHeaderView()
-    private let refreshButton: RefreshView = RefreshView()
+    private let refreshButton: RefreshView = RefreshView(background: .default)
     private let loadingView: LoadingView = LoadingView()
     private var didScrollToCurrentStation = false
     private lazy var busRouteCollectionView: UICollectionView = {

@@ -78,7 +78,9 @@ final class CourseRepositoryImpl: CourseRepository {
             if httpResponse.statusCode == 401 {
                 if let tokens = await refreshToken() {
                     AppDIContainer.shared.tokenStorage.accessToken = tokens.accessToken
-                    AppDIContainer.shared.tokenStorage.refreshToken = tokens.refreshToken
+                    if let rt = tokens.refreshToken {
+                            AppDIContainer.shared.tokenStorage.refreshToken = rt
+                    }
                     await startStream(request, continuation: continuation)
                     return
                 } else {
@@ -139,3 +141,4 @@ final class CourseRepositoryImpl: CourseRepository {
         }
     }
 }
+
