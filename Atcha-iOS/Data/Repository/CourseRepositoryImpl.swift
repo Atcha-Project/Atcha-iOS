@@ -46,7 +46,7 @@ final class CourseRepositoryImpl: CourseRepository {
             }
         }
     }
-
+    
     private func startStream(
         _ request: CourseSearchRequest,
         continuation: AsyncThrowingStream<CourseSearchResponse, Error>.Continuation
@@ -76,8 +76,9 @@ final class CourseRepositoryImpl: CourseRepository {
             }
             
             if httpResponse.statusCode == 401 {
-                if let newToken = await refreshToken() {
-                    AppDIContainer.shared.tokenStorage.accessToken = newToken
+                if let tokens = await refreshToken() {
+                    AppDIContainer.shared.tokenStorage.accessToken = tokens.accessToken
+                    AppDIContainer.shared.tokenStorage.refreshToken = tokens.refreshToken
                     await startStream(request, continuation: continuation)
                     return
                 } else {
@@ -87,7 +88,7 @@ final class CourseRepositoryImpl: CourseRepository {
             }
             
             let parser = SSEParser()
-
+            
             for try await byte in bytes {
                 // 바이트 단위로 들어오므로 Data로 감싸서 누적
                 let events = parser.feed(Data([byte]))
@@ -96,7 +97,7 @@ final class CourseRepositoryImpl: CourseRepository {
                           let payload = event.data.data(using: .utf8) else {
                         continue
                     }
-                
+                    
                     do {
                         let decoded = try JSONDecoder().decode(CourseSearchResponse.self, from: payload)
                         continuation.yield(decoded)
@@ -112,8 +113,8 @@ final class CourseRepositoryImpl: CourseRepository {
             continuation.finish(throwing: error)
         }
     }
-
-    private func refreshToken() async -> String? {
+    
+    private func refreshToken() async -> (accessToken: String, refreshToken: String?)? {
         guard let refreshToken = AppDIContainer.shared.tokenStorage.refreshToken else { return nil }
         let url = URL(string: "https://atcha.p-e.kr/api/auth/reissue")!
         
@@ -126,7 +127,12 @@ final class CourseRepositoryImpl: CourseRepository {
             guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else { return nil }
             
             let decoded = try JSONDecoder().decode(APIResponse<RefreshTokenResponse>.self, from: data)
-            return decoded.result?.accessToken
+            guard let result = decoded.result else { return nil }
+            
+            let newAccess = result.accessToken
+            let newRefresh = result.refreshToken
+            
+            return (accessToken: newAccess, refreshToken: newRefresh)
         } catch {
             print("refreshToken 실패: \(error)")
             return nil
