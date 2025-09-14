@@ -182,7 +182,7 @@ extension DetailRouteInfoBottomView {
     private func layout(for type: DetailRouteInfoLayoutType) -> NSCollectionLayoutSection {
         let height: CGFloat
         switch type {
-        case .start: height = 40
+        case .start: height = 36
         case .summary: height = 120
         case .transport(let transportMode):
             switch transportMode {

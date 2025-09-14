@@ -36,7 +36,7 @@ final class DetailRouteStartCell: UICollectionViewCell {
         imageView.snp.makeConstraints { make in
             make.leading.equalToSuperview().offset(6)
             make.centerY.equalToSuperview()
-            make.top.equalToSuperview()
+            make.top.equalToSuperview().offset(22)
             make.size.equalTo(36)
         }
         

@@ -148,6 +148,7 @@
 		B644BAB32E443E5C00E64BC2 /* LastTrainArrivalBottomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B644BAB22E443E5C00E64BC2 /* LastTrainArrivalBottomView.swift */; };
 		B65402CD2E76701200AB5862 /* DetailRouteInfoLayoutType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65402CC2E76701200AB5862 /* DetailRouteInfoLayoutType.swift */; };
 		B65402CF2E767B6E00AB5862 /* DetailRouteSummaryCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65402CE2E767B6E00AB5862 /* DetailRouteSummaryCell.swift */; };
+		B65402D12E76830500AB5862 /* DetailRouteTimeLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65402D02E76830500AB5862 /* DetailRouteTimeLabel.swift */; };
 		B655AFBA2E3C26A9008BFDE4 /* DetailRouteEndCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B655AFB92E3C26A9008BFDE4 /* DetailRouteEndCell.swift */; };
 		B65C12D72E0429B30016D2F0 /* AppFlowCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C12D62E0429B30016D2F0 /* AppFlowCoordinator.swift */; };
 		B65C12DA2E042A740016D2F0 /* AppDIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C12D92E042A740016D2F0 /* AppDIContainer.swift */; };
@@ -437,6 +438,7 @@
 		B644BAB22E443E5C00E64BC2 /* LastTrainArrivalBottomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastTrainArrivalBottomView.swift; sourceTree = "<group>"; };
 		B65402CC2E76701200AB5862 /* DetailRouteInfoLayoutType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailRouteInfoLayoutType.swift; sourceTree = "<group>"; };
 		B65402CE2E767B6E00AB5862 /* DetailRouteSummaryCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailRouteSummaryCell.swift; sourceTree = "<group>"; };
+		B65402D02E76830500AB5862 /* DetailRouteTimeLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailRouteTimeLabel.swift; sourceTree = "<group>"; };
 		B655AFB92E3C26A9008BFDE4 /* DetailRouteEndCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailRouteEndCell.swift; sourceTree = "<group>"; };
 		B65C12D62E0429B30016D2F0 /* AppFlowCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFlowCoordinator.swift; sourceTree = "<group>"; };
 		B65C12D92E042A740016D2F0 /* AppDIContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDIContainer.swift; sourceTree = "<group>"; };
@@ -1439,6 +1441,7 @@
 				B6793D5B2E38792A001BE9F5 /* DetailRouteInfoBottomView.swift */,
 				B6793D5F2E3A5E23001BE9F5 /* DetailRouteProgressView.swift */,
 				B69A04672E6D5F3300CA382C /* DetailRouteAnimationView.swift */,
+				B65402D02E76830500AB5862 /* DetailRouteTimeLabel.swift */,
 			);
 			path = DetailRouteInfo;
 			sourceTree = "<group>";
@@ -2020,6 +2023,7 @@
 				B67E3E582E0980880056EEB3 /* AppleLoginDelegateWrapper.swift in Sources */,
 				B6793D5C2E38792A001BE9F5 /* DetailRouteInfoBottomView.swift in Sources */,
 				B65C13462E07A0D70016D2F0 /* CoordinatorFactory.swift in Sources */,
+				B65402D12E76830500AB5862 /* DetailRouteTimeLabel.swift in Sources */,
 				B68309552E005A3600E2D029 /* AtchaColor.swift in Sources */,
 				6D73EBE82E1B54A500F8DF8B /* CourseRepository.swift in Sources */,
 				B6EDD7382E0D87B0006170DF /* FileStorable.swift in Sources */,
