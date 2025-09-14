@@ -48,10 +48,10 @@ final class DetailRouteWalkCell: UICollectionViewCell {
         }
     }
     
-    func configure(info: LegTrafficInfo) {
-        guard let sectionTime = info.sectionTime else { return }
+    func configure(info: LegTrafficInfo?) {
+        guard let sectionTime = info?.sectionTime else { return }
         let timeText = AtchaFont.B6_R_14("\(sectionTime) 걷기", color: .gray200)
-        let distanceText = AtchaFont.B6_R_14(" \(info.distance ?? 0)m", color: .gray500)
+        let distanceText = AtchaFont.B6_R_14(" \(info?.distance ?? 0)m", color: .gray500)
         let combined = NSMutableAttributedString()
         combined.append(timeText)
         combined.append(distanceText)

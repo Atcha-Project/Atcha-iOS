@@ -197,9 +197,10 @@ final class DetailRouteBusCell: UICollectionViewCell {
     }
     
     
-    func configure(info: LegTrafficInfo, busInfo: [BusRealTimeInfo]) {
+    func configure(info: LegTrafficInfo?, busInfo: [BusRealTimeInfo]) {
         stationInfos = []
-        guard let passStopList = info.passStopList,
+        guard let info = info,
+              let passStopList = info.passStopList,
               let firstStation = passStopList.first,
               let lastStation = passStopList.last,
               let sectionTime = info.sectionTime else { return }

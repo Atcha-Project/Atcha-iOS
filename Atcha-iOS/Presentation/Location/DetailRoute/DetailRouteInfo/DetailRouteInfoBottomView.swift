@@ -81,16 +81,16 @@ final class DetailRouteInfoBottomView: UIView {
     
     func setupRouteInfo(_ infos: [LegTrafficInfo]) {
         snapshot = NSDiffableDataSourceSnapshot<Section, LegTrafficUIInfo>()
+        var items: [LegTrafficUIInfo] = []
+        items.append(LegTrafficUIInfo(type: .summary, info: nil, routeInfos: infos))
         
         for (index, info) in infos.enumerated() {
             let section = Section.item(info.id)
             snapshot.appendSections([section])
             
-            var items: [LegTrafficUIInfo] = []
-            
             // ✅ 시작 셀은 첫 번째 info에만
             if index == 0 {
-                items.append(LegTrafficUIInfo(type: .summary, info: info))
+                
                 items.append(LegTrafficUIInfo(type: .start, info: info))
             }
             
@@ -211,7 +211,7 @@ extension DetailRouteInfoBottomView {
             switch item.type {
             case .summary:
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: DetailRouteSummaryCell.id, for: indexPath) as! DetailRouteSummaryCell
-                cell.configure(infos: [item.info])
+                cell.configure(infos: item.routeInfos)
                 return cell
             case .start:
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: DetailRouteStartCell.id, for: indexPath) as! DetailRouteStartCell
@@ -240,10 +240,10 @@ extension DetailRouteInfoBottomView {
                         self?.applySnapshot()
                     }
                     cell.didTapDetail = { [weak self] in
-                        let stations = (item.info.passStopList ?? []).map {
+                        let stations = (item.info?.passStopList ?? []).map {
                             PassStations(index: $0.index, stationName: $0.stationName, lat: $0.lat, lon: $0.lon)
                         }
-                        let first = item.info.passStopList?.first
+                        let first = item.info?.passStopList?.first
                         let lat = first?.lat.flatMap { Double($0) }
                         let lon = first?.lon.flatMap { Double($0) }
                         
@@ -254,10 +254,10 @@ extension DetailRouteInfoBottomView {
                         )
                         
                         let info = BusDetailInfo(
-                            routeName: item.info.route,
+                            routeName: item.info?.route,
                             start: start,
                             passStations: stations,
-                            targetBusStation: item.info.targetBusStation
+                            targetBusStation: item.info?.targetBusStation
                         )
                         self?.onBusDetail?(info)
                     }

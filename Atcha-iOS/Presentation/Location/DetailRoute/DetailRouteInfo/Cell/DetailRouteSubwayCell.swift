@@ -167,9 +167,10 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
         didTapSummary?()
     }
     
-    func configure(info: LegTrafficInfo) {
+    func configure(info: LegTrafficInfo?) {
         stationInfos = []
-        guard let passStopList = info.passStopList,
+        guard let info = info,
+              let passStopList = info.passStopList,
               let firstStation = passStopList.first,
               let lastStation = passStopList.last,
               let sectionTime = info.sectionTime else { return }

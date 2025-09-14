@@ -45,7 +45,7 @@ final class DetailRouteEndCell: UICollectionViewCell {
         }
     }
     
-    func configure(info: LegTrafficInfo) {
+    func configure(info: LegTrafficInfo?) {
         imageView.image = UIImage.smallEndMarker
         locationLabel.attributedText = AtchaFont.B3_M_15("우리집")
     }

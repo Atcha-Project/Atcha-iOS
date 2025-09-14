@@ -46,7 +46,7 @@ final class DetailRouteStartCell: UICollectionViewCell {
         }
     }
     
-    func configure(address: String, info: LegTrafficInfo) {
+    func configure(address: String, info: LegTrafficInfo?) {
         imageView.image = UIImage.smallStartMarker
         locationLabel.attributedText = AtchaFont.B3_M_15(address)
     }
