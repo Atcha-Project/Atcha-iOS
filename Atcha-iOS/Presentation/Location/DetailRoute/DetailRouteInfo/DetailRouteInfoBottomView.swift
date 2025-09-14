@@ -38,11 +38,6 @@ final class DetailRouteInfoBottomView: UIView {
     private var currentState: SheetState = .collapsed
     
     private let handleView: UIView = UIView()
-    private let totalTimeLabel: UILabel = UILabel()
-    private let startEndTimeLabel: UILabel = UILabel()
-    private let progressView: DetailRouteProgressView = DetailRouteProgressView()
-    private let dividerView: UIView = UIView()
-    
     private var startAddress: String = ""
     private var busRealTimeInfo: [BusRealTimeInfo] = []
     var onBusDetail: ((BusDetailInfo) -> Void)?
@@ -65,20 +60,14 @@ final class DetailRouteInfoBottomView: UIView {
         setupDataSource()
     }
     
-    
     private func setupView() {
-        addSubViews(handleView,
-                    totalTimeLabel,
-                    startEndTimeLabel,
-                    progressView,
-                    dividerView)
+        addSubViews(handleView)
         
         backgroundColor = .gray950
         layer.cornerRadius = 20
         layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         
         handleView.backgroundColor = .gray700
-        dividerView.backgroundColor = .opacity100
     }
     
     private func setupAutoLayout() {
@@ -88,37 +77,9 @@ final class DetailRouteInfoBottomView: UIView {
             make.centerX.equalToSuperview()
             make.top.equalToSuperview().offset(12)
         }
-        
-        totalTimeLabel.snp.makeConstraints { make in
-            make.height.equalTo(34)
-            make.horizontalEdges.equalToSuperview().inset(16)
-            make.top.equalTo(handleView.snp.bottom).offset(12)
-        }
-        
-        startEndTimeLabel.snp.makeConstraints { make in
-            make.height.equalTo(16)
-            make.horizontalEdges.equalToSuperview().inset(16)
-            make.top.equalTo(totalTimeLabel.snp.bottom).offset(6)
-        }
-        
-        progressView.snp.makeConstraints { make in
-            make.horizontalEdges.equalToSuperview().inset(16)
-            make.height.equalTo(16)
-            make.top.equalTo(startEndTimeLabel.snp.bottom).offset(16)
-        }
-        
-        dividerView.snp.makeConstraints { make in
-            make.height.equalTo(1)
-            make.horizontalEdges.equalToSuperview()
-            make.top.equalTo(progressView.snp.bottom).offset(16)
-        }
     }
     
     func setupRouteInfo(_ infos: [LegTrafficInfo]) {
-        totalTimeLabel.attributedText = AtchaFont.H1_B_26(infos.first?.totalTime ?? "")
-        startEndTimeLabel.attributedText = AtchaFont.B7_M_13(infos.first?.timeText ?? "", color: .gray400)
-        progressView.configure(infos: infos)
-        
         snapshot = NSDiffableDataSourceSnapshot<Section, LegTrafficUIInfo>()
         
         for (index, info) in infos.enumerated() {
@@ -129,6 +90,7 @@ final class DetailRouteInfoBottomView: UIView {
             
             // ✅ 시작 셀은 첫 번째 info에만
             if index == 0 {
+                items.append(LegTrafficUIInfo(type: .summary, info: info))
                 items.append(LegTrafficUIInfo(type: .start, info: info))
             }
             
@@ -178,13 +140,14 @@ extension DetailRouteInfoBottomView {
         addSubview(collectionView)
         
         collectionView.snp.makeConstraints {
-            $0.top.equalTo(dividerView.snp.bottom).offset(8)
+            $0.top.equalTo(handleView.snp.bottom).offset(8)
             $0.leading.trailing.bottom.equalToSuperview()
         }
         
         collectionView.alwaysBounceVertical = true
         collectionView.backgroundColor = .gray950
         collectionView.register(DetailRouteStartCell.self, forCellWithReuseIdentifier: DetailRouteStartCell.id)
+        collectionView.register(DetailRouteSummaryCell.self, forCellWithReuseIdentifier: DetailRouteSummaryCell.id)
         collectionView.register(DetailRouteEndCell.self, forCellWithReuseIdentifier: DetailRouteEndCell.id)
         collectionView.register(DetailRouteWalkCell.self, forCellWithReuseIdentifier: DetailRouteWalkCell.id)
         collectionView.register(DetailRouteBusCell.self, forCellWithReuseIdentifier: DetailRouteBusCell.id)
@@ -220,7 +183,7 @@ extension DetailRouteInfoBottomView {
         let height: CGFloat
         switch type {
         case .start: height = 40
-            //        case .summary: height = 120
+        case .summary: height = 120
         case .transport(let transportMode):
             switch transportMode {
             case .walk: height = 70
@@ -246,8 +209,10 @@ extension DetailRouteInfoBottomView {
     private func setupDataSource() {
         dataSource = UICollectionViewDiffableDataSource<Section, LegTrafficUIInfo>(collectionView: collectionView) { collectionView, indexPath, item in
             switch item.type {
-                //            case .summary:
-                //
+            case .summary:
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: DetailRouteSummaryCell.id, for: indexPath) as! DetailRouteSummaryCell
+                cell.configure(infos: [item.info])
+                return cell
             case .start:
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: DetailRouteStartCell.id, for: indexPath) as! DetailRouteStartCell
                 cell.configure(address: self.startAddress, info: item.info)

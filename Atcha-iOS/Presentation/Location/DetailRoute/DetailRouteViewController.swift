@@ -85,7 +85,7 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         registerGradient.endPoint   = CGPoint(x: 0.5, y: 1.0)
         registerContainer.layer.insertSublayer(registerGradient, at: 0)
     }
-
+    
     
     // MARK: 알림 등록 이후 UI
     private func setupAfterUI() {
@@ -183,11 +183,11 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         }
         
         viewModel.$context
-                .receive(on: RunLoop.main)
-                .sink { [weak self] ctx in
-                    self?.setupUI(context: ctx)
-                }
-                .store(in: &cancellables)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] ctx in
+                self?.setupUI(context: ctx)
+            }
+            .store(in: &cancellables)
     }
     
     private func addRouteLine(infos: [LegPathInfo]) {
@@ -257,11 +257,11 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         let busCount = busLegs.count
         let hasSubway = viewModel.legTrafficInfo.contains { $0.mode == .subway }
         let hasLongWaitBus = busLegs.contains { ($0.targetBusTerm ?? 0) >= 40 }
-
+        
         let isException = (busCount == 1) && (hasSubway == false)
-
+        
         let shouldShowPopup = hasLongWaitBus && !isException
-
+        
         if shouldShowPopup {
             showCoursePopup()
         } else {

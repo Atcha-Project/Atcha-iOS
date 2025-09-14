@@ -8,7 +8,7 @@
 import Foundation
 
 enum DetailRouteInfoLayoutType: Hashable {
-//    case summary
+    case summary
     case start
     case transport(TransportMode)
     case end
