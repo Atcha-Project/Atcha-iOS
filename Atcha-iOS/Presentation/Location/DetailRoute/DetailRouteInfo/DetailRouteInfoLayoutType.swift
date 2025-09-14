@@ -15,6 +15,7 @@ enum DetailRouteInfoLayoutType: Hashable {
 }
 
 struct LegTrafficUIInfo: Hashable {
+    let id = UUID()
     let type: DetailRouteInfoLayoutType
     let info: LegTrafficInfo?
     let routeInfos: [LegTrafficInfo]

@@ -81,37 +81,48 @@ final class DetailRouteInfoBottomView: UIView {
     
     func setupRouteInfo(_ infos: [LegTrafficInfo]) {
         snapshot = NSDiffableDataSourceSnapshot<Section, LegTrafficUIInfo>()
-        var items: [LegTrafficUIInfo] = []
-        items.append(LegTrafficUIInfo(type: .summary, info: nil, routeInfos: infos))
         
-        for (index, info) in infos.enumerated() {
-            let section = Section.item(info.id)
-            snapshot.appendSections([section])
+        // ✅ 1. Summary Section
+        let summarySection = Section.item(UUID())
+        snapshot.appendSections([summarySection])
+        snapshot.appendItems([
+            LegTrafficUIInfo(type: .summary, info: nil, routeInfos: infos)
+        ], toSection: summarySection)
+        
+        // ✅ 2. Start Section (첫 번째 info 사용)
+        if let firstInfo = infos.first {
+            let startSection = Section.item(UUID())
+            snapshot.appendSections([startSection])
+            snapshot.appendItems([
+                LegTrafficUIInfo(type: .start, info: firstInfo)
+            ], toSection: startSection)
+        }
+        
+        // ✅ 3. Transport Sections (각 교통 수단마다 한 섹션)
+        for info in infos {
+            let transportSection = Section.item(UUID())
+            snapshot.appendSections([transportSection])
             
-            // ✅ 시작 셀은 첫 번째 info에만
-            if index == 0 {
-                
-                items.append(LegTrafficUIInfo(type: .start, info: info))
-            }
+            let transportType: DetailRouteInfoLayoutType = {
+                switch info.mode {
+                case .walk: return .transport(.walk)
+                case .bus: return .transport(.bus)
+                case .subway: return .transport(.subway)
+                default: return .transport(.unknown)
+                }
+            }()
             
-            // ✅ 이동 수단 셀 추가
-            switch info.mode {
-            case .walk:
-                items.append(LegTrafficUIInfo(type: .transport(.walk), info: info))
-            case .bus:
-                items.append(LegTrafficUIInfo(type: .transport(.bus), info: info))
-            case .subway:
-                items.append(LegTrafficUIInfo(type: .transport(.subway), info: info))
-            default:
-                items.append(LegTrafficUIInfo(type: .transport(.unknown), info: info))
-            }
-            
-            // ✅ 마지막 info에만 종료 셀 추가
-            if index == infos.count - 1 {
-                items.append(LegTrafficUIInfo(type: .end, info: info))
-            }
-            
-            snapshot.appendItems(items, toSection: section)
+            let transportItem = LegTrafficUIInfo(type: transportType, info: info)
+            snapshot.appendItems([transportItem], toSection: transportSection)
+        }
+        
+        // ✅ 4. End Section (마지막 info 사용)
+        if let lastInfo = infos.last {
+            let endSection = Section.item(UUID())
+            snapshot.appendSections([endSection])
+            snapshot.appendItems([
+                LegTrafficUIInfo(type: .end, info: lastInfo)
+            ], toSection: endSection)
         }
         
         applySnapshot()
@@ -182,11 +193,11 @@ extension DetailRouteInfoBottomView {
     private func layout(for type: DetailRouteInfoLayoutType) -> NSCollectionLayoutSection {
         let height: CGFloat
         switch type {
-        case .start: height = 36
+        case .start: height = 58
         case .summary: height = 120
         case .transport(let transportMode):
             switch transportMode {
-            case .walk: height = 70
+            case .walk: height = 74
             case .bus: height = 175
             case .subway: height = 154
             case .unknown: height = 38
@@ -195,11 +206,11 @@ extension DetailRouteInfoBottomView {
             height = 40
         }
         let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                              heightDimension: .estimated(height))
+                                              heightDimension: .absolute(height))
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
         
         let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                               heightDimension: .estimated(height))
+                                               heightDimension: .absolute(height))
         let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
         let section = NSCollectionLayoutSection(group: group)
         return section

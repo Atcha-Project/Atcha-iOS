@@ -12,10 +12,10 @@ final class TimeBadgeLabel: UIView {
     
     private let label: UILabel = UILabel()
     
-    init(text: String) {
-        super.init(frame: .zero)
+    override init(frame: CGRect) {
+        super.init(frame: frame)
         setupUI()
-        setText(text)
+        setupAutoLayout()
     }
     
     required init?(coder: NSCoder) {
@@ -24,8 +24,8 @@ final class TimeBadgeLabel: UIView {
         setupAutoLayout()
     }
     
-    func setText(_ text: String) {
-        label.attributedText = AtchaFont.M_11(text, color: .gray200)
+    func setText(_ text: String?) {
+        label.attributedText = AtchaFont.M_11(text ?? "", color: .gray200)
     }
     
     private func setupUI() {
@@ -41,6 +41,7 @@ final class TimeBadgeLabel: UIView {
     
     private func setupAutoLayout() {
         label.snp.makeConstraints { make in
+            make.width.equalTo(38)
             make.edges.equalToSuperview().inset(UIEdgeInsets(top: 2,
                                                              left: 4,
                                                              bottom: 2, right: 4))
