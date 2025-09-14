@@ -28,8 +28,6 @@ final class DetailRouteEndCell: UICollectionViewCell {
         super.init(frame: frame)
         setupUI()
         setupAutoLayout()
-        
-        contentView.backgroundColor = .green.withAlphaComponent(0.3)
     }
     
     required init?(coder: NSCoder) {

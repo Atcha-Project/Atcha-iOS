@@ -44,7 +44,6 @@ final class DetailRouteBusCell: UICollectionViewCell {
     // MARK: - Bus Info
     private let busBadgeView: BusBadgeView = BusBadgeView()
     private let stationListStackView = UIStackView()
-    
     private let busTimerLabel: UILabel = UILabel()
     
     
@@ -250,16 +249,3 @@ extension DetailRouteBusCell {
         }
     }
 }
-
-
-//stationListStackView.snp.makeConstraints {
-//    $0.leading.equalTo(startLabel)
-//    stationListStackViewTopConstraint = $0.top.equalTo(summaryLabel.snp.bottom).offset(16).constraint
-//    stationListStackViewBottomConstraint = $0.bottom.equalTo(endLabel.snp.top).offset(-12).constraint
-//}
-//
-//endLabel.snp.makeConstraints {
-//    endLabelTopConstraintWithoutStack = $0.top.equalTo(summaryLabel.snp.bottom).offset(36).constraint
-//    $0.leading.trailing.equalTo(stationListStackView)
-//    $0.bottom.equalToSuperview()
-//}

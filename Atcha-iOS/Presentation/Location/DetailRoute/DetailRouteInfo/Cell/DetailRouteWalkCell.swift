@@ -39,7 +39,7 @@ final class DetailRouteWalkCell: UICollectionViewCell {
             make.leading.equalToSuperview().offset(82.5)
             make.centerY.equalToSuperview()
             make.width.equalTo(4)
-            make.height.equalToSuperview()
+            make.height.equalToSuperview().offset(10)
         }
         summaryLabel.snp.makeConstraints { make in
             make.leading.equalTo(lineImageView.snp.trailing).offset(24)

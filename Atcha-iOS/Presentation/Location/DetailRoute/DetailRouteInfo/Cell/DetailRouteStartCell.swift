@@ -26,8 +26,6 @@ final class DetailRouteStartCell: UICollectionViewCell {
         super.init(frame: frame)
         setupUI()
         setupAutoLayout()
-        
-        contentView.backgroundColor = .cyan.withAlphaComponent(0.3)
     }
     
     required init?(coder: NSCoder) {
