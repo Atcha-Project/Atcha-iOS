@@ -13,9 +13,16 @@ final class DetailRouteEndCell: UICollectionViewCell {
     
     private let imageView: UIImageView = UIImageView()
     private let locationLabel: UILabel = UILabel()
+    private let timeBadegLabel: TimeBadgeLabel = TimeBadgeLabel()
     
-    private let timeLabel: UILabel = UILabel()
-    private let timeBackView: UIView = UIView()
+    private lazy var stackView: UIStackView = {
+        let stack = UIStackView(arrangedSubviews: [timeBadegLabel, imageView, locationLabel])
+        stack.axis = .horizontal
+        stack.alignment = .center
+        stack.spacing = 5
+        return stack
+    }()
+    
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -28,25 +35,25 @@ final class DetailRouteEndCell: UICollectionViewCell {
     }
     
     private func setupUI() {
+        imageView.image = UIImage.smallEndMarker
         imageView.contentMode = .scaleAspectFit
-        addSubViews(imageView, locationLabel)
+        addSubViews(stackView)
     }
     
     func setupAutoLayout() {
         imageView.snp.makeConstraints { make in
-            make.leading.equalToSuperview().offset(6)
-            make.centerY.equalToSuperview()
-            make.top.equalToSuperview()
+            make.size.equalTo(36)
         }
         
-        locationLabel.snp.makeConstraints { make in
-            make.leading.equalTo(imageView.snp.trailing).offset(15)
-            make.centerY.equalToSuperview()
+        stackView.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(22)
+            make.horizontalEdges.equalToSuperview().inset(16)
+            make.height.equalTo(36)
         }
     }
     
     func configure(info: LegTrafficInfo?) {
-        imageView.image = UIImage.smallEndMarker
+        timeBadegLabel.setText(info?.timeText)
         locationLabel.attributedText = AtchaFont.B3_M_15("우리집")
     }
 }
