@@ -34,6 +34,10 @@ final class DetailRouteBusCell: UICollectionViewCell {
     // MARK: - 하차 정보
     private let endLabel: UILabel = UILabel()
     
+    // MARK: 도착 예정 시간
+    private let timeStartLabel: UILabel = UILabel()
+    private let timeEndLabel: UILabel = UILabel()
+    
     private var stationInfos: [PassStopList] = []
     private var isExpanded: Bool = false
     var didTapSummary: (() -> Void)?
@@ -76,6 +80,16 @@ final class DetailRouteBusCell: UICollectionViewCell {
         stationListStackView.axis = .vertical
         stationListStackView.spacing = 10
         stationListStackView.isHidden = true
+        
+        timeStartLabel.attributedText = AtchaFont.M_11("22:32", color: .gray200)
+        timeStartLabel.textAlignment = .center
+        timeStartLabel.setCornerRadius(4)
+        timeStartLabel.backgroundColor = .gray920
+        
+        timeEndLabel.attributedText = AtchaFont.M_11("22:32", color: .gray200)
+        timeEndLabel.textAlignment = .center
+        timeEndLabel.setCornerRadius(4)
+        timeEndLabel.backgroundColor = .gray920
     }
     
     private func setupConstraints() {
