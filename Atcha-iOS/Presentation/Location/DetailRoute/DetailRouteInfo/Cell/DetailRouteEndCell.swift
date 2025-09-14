@@ -28,6 +28,8 @@ final class DetailRouteEndCell: UICollectionViewCell {
         super.init(frame: frame)
         setupUI()
         setupAutoLayout()
+        
+        contentView.backgroundColor = .green.withAlphaComponent(0.3)
     }
     
     required init?(coder: NSCoder) {
@@ -46,7 +48,7 @@ final class DetailRouteEndCell: UICollectionViewCell {
         }
         
         stackView.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(22)
+            make.top.equalToSuperview()
             make.horizontalEdges.equalToSuperview().inset(16)
             make.height.equalTo(36)
         }

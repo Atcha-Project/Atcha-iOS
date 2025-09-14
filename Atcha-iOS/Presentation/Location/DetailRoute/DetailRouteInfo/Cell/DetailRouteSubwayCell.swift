@@ -44,7 +44,7 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
         setupUI()
         setupConstraints()
         setupAction()
-        contentView.backgroundColor = .clear
+        contentView.backgroundColor = .yellow.withAlphaComponent(0.3)
     }
     
     required init?(coder: NSCoder) {

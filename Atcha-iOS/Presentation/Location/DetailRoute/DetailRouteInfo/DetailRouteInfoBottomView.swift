@@ -202,20 +202,18 @@ extension DetailRouteInfoBottomView {
             case .subway: height = 154
             case .unknown: height = 38
             }
-        case .end:
-            height = 40
+        case .end: height = 58
         }
         let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                              heightDimension: .absolute(height))
+                                              heightDimension: .estimated(height))
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
         
         let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                               heightDimension: .absolute(height))
+                                               heightDimension: .estimated(height))
         let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
         let section = NSCollectionLayoutSection(group: group)
         return section
     }
-    
     
     private func setupDataSource() {
         dataSource = UICollectionViewDiffableDataSource<Section, LegTrafficUIInfo>(collectionView: collectionView) { collectionView, indexPath, item in
