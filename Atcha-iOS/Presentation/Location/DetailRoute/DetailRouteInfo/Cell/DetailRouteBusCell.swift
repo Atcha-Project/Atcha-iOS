@@ -11,32 +11,45 @@ import SnapKit
 final class DetailRouteBusCell: UICollectionViewCell {
     static let id = "DetailRouteBusCell"
     
-    // MARK: - Left Line UI
-    private let iconImageView = UIImageView()
-    private let stickView = UIView()
-    private let circleView: UIView = UIView()
-    
-    // MARK: - Top (승차 정보)
+    // MARK: Departure UI
+    private let busIconContainerView: UIView = UIView()
+    private let busIconImageView = UIImageView()
     private let startLabel: UILabel = UILabel()
+    private let timeStarBadgeLabel: TimeBadgeLabel = TimeBadgeLabel()
+    private lazy var startStackView: UIStackView = {
+        let stack = UIStackView(arrangedSubviews: [timeStarBadgeLabel, busIconContainerView, startLabel])
+        stack.axis = .horizontal
+        stack.alignment = .center
+        stack.spacing = 5
+        return stack
+    }()
+    
+    // MARK: Arrival UI
+    private let circleContainerView = UIView()
+    private let circleView: UIView = UIView()
+    private let endLabel: UILabel = UILabel()
+    private let timeEndBadgeLabel: TimeBadgeLabel = TimeBadgeLabel()
+    private lazy var endStackView: UIStackView = {
+        let stack = UIStackView(arrangedSubviews: [timeEndBadgeLabel, circleContainerView, endLabel])
+        stack.axis = .horizontal
+        stack.alignment = .center
+        stack.spacing = 5
+        return stack
+    }()
+    
+    // MARK: StickView
+    private let stickContainerView = UIView()
+    private let stickView = UIView()
     
     // MARK: - Bus Info
-    private let busBackView: UIView = UIView()
-    private let busLabel: UILabel = UILabel()
-    private let busDetailArrowImageView: UIImageView = UIImageView(image: UIImage.chevronRight)
-    
-    private let busTimerLabel: UILabel = UILabel()
+    private let busBadgeView: BusBadgeView = BusBadgeView()
     private let stationListStackView = UIStackView()
     
+    private let busTimerLabel: UILabel = UILabel()
+    
+    
     // MARK: - Summary
-    private let summaryLabel: UILabel = UILabel()
-    private let summaryButton: UIButton = UIButton()
-    
-    // MARK: - 하차 정보
-    private let endLabel: UILabel = UILabel()
-    
-    // MARK: 도착 예정 시간
-    private let timeStartLabel: UILabel = UILabel()
-    private let timeEndLabel: UILabel = UILabel()
+    private let summaryView: DetailRouteSummaryView = DetailRouteSummaryView()
     
     private var stationInfos: [PassStopList] = []
     private var isExpanded: Bool = false
@@ -60,121 +73,139 @@ final class DetailRouteBusCell: UICollectionViewCell {
     }
     
     private func setupUI() {
-        contentView.addSubViews(iconImageView, stickView, circleView,
-                                startLabel, busBackView, busTimerLabel,
-                                summaryLabel, summaryButton, stationListStackView,
-                                endLabel)
+        circleContainerView.addSubview(circleView)
+        busIconContainerView.addSubview(busIconImageView)
+        stickContainerView.addSubview(stickView)
         
-        iconImageView.contentMode = .scaleAspectFill
+        contentView.addSubViews(stickContainerView,
+                                startStackView,
+                                endStackView,
+                                busBadgeView,
+                                summaryView,
+                                stationListStackView)
+        
+        stickContainerView.backgroundColor = .clear
+        circleContainerView.backgroundColor = .clear
+        busIconContainerView.backgroundColor = .clear
+        
+        busIconImageView.contentMode = .scaleAspectFit
         circleView.setCornerRadius(8)
-        
-        busBackView.setCornerRadius(4)
-        busBackView.addSubViews(busLabel, busDetailArrowImageView)
-        busBackView.isUserInteractionEnabled = true
-        let busTap = UITapGestureRecognizer(target: self, action: #selector(handleBusBackTapped))
-        busBackView.addGestureRecognizer(busTap)
-        
-        summaryButton.setImage(UIImage.chevronDown, for: .normal)
-        summaryButton.imageView?.tintColor = .gray200
         
         stationListStackView.axis = .vertical
         stationListStackView.spacing = 10
         stationListStackView.isHidden = true
-        
-        timeStartLabel.attributedText = AtchaFont.M_11("22:32", color: .gray200)
-        timeStartLabel.textAlignment = .center
-        timeStartLabel.setCornerRadius(4)
-        timeStartLabel.backgroundColor = .gray920
-        
-        timeEndLabel.attributedText = AtchaFont.M_11("22:32", color: .gray200)
-        timeEndLabel.textAlignment = .center
-        timeEndLabel.setCornerRadius(4)
-        timeEndLabel.backgroundColor = .gray920
     }
     
-    private func setupConstraints() {
-        iconImageView.snp.makeConstraints {
-            $0.top.equalToSuperview()
-            $0.leading.equalToSuperview()
-            $0.size.equalTo(36)
+    private func setupDepartureConstraints() {
+        busIconImageView.snp.makeConstraints { make in
+            make.size.equalTo(36)
+            make.edges.equalToSuperview()
+        }
+        busIconContainerView.snp.makeConstraints { make in
+            make.size.equalTo(36)
+        }
+        startStackView.snp.makeConstraints { make in
+            make.horizontalEdges.equalToSuperview().offset(16)
+            make.top.equalToSuperview()
+            make.height.equalTo(36)
+        }
+    }
+    
+    private func setupStickConstrains() {
+        stickContainerView.snp.makeConstraints { make in
+            make.width.equalTo(36)
+            make.top.equalTo(busIconContainerView.snp.bottom).inset(20)
+            make.bottom.equalTo(circleContainerView.snp.top).inset(20)
+            make.centerX.equalTo(circleContainerView.snp.centerX)
+        }
+        stickView.snp.makeConstraints { make in
+            make.horizontalEdges.equalToSuperview().inset(16)
+            make.verticalEdges.equalToSuperview()
+        }
+    }
+    
+    private func setupInfoConstrains() {
+        busBadgeView.snp.makeConstraints { make in
+            make.leading.equalTo(startLabel.snp.leading)
+            make.top.equalTo(startStackView.snp.bottom).offset(8)
         }
         
-        stickView.snp.makeConstraints {
-            $0.top.equalTo(iconImageView.snp.bottom).inset(5)
-            $0.centerX.equalTo(iconImageView)
-            $0.bottom.equalTo(circleView.snp.top)
-            $0.width.equalTo(4)
-        }
-        
-        circleView.snp.makeConstraints {
-            $0.leading.equalTo(iconImageView)
-            $0.bottom.equalToSuperview()
-            $0.centerX.equalTo(iconImageView)
-            $0.size.equalTo(16)
-        }
-        
-        startLabel.snp.makeConstraints {
-            $0.top.equalToSuperview().offset(5)
-            $0.leading.equalTo(iconImageView.snp.trailing).offset(18)
-            $0.height.equalTo(20)
-        }
-        
-        busBackView.snp.makeConstraints {
-            $0.top.equalTo(startLabel.snp.bottom).offset(16)
-            $0.leading.equalTo(startLabel)
-            $0.height.equalTo(26)
-        }
-        
-        busLabel.snp.makeConstraints {
-            $0.leading.equalToSuperview().offset(8)
-            $0.centerY.equalToSuperview()
-        }
-        
-        busDetailArrowImageView.snp.makeConstraints {
-            $0.leading.equalTo(busLabel.snp.trailing).offset(4)
-            $0.trailing.equalToSuperview().inset(8)
-            $0.centerY.equalTo(busLabel)
-            $0.size.equalTo(12)
-        }
-        
-        busTimerLabel.snp.makeConstraints { make in
-            make.centerY.equalTo(busBackView.snp.centerY)
-            make.leading.equalTo(busBackView.snp.trailing).offset(6)
-            make.height.equalTo(18)
-        }
-        
-        summaryLabel.snp.makeConstraints {
-            $0.top.equalTo(busBackView.snp.bottom).offset(16)
-            $0.leading.equalTo(busBackView)
-        }
-        
-        summaryButton.snp.makeConstraints { make in
-            make.centerY.equalTo(summaryLabel.snp.centerY)
-            make.leading.equalTo(summaryLabel.snp.trailing).offset(4)
-            make.size.equalTo(10)
+        summaryView.snp.makeConstraints { make in
+            make.leading.equalTo(startLabel.snp.leading)
+            make.top.equalTo(busBadgeView.snp.bottom).offset(16)
         }
         
         stationListStackView.snp.makeConstraints {
             $0.leading.equalTo(startLabel)
-            stationListStackViewTopConstraint = $0.top.equalTo(summaryLabel.snp.bottom).offset(16).constraint
-            stationListStackViewBottomConstraint = $0.bottom.equalTo(endLabel.snp.top).offset(-12).constraint
-        }
-        
-        endLabel.snp.makeConstraints {
-            endLabelTopConstraintWithoutStack = $0.top.equalTo(summaryLabel.snp.bottom).offset(36).constraint
-            $0.leading.trailing.equalTo(stationListStackView)
-            $0.bottom.equalToSuperview()
+            stationListStackViewTopConstraint = $0.top.equalTo(summaryView.snp.bottom).offset(16).constraint
+            stationListStackViewBottomConstraint = $0.bottom.equalTo(endLabel.snp.top).offset(-28).constraint
         }
     }
     
-    private func setupAction() {
-        summaryButton.addTarget(self,
-                                action: #selector(handleSummaryButton),
-                                for: .touchUpInside)
+    private func setupArrivalConstraints() {
+        circleContainerView.snp.makeConstraints { make in
+            make.size.equalTo(36)
+        }
+        circleView.snp.makeConstraints { make in
+            make.edges.equalToSuperview().inset(10)
+        }
+        endStackView.snp.makeConstraints { make in
+            endLabelTopConstraintWithoutStack = make.top.equalTo(summaryView.snp.bottom).offset(36).constraint
+            make.horizontalEdges.equalToSuperview().offset(16)
+            make.bottom.equalToSuperview()
+            make.height.equalTo(36)
+        }
+    }
+    
+    private func setupConstraints() {
+        setupDepartureConstraints()
+        setupStickConstrains()
+        setupInfoConstrains()
+        setupArrivalConstraints()
+    }
+    
+    func configure(info: LegTrafficInfo?, busInfo: [BusRealTimeInfo]) {
+        stationInfos = []
+        guard let info = info,
+              let passStopList = info.passStopList,
+              let firstStation = passStopList.first,
+              let lastStation = passStopList.last,
+              let sectionTime = info.sectionTime else { return }
         
-        summaryLabel.isUserInteractionEnabled = true
+        timeStarBadgeLabel.setText(info.timeText)
+        timeEndBadgeLabel.setText(info.timeText)
+        
+        stationInfos = passStopList
+        busIconImageView.image = info.mode?.getIcon(for: info.type ?? "")
+        stickView.backgroundColor = info.mode?.getColor(for: info.type ?? "")
+        circleView.backgroundColor = info.mode?.getColor(for: info.type ?? "")
+        busBadgeView.configure(number: info.busName,
+                               color: info.mode?.getColor(for: info.type ?? ""))
+        summaryView.configure(duration: sectionTime, stops: passStopList.count)
+        addStationNameLabel(info: stationInfos)
+        
+        let startCombinedLabel = NSMutableAttributedString()
+        startCombinedLabel.append(AtchaFont.B3_M_15("\(firstStation.stationName ?? "")",
+                                                    color: .gray100))
+        startCombinedLabel.append(AtchaFont.B3_M_15(" 승차", color: .gray500))
+        startLabel.attributedText = startCombinedLabel
+        
+        let endCombinedLabel = NSMutableAttributedString()
+        endCombinedLabel.append(AtchaFont.B3_M_15("\(lastStation.stationName ?? "")",
+                                                  color: .gray100))
+        endCombinedLabel.append(AtchaFont.B3_M_15(" 하차", color: .gray500))
+        endLabel.attributedText = endCombinedLabel
+    }
+}
+
+// MARK: Action
+extension DetailRouteBusCell {
+    private func setupAction() {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleSummaryButton))
-        summaryLabel.addGestureRecognizer(tapGesture)
+        summaryView.addGestureRecognizer(tapGesture)
+        
+        let busTap = UITapGestureRecognizer(target: self, action: #selector(handleBusBackTapped))
+        busBadgeView.addGestureRecognizer(busTap)
     }
     
     @objc private func handleSummaryButton() {
@@ -195,50 +226,9 @@ final class DetailRouteBusCell: UICollectionViewCell {
     @objc private func handleBusBackTapped() {
         didTapDetail?()
     }
-    
-    
-    func configure(info: LegTrafficInfo?, busInfo: [BusRealTimeInfo]) {
-        stationInfos = []
-        guard let info = info,
-              let passStopList = info.passStopList,
-              let firstStation = passStopList.first,
-              let lastStation = passStopList.last,
-              let sectionTime = info.sectionTime else { return }
-        
-        stationInfos = passStopList
-        iconImageView.image = info.mode?.getIcon(for: info.type ?? "")
-        stickView.backgroundColor = info.mode?.getColor(for: info.type ?? "")
-        circleView.backgroundColor = info.mode?.getColor(for: info.type ?? "")
-        
-        let startCombinedLabel = NSMutableAttributedString()
-        startCombinedLabel.append(AtchaFont.B3_M_15("\(firstStation.stationName ?? "")",
-                                                    color: .gray100))
-        startCombinedLabel.append(AtchaFont.B3_M_15(" 승차", color: .gray500))
-        startLabel.attributedText = startCombinedLabel
-        
-        let endCombinedLabel = NSMutableAttributedString()
-        endCombinedLabel.append(AtchaFont.B3_M_15("\(lastStation.stationName ?? "")",
-                                                  color: .gray100))
-        endCombinedLabel.append(AtchaFont.B3_M_15(" 하차", color: .gray500))
-        endLabel.attributedText = endCombinedLabel
-        
-        busBackView.backgroundColor = info.mode?.getColor(for: info.type ?? "")
-        busDetailArrowImageView.tintColor = .white
-        busLabel.attributedText = AtchaFont.B6_R_14(info.busName ?? "", color: .white)
-        
-        summaryLabel.attributedText = AtchaFont.B7_M_13("\(sectionTime), \(passStopList.count)개 정류장 이동", color: .white)
-        addStationNameLabel(info: stationInfos)
-        
-        busInfo.forEach { busInfo in
-            if doesIncludeBus(route1: info.route,
-                              route2: busInfo.routeName) {
-                if let time = busInfo.realTimeBusArrival?.first?.remainingTime?.toHourMinuteSecondString {
-                    busTimerLabel.attributedText = AtchaFont.B6_R_14("\(time)", color: .red)
-                }
-            }
-        }
-    }
-    
+}
+
+extension DetailRouteBusCell {
     func cleanRouteName(_ fullName: String?) -> String? {
         guard let fullName = fullName else { return nil }
         return fullName.components(separatedBy: ":").last
@@ -260,3 +250,16 @@ final class DetailRouteBusCell: UICollectionViewCell {
         }
     }
 }
+
+
+//stationListStackView.snp.makeConstraints {
+//    $0.leading.equalTo(startLabel)
+//    stationListStackViewTopConstraint = $0.top.equalTo(summaryLabel.snp.bottom).offset(16).constraint
+//    stationListStackViewBottomConstraint = $0.bottom.equalTo(endLabel.snp.top).offset(-12).constraint
+//}
+//
+//endLabel.snp.makeConstraints {
+//    endLabelTopConstraintWithoutStack = $0.top.equalTo(summaryLabel.snp.bottom).offset(36).constraint
+//    $0.leading.trailing.equalTo(stationListStackView)
+//    $0.bottom.equalToSuperview()
+//}
