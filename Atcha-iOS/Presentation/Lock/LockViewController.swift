@@ -142,6 +142,6 @@ final class LockViewController: BaseViewController<LockViewModel> {
         let lon = wrapper.string(forKey: UserDefaultsWrapper.Key.startLat.rawValue) ?? ""
         let address = wrapper.string(forKey: UserDefaultsWrapper.Key.startLat.rawValue) ?? ""
         
-//        viewModel.routerHandler?(.detailRoute(startLat: lat, startLon: lon, startAddress: address))
+        viewModel.routerHandler?(.courseSearch(startLat: lat, startLon: lon, startAddress: address))
     }
 }
