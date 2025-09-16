@@ -177,6 +177,12 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         let isFirstStation = (station.order == stations.first?.order)
         let isLastStation  = (station.order == stations.last?.order)
         
+        if isCurrentStation {
+            cell.backgroundColor = AtchaColor.gray930
+        } else {
+            cell.backgroundColor = .clear
+        }
+        
         cell.configure(
             with: station,
             isTurnPoint: isTurnPoint,

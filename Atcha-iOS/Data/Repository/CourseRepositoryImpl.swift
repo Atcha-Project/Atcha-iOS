@@ -103,7 +103,6 @@ final class CourseRepositoryImpl: CourseRepository {
                     do {
                         let decoded = try JSONDecoder().decode(CourseSearchResponse.self, from: payload)
                         continuation.yield(decoded)
-                        print(decoded)
                     } catch {
                         print("❌ SSE Decode 실패:", error)
                     }
