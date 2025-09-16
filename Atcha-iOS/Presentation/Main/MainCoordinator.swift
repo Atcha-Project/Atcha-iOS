@@ -171,6 +171,12 @@ final class MainCoordinator {
                 switch router {
                 case .lockScreen(let info, let address):
                     self?.lockScreenConfrim?(info, address)
+                case .courseSearch(let startLat, let startLon, let startAddress):
+                    self?.navigationController.dismiss(animated: false) {
+                        self?.handle(route: .courseSearch(startLat: startLat,
+                                                         startLon: startLon,
+                                                         startAddress: startAddress))
+                    }
                 default: do {}
                 }
             }
