@@ -118,7 +118,18 @@ extension AlarmManager {
         }
     }
     
-    private func playLocalMusic(named fileName: String, withExtension fileExtension: String) {
+    func pauseMusic() {
+        DispatchQueue.main.async {
+            if let player = self.audioPlayer, player.isPlaying {
+                player.pause()
+                print("⏸ 음악 일시 정지됨.")
+            } else {
+                print("ℹ️ 현재 재생 중인 음악이 없습니다.")
+            }
+        }
+    }
+    
+    func playLocalMusic(named fileName: String, withExtension fileExtension: String) {
         // 같은 노래가 이미 재생 중이면 재생하지 않음
         
         if let player = self.audioPlayer,

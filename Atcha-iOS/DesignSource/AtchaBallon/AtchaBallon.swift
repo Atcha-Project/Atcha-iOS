@@ -82,15 +82,15 @@ final class AtchaBallon: UIView {
         let gray = NSMutableAttributedString(attributedString: AtchaFont.B7_M_13(grayMessage))
         gray.addAttributes([.foregroundColor: UIColor.gray100],
                            range: NSRange(location: 0, length: gray.length))
-
+        
         let white = NSMutableAttributedString(attributedString: AtchaFont.B7_M_13(whiteMessage))
         white.addAttributes([.foregroundColor: UIColor.white],
                             range: NSRange(location: 0, length: white.length))
-
+        
         let composed = NSMutableAttributedString()
         composed.append(gray)
         composed.append(white)
-
+        
         bottomLabel.attributedText = composed
     }
 }
