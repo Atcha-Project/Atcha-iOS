@@ -138,7 +138,7 @@ extension MainViewController {
         atchaImageView.snp.makeConstraints { make in
             make.width.height.equalTo(64)
             make.leading.equalToSuperview().inset(8)
-            make.bottom.equalTo(lastTrainSearchView.snp.top).inset(24)
+            make.bottom.equalTo(lastTrainSearchView.snp.top).inset(22)
         }
         mapContainerView.snp.makeConstraints { make in
             make.horizontalEdges.equalToSuperview()
