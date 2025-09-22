@@ -22,6 +22,10 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
         var request = urlRequest
         let path = request.url?.path ?? ""
         
+        if request.value(forHTTPHeaderField: "Authorization") != nil {
+            completion(.success(request)); return
+        }
+        
         if path.contains("/auth/logout") {
             if let refreshToken = tokenStorage.refreshToken {
                 request.setValue("Bearer \(refreshToken)", forHTTPHeaderField: "Authorization")
@@ -51,11 +55,18 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
         
         refreshAccessToken(refreshToken: refreshToken) { [weak self] result in
             switch result {
-            case .success(let newAccessToken):
-                self?.tokenStorage.accessToken = newAccessToken?.accessToken
-                self?.tokenStorage.refreshToken = newAccessToken?.refreshToken
+            case .success(let payload):
+                guard let p = payload else {
+                    SessionController.shared.expireAndRouteToLogin()
+                    completion(.doNotRetry)
+                    return
+                }
+                self?.tokenStorage.accessToken = p.accessToken
+                self?.tokenStorage.refreshToken = p.refreshToken
                 completion(.retry)
+                
             case .failure:
+                SessionController.shared.expireAndRouteToLogin()
                 completion(.doNotRetry)
             }
         }
@@ -74,7 +85,7 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
             method: .get,
             headers: headers
         )
-//        .validate()
+        //        .validate()
         .responseDecodable(of: APIResponse<RefreshTokenResponse>.self) { response in
             switch response.result {
             case .success(let refreshResponse):

@@ -42,6 +42,7 @@
 		6D368BAD2E0396C100144EE7 /* RegisterTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D368BAC2E0396C100144EE7 /* RegisterTextField.swift */; };
 		6D368BB22E03BD2C00144EE7 /* SearchTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D368BB12E03BD2C00144EE7 /* SearchTextField.swift */; };
 		6D368BB42E03BE9A00144EE7 /* AtchaTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D368BB32E03BE9A00144EE7 /* AtchaTextField.swift */; };
+		6D52FBC12E7F07CB00D28C82 /* SessionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D52FBC02E7F07CB00D28C82 /* SessionController.swift */; };
 		6D5E03B92E24F3A50065AFBE /* AddRecentSearchRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5E03B82E24F3A50065AFBE /* AddRecentSearchRequest.swift */; };
 		6D5E03BE2E24F70B0065AFBE /* FetchRecentSearchRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5E03BD2E24F70B0065AFBE /* FetchRecentSearchRequest.swift */; };
 		6D5E03C82E2881830065AFBE /* FetchRecentSearchResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5E03C72E2881830065AFBE /* FetchRecentSearchResponse.swift */; };
@@ -341,6 +342,7 @@
 		6D368BAC2E0396C100144EE7 /* RegisterTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterTextField.swift; sourceTree = "<group>"; };
 		6D368BB12E03BD2C00144EE7 /* SearchTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchTextField.swift; sourceTree = "<group>"; };
 		6D368BB32E03BE9A00144EE7 /* AtchaTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtchaTextField.swift; sourceTree = "<group>"; };
+		6D52FBC02E7F07CB00D28C82 /* SessionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionController.swift; sourceTree = "<group>"; };
 		6D5E03B82E24F3A50065AFBE /* AddRecentSearchRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddRecentSearchRequest.swift; sourceTree = "<group>"; };
 		6D5E03BD2E24F70B0065AFBE /* FetchRecentSearchRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchRecentSearchRequest.swift; sourceTree = "<group>"; };
 		6D5E03C72E2881830065AFBE /* FetchRecentSearchResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchRecentSearchResponse.swift; sourceTree = "<group>"; };
@@ -1184,6 +1186,7 @@
 			children = (
 				B65C13032E057B8F0016D2F0 /* TokenStorage.swift */,
 				B65C130F2E057D800016D2F0 /* TokenInterceptor.swift */,
+				6D52FBC02E7F07CB00D28C82 /* SessionController.swift */,
 			);
 			path = Token;
 			sourceTree = "<group>";
@@ -2045,6 +2048,7 @@
 				6D73EBD82E17AEAD00F8DF8B /* CourseStepView.swift in Sources */,
 				B6CF46F12E095FF700304A85 /* LoginDIContainer.swift in Sources */,
 				6D2B8CA62E39A89C00608104 /* BusPositionInfo.swift in Sources */,
+				6D52FBC12E7F07CB00D28C82 /* SessionController.swift in Sources */,
 				B6FB20822E1BE2870032751B /* TMapContainerView.swift in Sources */,
 				B65C13372E0693A70016D2F0 /* MyPageCell.swift in Sources */,
 				6D73EBEA2E1B551600F8DF8B /* CourseRepositoryImpl.swift in Sources */,
