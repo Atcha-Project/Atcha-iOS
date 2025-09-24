@@ -186,10 +186,10 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
         UserDefaultsWrapper.shared.set(address, forKey: UserDefaultsWrapper.Key.homeAddress.rawValue)
         
         if name == "" || name == address {
-            locationNameLabel.attributedText = AtchaFont.B2_SB_15(address, color: AtchaColor.white)
+            locationNameLabel.attributedText = AtchaFont.B4_R_15(address, color: AtchaColor.white)
             locationAddressLabel.isHidden = true
         } else {
-            locationNameLabel.attributedText = AtchaFont.B2_SB_15(name, color: AtchaColor.white)
+            locationNameLabel.attributedText = AtchaFont.B4_R_15(name, color: AtchaColor.white)
             locationAddressLabel.attributedText = AtchaFont.B6_R_14(address, color: AtchaColor.gray200)
             locationAddressLabel.isHidden = false
         }
