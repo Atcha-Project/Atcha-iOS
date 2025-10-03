@@ -320,12 +320,12 @@ extension MainViewModel {
         return totalMinutes
     }
     
-    private func stopAlarmTimer() {
+    func stopAlarmTimer() {
         alarmTimerCancellable?.cancel()
         alarmTimerCancellable = nil
     }
     
-    private func stopFinishAlarmTimer() {
+    func stopFinishAlarmTimer() {
         alarmFinishCancellable?.cancel()
         alarmFinishCancellable = nil
     }
@@ -433,3 +433,4 @@ extension MainViewModel {
         return try await alarmUseCase.alarmRefresh()
     }
 }
+
