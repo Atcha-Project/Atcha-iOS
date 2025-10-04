@@ -430,6 +430,8 @@ extension MainViewController {
             lastTrainDepartView.isHidden = false
             viewModel.startAlarmTimer()
         case .search:
+            viewModel.stopAlarmTimer()
+            viewModel.stopFinishAlarmTimer()
             lastTrainSearchView.isHidden = false
             flagImageView.isHidden = false
             mapContainerView.clearMapView()
@@ -604,3 +606,4 @@ extension MainViewController {
         viewModel.currentLocation = coordinate
     }
 }
+
