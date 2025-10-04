@@ -25,6 +25,7 @@ final class SplashViewController: BaseViewController<SplashViewModel> {
         super.viewDidLoad()
         
         setupUI()
+        setupBindings()
         viewModel.makeInitialFlow()
     }
     
@@ -66,10 +67,36 @@ final class SplashViewController: BaseViewController<SplashViewModel> {
         viewModel.$appVersionInfo
             .compactMap { $0 }
             .receive(on: DispatchQueue.main)
-            .sink { versionInfo in
-                print("App Version Info: \(versionInfo)")
-                // 버전에 따른 로직 처리
+            .sink { [weak self] versionInfo in
+                guard let self else { return }
+                updateAppVersion(versionInfo)
             }
             .store(in: &cancellables)
+    }
+    
+    private func updateAppVersion(_ version: String) {
+        let severVersion: String = version
+        let appVersion: String = AppInfoProvider.versionWithV
+        
+        if isVersion(severVersion, lessThan: appVersion) {
+            viewModel.updateAppVersion(version: appVersion)
+        } else {
+            print("강제 업데이트 표출해주세요!!")
+        }
+    }
+    
+    /// lhs < rhs 인지 비교 (서버 버전 < 앱 버전?)
+    private func isVersion(_ lhs: String, lessThan rhs: String) -> Bool {
+        let l = lhs.versionComponents()
+        let r = rhs.versionComponents()
+        let count = max(l.count, r.count)
+        
+        for i in 0..<count {
+            let lv = i < l.count ? l[i] : 0
+            let rv = i < r.count ? r[i] : 0
+            if lv < rv { return true }
+            if lv > rv { return false }
+        }
+        return false
     }
 }

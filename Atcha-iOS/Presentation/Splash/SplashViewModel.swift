@@ -12,14 +12,19 @@ final class SplashViewModel: BaseViewModel {
     
     private let fetchUserUseCase: FetchUserUseCase
     private let checkAppVersionUseCase: CheckAppVersionUseCase
+    private let updateAppVersionUseCase: UpdateAppVersionUseCase
     
     var routerHandler: ((SplashRouter) -> Void)?
     
     init(fetchUserUseCase: FetchUserUseCase,
-         checkAppVersionUseCase: CheckAppVersionUseCase) {
+         checkAppVersionUseCase: CheckAppVersionUseCase,
+         updateAppVersionUseCase: UpdateAppVersionUseCase) {
         self.fetchUserUseCase = fetchUserUseCase
         self.checkAppVersionUseCase = checkAppVersionUseCase
+        self.updateAppVersionUseCase = updateAppVersionUseCase
         super.init()
+        
+        self.checkAppVersion()
     }
     
     func checkAppVersion() {
@@ -30,6 +35,16 @@ final class SplashViewModel: BaseViewModel {
             do {
                 let versionInfo = try await checkAppVersionUseCase.execute()
                 appVersionInfo = versionInfo
+            } catch {
+                handleError(error)
+            }
+        }
+    }
+    
+    func updateAppVersion(version: String) {
+        Task {
+            do {
+                let _ = try await updateAppVersionUseCase.exectue(version: version)
             } catch {
                 handleError(error)
             }
@@ -67,7 +82,7 @@ final class SplashViewModel: BaseViewModel {
                 } else {
                     
                     if let arrivalTime = wrapper.object(forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue, of: Date.self) {
-                        if isMoreThanSeconds(from: arrivalTime, seconds: 60 * 30) { // 30분이 넘게 지난 경우 
+                        if isMoreThanSeconds(from: arrivalTime, seconds: 60 * 30) { // 30분이 넘게 지난 경우
                             routerHandler?(.main)
                         } else {
                             routerHandler?(.finishTime(info: legInfo, address: address))
