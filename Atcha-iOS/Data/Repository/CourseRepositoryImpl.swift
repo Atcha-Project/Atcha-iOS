@@ -55,7 +55,7 @@ final class CourseRepositoryImpl: CourseRepository {
             continuation.finish(throwing: NSError(domain: "CourseRepository", code: 401, userInfo: [NSLocalizedDescriptionKey: "인증 토큰이 없습니다."]))
             return
         }
-        
+
         var urlComponents = URLComponents(string: "https://atcha.p-e.kr/api/routes/v3/last-routes/stream")!
         urlComponents.queryItems = [
             URLQueryItem(name: "startLat", value: "\(request.startLat)"),
@@ -63,81 +63,128 @@ final class CourseRepositoryImpl: CourseRepository {
             URLQueryItem(name: "endLat", value: "\(request.endLat)"),
             URLQueryItem(name: "endLon", value: "\(request.endLon)")
         ]
-        
+
         var urlRequest = URLRequest(url: urlComponents.url!)
+        urlRequest.httpMethod = "GET"
         urlRequest.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("text/event-stream", forHTTPHeaderField: "Accept")
-        
+
         do {
             let (bytes, response) = try await URLSession.shared.bytes(for: urlRequest)
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
+            guard let http = response as? HTTPURLResponse else {
                 throw URLError(.badServerResponse)
             }
-            
-            if httpResponse.statusCode == 401 {
+
+            // 401 외의 코드도 명확히 분기
+            if http.statusCode == 401 {
                 if let tokens = await refreshToken() {
                     AppDIContainer.shared.tokenStorage.accessToken = tokens.accessToken
-                    if let rt = tokens.refreshToken {
-                            AppDIContainer.shared.tokenStorage.refreshToken = rt
-                    }
+                    if let rt = tokens.refreshToken { AppDIContainer.shared.tokenStorage.refreshToken = rt }
+                    print("재발급 성공 → 스트림 재연결")
                     await startStream(request, continuation: continuation)
                     return
                 } else {
                     continuation.finish(throwing: NSError(domain: "CourseRepository", code: 401, userInfo: [NSLocalizedDescriptionKey: "토큰 재발급 실패"]))
                     return
                 }
+            } else if http.statusCode != 200 {
+                // 서버가 JSON 에러 바디를 줄 수 있으니 한번 읽어봄
+                // bytes(for:)는 스트림이므로 바디를 통째로 읽기 어렵다 → 상태만으로 에러 처리
+                continuation.finish(throwing: NSError(domain: "CourseRepository", code: http.statusCode, userInfo: [NSLocalizedDescriptionKey: "SSE 연결 실패 (\(http.statusCode))"]))
+                return
             }
-            
+
             let parser = SSEParser()
-            
-            for try await byte in bytes {
-                // 바이트 단위로 들어오므로 Data로 감싸서 누적
-                let events = parser.feed(Data([byte]))
-                for event in events {
-                    guard !event.data.isEmpty,
-                          let payload = event.data.data(using: .utf8) else {
-                        continue
-                    }
-                    
-                    do {
-                        let decoded = try JSONDecoder().decode(CourseSearchResponse.self, from: payload)
-                        continuation.yield(decoded)
-                    } catch {
-                        print("❌ SSE Decode 실패:", error)
+            var receivedAny = false
+
+            do {
+                for try await byte in bytes {
+                    receivedAny = true
+                    let events = parser.feed(Data([byte]))
+                    for event in events {
+                        guard !event.data.isEmpty, let payload = event.data.data(using: .utf8) else { continue }
+                        do {
+                            let decoded = try JSONDecoder().decode(CourseSearchResponse.self, from: payload)
+                            continuation.yield(decoded)
+                        } catch {
+                            // 서버가 keep-alive ping 이나 텍스트를 보낼 수 있으므로 디코드 실패는 경고만
+                            print("SSE decode 실패:", error, "raw:", event.data)
+                        }
                     }
                 }
+            } catch {
+                // 실제 네트워크 오류(연결 끊김 등)
+                print("SSE stream read error:", error)
+                continuation.finish(throwing: error)
+                return
             }
-            
+
+            // 서버가 조용히 닫은 케이스
+            if !receivedAny {
+                continuation.finish(throwing: NSError(domain: "CourseRepository", code: -1, userInfo: [NSLocalizedDescriptionKey: "SSE에서 응답이 없습니다."]))
+                return
+            }
+
             continuation.finish()
         } catch {
+            print("SSE open error:", error)
             continuation.finish(throwing: error)
         }
     }
+
     
     private func refreshToken() async -> (accessToken: String, refreshToken: String?)? {
-        guard let refreshToken = AppDIContainer.shared.tokenStorage.refreshToken else { return nil }
+        guard let refreshToken = AppDIContainer.shared.tokenStorage.refreshToken else {
+            print("refreshToken 없음")
+            SessionController.shared.expireAndRouteToLogin()
+            return nil
+        }
         let url = URL(string: "https://atcha.p-e.kr/api/auth/reissue")!
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("Bearer \(refreshToken)", forHTTPHeaderField: "Authorization")
-        
+        request.setValue("*/*", forHTTPHeaderField: "Accept")
+        request.timeoutInterval = 15
+
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
-            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else { return nil }
-            
-            let decoded = try JSONDecoder().decode(APIResponse<RefreshTokenResponse>.self, from: data)
-            guard let result = decoded.result else { return nil }
-            
-            let newAccess = result.accessToken
-            let newRefresh = result.refreshToken
-            
-            return (accessToken: newAccess, refreshToken: newRefresh)
+            guard let http = response as? HTTPURLResponse else {
+                print("reissue: HTTPURLResponse 아님")
+                SessionController.shared.expireAndRouteToLogin()
+                return nil
+            }
+
+            // 200 아니면 바로 실패 처리
+            guard http.statusCode == 200 else {
+                if http.statusCode == 401 { print("reissue 401: refresh 만료/위조 가능") }
+                SessionController.shared.expireAndRouteToLogin()
+                return nil
+            }
+
+            let decoder = JSONDecoder()
+            decoder.keyDecodingStrategy = .convertFromSnakeCase
+
+            do {
+                let decoded = try decoder.decode(APIResponse<RefreshTokenResponse>.self, from: data)
+                guard let result = decoded.result else {
+                    print("reissue: result nil (responseCode=\(decoded.responseCode))")
+                    SessionController.shared.expireAndRouteToLogin()
+                    return nil
+                }
+                return (accessToken: result.accessToken, refreshToken: result.refreshToken)
+            } catch {
+                print("reissue 디코딩 실패:", error)
+                SessionController.shared.expireAndRouteToLogin()
+                return nil
+            }
+
         } catch {
-            print("refreshToken 실패: \(error)")
+            print("reissue 네트워크 오류:", error)
+            SessionController.shared.expireAndRouteToLogin()
             return nil
         }
     }
+
 }
 

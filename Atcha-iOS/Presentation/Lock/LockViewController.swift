@@ -33,7 +33,8 @@ final class LockViewController: BaseViewController<LockViewModel> {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        lottieAnimationView.contentMode = .scaleAspectFit
+        lottieAnimationView.contentMode = .scaleAspectFill
+        lottieAnimationView.clipsToBounds = true
         lottieAnimationView.loopMode = .loop
         lottieAnimationView.play()
     }

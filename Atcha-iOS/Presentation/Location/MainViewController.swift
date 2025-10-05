@@ -199,7 +199,10 @@ extension MainViewController {
             .compactMap { $0 }
             .receive(on: RunLoop.main)
             .sink { [weak self] message in
-                self?.view.showToast(message: message)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+                    guard let self else { return }
+                    view.showToast(message: message)
+                }
                 self?.viewModel.pendingToast = nil
             }
             .store(in: &cancellables)
@@ -427,6 +430,8 @@ extension MainViewController {
             lastTrainDepartView.isHidden = false
             viewModel.startAlarmTimer()
         case .search:
+            viewModel.stopAlarmTimer()
+            viewModel.stopFinishAlarmTimer()
             lastTrainSearchView.isHidden = false
             flagImageView.isHidden = false
             mapContainerView.clearMapView()
@@ -601,3 +606,4 @@ extension MainViewController {
         viewModel.currentLocation = coordinate
     }
 }
+
