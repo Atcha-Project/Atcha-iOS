@@ -164,14 +164,14 @@ final class MainViewModel: BaseViewModel {
                         passStations: firstValidInfo.passStations
                     )
                     
-                    Task {
-                        do {
-                            let info = try await busRealTimeInfo(request: request)
-                            self.busRealTimeInfo = info
-                        } catch {
-                            print("버스 실시간 조회 실패")
-                        }
-                    }
+//                    Task {
+//                        do {
+//                            let info = try await busRealTimeInfo(request: request)
+//                            self.busRealTimeInfo = info
+//                        } catch {
+//                            print("버스 실시간 조회 실패")
+//                        }
+//                    }
                 }
             }
         }
@@ -426,9 +426,9 @@ extension MainViewModel {
         return try await fetchTaxiFareUseCase.fetchTaxiFare(request: request)
     }
     
-    private func busRealTimeInfo(request: BusRealTimeInfoRequest) async throws -> BusRealTimeInfo {
-        return try await busInfoUseCase.busRealTimeInfo(request)
-    }
+//    private func busRealTimeInfo(request: BusRealTimeInfoRequest) async throws -> BusRealTimeInfo {
+//        return try await busInfoUseCase.busRealTimeInfo(request)
+//    }
     
     private func realodDepartureTime() async throws -> AlarmRefresh {
         return try await alarmUseCase.alarmRefresh()

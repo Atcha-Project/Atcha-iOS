@@ -28,7 +28,9 @@ final class DetailRouteViewModel: BaseViewModel {
     @Published var address: String
     @Published var legtPathInfo: [LegPathInfo] = []
     @Published var legTrafficInfo: [LegTrafficInfo] = []
-    @Published var busRealTimeInfos: [BusRealTimeInfo] = []
+    //    @Published var busRealTimeInfos: [BusRealTimeInfo] = []
+    
+    @Published var busRealTimeInfo: [RealTimeBusArrival] = []
     @Published private(set) var context: DetailRouteContext
     
     init(address: String,
@@ -51,30 +53,21 @@ final class DetailRouteViewModel: BaseViewModel {
     func fetchInfo() {
         self.legtPathInfo = infos.pathInfo
         self.legTrafficInfo = infos.trafficInfo
-        
         let busDetailInfo = infos.busInfo.filter { $0.routeName?.isEmpty == false }
-        busDetailInfo.forEach { info in
-            let request = BusRealTimeInfoRequest(
-                routeName: info.routeName,
-                stationName: info.start?.name,
-                lat: info.start?.lat,
-                lon: info.start?.lon,
-                passStations: info.passStations)
-            
-            Task {
-                await busRealTimeInfo(request: request)
-            }
+        Task {
+            await getBusRealTimeInfo(request: busDetailInfo.first?.routeName ?? "")
         }
     }
     
     @MainActor
-    func busRealTimeInfo(request: BusRealTimeInfoRequest) {
+    func getBusRealTimeInfo(request: String) {
         Task {
             do {
-                let response = try await busInfoUseCase.busRealTimeInfo(request)
-                busRealTimeInfos.append(response)
+                let response = try await busInfoUseCase.getBusRealTimeInfo(request)
+                busRealTimeInfo = response
+                print("실시간 버스 조회 성공요! : \(busRealTimeInfo)")
             } catch {
-                print("실시간 버스 조회 실패")
+                print("실시간 버스 조회 실패요!")
             }
         }
     }

@@ -219,7 +219,7 @@ private extension AlarmManager {
 }
 
 // MARK: - Private: Music / Vibration
-private extension AlarmManager {
+extension AlarmManager {
     func pauseMusic() {
         DispatchQueue.main.async {
             if let player = self.audioPlayer, player.isPlaying {

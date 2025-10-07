@@ -11,6 +11,9 @@ protocol BusInfoUseCase {
     // 실시간 버스 정보 조회
     func busRealTimeInfo(_ request: BusRealTimeInfoRequest) async throws -> BusRealTimeInfo
     
+    // 실시간 버스 정보 조회 v2
+    func getBusRealTimeInfo(_ request: String) async throws -> [RealTimeBusArrival]
+    
     // 버스 운행 정보 조회
     func busOperationInfo(_ request: BusOperationInfoRequest) async throws -> BusOperationInfo
     
@@ -33,6 +36,11 @@ final class BusInfoUseCaseImpl: BusInfoUseCase {
             ])
         }
         return entity
+    }
+    
+    // 실시간 버스 정보 조회 v2
+    func getBusRealTimeInfo(_ request: String) async throws -> [RealTimeBusArrival] {
+        return try await repository.getBusRealTimeInfo(request)
     }
     
     // 버스 운행 정보 조회

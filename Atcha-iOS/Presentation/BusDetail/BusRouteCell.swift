@@ -8,7 +8,7 @@
 import UIKit
 import SnapKit
 
-enum BusCongestion: String {
+enum BusCongestion: String, Codable {
     case low = "LOW"
     case medium = "MEDIUM"
     case high = "HIGH"
@@ -182,7 +182,7 @@ class BusRouteCell: UICollectionViewCell {
                     remainStation = currentOrder - busSection
                 }
                 
-                let congestion = BusCongestion(rawValue: info.busCongestion ?? "")
+                let congestion = info.busCongestion
                 let seconds = info.remainingTime ?? 0
                 remainSeconds.append(seconds)
                 

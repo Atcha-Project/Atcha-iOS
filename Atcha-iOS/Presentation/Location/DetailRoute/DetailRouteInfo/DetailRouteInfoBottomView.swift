@@ -128,6 +128,7 @@ final class DetailRouteInfoBottomView: UIView {
         applySnapshot()
     }
     
+    // v2
     func setupBusTimerLabel(_ time: [BusRealTimeInfo]) {
         busRealTimeInfo = time
         collectionView.reloadData()
