@@ -34,7 +34,7 @@ struct BusRealTimeInfo: Codable {
 
 struct RealTimeBusArrival: Codable {
     let busStatus: BusStatus?
-    let remainingTime: Int?
+    var remainingTime: Int?
     let remainingStations: Int?
     let isLast: Bool?
     let busCongestion: BusCongestion?

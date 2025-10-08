@@ -24,7 +24,6 @@ final class DetailRouteBusCell: UICollectionViewCell {
         return stack
     }()
     
-    
     private let lineImageView: UIImageView = UIImageView()
     
     // MARK: Arrival UI
@@ -47,8 +46,18 @@ final class DetailRouteBusCell: UICollectionViewCell {
     // MARK: - Bus Info
     private let busBadgeView: BusBadgeView = BusBadgeView()
     private let stationListStackView = UIStackView()
-    private let busTimerLabel: UILabel = UILabel()
     
+    private let busTimerFirstLabel: UILabel = UILabel()
+    private let busTimerSecondLabel: UILabel = UILabel()
+    private lazy var busTimerStackView: UIStackView = {
+        let stack = UIStackView(arrangedSubviews: [busTimerFirstLabel, busTimerSecondLabel])
+        stack.axis = .vertical
+        stack.alignment = .leading
+        stack.spacing = 4
+        return stack
+    }()
+    
+    private let remainigTimeLabel: UILabel = UILabel()
     
     // MARK: - Summary
     private let summaryView: DetailRouteSummaryView = DetailRouteSummaryView()
@@ -57,10 +66,18 @@ final class DetailRouteBusCell: UICollectionViewCell {
     private var isExpanded: Bool = false
     var didTapSummary: (() -> Void)?
     var didTapDetail: (() -> Void)?
+    var getNewBusRealTime: (() -> Void)?
     
     private var stationListStackViewTopConstraint: Constraint?
     private var stationListStackViewBottomConstraint: Constraint?
     private var endLabelTopConstraintWithoutStack: Constraint?
+    
+    // MARK: Timer
+    var countdownTimer: Timer?
+    var reloadTimer: Timer?
+    
+    var currentLegTrafficInfo: LegTrafficInfo? = nil
+    var currentBusInfo: [RealTimeBusArrival] = []
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -80,6 +97,7 @@ final class DetailRouteBusCell: UICollectionViewCell {
         stickContainerView.addSubview(stickView)
         
         contentView.addSubViews(lineImageView,
+                                busTimerStackView,
                                 stickContainerView,
                                 startStackView,
                                 endStackView,
@@ -148,6 +166,11 @@ final class DetailRouteBusCell: UICollectionViewCell {
             make.top.equalTo(busBadgeView.snp.bottom).offset(16)
         }
         
+        busTimerStackView.snp.makeConstraints { make in
+            make.leading.equalTo(busBadgeView.snp.trailing).offset(8)
+            make.centerY.equalTo(busBadgeView)
+        }
+        
         stationListStackView.snp.makeConstraints {
             $0.leading.equalTo(startLabel)
             stationListStackViewTopConstraint = $0.top.equalTo(summaryView.snp.bottom).offset(16).constraint
@@ -178,7 +201,9 @@ final class DetailRouteBusCell: UICollectionViewCell {
         setupArrivalConstraints()
     }
     
-    func configure(info: LegTrafficInfo?, busInfo: [BusRealTimeInfo]) {
+    func configure(info: LegTrafficInfo?) {
+        currentLegTrafficInfo = info
+        
         stationInfos = []
         guard let info = info,
               let passStopList = info.passStopList,
@@ -210,6 +235,128 @@ final class DetailRouteBusCell: UICollectionViewCell {
         endCombinedLabel.append(AtchaFont.B3_M_15(" 하차", color: .gray500))
         endLabel.attributedText = endCombinedLabel
     }
+    
+    func setupBusRealTimeInfo(busInfo: [RealTimeBusArrival]) {
+        print("setupBusRealTimeInfo : \(busInfo)")
+        
+        if let startTimeString = currentLegTrafficInfo?.startTime,
+           let startDate = convertHHmmStringToDate(startTimeString),
+           let nowHHmm = getCurrentTimeAsDate(),
+           nowHHmm < startDate {
+            print("아직 시작 시간이 되지 않았습니다. (현재: \(nowHHmm), 시작: \(startDate))")
+            return
+        }
+        
+        countdownTimer?.invalidate()
+        reloadTimer?.invalidate()
+        
+        currentBusInfo = busInfo
+        
+        guard !busInfo.isEmpty else {
+            busTimerStackView.isHidden = false
+            busTimerFirstLabel.text = "운행 정보 없음"
+            busTimerSecondLabel.text = ""
+            return
+        }
+        
+        currentBusInfo = currentBusInfo.filter { $0.remainingTime ?? 0 > 0 }
+        if currentBusInfo.isEmpty {
+            busTimerStackView.isHidden = true
+            return
+        }
+        
+        busTimerStackView.isHidden = false
+        updateBusTimerLabels()
+        
+        busTimerStackView.isHidden = false
+        updateBusTimerLabels()
+        
+        // 1초마다 시간 감소
+        countdownTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            self?.decrementRemainingTime()
+        }
+        
+        // 30초마다 재요청
+        reloadTimer = Timer.scheduledTimer(withTimeInterval: 30.0, repeats: true) { [weak self] _ in
+            self?.getNewBusRealTime?()
+        }
+    }
+    
+    private func decrementRemainingTime() {
+        for i in 0..<currentBusInfo.count {
+            guard let time = currentBusInfo[i].remainingTime, time > 0 else { continue }
+            currentBusInfo[i].remainingTime = time - 1
+        }
+        
+        currentBusInfo = currentBusInfo.filter {
+            if let time = $0.remainingTime {
+                return time > 0
+            }
+            return false
+        }
+        
+        if currentBusInfo.isEmpty {
+            busTimerStackView.isHidden = true
+            countdownTimer?.invalidate()
+        } else {
+            updateBusTimerLabels()
+        }
+    }
+    
+    private func updateBusTimerLabels() {
+        func labelText(for info: RealTimeBusArrival) -> NSAttributedString {
+            if info.busStatus == .end {
+                return AtchaFont.B6_R_14("운행 종료", color: .gray)
+            }
+            
+            guard let remaining = info.remainingTime else {
+                return AtchaFont.B6_R_14("정보 없음", color: .gray)
+            }
+            
+            if remaining <= 90 {
+                return AtchaFont.B6_R_14("곧 도착", color: .widearea)
+            } else {
+                return AtchaFont.B6_R_14(formatSecondsToMinutesAndSeconds(remaining), color: .widearea)
+            }
+        }
+        
+        switch currentBusInfo.count {
+        case 2:
+            busTimerFirstLabel.attributedText = labelText(for: currentBusInfo[0])
+            busTimerSecondLabel.attributedText = labelText(for: currentBusInfo[1])
+        case 1:
+            busTimerFirstLabel.attributedText = labelText(for: currentBusInfo[0])
+            busTimerSecondLabel.text = ""
+        default:
+            busTimerStackView.isHidden = true
+        }
+    }
+    
+    private func formatSecondsToMinutesAndSeconds(_ seconds: Int?) -> String {
+        guard let seconds = seconds else { return "시간 없음" }
+        
+        let minutes = seconds / 60
+        let remainingSeconds = seconds % 60
+        
+        return "\(minutes)분 \(remainingSeconds)초"
+    }
+    
+    private func convertHHmmStringToDate(_ timeString: String) -> Date? {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        formatter.locale = Locale(identifier: "ko_KR")
+        return formatter.date(from: timeString)
+    }
+    
+    // 현재 시각을 "HH:mm" 형식의 Date로 변환
+    private func getCurrentTimeAsDate() -> Date? {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        formatter.locale = Locale(identifier: "ko_KR")
+        let now = Date()
+        let string = formatter.string(from: now)
+        return formatter.date(from: string)
+    }
 }
 
 // MARK: Action
@@ -229,12 +376,13 @@ extension DetailRouteBusCell {
         stationListStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         addStationNameLabel(info: stationInfos)
         
-        stationListStackViewTopConstraint?.isActive = isExpanded
-        stationListStackViewBottomConstraint?.isActive = isExpanded
-        endLabelTopConstraintWithoutStack?.isActive = !isExpanded
-        
-        //        UIView.animate(withDuration: 0.3) {  }
-        self.layoutIfNeeded()
+        UIView.animate(withDuration: 0.3) { [weak self] in
+            guard let self else { return }
+            stationListStackViewTopConstraint?.isActive = isExpanded
+            stationListStackViewBottomConstraint?.isActive = isExpanded
+            endLabelTopConstraintWithoutStack?.isActive = !isExpanded
+            self.layoutIfNeeded()
+        }
         didTapSummary?()
     }
     

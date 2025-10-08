@@ -39,8 +39,9 @@ final class DetailRouteInfoBottomView: UIView {
     
     private let handleView: UIView = UIView()
     private var startAddress: String = ""
-    private var busRealTimeInfo: [BusRealTimeInfo] = []
+    private var busRealTimeInfo: [RealTimeBusArrival] = []
     var onBusDetail: ((BusDetailInfo) -> Void)?
+    var getNewBusRealTime: (() -> Void)?
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -129,7 +130,7 @@ final class DetailRouteInfoBottomView: UIView {
     }
     
     // v2
-    func setupBusTimerLabel(_ time: [BusRealTimeInfo]) {
+    func setupBusTimerLabel(_ time: [RealTimeBusArrival]) {
         busRealTimeInfo = time
         collectionView.reloadData()
     }
@@ -249,6 +250,9 @@ extension DetailRouteInfoBottomView {
                     cell.didTapSummary = { [weak self] in
                         self?.applySnapshot()
                     }
+                    cell.getNewBusRealTime = { [weak self] in
+                        self?.getNewBusRealTime?()
+                    }
                     cell.didTapDetail = { [weak self] in
                         let stations = (item.info?.passStopList ?? []).map {
                             PassStations(index: $0.index, stationName: $0.stationName, lat: $0.lat, lon: $0.lon)
@@ -271,7 +275,8 @@ extension DetailRouteInfoBottomView {
                         )
                         self?.onBusDetail?(info)
                     }
-                    cell.configure(info: item.info, busInfo: self.busRealTimeInfo)
+                    cell.configure(info: item.info)
+                    cell.setupBusRealTimeInfo(busInfo: self.busRealTimeInfo)
                     return cell
                     
                 case .subway:

@@ -156,12 +156,13 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             .sink { [weak self] infos in self?.bottomSheet.setupRouteInfo(infos) }
             .store(in: &cancellables)
         
-        // TODO: 서버 통신 이후 수정하기 
-//        viewModel.$busRealTimeInfos
-//            .filter { $0.count > 0 }
-//            .receive(on: RunLoop.main)
-//            .sink { [weak self] info in self?.bottomSheet.setupBusTimerLabel(info) }
-//            .store(in: &cancellables)
+        viewModel.$busRealTimeInfo
+            .filter { $0.count > 0 }
+            .receive(on: RunLoop.main)
+            .sink { [weak self] info in
+                self?.bottomSheet.setupBusTimerLabel(info)
+            }
+            .store(in: &cancellables)
         
         viewModel.$address
             .receive(on: RunLoop.main)
@@ -181,6 +182,10 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         
         bottomSheet.onBusDetail = { [weak self] info in
             self?.viewModel.onBusDetail?(info)
+        }
+        
+        bottomSheet.getNewBusRealTime = { [weak self] in
+            self?.viewModel.fetchInfo()
         }
         
         viewModel.$context
