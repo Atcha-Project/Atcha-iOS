@@ -78,7 +78,8 @@ final class SplashViewModel: BaseViewModel {
                 
                 // 만약에 내가 실시간 조회 -> 타이머 시간이 존재하면 !!
                 if let _ = wrapper.integer(forKey: UserDefaultsWrapper.Key.trainRealTime.rawValue) {
-                    routerHandler?(.realTime(info: legInfo, address: address))
+//                    routerHandler?(.realTime(info: legInfo, address: address))
+                    // TODO: 상세경로 화면으로 이동 
                 } else {
                     
                     if let arrivalTime = wrapper.object(forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue, of: Date.self) {

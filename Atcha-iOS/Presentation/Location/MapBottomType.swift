@@ -10,6 +10,6 @@ import Foundation
 enum MapBottomType {
     case search
     case departure
-    case realTime
+//    case realTime
     case finish
 }

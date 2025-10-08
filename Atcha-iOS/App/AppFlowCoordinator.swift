@@ -46,8 +46,8 @@ class AppFlowCoordinator {
                 showMainFlow(info: info, address: address, bottomType: .departure)
             case .lockScreen(let info, let address):
                 showLockScreenFlow(info: info, address: address)
-            case .realTime(let info, let address):
-                showMainFlow(info: info, address: address, bottomType: .realTime)
+//            case .realTime(let info, let address):
+//                showMainFlow(info: info, address: address, bottomType: .realTime)
             case .finishTime(let info, let address):
                 showMainFlow(info: info, address: address, bottomType: .finish)
             case .detailRoute(let lat, let lon, let address):
@@ -72,7 +72,9 @@ class AppFlowCoordinator {
         mainCoordinator?.lockScreenConfrim = { [weak self] info, address in
             DispatchQueue.main.async {
                 if let info, let address {
-                    self?.showMainFlow(info: info, address: address, bottomType: .realTime)
+//                    self?.showMainFlow(info: info, address: address, bottomType: .realTime)
+//                    self?.showMainFlow(info: info, address: address, bottomType: .realTime)
+                    // TODO: 상세화면 연동 로직 적용하기
                 } else {
                     self?.showMainFlow()
                 }
@@ -92,7 +94,8 @@ class AppFlowCoordinator {
                 switch router {
                 case .lockScreen(let info, let address):
                     if let info, let address {
-                        self?.showMainFlow(info: info, address: address, bottomType: .realTime)
+                        // TODO: 상세화면 연동하기 로직
+//                        self?.showMainFlow(info: info, address: address, bottomType: .realTime)
                     } else {
                         self?.showMainFlow()
                     }

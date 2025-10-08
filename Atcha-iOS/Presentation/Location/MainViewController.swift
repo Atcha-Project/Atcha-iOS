@@ -376,7 +376,7 @@ extension MainViewController {
                 switch bottomType {
                 case .departure:
                     self?.lastTrainDepartView.setupLegInfo(info: info)
-                case .realTime: do {}
+                    //                case .realTime: do {}
                     //                    self?.lastTrainRealTimeView.setupLegInfo(info: info)
                 case .finish:
                     self?.lastTrainArrivalView.setupLegInfo(info: info)
@@ -424,7 +424,7 @@ extension MainViewController {
         lastTrainArrivalView.isHidden = true
         
         switch type {
-        case .realTime: do {}
+            //        case .realTime: do {}
             //            lastTrainRealTimeView.isHidden = false
         case .departure:
             lastTrainDepartView.isHidden = false
