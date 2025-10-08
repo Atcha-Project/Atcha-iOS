@@ -24,6 +24,8 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
         return stack
     }()
     
+    private let lineImageView: UIImageView = UIImageView()
+    
     // MARK: Arrival UI
     private let circleContainerView = UIView()
     private let circleView: UIView = UIView()
@@ -73,7 +75,8 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
         subwayIconImageView.contentMode = .scaleAspectFill
         circleView.setCornerRadius(8)
         
-        contentView.addSubViews(stickContainerView,
+        contentView.addSubViews(lineImageView,
+                                stickContainerView,
                                 startStackView,
                                 endStackView,
                                 subwayBadgeLabel,
@@ -90,6 +93,14 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
         stationListStackView.axis = .vertical
         stationListStackView.spacing = 10
         stationListStackView.isHidden = true
+    }
+    
+    private func setupLineImageView() {
+        lineImageView.snp.makeConstraints { make in
+            make.centerX.equalTo(stickContainerView.snp.centerX)
+            make.bottom.equalToSuperview().inset(-12)
+            make.width.equalTo(4)
+        }
     }
     
     private func setupDepartureConstraints() {
@@ -154,6 +165,7 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
     }
     
     private func setupConstraints() {
+        setupLineImageView()
         setupDepartureConstraints()
         setupStickConstrains()
         setupInfoConstrains()
