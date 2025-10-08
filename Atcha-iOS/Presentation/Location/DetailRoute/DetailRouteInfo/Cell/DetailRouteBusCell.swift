@@ -171,8 +171,8 @@ final class DetailRouteBusCell: UICollectionViewCell {
               let lastStation = passStopList.last,
               let sectionTime = info.sectionTime else { return }
         
-        timeStarBadgeLabel.setText(info.timeText)
-        timeEndBadgeLabel.setText(info.timeText)
+        timeStarBadgeLabel.setText(info.startTime)
+        timeEndBadgeLabel.setText(info.endTime)
         
         stationInfos = passStopList
         busIconImageView.image = info.mode?.getIcon(for: info.type ?? "")
@@ -218,7 +218,8 @@ extension DetailRouteBusCell {
         stationListStackViewBottomConstraint?.isActive = isExpanded
         endLabelTopConstraintWithoutStack?.isActive = !isExpanded
         
-        UIView.animate(withDuration: 0.3) { self.layoutIfNeeded() }
+        //        UIView.animate(withDuration: 0.3) {  }
+        self.layoutIfNeeded()
         didTapSummary?()
     }
     

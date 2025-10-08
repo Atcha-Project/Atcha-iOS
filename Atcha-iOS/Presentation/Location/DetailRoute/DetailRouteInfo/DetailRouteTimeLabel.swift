@@ -41,7 +41,7 @@ final class TimeBadgeLabel: UIView {
     
     private func setupAutoLayout() {
         label.snp.makeConstraints { make in
-            make.width.equalTo(38)
+            make.width.equalTo(30)
             make.edges.equalToSuperview().inset(UIEdgeInsets(top: 2,
                                                              left: 4,
                                                              bottom: 2, right: 4))

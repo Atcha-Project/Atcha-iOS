@@ -169,8 +169,8 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
               let sectionTime = info.sectionTime else { return }
         
         stationInfos = passStopList
-        timeStarBadgeLabel.setText(info.timeText)
-        timeEndBadgeLabel.setText(info.timeText)
+        timeStarBadgeLabel.setText(info.startTime)
+        timeEndBadgeLabel.setText(info.endTime)
         
         subwayIconImageView.image = info.mode?.getIcon(for: info.type ?? "")
         stickView.backgroundColor = info.mode?.getColor(for: info.type ?? "")

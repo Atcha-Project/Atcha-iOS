@@ -138,6 +138,7 @@ struct LegTrafficInfo: Hashable, Codable {
     var id: UUID = UUID()
     let distance: Int?
     let departureDateTime: String?
+    let arrivalDateTime: String?
     let totalTime: String?
     let sectionTime: String?
     let mode: TransportMode?
@@ -150,6 +151,8 @@ struct LegTrafficInfo: Hashable, Codable {
     var timeText: String?
     let targetBusStation: [TargetBusStation]?
     let targetBusTerm: Int?
+    let startTime: String?
+    let endTime: String?
 }
 
 extension Course {
@@ -159,7 +162,8 @@ extension Course {
         
         return legs.map { leg in
             LegTrafficInfo(distance: leg.distance,
-                           departureDateTime: departureDateTime,
+                           departureDateTime: formatToHourMinute(departureDateTime),
+                           arrivalDateTime: addSecondsToTime(from: departureDateTime, plusSeconds: totalTime ?? 0),
                            totalTime: formattedTotalTime,
                            sectionTime: leg.formattedSectionTimeRounded,
                            mode: leg.mode,
@@ -171,9 +175,39 @@ extension Course {
                            route: leg.route,
                            timeText: timeText,
                            targetBusStation: leg.targetBusStation,
-                           targetBusTerm: leg.targetBusTerm
+                           targetBusTerm: leg.targetBusTerm,
+                           startTime: formatToHourMinute(leg.departureDateTime) ?? "",
+                           endTime: addSecondsToTime(from: leg.departureDateTime ?? "", plusSeconds: leg.sectionTime ?? 0)
             )
         }
+    }
+    
+    func formatToHourMinute(_ isoDate: String?) -> String? {
+        guard let isoDate = isoDate else { return nil }
+        
+        let formatter = DateFormatter()
+        formatter.locale = .current
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        
+        guard let date = formatter.date(from: isoDate) else { return nil }
+        
+        formatter.dateFormat = "HH:mm"
+        return formatter.string(from: date)
+    }
+    
+    func addSecondsToTime(from isoDate: String?, plusSeconds: Int) -> String? {
+        guard let isoDate = isoDate else { return nil }
+
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+
+        guard let date = formatter.date(from: isoDate) else { return nil }
+
+        let updatedDate = date.addingTimeInterval(TimeInterval(plusSeconds))
+
+        formatter.dateFormat = "HH:mm"
+        return formatter.string(from: updatedDate)
     }
     
     func toBusInfos() -> [BusDetailInfo] {

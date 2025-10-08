@@ -53,7 +53,8 @@ final class DetailRouteEndCell: UICollectionViewCell {
     }
     
     func configure(info: LegTrafficInfo?) {
-        timeBadegLabel.setText(info?.timeText)
+        
+        timeBadegLabel.setText(info?.arrivalDateTime)
         locationLabel.attributedText = AtchaFont.B3_M_15("우리집")
     }
 }
