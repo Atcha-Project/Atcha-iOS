@@ -39,7 +39,7 @@ final class DetailRouteInfoBottomView: UIView {
     
     private let handleView: UIView = UIView()
     private var startAddress: String = ""
-    private var busRealTimeInfo: [RealTimeBusArrival] = []
+    private var busRealTimeInfo: [[RealTimeBusArrival]] = []
     var onBusDetail: ((BusDetailInfo) -> Void)?
     var getNewBusRealTime: (() -> Void)?
     
@@ -130,7 +130,7 @@ final class DetailRouteInfoBottomView: UIView {
     }
     
     // v2
-    func setupBusTimerLabel(_ time: [RealTimeBusArrival]) {
+    func setupBusTimerLabel(_ time: [[RealTimeBusArrival]]) {
         busRealTimeInfo = time
         collectionView.reloadData()
     }
@@ -276,7 +276,14 @@ extension DetailRouteInfoBottomView {
                         self?.onBusDetail?(info)
                     }
                     cell.configure(info: item.info)
-                    cell.setupBusRealTimeInfo(busInfo: self.busRealTimeInfo)
+                    
+                    // 이 부분에서 나눠서 값을 넣어줘야 해
+                    
+                    //                    cell.setupBusRealTimeInfo(busInfo: self.busRealTimeInfo)
+                    if let routeName = item.info?.route {
+                        let matchedInfo = self.busRealTimeInfo.first(where: { $0.first?.routeName == routeName }) ?? []
+                        cell.setupBusRealTimeInfo(busInfo: matchedInfo)
+                    }
                     return cell
                     
                 case .subway:

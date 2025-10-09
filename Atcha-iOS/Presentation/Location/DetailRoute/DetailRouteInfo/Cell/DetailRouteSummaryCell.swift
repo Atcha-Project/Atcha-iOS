@@ -54,7 +54,7 @@ final class DetailRouteSummaryCell: UICollectionViewCell {
         dividerView.snp.makeConstraints { make in
             make.height.equalTo(1)
             make.horizontalEdges.equalToSuperview()
-            make.top.equalTo(progressView.snp.bottom).offset(16)
+            make.top.equalTo(progressView.snp.bottom).offset(24)
         }
     }
     

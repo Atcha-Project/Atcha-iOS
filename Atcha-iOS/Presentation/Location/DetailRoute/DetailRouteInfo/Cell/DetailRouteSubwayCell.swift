@@ -83,6 +83,8 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
                                 summaryView,
                                 stationListStackView)
         
+        lineImageView.image = UIImage.dotLine
+        
         stickContainerView.backgroundColor = .clear
         circleContainerView.backgroundColor = .clear
         subwayIconContainerView.backgroundColor = .clear

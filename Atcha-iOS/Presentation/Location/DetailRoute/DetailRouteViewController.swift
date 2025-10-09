@@ -156,7 +156,7 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             .sink { [weak self] infos in self?.bottomSheet.setupRouteInfo(infos) }
             .store(in: &cancellables)
         
-        viewModel.$busRealTimeInfo
+        viewModel.$busRealTimeInfos
             .filter { $0.count > 0 }
             .receive(on: RunLoop.main)
             .sink { [weak self] info in
@@ -320,14 +320,14 @@ extension DetailRouteViewController {
         let popupVC = AtchaPopupViewController(viewModel: popupVM)
         
         popupVC.confirmButton.addAction(UIAction { [weak popupVC] _ in
-            popupVC?.dismiss(animated: true)
+            popupVC?.dismiss(animated: false)
             
             self.viewModel.getAlarmTapped?(self.viewModel.address, self.viewModel.infos)
         }, for: .touchUpInside)
         
         popupVC.cancelButton.addAction(UIAction { [weak self, weak popupVC] _ in
             guard let self else { return }
-            popupVC?.dismiss(animated: true)
+            popupVC?.dismiss(animated: false)
             
         }, for: .touchUpInside)
         

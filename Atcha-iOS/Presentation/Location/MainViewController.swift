@@ -244,7 +244,10 @@ extension MainViewController {
     
     private func handleRealTimeViewAction(_ action: LastTrainRealTimeBottomView.Action) {
         switch action {
-        case .refreshBusTime, .reloadTapped: viewModel.getBusRealTime()
+        case .refreshBusTime, .reloadTapped:
+            break
+            // TODO: 새로운 통신으로 변경하기 
+//            viewModel.getBusRealTime()
         case .exitTapped:
             showAlarmExitPopup()
         case .detailRoadMapTapped: viewModel.handleRoute(route: .detailRoute(address: "",

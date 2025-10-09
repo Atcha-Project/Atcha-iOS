@@ -73,7 +73,7 @@ class AppFlowCoordinator {
             DispatchQueue.main.async {
                 if let info, let address {
 //                    self?.showMainFlow(info: info, address: address, bottomType: .realTime)
-//                    self?.showMainFlow(info: info, address: address, bottomType: .realTime)
+                    self?.showMainFlow(info: info, address: address, bottomType: .detail)
                     // TODO: 상세화면 연동 로직 적용하기
                 } else {
                     self?.showMainFlow()
@@ -95,7 +95,7 @@ class AppFlowCoordinator {
                 case .lockScreen(let info, let address):
                     if let info, let address {
                         // TODO: 상세화면 연동하기 로직
-//                        self?.showMainFlow(info: info, address: address, bottomType: .realTime)
+                        self?.showMainFlow(info: info, address: address, bottomType: .departure)
                     } else {
                         self?.showMainFlow()
                     }

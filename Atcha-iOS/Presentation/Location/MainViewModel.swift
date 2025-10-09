@@ -88,7 +88,7 @@ final class MainViewModel: BaseViewModel {
         }
         print("time : \(time)")
         wrapper.set(time, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
-        AlarmManager.shared.startAlarm(after: time, title: "눌러서 출발 알람 끄기", body: "자리에서 일어나야 할 시간이에요!")
+//        AlarmManager.shared.startAlarm(after: time, title: "눌러서 출발 알람 끄기", body: "자리에서 일어나야 할 시간이에요!")
     }
     
     func removeLegInfoAndAddress() {
@@ -148,34 +148,34 @@ final class MainViewModel: BaseViewModel {
         }
     }
     
-    func getBusRealTime() {
-        guard let legInfo else { return }
-        
-        if let firstNonWalkMode = legInfo.pathInfo.first(where: { $0.mode != .walk }) {
-            print("최초의 walk 제외 mode: \(firstNonWalkMode.mode?.rawValue ?? "없음")")
-            if firstNonWalkMode.mode == .bus {
-                let busDetailInfo = legInfo.busInfo.filter { $0.routeName?.isEmpty == false }
-                if let firstValidInfo = busDetailInfo.first(where: { $0.routeName != nil }) {
-                    let request = BusRealTimeInfoRequest(
-                        routeName: firstValidInfo.routeName,
-                        stationName: firstValidInfo.start?.name,
-                        lat: firstValidInfo.start?.lat,
-                        lon: firstValidInfo.start?.lon,
-                        passStations: firstValidInfo.passStations
-                    )
-                    
-//                    Task {
-//                        do {
-//                            let info = try await busRealTimeInfo(request: request)
-//                            self.busRealTimeInfo = info
-//                        } catch {
-//                            print("버스 실시간 조회 실패")
-//                        }
-//                    }
-                }
-            }
-        }
-    }
+//    func getBusRealTime() {
+//        guard let legInfo else { return }
+//        
+//        if let firstNonWalkMode = legInfo.pathInfo.first(where: { $0.mode != .walk }) {
+//            print("최초의 walk 제외 mode: \(firstNonWalkMode.mode?.rawValue ?? "없음")")
+//            if firstNonWalkMode.mode == .bus {
+//                let busDetailInfo = legInfo.busInfo.filter { $0.routeName?.isEmpty == false }
+//                if let firstValidInfo = busDetailInfo.first(where: { $0.routeName != nil }) {
+//                    let request = BusRealTimeInfoRequest(
+//                        routeName: firstValidInfo.routeName,
+//                        stationName: firstValidInfo.start?.name,
+//                        lat: firstValidInfo.start?.lat,
+//                        lon: firstValidInfo.start?.lon,
+//                        passStations: firstValidInfo.passStations
+//                    )
+//                    
+////                    Task {
+////                        do {
+////                            let info = try await busRealTimeInfo(request: request)
+////                            self.busRealTimeInfo = info
+////                        } catch {
+////                            print("버스 실시간 조회 실패")
+////                        }
+////                    }
+//                }
+//            }
+//        }
+//    }
     
     func refreshDepatrueTime() {
         Task {

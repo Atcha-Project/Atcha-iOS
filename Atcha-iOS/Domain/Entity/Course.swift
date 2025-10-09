@@ -359,9 +359,3 @@ struct BusDetailInfo: Codable {
     let passStations: [PassStations]?
     let targetBusStation: [TargetBusStation]?
 }
-
-
-// TODO: 도착시간 구해서 label에 연동하기
-// 1. 화면 background색상 연동하기
-// 2. 도착 시간 label / 시작시간 label 연동하기
-//

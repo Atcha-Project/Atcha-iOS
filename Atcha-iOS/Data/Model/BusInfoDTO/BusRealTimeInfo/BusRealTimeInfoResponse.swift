@@ -57,7 +57,7 @@ extension BusRealTimeInfoResponse {
 }
 
 extension RealTimeBusArrivalResponse {
-    // TODO: 추후에 변경사항 있는지 확인해야함 
+    // TODO: 추후에 변경사항 있는지 확인해야함
     func toEntity() -> RealTimeBusArrival? {
         guard
             let busStatus = busStatus,
@@ -71,7 +71,8 @@ extension RealTimeBusArrivalResponse {
             return nil
         }
         
-        return RealTimeBusArrival(busStatus: busStatus,
+        return RealTimeBusArrival(routeName: "",
+                                  busStatus: busStatus,
                                   remainingTime: remainingTime,
                                   remainingStations: remainingStations,
                                   isLast: nil,
@@ -90,6 +91,5 @@ extension RealTimeBusArrivalResponse {
 //            remainingSeats: vehicleId,
 //            expectedArrivalTime: remainingStations
 //        )
-        return nil
     }
 }

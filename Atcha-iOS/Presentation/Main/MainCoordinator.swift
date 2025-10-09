@@ -30,6 +30,9 @@ final class MainCoordinator {
     func start(info: LegInfo? = nil,
                address: String? = nil,
                bottomType: MapBottomType = .search) {
+        
+        // MAKR: 이 부분 확인해서 flow 수정해주세요 !!!!@#!@#!@#
+        
         let viewModel = diContainer.makeMainiewModel()
         self.mainViewModel = viewModel
         

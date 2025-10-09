@@ -33,6 +33,7 @@ struct BusRealTimeInfo: Codable {
 }
 
 struct RealTimeBusArrival: Codable {
+    let routeName: String?
     let busStatus: BusStatus?
     var remainingTime: Int?
     let remainingStations: Int?

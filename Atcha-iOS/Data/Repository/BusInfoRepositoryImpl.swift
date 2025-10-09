@@ -28,7 +28,6 @@ final class BusInfoRepositoryImpl: BusInfoRepository {
     
     // 실시간 버스 정보 조회 - v2
     func getBusRealTimeInfo(_ request: String) async throws -> [RealTimeBusArrival] {
-        
         return try await apiService.request(
             Endpoint(
                 path: "https://atcha.p-e.kr/api/routes/user-routes/bus-arrival",
