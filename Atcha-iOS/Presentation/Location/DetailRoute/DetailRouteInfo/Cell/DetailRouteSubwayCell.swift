@@ -238,25 +238,40 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
     
     private func isCurrentTimeBetween(startTime: String?, endTime: String?) -> Bool {
         guard let startTime, let endTime else { return false }
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm"
-        formatter.locale = Locale(identifier: "ko_KR")
         
-        guard
-            let start = formatter.date(from: startTime),
-            let end = formatter.date(from: endTime)
+        let calendar = Calendar.current
+        let now = Date()
+        
+        // ⛳️ 현재 시각을 '오늘 날짜 기준 시:분' 으로 고정
+        let todayNow = calendar.date(bySettingHour: calendar.component(.hour, from: now),
+                                     minute: calendar.component(.minute, from: now),
+                                     second: 0,
+                                     of: now)!
+        
+        // ⏰ startTime, endTime → 시/분 정수 변환
+        let startComponents = startTime.split(separator: ":").compactMap { Int($0) }
+        let endComponents = endTime.split(separator: ":").compactMap { Int($0) }
+        
+        guard startComponents.count == 2, endComponents.count == 2 else { return false }
+        
+        // ⏳ 오늘 날짜 기준으로 Date 생성
+        guard let todayStart = calendar.date(bySettingHour: startComponents[0],
+                                             minute: startComponents[1],
+                                             second: 0,
+                                             of: now),
+              let todayEnd = calendar.date(bySettingHour: endComponents[0],
+                                           minute: endComponents[1],
+                                           second: 0,
+                                           of: now)
         else {
             return false
         }
-        
-        // 현재 시각 (시:분 만 비교)
-        let now = Date()
-        let nowString = formatter.string(from: now)
-        guard let nowTime = formatter.date(from: nowString) else {
-            return false
+        // 🌙 자정 넘김 처리
+        if todayEnd < todayStart {
+            return todayNow >= todayStart || todayNow < todayEnd
+        } else {
+            return todayNow >= todayStart && todayNow < todayEnd
         }
-        
-        return nowTime >= start && nowTime < end
     }
 }
 
