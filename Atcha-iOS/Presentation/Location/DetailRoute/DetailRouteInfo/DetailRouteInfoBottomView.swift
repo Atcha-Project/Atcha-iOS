@@ -281,10 +281,10 @@ extension DetailRouteInfoBottomView {
                     // 이 부분에서 나눠서 값을 넣어줘야 해
                     
                     //                    cell.setupBusRealTimeInfo(busInfo: self.busRealTimeInfo)
-//                    if let routeName = item.info?.route {
-//                        let matchedInfo = self.busRealTimeInfo.first(where: { $0.first?.routeName == routeName }) ?? []
-//                        cell.setupBusRealTimeInfo(busInfo: matchedInfo)
-//                    }
+                    if let routeName = item.info?.route {
+                        let matchedInfo = self.busRealTimeInfo.first(where: { $0.first?.routeName == routeName }) ?? []
+                        cell.setupBusRealTimeInfo(busInfo: matchedInfo)
+                    }
 
                     return cell
                     

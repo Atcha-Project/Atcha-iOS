@@ -246,8 +246,8 @@ extension MainViewController {
         switch action {
         case .refreshBusTime, .reloadTapped:
             break
-            // TODO: 새로운 통신으로 변경하기 
-//            viewModel.getBusRealTime()
+            // TODO: 새로운 통신으로 변경하기
+            //            viewModel.getBusRealTime()
         case .exitTapped:
             showAlarmExitPopup()
         case .detailRoadMapTapped: viewModel.handleRoute(route: .detailRoute(address: "",
@@ -379,6 +379,10 @@ extension MainViewController {
                 switch bottomType {
                 case .departure:
                     self?.lastTrainDepartView.setupLegInfo(info: info)
+                case .detail:
+                    self?.viewModel.handleRoute(route: .detailRoute(address: "",
+                                                                    infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: []),
+                                                                    context: .afterReigster))
                     //                case .realTime: do {}
                     //                    self?.lastTrainRealTimeView.setupLegInfo(info: info)
                 case .finish:
