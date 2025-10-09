@@ -31,8 +31,6 @@ final class MainCoordinator {
                address: String? = nil,
                bottomType: MapBottomType = .search) {
         
-        // MAKR: 이 부분 확인해서 flow 수정해주세요 !!!!@#!@#!@#
-        
         let viewModel = diContainer.makeMainiewModel()
         self.mainViewModel = viewModel
         
@@ -173,7 +171,13 @@ final class MainCoordinator {
             vm.routerHandler = { [weak self] router in
                 switch router {
                 case .lockScreen(let info, let address):
-                    self?.lockScreenConfrim?(info, address)
+//                    self?.lockScreenConfrim?(info, address)
+                    guard let info, let address else { return }
+                    self?.navigationController.dismiss(animated: false) {
+                        self?.handle(route: .detailRoute(address: address,
+                                                         infos: info,
+                                                         context: .afterReigster))
+                    }
                 case .courseSearch(let startLat, let startLon, let startAddress):
                     self?.navigationController.dismiss(animated: false) {
                         self?.handle(route: .courseSearch(startLat: startLat,

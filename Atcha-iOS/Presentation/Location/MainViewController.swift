@@ -379,10 +379,10 @@ extension MainViewController {
                 switch bottomType {
                 case .departure:
                     self?.lastTrainDepartView.setupLegInfo(info: info)
-                case .detail:
-                    self?.viewModel.handleRoute(route: .detailRoute(address: "",
-                                                                    infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: []),
-                                                                    context: .afterReigster))
+                    //                case .detail:
+                    //                    self?.viewModel.handleRoute(route: .detailRoute(address: "",
+                    //                                                                    infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: []),
+                    //                                                                    context: .afterReigster))
                     //                case .realTime: do {}
                     //                    self?.lastTrainRealTimeView.setupLegInfo(info: info)
                 case .finish:
@@ -437,6 +437,8 @@ extension MainViewController {
         case .departure:
             lastTrainDepartView.isHidden = false
             viewModel.startAlarmTimer()
+        case .detail:
+            lastTrainDepartView.isHidden = false
         case .search:
             viewModel.stopAlarmTimer()
             viewModel.stopFinishAlarmTimer()
@@ -444,6 +446,10 @@ extension MainViewController {
             flagImageView.isHidden = false
             mapContainerView.clearMapView()
             updateAtchaImageConstraint(relativeTo: lastTrainSearchView)
+//        case .detail:
+//            viewModel.handleRoute(route: .detailRoute(address: "",
+//                                                      infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: []),
+//                                                      context: .afterReigster))
         case .finish:
             lastTrainSearchView.isHidden = false // 원상복구
             //            lastTrainArrivalView.isHidden = false

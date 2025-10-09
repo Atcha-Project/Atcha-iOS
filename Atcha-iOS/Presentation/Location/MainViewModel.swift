@@ -136,7 +136,7 @@ final class MainViewModel: BaseViewModel {
            let lon = Double(lonStr) {
             
             // CLLocationCoordinate2D → CLLocation 변환
-            let stopCoordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
+            //            let stopCoordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
             
             //            let current = CLLocation(latitude: currentLocation.latitude, longitude: currentLocation.longitude)
             //            let stop = CLLocation(latitude: stopCoordinate.latitude, longitude: stopCoordinate.longitude)
@@ -328,8 +328,13 @@ extension MainViewModel {
             routeHandler?(.myPage)
             
         case .detailRoute:
-            guard let address, let legInfo else { return }
-            routeHandler?(.detailRoute(address: address, infos: legInfo, context: .afterReigster))
+            let wrapper = UserDefaultsWrapper.shared
+            guard let info = wrapper.object(forKey: UserDefaultsWrapper.Key.legInfo.rawValue,
+                                            of: LegInfo.self),
+                  let addressDesc = wrapper.string(forKey: UserDefaultsWrapper.Key.addressDesc.rawValue) else { return }
+            routeHandler?(.detailRoute(address: addressDesc,
+                                       infos: info,
+                                       context: .afterReigster))
         case .lockScreen:
             guard let address, let legInfo else { return }
             routeHandler?(.lockScreen(info: legInfo, address: address))

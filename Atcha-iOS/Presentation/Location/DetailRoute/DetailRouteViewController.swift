@@ -173,10 +173,9 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         viewModel.$currentLocation
             .compactMap { $0 }
             .receive(on: DispatchQueue.main)
-            .print("123123123")
             .sink { [weak self] location in
                 guard let self else { return }
-//                mapContainerView.adjustMapToFit(coordinates: allCoordinates)
+                //                mapContainerView.adjustMapToFit(coordinates: allCoordinates)
                 mapContainerView.setupCenter(location: location)
             }
             .store(in: &cancellables)
