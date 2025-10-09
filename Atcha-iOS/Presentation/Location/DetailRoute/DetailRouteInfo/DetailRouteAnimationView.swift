@@ -9,8 +9,8 @@ import UIKit
 
 final class DetailRouteAnimationView: UIView {
     enum Const {
-        static let smallCircleSize: CGFloat = 28
-        static let largeCircleSize: CGFloat = 48
+        static let smallCircleSize: CGFloat = 30
+        static let largeCircleSize: CGFloat = 60
         static let duration: CFTimeInterval = 2.0
     }
     
@@ -89,7 +89,7 @@ final class DetailRouteAnimationView: UIView {
     
     // MARK: - Animation (Core Animation 추천)
     
-    private func startAnimationIfNeeded(forceRestart: Bool = false) {
+    func startAnimationIfNeeded(forceRestart: Bool = false) {
         guard window != nil else { return }
         
         if forceRestart { stopAnimation() }

@@ -25,6 +25,7 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
     }()
     
     private let lineImageView: UIImageView = UIImageView()
+    private let animationView: DetailRouteAnimationView = DetailRouteAnimationView()
     
     // MARK: Arrival UI
     private let circleContainerView = UIView()
@@ -69,7 +70,7 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
     
     private func setupUI() {
         circleContainerView.addSubview(circleView)
-        subwayIconContainerView.addSubview(subwayIconImageView)
+        subwayIconContainerView.addSubViews(animationView, subwayIconImageView)
         stickContainerView.addSubview(stickView)
         
         subwayIconImageView.contentMode = .scaleAspectFill
@@ -84,6 +85,7 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
                                 stationListStackView)
         
         lineImageView.image = UIImage.dotLine
+        animationView.isHidden = true
         
         stickContainerView.backgroundColor = .clear
         circleContainerView.backgroundColor = .clear
@@ -113,6 +115,12 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
         subwayIconContainerView.snp.makeConstraints { make in
             make.size.equalTo(36)
         }
+        
+        animationView.snp.makeConstraints { make in
+            make.centerX.equalToSuperview()
+            make.centerY.equalToSuperview()
+        }
+        
         startStackView.snp.makeConstraints { make in
             make.horizontalEdges.equalToSuperview().offset(16)
             make.top.equalToSuperview()
@@ -205,6 +213,10 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
                                                   color: .gray100))
         endCombinedLabel.append(AtchaFont.B3_M_15(" 하차", color: .gray500))
         endLabel.attributedText = endCombinedLabel
+        
+        if isCurrentTimeBetween(startTime: info.startTime, endTime: info.endTime) {
+            isNowUserLocationArrived()
+        }
     }
     
     private func addStationNameLabel(info: [PassStopList]) {
@@ -215,6 +227,36 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
             label.lineBreakMode = .byTruncatingTail
             stationListStackView.addArrangedSubview(label)
         }
+    }
+    
+    func isNowUserLocationArrived() {
+        // 해당시간에 들어와야 애니메이션 실행 합니다.
+        animationView.isHidden = false
+        animationView.startAnimationIfNeeded(forceRestart: true)
+        backgroundColor = UIColor.opacity100
+    }
+    
+    private func isCurrentTimeBetween(startTime: String?, endTime: String?) -> Bool {
+        guard let startTime, let endTime else { return false }
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        formatter.locale = Locale(identifier: "ko_KR")
+        
+        guard
+            let start = formatter.date(from: startTime),
+            let end = formatter.date(from: endTime)
+        else {
+            return false
+        }
+        
+        // 현재 시각 (시:분 만 비교)
+        let now = Date()
+        let nowString = formatter.string(from: now)
+        guard let nowTime = formatter.date(from: nowString) else {
+            return false
+        }
+        
+        return nowTime >= start && nowTime < end
     }
 }
 

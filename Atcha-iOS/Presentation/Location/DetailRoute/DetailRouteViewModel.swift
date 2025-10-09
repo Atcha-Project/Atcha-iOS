@@ -50,6 +50,7 @@ final class DetailRouteViewModel: BaseViewModel {
         
         super.init()
         self.fetchInfo()
+        self.requestPermissionAndStartTracking()
     }
     
     func fetchInfo() {

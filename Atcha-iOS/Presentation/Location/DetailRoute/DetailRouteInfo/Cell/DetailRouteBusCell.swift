@@ -25,6 +25,7 @@ final class DetailRouteBusCell: UICollectionViewCell {
     }()
     
     private let lineImageView: UIImageView = UIImageView()
+    private let animationView: DetailRouteAnimationView = DetailRouteAnimationView()
     
     // MARK: Arrival UI
     private let circleContainerView = UIView()
@@ -93,7 +94,7 @@ final class DetailRouteBusCell: UICollectionViewCell {
     
     private func setupUI() {
         circleContainerView.addSubview(circleView)
-        busIconContainerView.addSubview(busIconImageView)
+        busIconContainerView.addSubViews(animationView, busIconImageView)
         stickContainerView.addSubview(stickView)
         
         contentView.addSubViews(lineImageView,
@@ -106,6 +107,7 @@ final class DetailRouteBusCell: UICollectionViewCell {
                                 stationListStackView)
         
         lineImageView.image = UIImage.dotLine
+        animationView.isHidden = true
         
         stickContainerView.backgroundColor = .clear
         circleContainerView.backgroundColor = .clear
@@ -134,6 +136,10 @@ final class DetailRouteBusCell: UICollectionViewCell {
         }
         busIconContainerView.snp.makeConstraints { make in
             make.size.equalTo(36)
+        }
+        animationView.snp.makeConstraints { make in
+            make.centerX.equalToSuperview()
+            make.centerY.equalToSuperview()
         }
         startStackView.snp.makeConstraints { make in
             make.horizontalEdges.equalToSuperview().offset(16)
@@ -211,6 +217,10 @@ final class DetailRouteBusCell: UICollectionViewCell {
               let lastStation = passStopList.last,
               let sectionTime = info.sectionTime else { return }
         
+        if isCurrentTimeBetween(startTime: info.startTime, endTime: info.endTime) {
+            isNowUserLocationArrived()
+        }
+        
         timeStarBadgeLabel.setText(info.startTime)
         timeEndBadgeLabel.setText(info.endTime)
         
@@ -254,7 +264,7 @@ final class DetailRouteBusCell: UICollectionViewCell {
         
         guard !busInfo.isEmpty else {
             busTimerStackView.isHidden = false
-            busTimerFirstLabel.text = "운행 정보 없음"
+            busTimerFirstLabel.text = "정보 없음"
             busTimerSecondLabel.text = ""
             return
         }
@@ -330,6 +340,36 @@ final class DetailRouteBusCell: UICollectionViewCell {
         default:
             busTimerStackView.isHidden = true
         }
+    }
+    
+    private func isCurrentTimeBetween(startTime: String?, endTime: String?) -> Bool {
+        guard let startTime, let endTime else { return false }
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        formatter.locale = Locale(identifier: "ko_KR")
+        
+        guard
+            let start = formatter.date(from: startTime),
+            let end = formatter.date(from: endTime)
+        else {
+            return false
+        }
+        
+        // 현재 시각 (시:분 만 비교)
+        let now = Date()
+        let nowString = formatter.string(from: now)
+        guard let nowTime = formatter.date(from: nowString) else {
+            return false
+        }
+        
+        return nowTime >= start && nowTime < end
+    }
+    
+    func isNowUserLocationArrived() {
+        // 해당시간에 들어와야 애니메이션 실행 합니다.
+        animationView.isHidden = false
+        animationView.startAnimationIfNeeded(forceRestart: true)
+        backgroundColor = UIColor.opacity100
     }
     
     private func formatSecondsToMinutesAndSeconds(_ seconds: Int?) -> String {

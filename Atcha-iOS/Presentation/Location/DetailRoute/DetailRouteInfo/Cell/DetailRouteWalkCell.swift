@@ -11,6 +11,9 @@ import SnapKit
 final class DetailRouteWalkCell: UICollectionViewCell {
     static let id: String = "DetailRouteWalkCell"
     
+    private let animationView: DetailRouteAnimationView = DetailRouteAnimationView()
+    private let animationIconImageView: UIImageView = UIImageView()
+    
     private let lineImageView: UIImageView = UIImageView()
     private let timeLabel: UILabel = UILabel()
     private let distanceLabel: UILabel = UILabel()
@@ -27,14 +30,27 @@ final class DetailRouteWalkCell: UICollectionViewCell {
     }
     
     private func setupUI() {
-        contentView.addSubViews(lineImageView, summaryLabel)
+        contentView.addSubViews(lineImageView, summaryLabel, animationView, animationIconImageView)
         contentView.backgroundColor = .clear
         lineImageView.image = UIImage.dotLine
+        animationIconImageView.image = UIImage.walkGray600
+        animationIconImageView.isHidden = true
+        animationView.isHidden = true
         summaryLabel.numberOfLines = 1
         summaryLabel.textAlignment = .left
     }
     
     private func setupAutoLayout() {
+        animationView.snp.makeConstraints { make in
+            make.centerX.equalTo(lineImageView.snp.centerX)
+            make.centerY.equalToSuperview()
+        }
+        
+        animationIconImageView.snp.makeConstraints { make in
+            make.centerX.equalTo(lineImageView.snp.centerX)
+            make.centerY.equalToSuperview()
+        }
+        
         lineImageView.snp.makeConstraints { make in
             make.leading.equalToSuperview().offset(75)
             make.verticalEdges.equalToSuperview()
@@ -57,5 +73,39 @@ final class DetailRouteWalkCell: UICollectionViewCell {
         combined.append(distanceText)
         
         summaryLabel.attributedText = combined
+        
+        if isCurrentTimeBetween(startTime: info?.startTime, endTime: info?.endTime) {
+            isNowUserLocationArrived()
+        }
+    }
+    
+    private func isCurrentTimeBetween(startTime: String?, endTime: String?) -> Bool {
+        guard let startTime, let endTime else { return false }
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        formatter.locale = Locale(identifier: "ko_KR")
+        
+        guard
+            let start = formatter.date(from: startTime),
+            let end = formatter.date(from: endTime)
+        else {
+            return false
+        }
+        
+        // 현재 시각 (시:분 만 비교)
+        let now = Date()
+        let nowString = formatter.string(from: now)
+        guard let nowTime = formatter.date(from: nowString) else {
+            return false
+        }
+        
+        return nowTime >= start && nowTime < end
+    }
+    
+    func isNowUserLocationArrived() {
+        animationIconImageView.isHidden = false
+        animationView.isHidden = false
+        animationView.startAnimationIfNeeded(forceRestart: true)
+        backgroundColor = UIColor.opacity100
     }
 }
