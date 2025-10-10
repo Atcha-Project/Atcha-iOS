@@ -30,7 +30,7 @@ final class DetailRouteViewModel: BaseViewModel {
     @Published var legTrafficInfo: [LegTrafficInfo] = []
     //    @Published var busRealTimeInfos: [BusRealTimeInfo] = []
     
-//    @Published var busRealTimeInfo: [RealTimeBusArrival] = []
+    //    @Published var busRealTimeInfo: [RealTimeBusArrival] = []
     @Published var busRealTimeInfos: [[RealTimeBusArrival]] = []
     
     @Published private(set) var context: DetailRouteContext
@@ -58,9 +58,12 @@ final class DetailRouteViewModel: BaseViewModel {
         self.legTrafficInfo = infos.trafficInfo
         let busDetailInfo = infos.busInfo.filter { $0.routeName?.isEmpty == false }
         
+        busRealTimeInfos = []
         busDetailInfo.forEach { info in
-            Task {
-                await getBusRealTimeInfo(request: info.routeName ?? "")
+            if let routeName = info.routeName, routeName.contains(":") {
+                Task {
+                    await getBusRealTimeInfo(request: routeName)
+                }
             }
         }
     }
@@ -71,7 +74,7 @@ final class DetailRouteViewModel: BaseViewModel {
             do {
                 let response = try await busInfoUseCase.getBusRealTimeInfo(request)
                 busRealTimeInfos.append(response)
-//                busRealTimeInfo = response
+                //                busRealTimeInfo = response
                 print("실시간 버스 조회 성공요! : \(busRealTimeInfos)")
             } catch {
                 print("실시간 버스 조회 실패요!")
