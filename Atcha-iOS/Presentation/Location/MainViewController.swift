@@ -241,21 +241,21 @@ extension MainViewController {
         }
     }
     
-    private func handleRealTimeViewAction(_ action: LastTrainRealTimeBottomView.Action) {
-        switch action {
-        case .refreshBusTime, .reloadTapped:
-            break
-            // TODO: 새로운 통신으로 변경하기
-            //            viewModel.getBusRealTime()
-        case .exitTapped:
-            showAlarmExitPopup()
-        case .detailRoadMapTapped: viewModel.handleRoute(route: .detailRoute(address: "",
-                                                                             infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: []),
-                                                                             context: .afterReigster)
-        )
-        case .finishAlarm: viewModel.bottomType = .finish
-        }
-    }
+    //    private func handleRealTimeViewAction(_ action: LastTrainRealTimeBottomView.Action) {
+    //        switch action {
+    //        case .refreshBusTime, .reloadTapped:
+    //            break
+    //            // TODO: 새로운 통신으로 변경하기
+    //            //            viewModel.getBusRealTime()
+    //        case .exitTapped:
+    //            showAlarmExitPopup()
+    //        case .detailRoadMapTapped: viewModel.handleRoute(route: .detailRoute(address: "",
+    //                                                                             infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: []),
+    //                                                                             context: .afterReigster)
+    //        )
+    //        case .finishAlarm: viewModel.bottomType = .finish
+    //        }
+    //    }
     
     private func handleTrainDepartAction(_ action: LastTrainDepartBottomView.Action) {
         switch action {
@@ -276,15 +276,15 @@ extension MainViewController {
         }
     }
     
-    private func handleArrivalViewAction(_ action: LastTrainArrivalBottomView.Action) {
-        switch action {
-        case .exitTapped:
-            showAlarmExitPopup()
-        case .detailRoadMapTapped: viewModel.handleRoute(route: .detailRoute(address: "",
-                                                                             infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: []),
-                                                                             context: .afterReigster))
-        }
-    }
+    //    private func handleArrivalViewAction(_ action: LastTrainArrivalBottomView.Action) {
+    //        switch action {
+    //        case .exitTapped:
+    //            showAlarmExitPopup()
+    //        case .detailRoadMapTapped: viewModel.handleRoute(route: .detailRoute(address: "",
+    //                                                                             infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: []),
+    //                                                                             context: .afterReigster))
+    //        }
+    //    }
     
     private func showAlarmExitPopup() {
         let popupVM = AtchaPopupViewModel(info: .alarm)
@@ -446,10 +446,10 @@ extension MainViewController {
             flagImageView.isHidden = false
             mapContainerView.clearMapView()
             updateAtchaImageConstraint(relativeTo: lastTrainSearchView)
-//        case .detail:
-//            viewModel.handleRoute(route: .detailRoute(address: "",
-//                                                      infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: []),
-//                                                      context: .afterReigster))
+            //        case .detail:
+            //            viewModel.handleRoute(route: .detailRoute(address: "",
+            //                                                      infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: []),
+            //                                                      context: .afterReigster))
         case .finish:
             lastTrainSearchView.isHidden = false // 원상복구
             //            lastTrainArrivalView.isHidden = false
