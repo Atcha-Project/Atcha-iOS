@@ -283,7 +283,7 @@ extension DetailRouteInfoBottomView {
                     //                    cell.setupBusRealTimeInfo(busInfo: self.busRealTimeInfo)
                     if let routeName = item.info?.route {
                         let matchedInfo = self.busRealTimeInfo.first(where: { $0.first?.routeName == routeName }) ?? []
-                        cell.setupBusRealTimeInfo(busInfo: matchedInfo)
+                        cell.setupBusRealTimeInfo(info: item.info, busInfo: matchedInfo)
                     }
 
                     return cell

@@ -84,6 +84,7 @@ final class DetailRouteBusCell: UICollectionViewCell {
         super.init(frame: frame)
         setupUI()
         setupConstraints()
+        setupInitialConstraintState()
         setupAction()
         contentView.backgroundColor = .clear
     }
@@ -119,6 +120,12 @@ final class DetailRouteBusCell: UICollectionViewCell {
         stationListStackView.axis = .vertical
         stationListStackView.spacing = 10
         stationListStackView.isHidden = true
+    }
+    
+    private func setupInitialConstraintState() {
+        stationListStackViewTopConstraint?.isActive = false
+        stationListStackViewBottomConstraint?.isActive = false
+        endLabelTopConstraintWithoutStack?.isActive = true // ✅ isExpanded = false 상태
     }
     
     private func setupLineImageView() {
@@ -246,14 +253,9 @@ final class DetailRouteBusCell: UICollectionViewCell {
         endLabel.attributedText = endCombinedLabel
     }
     
-    func setupBusRealTimeInfo(busInfo: [RealTimeBusArrival]) {
-        print("setupBusRealTimeInfo : \(busInfo)")
-        
-        if let startTimeString = currentLegTrafficInfo?.startTime,
-           let startDate = convertHHmmStringToDate(startTimeString),
-           let nowHHmm = getCurrentTimeAsDate(),
-           nowHHmm < startDate {
-            print("아직 시작 시간이 되지 않았습니다. (현재: \(nowHHmm), 시작: \(startDate))")
+    func setupBusRealTimeInfo(info: LegTrafficInfo?, busInfo: [RealTimeBusArrival]) {
+        if !isCurrentTimeBetween(startTime: info?.startTime,
+                                 endTime: info?.endTime) {
             return
         }
         
@@ -394,23 +396,6 @@ final class DetailRouteBusCell: UICollectionViewCell {
         let remainingSeconds = seconds % 60
         
         return "\(minutes)분 \(remainingSeconds)초"
-    }
-    
-    private func convertHHmmStringToDate(_ timeString: String) -> Date? {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm"
-        formatter.locale = Locale(identifier: "ko_KR")
-        return formatter.date(from: timeString)
-    }
-    
-    // 현재 시각을 "HH:mm" 형식의 Date로 변환
-    private func getCurrentTimeAsDate() -> Date? {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm"
-        formatter.locale = Locale(identifier: "ko_KR")
-        let now = Date()
-        let string = formatter.string(from: now)
-        return formatter.date(from: string)
     }
 }
 
