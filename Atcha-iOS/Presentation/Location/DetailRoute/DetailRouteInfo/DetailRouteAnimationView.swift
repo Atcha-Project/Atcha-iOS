@@ -118,7 +118,7 @@ final class DetailRouteAnimationView: UIView {
         smallCircleView.layer.add(group, forKey: "pulse")
     }
     
-    private func stopAnimation() {
+    func stopAnimation() {
         isAnimating = false
         smallCircleView.layer.removeAnimation(forKey: "pulse")
         // 상태 초기화

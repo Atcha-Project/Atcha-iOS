@@ -246,6 +246,11 @@ extension MainViewModel {
         if let departureTime: String = wrapper.string(forKey: UserDefaultsWrapper.Key.departureTime.rawValue) {
             if !checkFutureTimeOver(dateString: departureTime) {
                 showLockView = true
+                
+                // TODO: 알림 이후 등록이 되는지확인 
+                AlarmManager.shared.startAlarm(after: departureTime,
+                                               title: "눌러서 출발 알람 끄기",
+                                               body: "자리에서 일어나야 할 시간이에요!")
                 stopAlarmTimer()
             } else {
                 print("미래")
@@ -278,6 +283,28 @@ extension MainViewModel {
             .autoconnect()
             .sink { [weak self] _ in
                 self?.checkAlarmTime()
+            }
+        
+        alarmFinishCancellable = Timer
+            .publish(every: 60.0, on: .main, in: .common)
+            .autoconnect()
+            .sink { [weak self] _ in
+                guard let self else { return }
+                if let arrivalTime = UserDefaultsWrapper.shared.object(
+                    forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue,
+                    of: Date.self
+                ) {
+                    let now = Date()
+                    let thirtyMinutesLater = arrivalTime.addingTimeInterval(30 * 60) // 30분 후
+                    
+                    print("departure Time : \(arrivalTime)")
+                    print("30분 후 시각 : \(thirtyMinutesLater)")
+                    
+                    if now >= thirtyMinutesLater {
+                        stopFinishAlarmTimer()
+                        bottomType = .search
+                    }
+                }
             }
     }
     

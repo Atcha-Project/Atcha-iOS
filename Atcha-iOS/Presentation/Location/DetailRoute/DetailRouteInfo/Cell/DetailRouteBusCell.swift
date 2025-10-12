@@ -93,6 +93,14 @@ final class DetailRouteBusCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        
+        animationView.isHidden = true
+        animationView.stopAnimation()
+        backgroundColor = .clear
+    }
+    
     private func setupUI() {
         circleContainerView.addSubview(circleView)
         busIconContainerView.addSubViews(animationView, busIconImageView)
