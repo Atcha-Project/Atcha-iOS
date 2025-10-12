@@ -86,6 +86,9 @@ final class MainViewModel: BaseViewModel {
     }
     
     private func setupLegInfo(info: LegInfo?) {
+        let routeId = info?.pathInfo.first?.routeId
+        print("routeId : \(routeId)")
+        
         guard let info, let departureStr = info.pathInfo.first?.departureDateTime,
               let totalTime = info.trafficInfo.first?.totalTime else { return }
         
@@ -158,16 +161,16 @@ final class MainViewModel: BaseViewModel {
     
     //    func getNearstToast(currentLocation: CLLocationCoordinate2D) {
     //        guard let legInfo = legInfo else { return }
-    //        
+    //
     //        if let firstNonWalkMode = legInfo.trafficInfo.first(where: { $0.mode != .walk }),
     //           let latStr = firstNonWalkMode.passStopList?.first?.lat,
     //           let lonStr = firstNonWalkMode.passStopList?.first?.lon,
     //           let lat = Double(latStr),
     //           let lon = Double(lonStr) {
-    //            
+    //
     //            // CLLocationCoordinate2D → CLLocation 변환
     //            //            let stopCoordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
-    //            
+    //
     //            //            let current = CLLocation(latitude: currentLocation.latitude, longitude: currentLocation.longitude)
     //            //            let stop = CLLocation(latitude: stopCoordinate.latitude, longitude: stopCoordinate.longitude)
     //            //            let distanceMeters = current.distance(from: stop) // m 단위
@@ -198,6 +201,9 @@ final class MainViewModel: BaseViewModel {
               let _ = userInfo["updatedAt"] as? String else {
             return
         }
+        
+        // 상세 경로 통신 로직 다시 받아와야 합니다....!! 
+        
         
         UserDefaultsWrapper.shared.remove(forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
         UserDefaultsWrapper.shared.set(body, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
@@ -248,7 +254,7 @@ extension MainViewModel {
             //            if !checkFutureTimeOver(dateString: departureTime) {
             if isInAlarmRange(dateString: departureTime) {
                 
-                // TODO: 알림 이후 등록이 되는지확인 
+                // TODO: 알림 이후 등록이 되는지확인
                 showLockView = true
                 AlarmManager.shared.startAlarm(after: departureTime,
                                                title: "눌러서 출발 알람 끄기",
@@ -266,16 +272,16 @@ extension MainViewModel {
     //        let formatter = DateFormatter()
     //        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
     //        formatter.timeZone = .current
-    //        
+    //
     //        guard let inputDate = formatter.date(from: dateString) else {
     //            print("날짜 파싱 실패")
     //            return false
     //        }
-    //        
+    //
     //        let currentDate = Date()
     //        let timeInterval = inputDate.timeIntervalSince(currentDate)
     //        let isFuture = timeInterval >= 60
-    //        
+    //
     //        return isFuture
     //    }
     private func isInAlarmRange(dateString: String) -> Bool {
@@ -338,10 +344,10 @@ extension MainViewModel {
     //                ) {
     //                    let now = Date()
     //                    let thirtyMinutesLater = arrivalTime.addingTimeInterval(30 * 60) // 30분 후
-    //                    
+    //
     //                    print("departure Time : \(arrivalTime)")
     //                    print("30분 후 시각 : \(thirtyMinutesLater)")
-    //                    
+    //
     //                    if now >= thirtyMinutesLater {
     //                        stopFinishAlarmTimer()
     //                        bottomType = .search

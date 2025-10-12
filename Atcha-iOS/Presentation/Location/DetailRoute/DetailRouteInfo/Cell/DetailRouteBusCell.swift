@@ -268,6 +268,8 @@ final class DetailRouteBusCell: UICollectionViewCell {
             return
         }
         
+        busTimerStackView.isHidden = false
+        
         countdownTimer?.invalidate()
         reloadTimer?.invalidate()
         
@@ -275,7 +277,7 @@ final class DetailRouteBusCell: UICollectionViewCell {
         
         guard !busInfo.isEmpty else {
             busTimerStackView.isHidden = false
-            busTimerFirstLabel.text = "정보 없음"
+            busTimerFirstLabel.attributedText = AtchaFont.B6_R_14("정보 없음", color: .gray300)
             busTimerSecondLabel.text = ""
             return
         }

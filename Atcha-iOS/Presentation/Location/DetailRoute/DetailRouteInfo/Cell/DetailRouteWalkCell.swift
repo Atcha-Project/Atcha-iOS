@@ -33,6 +33,7 @@ final class DetailRouteWalkCell: UICollectionViewCell {
         super.prepareForReuse()
         
         animationView.isHidden = true
+        animationIconImageView.isHidden = true
         animationView.stopAnimation()
         backgroundColor = .clear
     }
@@ -81,9 +82,6 @@ final class DetailRouteWalkCell: UICollectionViewCell {
         combined.append(distanceText)
         
         summaryLabel.attributedText = combined
-        
-        print("info : \(info)")
-        
         if isCurrentTimeBetween(startTime: info?.startTime, endTime: info?.endTime) {
             isNowUserLocationArrived()
         }
