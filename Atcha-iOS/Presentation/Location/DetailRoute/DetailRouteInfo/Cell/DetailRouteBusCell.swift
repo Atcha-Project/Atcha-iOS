@@ -99,6 +99,7 @@ final class DetailRouteBusCell: UICollectionViewCell {
         animationView.isHidden = true
         animationView.stopAnimation()
         backgroundColor = .clear
+        busTimerStackView.isHidden = true
     }
     
     private func setupUI() {

@@ -199,14 +199,14 @@ class WithdrawViewController: BaseViewController<WithdrawViewModel> {
         
         popupVC.confirmButton.addAction(UIAction { [weak self, weak popupVC] _ in
             guard let self else { return }
-            popupVC?.dismiss(animated: true)
+            popupVC?.dismiss(animated: false)
             
             self.withdrawButton.isEnabled = false
             self.signOutTapped()
         }, for: .touchUpInside)
         
         popupVC.cancelButton.addAction(UIAction { [weak popupVC] _ in
-            popupVC?.dismiss(animated: true)
+            popupVC?.dismiss(animated: false)
         }, for: .touchUpInside)
         
         popupVC.modalPresentationStyle = .overFullScreen

@@ -296,7 +296,7 @@ extension MainViewController {
         
         popupVC.confirmButton.addAction(UIAction { [weak self, weak popupVC] _ in
             guard let self else { return }
-            popupVC?.dismiss(animated: true)
+            popupVC?.dismiss(animated: false)
             
             self.viewModel.alarmDelete()
             self.exitButtonTapped()
