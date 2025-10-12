@@ -63,6 +63,23 @@ final class SplashViewModel: BaseViewModel {
     
     func makeInitialFlow() {
         let wrapper = UserDefaultsWrapper.shared
+        
+        if let arrivalTime = wrapper.object(forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue, of: Date.self) {
+            if isMoreThanSeconds(from: arrivalTime, seconds: 60 * 30) {
+                // 30분이 넘게 지난 경우
+                wrapper.remove(forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
+                wrapper.remove(forKey: UserDefaultsWrapper.Key.addressDesc.rawValue)
+                wrapper.remove(forKey: UserDefaultsWrapper.Key.startLat.rawValue)
+                wrapper.remove(forKey: UserDefaultsWrapper.Key.startLon.rawValue)
+                wrapper.remove(forKey: UserDefaultsWrapper.Key.startAddress.rawValue)
+                wrapper.remove(forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
+                wrapper.remove(forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue)
+                
+                routerHandler?(.main)
+                return
+            }
+        }
+        
         if let legInfo: LegInfo = wrapper.object(forKey: UserDefaultsWrapper.Key.legInfo.rawValue, of: LegInfo.self),
            let address: String = wrapper.string(forKey: UserDefaultsWrapper.Key.addressDesc.rawValue) {
             routerHandler?(.alarm(info: legInfo, address: address))

@@ -82,13 +82,43 @@ final class MainViewModel: BaseViewModel {
         let wrapper = UserDefaultsWrapper.shared
         wrapper.set(address, forKey: UserDefaultsWrapper.Key.addressDesc.rawValue)
         wrapper.set(info, forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
+        setupLegInfo(info: info)
+    }
+    
+    private func setupLegInfo(info: LegInfo?) {
+        guard let info, let departureStr = info.pathInfo.first?.departureDateTime,
+              let totalTime = info.trafficInfo.first?.totalTime else { return }
         
-        guard let time = legInfo?.pathInfo.first?.departureDateTime else {
-            return
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        formatter.locale = .current
+        
+        guard let departureDate = formatter.date(from: departureStr) else { return }
+        let minutes = parseTotalTimeToMinutes(totalTime)
+        
+        guard let arrivalDate = Calendar.current.date(byAdding: .minute, value: minutes, to: departureDate) else { return }
+        
+        print("departureDate : \(departureDate)")
+        print("arrivalDate : \(arrivalDate)")
+        let wrapper = UserDefaultsWrapper.shared
+        wrapper.set(departureStr, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
+        wrapper.set(arrivalDate, forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue)
+    }
+    
+    private func parseTotalTimeToMinutes(_ time: String) -> Int {
+        var totalMinutes = 0
+        
+        if let hourMatch = time.range(of: "\\d+(?=시간)", options: .regularExpression),
+           let hour = Int(time[hourMatch]) {
+            totalMinutes += hour * 60
         }
-        print("time : \(time)")
-        wrapper.set(time, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
-        //        AlarmManager.shared.startAlarm(after: time, title: "눌러서 출발 알람 끄기", body: "자리에서 일어나야 할 시간이에요!")
+        
+        if let minuteMatch = time.range(of: "\\d+(?=분)", options: .regularExpression),
+           let minute = Int(time[minuteMatch]) {
+            totalMinutes += minute
+        }
+        
+        return totalMinutes
     }
     
     func removeLegInfoAndAddress() {
@@ -100,7 +130,7 @@ final class MainViewModel: BaseViewModel {
         wrapper.remove(forKey: UserDefaultsWrapper.Key.startAddress.rawValue)
         wrapper.remove(forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
         wrapper.remove(forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue)
-        wrapper.remove(forKey: UserDefaultsWrapper.Key.trainRealTime.rawValue)
+//        wrapper.remove(forKey: UserDefaultsWrapper.Key.trainRealTime.rawValue)
     }
     
     func requestPermissionAndStartTracking() {
@@ -119,33 +149,33 @@ final class MainViewModel: BaseViewModel {
                         didSendInitialLocation = true
                     }
                     
-                    getNearstToast(currentLocation: currentLocation)
+//                    getNearstToast(currentLocation: currentLocation)
                     selectedLocation = currentLocation
                 }
             }
         }
     }
     
-    func getNearstToast(currentLocation: CLLocationCoordinate2D) {
-        guard let legInfo = legInfo else { return }
-        
-        if let firstNonWalkMode = legInfo.trafficInfo.first(where: { $0.mode != .walk }),
-           let latStr = firstNonWalkMode.passStopList?.first?.lat,
-           let lonStr = firstNonWalkMode.passStopList?.first?.lon,
-           let lat = Double(latStr),
-           let lon = Double(lonStr) {
-            
-            // CLLocationCoordinate2D → CLLocation 변환
-            //            let stopCoordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
-            
-            //            let current = CLLocation(latitude: currentLocation.latitude, longitude: currentLocation.longitude)
-            //            let stop = CLLocation(latitude: stopCoordinate.latitude, longitude: stopCoordinate.longitude)
-            //            let distanceMeters = current.distance(from: stop) // m 단위
-            //            print("현재 위치와 첫 정류장까지 거리: \(Int(distanceMeters)) m")
-        } else {
-            print("좌표를 가져오지 못했습니다.")
-        }
-    }
+//    func getNearstToast(currentLocation: CLLocationCoordinate2D) {
+//        guard let legInfo = legInfo else { return }
+//        
+//        if let firstNonWalkMode = legInfo.trafficInfo.first(where: { $0.mode != .walk }),
+//           let latStr = firstNonWalkMode.passStopList?.first?.lat,
+//           let lonStr = firstNonWalkMode.passStopList?.first?.lon,
+//           let lat = Double(latStr),
+//           let lon = Double(lonStr) {
+//            
+//            // CLLocationCoordinate2D → CLLocation 변환
+//            //            let stopCoordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
+//            
+//            //            let current = CLLocation(latitude: currentLocation.latitude, longitude: currentLocation.longitude)
+//            //            let stop = CLLocation(latitude: stopCoordinate.latitude, longitude: stopCoordinate.longitude)
+//            //            let distanceMeters = current.distance(from: stop) // m 단위
+//            //            print("현재 위치와 첫 정류장까지 거리: \(Int(distanceMeters)) m")
+//        } else {
+//            print("좌표를 가져오지 못했습니다.")
+//        }
+//    }
     
     func refreshDepatrueTime() {
         Task {
@@ -251,45 +281,29 @@ extension MainViewModel {
             }
     }
     
-    func endAlarmTimer() {
-        alarmFinishCancellable = Timer
-            .publish(every: 10.0, on: .main, in: .common)
-            .autoconnect()
-            .sink { [weak self] _ in
-                guard let self else { return }
-                if let arrivalTime = UserDefaultsWrapper.shared.object(
-                    forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue,
-                    of: Date.self
-                ) {
-                    let now = Date()
-                    let thirtyMinutesLater = arrivalTime.addingTimeInterval(30 * 60) // 30분 후
-                    
-                    print("departure Time : \(arrivalTime)")
-                    print("30분 후 시각 : \(thirtyMinutesLater)")
-                    
-                    if now >= thirtyMinutesLater {
-                        stopFinishAlarmTimer()
-                        bottomType = .search
-                    }
-                }
-            }
-    }
-    
-    private func parseTotalTimeToMinutes(_ time: String) -> Int {
-        var totalMinutes = 0
-        
-        if let hourMatch = time.range(of: "\\d+(?=시간)", options: .regularExpression),
-           let hour = Int(time[hourMatch]) {
-            totalMinutes += hour * 60
-        }
-        
-        if let minuteMatch = time.range(of: "\\d+(?=분)", options: .regularExpression),
-           let minute = Int(time[minuteMatch]) {
-            totalMinutes += minute
-        }
-        
-        return totalMinutes
-    }
+//    func endAlarmTimer() {
+//        alarmFinishCancellable = Timer
+//            .publish(every: 10.0, on: .main, in: .common)
+//            .autoconnect()
+//            .sink { [weak self] _ in
+//                guard let self else { return }
+//                if let arrivalTime = UserDefaultsWrapper.shared.object(
+//                    forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue,
+//                    of: Date.self
+//                ) {
+//                    let now = Date()
+//                    let thirtyMinutesLater = arrivalTime.addingTimeInterval(30 * 60) // 30분 후
+//                    
+//                    print("departure Time : \(arrivalTime)")
+//                    print("30분 후 시각 : \(thirtyMinutesLater)")
+//                    
+//                    if now >= thirtyMinutesLater {
+//                        stopFinishAlarmTimer()
+//                        bottomType = .search
+//                    }
+//                }
+//            }
+//    }
     
     func stopAlarmTimer() {
         alarmTimerCancellable?.cancel()

@@ -385,8 +385,8 @@ extension MainViewController {
                     //                                                                    context: .afterReigster))
                     //                case .realTime: do {}
                     //                    self?.lastTrainRealTimeView.setupLegInfo(info: info)
-                case .finish:
-                    break
+//                case .finish:
+//                    break
                     //                    self?.lastTrainArrivalView.setupLegInfo(info: info)
                 default: do {}
                 }
@@ -450,10 +450,10 @@ extension MainViewController {
             //            viewModel.handleRoute(route: .detailRoute(address: "",
             //                                                      infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: []),
             //                                                      context: .afterReigster))
-        case .finish:
-            lastTrainSearchView.isHidden = false // 원상복구
+//        case .finish:
+//            lastTrainSearchView.isHidden = false // 원상복구
             //            lastTrainArrivalView.isHidden = false
-            viewModel.endAlarmTimer()
+//            viewModel.endAlarmTimer()
         default: do {}
         }
     }

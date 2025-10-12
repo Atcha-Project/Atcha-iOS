@@ -197,15 +197,15 @@ extension Course {
     
     func addSecondsToTime(from isoDate: String?, plusSeconds: Int) -> String? {
         guard let isoDate = isoDate else { return nil }
-
+        
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "ko_KR")
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-
+        
         guard let date = formatter.date(from: isoDate) else { return nil }
-
+        
         let updatedDate = date.addingTimeInterval(TimeInterval(plusSeconds))
-
+        
         formatter.dateFormat = "HH:mm"
         return formatter.string(from: updatedDate)
     }
