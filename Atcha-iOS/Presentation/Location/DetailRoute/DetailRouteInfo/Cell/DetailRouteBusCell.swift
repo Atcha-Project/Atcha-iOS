@@ -279,12 +279,13 @@ final class DetailRouteBusCell: UICollectionViewCell {
             busTimerStackView.isHidden = false
             busTimerFirstLabel.attributedText = AtchaFont.B6_R_14("정보 없음", color: .gray300)
             busTimerSecondLabel.text = ""
-            return
+            return 
         }
         
         currentBusInfo = currentBusInfo.filter { $0.remainingTime ?? 0 > 0 }
         if currentBusInfo.isEmpty {
-            busTimerStackView.isHidden = true
+            busTimerStackView.isHidden = false
+            busTimerFirstLabel.attributedText = AtchaFont.B6_R_14("도착 또는 출발", color: .widearea)
             return
         }
         

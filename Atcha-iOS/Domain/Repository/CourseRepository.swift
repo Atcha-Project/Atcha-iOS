@@ -9,6 +9,8 @@ import Foundation
 
 protocol CourseRepository {
     // 경로 탐색
+    func courseSearch(_ routeId: String) async throws -> CourseSearchResponse
+    
     func courseSearch(_ request: CourseSearchRequest) async throws -> [CourseSearchResponse]
     
     // 경로 탐색 스트리밍 방식

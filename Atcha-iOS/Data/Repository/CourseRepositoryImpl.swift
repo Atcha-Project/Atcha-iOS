@@ -15,6 +15,24 @@ final class CourseRepositoryImpl: CourseRepository {
         self.apiService = apiService
     }
     
+    func courseSearch(_ routeId: String) async throws -> CourseSearchResponse {
+        guard let token = AppDIContainer.shared.tokenStorage.accessToken else {
+            throw NSError(domain: "CourseRepository", code: 401, userInfo: [NSLocalizedDescriptionKey: "인증 토큰이 없습니다."])
+        }
+        
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(token)"
+        ]
+        
+        return try await apiService.request(
+            Endpoint(
+                path: "https://atcha.p-e.kr//api/routes/last-routes/\(routeId)",
+                method: .get,
+                headers: headers
+            )
+        )
+    }
+    
     func courseSearch(_ request: CourseSearchRequest) async throws -> [CourseSearchResponse] {
         guard let token = AppDIContainer.shared.tokenStorage.accessToken else {
             throw NSError(domain: "CourseRepository", code: 401, userInfo: [NSLocalizedDescriptionKey: "인증 토큰이 없습니다."])
@@ -55,7 +73,7 @@ final class CourseRepositoryImpl: CourseRepository {
             continuation.finish(throwing: NSError(domain: "CourseRepository", code: 401, userInfo: [NSLocalizedDescriptionKey: "인증 토큰이 없습니다."]))
             return
         }
-
+        
         var urlComponents = URLComponents(string: "https://atcha.p-e.kr/api/routes/v3/last-routes/stream")!
         urlComponents.queryItems = [
             URLQueryItem(name: "startLat", value: "\(request.startLat)"),
@@ -63,18 +81,18 @@ final class CourseRepositoryImpl: CourseRepository {
             URLQueryItem(name: "endLat", value: "\(request.endLat)"),
             URLQueryItem(name: "endLon", value: "\(request.endLon)")
         ]
-
+        
         var urlRequest = URLRequest(url: urlComponents.url!)
         urlRequest.httpMethod = "GET"
         urlRequest.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("text/event-stream", forHTTPHeaderField: "Accept")
-
+        
         do {
             let (bytes, response) = try await URLSession.shared.bytes(for: urlRequest)
             guard let http = response as? HTTPURLResponse else {
                 throw URLError(.badServerResponse)
             }
-
+            
             // 401 외의 코드도 명확히 분기
             if http.statusCode == 401 {
                 if let tokens = await refreshToken() {
@@ -93,10 +111,10 @@ final class CourseRepositoryImpl: CourseRepository {
                 continuation.finish(throwing: NSError(domain: "CourseRepository", code: http.statusCode, userInfo: [NSLocalizedDescriptionKey: "SSE 연결 실패 (\(http.statusCode))"]))
                 return
             }
-
+            
             let parser = SSEParser()
             var receivedAny = false
-
+            
             do {
                 for try await byte in bytes {
                     receivedAny = true
@@ -118,20 +136,20 @@ final class CourseRepositoryImpl: CourseRepository {
                 continuation.finish(throwing: error)
                 return
             }
-
+            
             // 서버가 조용히 닫은 케이스
             if !receivedAny {
                 continuation.finish(throwing: NSError(domain: "CourseRepository", code: -1, userInfo: [NSLocalizedDescriptionKey: "SSE에서 응답이 없습니다."]))
                 return
             }
-
+            
             continuation.finish()
         } catch {
             print("SSE open error:", error)
             continuation.finish(throwing: error)
         }
     }
-
+    
     
     private func refreshToken() async -> (accessToken: String, refreshToken: String?)? {
         guard let refreshToken = AppDIContainer.shared.tokenStorage.refreshToken else {
@@ -140,13 +158,13 @@ final class CourseRepositoryImpl: CourseRepository {
             return nil
         }
         let url = URL(string: "https://atcha.p-e.kr/api/auth/reissue")!
-
+        
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("Bearer \(refreshToken)", forHTTPHeaderField: "Authorization")
         request.setValue("*/*", forHTTPHeaderField: "Accept")
         request.timeoutInterval = 15
-
+        
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
             guard let http = response as? HTTPURLResponse else {
@@ -154,17 +172,17 @@ final class CourseRepositoryImpl: CourseRepository {
                 SessionController.shared.expireAndRouteToLogin()
                 return nil
             }
-
+            
             // 200 아니면 바로 실패 처리
             guard http.statusCode == 200 else {
                 if http.statusCode == 401 { print("reissue 401: refresh 만료/위조 가능") }
                 SessionController.shared.expireAndRouteToLogin()
                 return nil
             }
-
+            
             let decoder = JSONDecoder()
             decoder.keyDecodingStrategy = .convertFromSnakeCase
-
+            
             do {
                 let decoded = try decoder.decode(APIResponse<RefreshTokenResponse>.self, from: data)
                 guard let result = decoded.result else {
@@ -178,13 +196,13 @@ final class CourseRepositoryImpl: CourseRepository {
                 SessionController.shared.expireAndRouteToLogin()
                 return nil
             }
-
+            
         } catch {
             print("reissue 네트워크 오류:", error)
             SessionController.shared.expireAndRouteToLogin()
             return nil
         }
     }
-
+    
 }
 
