@@ -9,7 +9,6 @@ import Foundation
 import Alamofire
 
 final class BusInfoRepositoryImpl: BusInfoRepository {
-    
     private let apiService: APIService
     
     init(apiService: APIService) {
@@ -25,6 +24,18 @@ final class BusInfoRepositoryImpl: BusInfoRepository {
                 encoding: JSONEncoding.default
             ),
             body: request)
+    }
+    
+    // 실시간 버스 정보 조회 - v2
+    func getBusRealTimeInfo(_ request: String) async throws -> [RealTimeBusArrival] {
+        return try await apiService.request(
+            Endpoint(
+                path: "https://atcha.p-e.kr/api/routes/user-routes/bus-arrival",
+                method: .get,
+                parameters: ["routeName" : request],
+                headers: ["Authorization": "Bearer \(AppDIContainer.shared.tokenStorage.accessToken ?? "")"]
+            )
+        )
     }
     
     // 실시간 버스 정보 조회

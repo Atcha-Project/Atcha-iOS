@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Alamofire
 
 final class AppVersionRepositoryImpl: AppVersionRepository {
     private let apiService: APIService
@@ -16,7 +17,19 @@ final class AppVersionRepositoryImpl: AppVersionRepository {
     
     func fetchAppVersion() async throws -> String {
         return try await apiService.request(
-            Endpoint(path: "http://atcha.p-e.kr/api/app/version", method: .get)
+            Endpoint(path: "http://atcha.p-e.kr/api/app/version",
+                     method: .get,
+                     headers: ["X-Platform" : "iOS"])
+        )
+    }
+    
+    func updateAppVersion(version: AppVersionRequest) async throws -> APIEmptyResponse {
+        return try await apiService.request(
+            Endpoint(path: "https://atcha.p-e.kr/api/app/version",
+                     method: .post,
+                     encoding: JSONEncoding.default,
+                     headers: ["X-Platform" : "iOS"]),
+            body: version
         )
     }
 }

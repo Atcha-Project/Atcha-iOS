@@ -7,6 +7,20 @@
 
 import Foundation
 
+// 버스 운행 상태
+enum BusStatus: String, Codable {
+    case waiting = "WAITING"
+    case soon = "SOON"
+    case operating = "OPERATING"
+    case end = "END"
+}
+
+// 버스 정보 유형
+enum BusInfoType: String, Codable {
+    case realTime = "REALTIME"
+    case estimated = "ESTIMATED"
+}
+
 struct BusRealTimeInfo: Codable {
     let busRouteId: String?
     let routeName: String?
@@ -19,13 +33,16 @@ struct BusRealTimeInfo: Codable {
 }
 
 struct RealTimeBusArrival: Codable {
-    let busStatus: String?
-    let remainingTime: Int?
-    let busCongestion: String?
+    let routeName: String?
+    let busStatus: BusStatus?
+    var remainingTime: Int?
+    let remainingStations: Int?
+    let isLast: Bool?
+    let busCongestion: BusCongestion?
     let remainingSeats: Int?
     let expectedArrivalTime: String?
     let vehicleId: String?
-    let remainingStations: Int?
+    let infoType: BusInfoType?
 }
 
 extension BusRealTimeInfo {

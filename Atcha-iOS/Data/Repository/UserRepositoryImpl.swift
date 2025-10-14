@@ -18,7 +18,8 @@ final class UserRepositoryImpl: UserRepository {
     func fetchUser() async throws -> UserInfoResponse {
         return try await apiService.request(
             Endpoint(path: "https://atcha.p-e.kr/api/members/me",
-                     method: .get)
+                     method: .get,
+                     headers: ["X-Platform" : "iOS"])
         )
     }
     

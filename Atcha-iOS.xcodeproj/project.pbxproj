@@ -147,6 +147,11 @@
 		B637D6EB2E30C75900F73F14 /* AtchaPopupInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B637D6EA2E30C75900F73F14 /* AtchaPopupInfo.swift */; };
 		B644BAB12E42DDFF00E64BC2 /* LastTrainRealTimeBottomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B644BAB02E42DDFF00E64BC2 /* LastTrainRealTimeBottomView.swift */; };
 		B644BAB32E443E5C00E64BC2 /* LastTrainArrivalBottomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B644BAB22E443E5C00E64BC2 /* LastTrainArrivalBottomView.swift */; };
+		B65402CD2E76701200AB5862 /* DetailRouteInfoLayoutType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65402CC2E76701200AB5862 /* DetailRouteInfoLayoutType.swift */; };
+		B65402CF2E767B6E00AB5862 /* DetailRouteSummaryCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65402CE2E767B6E00AB5862 /* DetailRouteSummaryCell.swift */; };
+		B65402D12E76830500AB5862 /* DetailRouteTimeLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65402D02E76830500AB5862 /* DetailRouteTimeLabel.swift */; };
+		B65402D32E76C84D00AB5862 /* DetailRouteBusLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65402D22E76C84D00AB5862 /* DetailRouteBusLabel.swift */; };
+		B65402D52E76CACC00AB5862 /* DetailRouteSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65402D42E76CACC00AB5862 /* DetailRouteSummaryView.swift */; };
 		B655AFBA2E3C26A9008BFDE4 /* DetailRouteEndCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B655AFB92E3C26A9008BFDE4 /* DetailRouteEndCell.swift */; };
 		B65C12D72E0429B30016D2F0 /* AppFlowCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C12D62E0429B30016D2F0 /* AppFlowCoordinator.swift */; };
 		B65C12DA2E042A740016D2F0 /* AppDIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65C12D92E042A740016D2F0 /* AppDIContainer.swift */; };
@@ -232,6 +237,8 @@
 		B68309672E005B5300E2D029 /* UIView+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B68309662E005B5300E2D029 /* UIView+Ext.swift */; };
 		B68730D02E46539F00BFB1F6 /* siren.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = B68730CF2E46539F00BFB1F6 /* siren.mp3 */; };
 		B69A04682E6D5F3400CA382C /* DetailRouteAnimationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B69A04672E6D5F3300CA382C /* DetailRouteAnimationView.swift */; };
+		B69A046B2E90DE0100CA382C /* UpdateAppVersionUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B69A046A2E90DE0100CA382C /* UpdateAppVersionUseCase.swift */; };
+		B69A046E2E90E5A400CA382C /* AppVersionRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B69A046D2E90E5A400CA382C /* AppVersionRequest.swift */; };
 		B69E31A82E2681EF001040F4 /* CLLocationCoordinate2D+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B69E31A72E2681EF001040F4 /* CLLocationCoordinate2D+Ext.swift */; };
 		B69E31AC2E2683B8001040F4 /* PermissionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B69E31AB2E2683B8001040F4 /* PermissionViewController.swift */; };
 		B69E31AE2E2683C9001040F4 /* PermissionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B69E31AD2E2683C9001040F4 /* PermissionViewModel.swift */; };
@@ -435,6 +442,11 @@
 		B637D6EA2E30C75900F73F14 /* AtchaPopupInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtchaPopupInfo.swift; sourceTree = "<group>"; };
 		B644BAB02E42DDFF00E64BC2 /* LastTrainRealTimeBottomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastTrainRealTimeBottomView.swift; sourceTree = "<group>"; };
 		B644BAB22E443E5C00E64BC2 /* LastTrainArrivalBottomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastTrainArrivalBottomView.swift; sourceTree = "<group>"; };
+		B65402CC2E76701200AB5862 /* DetailRouteInfoLayoutType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailRouteInfoLayoutType.swift; sourceTree = "<group>"; };
+		B65402CE2E767B6E00AB5862 /* DetailRouteSummaryCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailRouteSummaryCell.swift; sourceTree = "<group>"; };
+		B65402D02E76830500AB5862 /* DetailRouteTimeLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailRouteTimeLabel.swift; sourceTree = "<group>"; };
+		B65402D22E76C84D00AB5862 /* DetailRouteBusLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailRouteBusLabel.swift; sourceTree = "<group>"; };
+		B65402D42E76CACC00AB5862 /* DetailRouteSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailRouteSummaryView.swift; sourceTree = "<group>"; };
 		B655AFB92E3C26A9008BFDE4 /* DetailRouteEndCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailRouteEndCell.swift; sourceTree = "<group>"; };
 		B65C12D62E0429B30016D2F0 /* AppFlowCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFlowCoordinator.swift; sourceTree = "<group>"; };
 		B65C12D92E042A740016D2F0 /* AppDIContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDIContainer.swift; sourceTree = "<group>"; };
@@ -524,6 +536,8 @@
 		B68309662E005B5300E2D029 /* UIView+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Ext.swift"; sourceTree = "<group>"; };
 		B68730CF2E46539F00BFB1F6 /* siren.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = siren.mp3; sourceTree = "<group>"; };
 		B69A04672E6D5F3300CA382C /* DetailRouteAnimationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailRouteAnimationView.swift; sourceTree = "<group>"; };
+		B69A046A2E90DE0100CA382C /* UpdateAppVersionUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateAppVersionUseCase.swift; sourceTree = "<group>"; };
+		B69A046D2E90E5A400CA382C /* AppVersionRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppVersionRequest.swift; sourceTree = "<group>"; };
 		B69E31A72E2681EF001040F4 /* CLLocationCoordinate2D+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CLLocationCoordinate2D+Ext.swift"; sourceTree = "<group>"; };
 		B69E31AB2E2683B8001040F4 /* PermissionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionViewController.swift; sourceTree = "<group>"; };
 		B69E31AD2E2683C9001040F4 /* PermissionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionViewModel.swift; sourceTree = "<group>"; };
@@ -1085,10 +1099,10 @@
 		B65C12D02E0429390016D2F0 /* UseCase */ = {
 			isa = PBXGroup;
 			children = (
+				B69A04692E90DDDD00CA382C /* AppVersion */,
 				B66401922E22788F00A397AE /* User */,
 				B6C507462E129632000AB39F /* Location */,
 				B65C12E12E042D400016D2F0 /* FetchUserUseCase.swift */,
-				B65C131B2E058C150016D2F0 /* CheckAppVersionUseCase.swift */,
 				6DC3BF5F2E071F0900831470 /* LoginUseCase.swift */,
 				6D1EE2ED2E0A7D7300F7BBF1 /* OnboardingUseCase.swift */,
 				6D73EBE52E1B51E000F8DF8B /* CourseUseCase.swift */,
@@ -1206,6 +1220,7 @@
 		B65C13212E058C410016D2F0 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				B69A046C2E90E59900CA382C /* AppVersionDTO */,
 				6DB763672E45C52600D06A49 /* AlarmDTO */,
 				6D6879CC2E42119500E59C55 /* UserInfoPatchDTO */,
 				6D2B8C9F2E39A70500608104 /* BusInfoDTO */,
@@ -1433,10 +1448,14 @@
 		B6793D5A2E38791B001BE9F5 /* DetailRouteInfo */ = {
 			isa = PBXGroup;
 			children = (
+				B65402CC2E76701200AB5862 /* DetailRouteInfoLayoutType.swift */,
 				B6793D612E3B0279001BE9F5 /* Cell */,
 				B6793D5B2E38792A001BE9F5 /* DetailRouteInfoBottomView.swift */,
 				B6793D5F2E3A5E23001BE9F5 /* DetailRouteProgressView.swift */,
 				B69A04672E6D5F3300CA382C /* DetailRouteAnimationView.swift */,
+				B65402D02E76830500AB5862 /* DetailRouteTimeLabel.swift */,
+				B65402D22E76C84D00AB5862 /* DetailRouteBusLabel.swift */,
+				B65402D42E76CACC00AB5862 /* DetailRouteSummaryView.swift */,
 			);
 			path = DetailRouteInfo;
 			sourceTree = "<group>";
@@ -1449,6 +1468,7 @@
 				B6793D642E3B0456001BE9F5 /* DetailRouteWalkCell.swift */,
 				B6793D662E3B04EE001BE9F5 /* DetailRouteBusCell.swift */,
 				B6793D682E3B3FB8001BE9F5 /* DetailRouteSubwayCell.swift */,
+				B65402CE2E767B6E00AB5862 /* DetailRouteSummaryCell.swift */,
 			);
 			path = Cell;
 			sourceTree = "<group>";
@@ -1566,6 +1586,23 @@
 				6D7CB4102E6810BD003AB799 /* ScrollView+Ext.swift */,
 			);
 			path = Util;
+			sourceTree = "<group>";
+		};
+		B69A04692E90DDDD00CA382C /* AppVersion */ = {
+			isa = PBXGroup;
+			children = (
+				B65C131B2E058C150016D2F0 /* CheckAppVersionUseCase.swift */,
+				B69A046A2E90DE0100CA382C /* UpdateAppVersionUseCase.swift */,
+			);
+			path = AppVersion;
+			sourceTree = "<group>";
+		};
+		B69A046C2E90E59900CA382C /* AppVersionDTO */ = {
+			isa = PBXGroup;
+			children = (
+				B69A046D2E90E5A400CA382C /* AppVersionRequest.swift */,
+			);
+			path = AppVersionDTO;
 			sourceTree = "<group>";
 		};
 		B69E31AA2E2683AE001040F4 /* Permission */ = {
@@ -1900,6 +1937,7 @@
 				6DFF29932E0CBE8A0039399F /* RegisterLocationViewModel.swift in Sources */,
 				B6AC8BE12E2BC36400410ECD /* AlarmSettingViewController.swift in Sources */,
 				B6793D562E386E0E001BE9F5 /* DetailRouteViewModel.swift in Sources */,
+				B65402CD2E76701200AB5862 /* DetailRouteInfoLayoutType.swift in Sources */,
 				B6702C462E629FE600AD2A67 /* NotificationKeys.swift in Sources */,
 				6D368BAD2E0396C100144EE7 /* RegisterTextField.swift in Sources */,
 				B6793D632E3B0286001BE9F5 /* DetailRouteStartCell.swift in Sources */,
@@ -1907,6 +1945,7 @@
 				B6CF46F52E09620100304A85 /* LoginCoordinator.swift in Sources */,
 				B6FB208A2E1BE5200032751B /* FetchTaxiFareRepositoryImpl.swift in Sources */,
 				B68309532E005A3600E2D029 /* AppDelegate.swift in Sources */,
+				B65402D52E76CACC00AB5862 /* DetailRouteSummaryView.swift in Sources */,
 				6D2B8CA92E39A9DE00608104 /* BusOperationInfoRequest.swift in Sources */,
 				B6713CC52E129CE000AF8486 /* TMapWrapper.swift in Sources */,
 				6D1EE2F22E0A80AA00F7BBF1 /* OnboardingDTO.swift in Sources */,
@@ -1990,6 +2029,7 @@
 				B6AC8BFC2E2BF27200410ECD /* UINavigationController+Ext.swift in Sources */,
 				B65C13232E058C490016D2F0 /* AppVersionInfo.swift in Sources */,
 				B69E31AE2E2683C9001040F4 /* PermissionViewModel.swift in Sources */,
+				B65402CF2E767B6E00AB5862 /* DetailRouteSummaryCell.swift in Sources */,
 				B6AC8BF42E2BD3FE00410ECD /* WebViewController.swift in Sources */,
 				6D6879C92E41B43000E59C55 /* UITextView+Ext.swift in Sources */,
 				B6713CC22E129AEC00AF8486 /* RequestLocationAuthorizationRepository.swift in Sources */,
@@ -2006,6 +2046,7 @@
 				B65C13342E06925B0016D2F0 /* MyPageItem.swift in Sources */,
 				6DB763842E4D710900D06A49 /* SSEParser.swift in Sources */,
 				6D6879BC2E3E78E200E59C55 /* RouteLineView.swift in Sources */,
+				B69A046E2E90E5A400CA382C /* AppVersionRequest.swift in Sources */,
 				6D5E03C82E2881830065AFBE /* FetchRecentSearchResponse.swift in Sources */,
 				B6AC8BF62E2BD91000410ECD /* AppInfoProvider.swift in Sources */,
 				6DC3BEF12E04FE1600831470 /* KeychainWrapper.swift in Sources */,
@@ -2015,6 +2056,7 @@
 				B67E3E582E0980880056EEB3 /* AppleLoginDelegateWrapper.swift in Sources */,
 				B6793D5C2E38792A001BE9F5 /* DetailRouteInfoBottomView.swift in Sources */,
 				B65C13462E07A0D70016D2F0 /* CoordinatorFactory.swift in Sources */,
+				B65402D12E76830500AB5862 /* DetailRouteTimeLabel.swift in Sources */,
 				B68309552E005A3600E2D029 /* AtchaColor.swift in Sources */,
 				6D73EBE82E1B54A500F8DF8B /* CourseRepository.swift in Sources */,
 				B6EDD7382E0D87B0006170DF /* FileStorable.swift in Sources */,
@@ -2064,6 +2106,7 @@
 				B65C133B2E069B4D0016D2F0 /* RefreshTokenResponse.swift in Sources */,
 				B6FB20882E1BE4F40032751B /* FetchTaxiFareRepository.swift in Sources */,
 				B655AFBA2E3C26A9008BFDE4 /* DetailRouteEndCell.swift in Sources */,
+				B69A046B2E90DE0100CA382C /* UpdateAppVersionUseCase.swift in Sources */,
 				6D2B8CA22E39A74100608104 /* BusOperationInfo.swift in Sources */,
 				6D6879C02E40684C00E59C55 /* RefreshView.swift in Sources */,
 				6D2B8CB32E39AC4B00608104 /* BusPositionInfoRequest.swift in Sources */,
@@ -2082,6 +2125,7 @@
 				6D6879DE2E43706800E59C55 /* PushAlarmPatchUseCase.swift in Sources */,
 				B68309572E005A3600E2D029 /* ViewController.swift in Sources */,
 				B6AC8BF82E2BDA2900410ECD /* AppUpdateManager.swift in Sources */,
+				B65402D32E76C84D00AB5862 /* DetailRouteBusLabel.swift in Sources */,
 				6DB7636B2E45C5EC00D06A49 /* AlarmUseCase.swift in Sources */,
 				B6D083352E02D928003C28E1 /* AtchaListType.swift in Sources */,
 				B6793D672E3B04EE001BE9F5 /* DetailRouteBusCell.swift in Sources */,
@@ -2205,7 +2249,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.atcha.iOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -2253,7 +2297,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.atcha.iOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

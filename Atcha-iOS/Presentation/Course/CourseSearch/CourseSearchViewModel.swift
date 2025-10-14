@@ -124,7 +124,7 @@ final class CourseSearchViewModel: BaseViewModel {
         
         if isBlackoutNow() {
             setLoading(false)
-            isServerError = true 
+            isServerError = true
             courses = []
             return
         }

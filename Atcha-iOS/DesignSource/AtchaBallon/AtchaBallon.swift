@@ -68,13 +68,13 @@ final class AtchaBallon: UIView {
     }
     
     func setupTitle(topMessage: String? = nil, bottomMessage: String) {
-        bottomLabel.attributedText = AtchaFont.B7_M_13(bottomMessage)
+        bottomLabel.attributedText = AtchaFont.B7_M_13(bottomMessage, color: .white)
         
         guard let topMessage else {
             topLabel.isHidden = true
             return
         }
-        topLabel.attributedText = AtchaFont.B7_M_13(topMessage)
+        topLabel.attributedText = AtchaFont.B7_M_13(topMessage, color: .white)
         topLabel.isHidden = false
     }
     
@@ -82,15 +82,15 @@ final class AtchaBallon: UIView {
         let gray = NSMutableAttributedString(attributedString: AtchaFont.B7_M_13(grayMessage))
         gray.addAttributes([.foregroundColor: UIColor.gray100],
                            range: NSRange(location: 0, length: gray.length))
-
+        
         let white = NSMutableAttributedString(attributedString: AtchaFont.B7_M_13(whiteMessage))
         white.addAttributes([.foregroundColor: UIColor.white],
                             range: NSRange(location: 0, length: white.length))
-
+        
         let composed = NSMutableAttributedString()
         composed.append(gray)
         composed.append(white)
-
+        
         bottomLabel.attributedText = composed
     }
 }

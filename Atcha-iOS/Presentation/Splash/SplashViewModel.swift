@@ -12,14 +12,19 @@ final class SplashViewModel: BaseViewModel {
     
     private let fetchUserUseCase: FetchUserUseCase
     private let checkAppVersionUseCase: CheckAppVersionUseCase
+    private let updateAppVersionUseCase: UpdateAppVersionUseCase
     
     var routerHandler: ((SplashRouter) -> Void)?
     
     init(fetchUserUseCase: FetchUserUseCase,
-         checkAppVersionUseCase: CheckAppVersionUseCase) {
+         checkAppVersionUseCase: CheckAppVersionUseCase,
+         updateAppVersionUseCase: UpdateAppVersionUseCase) {
         self.fetchUserUseCase = fetchUserUseCase
         self.checkAppVersionUseCase = checkAppVersionUseCase
+        self.updateAppVersionUseCase = updateAppVersionUseCase
         super.init()
+        
+        self.checkAppVersion()
     }
     
     func checkAppVersion() {
@@ -30,6 +35,16 @@ final class SplashViewModel: BaseViewModel {
             do {
                 let versionInfo = try await checkAppVersionUseCase.execute()
                 appVersionInfo = versionInfo
+            } catch {
+                handleError(error)
+            }
+        }
+    }
+    
+    func updateAppVersion(version: String) {
+        Task {
+            do {
+                let _ = try await updateAppVersionUseCase.exectue(version: version)
             } catch {
                 handleError(error)
             }
@@ -49,40 +64,25 @@ final class SplashViewModel: BaseViewModel {
     func makeInitialFlow() {
         let wrapper = UserDefaultsWrapper.shared
         
-        // 막차를 등록한 경우
+        if let arrivalTime = wrapper.object(forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue, of: Date.self) {
+            if isMoreThanSeconds(from: arrivalTime, seconds: 60 * 30) {
+                // 30분이 넘게 지난 경우
+                wrapper.remove(forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
+                wrapper.remove(forKey: UserDefaultsWrapper.Key.addressDesc.rawValue)
+                wrapper.remove(forKey: UserDefaultsWrapper.Key.startLat.rawValue)
+                wrapper.remove(forKey: UserDefaultsWrapper.Key.startLon.rawValue)
+                wrapper.remove(forKey: UserDefaultsWrapper.Key.startAddress.rawValue)
+                wrapper.remove(forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
+                wrapper.remove(forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue)
+                
+                routerHandler?(.main)
+                return
+            }
+        }
+        
         if let legInfo: LegInfo = wrapper.object(forKey: UserDefaultsWrapper.Key.legInfo.rawValue, of: LegInfo.self),
            let address: String = wrapper.string(forKey: UserDefaultsWrapper.Key.addressDesc.rawValue) {
-            guard let time = legInfo.pathInfo.first?.departureDateTime else { return } // 막차를 타기위해 출발해야 하는 시간
-            AlarmManager.shared.startAlarm(after: time, title: "눌러서 출발 알람 끄기", body: "자리에서 일어나야 할 시간이에요!")
-            
-            if checkFutureTimeOver(dateString: time) {
-                // 현재 시간 > 알람 시간 -> 알람 화면
-                routerHandler?(.alarm(info: legInfo, address: address))
-            } else {
-                // 현재 시간 < 알림 시간
-                
-                // 만약에 내가 실시간 조회 -> 타이머 시간이 존재하면 !!
-                if let _ = wrapper.integer(forKey: UserDefaultsWrapper.Key.trainRealTime.rawValue) {
-                    routerHandler?(.realTime(info: legInfo, address: address))
-                } else {
-                    
-                    if let arrivalTime = wrapper.object(forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue, of: Date.self) {
-                        if isMoreThanSeconds(from: arrivalTime, seconds: 60 * 30) { // 30분이 넘게 지난 경우 
-                            routerHandler?(.main)
-                        } else {
-                            routerHandler?(.finishTime(info: legInfo, address: address))
-                        }
-                        return
-                    }
-                    
-                    // 현재 시간 - 알람 시간 2분 이내에 진입 한 경우 (time이랑 Date() 차이가 2분)
-                    if isMoreThanSeconds(from: time, seconds: 120) {
-                        routerHandler?(.main) // 진입 이후, 알람 팝업
-                    } else {
-                        routerHandler?(.lockScreen(info: legInfo, address: address)) // 2분 이내에 재 진입, 잠금화면
-                    }
-                }
-            }
+            routerHandler?(.alarm(info: legInfo, address: address))
             return
         }
         
@@ -136,3 +136,42 @@ final class SplashViewModel: BaseViewModel {
         return diff >= 120 // 120초 = 2분
     }
 }
+
+// 막차를 등록한 경우
+//        if let legInfo: LegInfo = wrapper.object(forKey: UserDefaultsWrapper.Key.legInfo.rawValue, of: LegInfo.self),
+//           let address: String = wrapper.string(forKey: UserDefaultsWrapper.Key.addressDesc.rawValue) {
+//            guard let time = legInfo.pathInfo.first?.departureDateTime else { return } // 막차를 타기위해 출발해야 하는 시간
+////            AlarmManager.shared.startAlarm(after: time, title: "눌러서 출발 알람 끄기", body: "자리에서 일어나야 할 시간이에요!")
+//
+//            if checkFutureTimeOver(dateString: time) {
+//                // 현재 시간 > 알람 시간 -> 알람 화면
+//                routerHandler?(.alarm(info: legInfo, address: address))
+//            } else {
+//                // 현재 시간 < 알림 시간
+//
+//                // 만약에 내가 실시간 조회 -> 타이머 시간이 존재하면 !!
+//                if let _ = wrapper.integer(forKey: UserDefaultsWrapper.Key.trainRealTime.rawValue) {
+//                    routerHandler?(.alarm(info: legInfo, address: address))
+//                    // TODO: 상세경로 화면으로 이동
+//                } else {
+//
+//                    if let arrivalTime = wrapper.object(forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue, of: Date.self) {
+//                        if isMoreThanSeconds(from: arrivalTime, seconds: 60 * 30) { // 30분이 넘게 지난 경우
+//                            routerHandler?(.main)
+//                        } else {
+//                            routerHandler?(.finishTime(info: legInfo, address: address))
+//                        }
+//                        return
+//                    }
+//
+//                    // 현재 시간 - 알람 시간 2분 이내에 진입 한 경우 (time이랑 Date() 차이가 2분)
+//                    if isMoreThanSeconds(from: time, seconds: 120) {
+////                        routerHandler?(.main) // 진입 이후, 알람 팝업
+//                        routerHandler?(.alarm(info: legInfo, address: address))
+//                    } else {
+//                        routerHandler?(.lockScreen(info: legInfo, address: address)) // 2분 이내에 재 진입, 잠금화면
+//                    }
+//                }
+//            }
+//            return
+//        }

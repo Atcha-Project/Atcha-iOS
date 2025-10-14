@@ -55,19 +55,19 @@ final class MyAccountViewController: BaseViewController<MyAccountViewModel> {
     private func showLogoutPopup() {
         let popupVM = AtchaPopupViewModel(info: .logout)
         let popupVC = AtchaPopupViewController(viewModel: popupVM)
-
+        
         popupVC.confirmButton.addAction(UIAction { [weak self, weak popupVC] _ in
             guard let self else { return }
-            popupVC?.dismiss(animated: true)
-
+            popupVC?.dismiss(animated: false)
+            
             self.viewModel.logoutTapped()
         }, for: .touchUpInside)
-
+        
         // 취소
         popupVC.cancelButton.addAction(UIAction { [weak popupVC] _ in
-            popupVC?.dismiss(animated: true)
+            popupVC?.dismiss(animated: false)
         }, for: .touchUpInside)
-
+        
         popupVC.modalPresentationStyle = .overFullScreen
         present(popupVC, animated: false)
     }

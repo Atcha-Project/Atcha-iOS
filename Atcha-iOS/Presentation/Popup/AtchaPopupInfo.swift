@@ -12,6 +12,7 @@ enum AtcahPopuInfo {
     case withdraw
     case alarm
     case course
+    case announeExit
     
     var title: String {
         switch self {
@@ -19,6 +20,7 @@ enum AtcahPopuInfo {
         case .withdraw: return "탈퇴하시겠어요?"
         case .alarm: return "막차 알람을 종료할까요?"
         case .course : return "배차 간격이 긴 버스가 포함되어\n환승 대기 시간이 길어질 수 있어요.\n막차 알람을 등록할까요?"
+        case .announeExit: return ""
         }
     }
     
@@ -28,6 +30,7 @@ enum AtcahPopuInfo {
         case .withdraw: return "탈퇴하기"
         case .alarm: return "종료하기"
         case .course: return "알람 받기"
+        case .announeExit: return "확인"
         }
     }
     

@@ -11,6 +11,10 @@ enum AppInfoProvider {
     static var currentVersion: String {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "버전 정보 없음"
     }
+    
+    static var versionWithV: String {
+        return Bundle.main.appVersionWithV
+    }
 
     static var buildNumber: String {
         Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "-"

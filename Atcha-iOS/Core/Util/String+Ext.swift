@@ -114,3 +114,12 @@ extension String {
         return ""
     }
 }
+
+extension String {
+    func versionComponents() -> [Int] {
+        return self
+            .replacingOccurrences(of: "v", with: "")
+            .split(separator: ".")
+            .compactMap { Int($0) }
+    }
+}

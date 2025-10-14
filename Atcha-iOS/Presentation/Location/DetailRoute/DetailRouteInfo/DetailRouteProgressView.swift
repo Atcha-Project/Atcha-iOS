@@ -33,18 +33,18 @@ final class DetailRouteProgressView: UIView {
     func configure(infos: [LegTrafficInfo]) {
         var times: [CGFloat] = []
         var colors: [UIColor] = []
-
+        
         infos.forEach { info in
             if let sectionTime = info.sectionTime,
                let minutes = parseMinutes(from: sectionTime) {
                 times.append(CGFloat(minutes))
             }
-
+            
             if let color = info.mode?.getGageColor(for: info.type ?? "") {
                 colors.append(color)
             }
         }
-
+        
         update(times: times, colors: colors)
     }
     
@@ -105,7 +105,7 @@ final class DetailRouteProgressView: UIView {
             
             let roundedMinutes = Int(timeValue.rounded())
             let timeText = "\(roundedMinutes)분"
-
+            
             let label = UILabel(frame: segmentView.bounds)
             label.attributedText = AtchaFont.M_9(timeText)
             label.textAlignment = .center
@@ -113,7 +113,7 @@ final class DetailRouteProgressView: UIView {
             label.textColor = color == .gray800 ? .gray200 : .white
             segmentView.addSubview(label)
             
-         
+            
             if index < segmentWidths.count - 1 {
                 currentX += scaledWidth - overlapSpacing
             } else {

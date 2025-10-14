@@ -9,4 +9,5 @@ import Foundation
 
 protocol AppVersionRepository {
     func fetchAppVersion() async throws -> String
+    func updateAppVersion(version: AppVersionRequest) async throws -> APIEmptyResponse
 }

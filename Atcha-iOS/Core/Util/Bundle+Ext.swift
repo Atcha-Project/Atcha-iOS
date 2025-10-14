@@ -29,3 +29,10 @@ extension Bundle {
         return key
     }
 }
+
+extension Bundle {
+    var appVersionWithV: String {
+        let version = infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
+        return "v\(version)"
+    }
+}

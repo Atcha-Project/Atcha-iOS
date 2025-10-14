@@ -24,10 +24,16 @@ final class SplashDIContainer {
         let repository = AppVersionRepositoryImpl(apiService: apiService)
         return CheckAppVersionUseCaseImpl(repository: repository)
     }
+    
+    func makeUpdateAppVersionUseCase() -> UpdateAppVersionUseCase {
+        let repository = AppVersionRepositoryImpl(apiService: apiService)
+        return UpdateAppVersionUseCaseImpl(repository: repository)
+    }
 
     func makeSplashViewModel() -> SplashViewModel {
         SplashViewModel(fetchUserUseCase: makeFetchUserUseCase(),
-                        checkAppVersionUseCase: makeCheckAppVersionUseCase())
+                        checkAppVersionUseCase: makeCheckAppVersionUseCase(),
+                        updateAppVersionUseCase: makeUpdateAppVersionUseCase())
     }
     
     func makeSplashViewController(viewModel: SplashViewModel) -> SplashViewController {

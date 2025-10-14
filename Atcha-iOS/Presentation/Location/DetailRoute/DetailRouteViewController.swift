@@ -85,7 +85,7 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         registerGradient.endPoint   = CGPoint(x: 0.5, y: 1.0)
         registerContainer.layer.insertSublayer(registerGradient, at: 0)
     }
-
+    
     
     // MARK: 알림 등록 이후 UI
     private func setupAfterUI() {
@@ -159,7 +159,9 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         viewModel.$busRealTimeInfos
             .filter { $0.count > 0 }
             .receive(on: RunLoop.main)
-            .sink { [weak self] info in self?.bottomSheet.setupBusTimerLabel(info) }
+            .sink { [weak self] info in
+                self?.bottomSheet.setupBusTimerLabel(info)
+            }
             .store(in: &cancellables)
         
         viewModel.$address
@@ -173,8 +175,8 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             .receive(on: DispatchQueue.main)
             .sink { [weak self] location in
                 guard let self else { return }
-                mapContainerView.adjustMapToFit(coordinates: allCoordinates)
-                //                mapContainerView.setupCenter(location: location)
+                //                mapContainerView.adjustMapToFit(coordinates: allCoordinates)
+                mapContainerView.setupCenter(location: location)
             }
             .store(in: &cancellables)
         
@@ -182,12 +184,16 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             self?.viewModel.onBusDetail?(info)
         }
         
+        bottomSheet.getNewBusRealTime = { [weak self] in
+            self?.viewModel.fetchInfo()
+        }
+        
         viewModel.$context
-                .receive(on: RunLoop.main)
-                .sink { [weak self] ctx in
-                    self?.setupUI(context: ctx)
-                }
-                .store(in: &cancellables)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] ctx in
+                self?.setupUI(context: ctx)
+            }
+            .store(in: &cancellables)
     }
     
     private func addRouteLine(infos: [LegPathInfo]) {
@@ -257,11 +263,11 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         let busCount = busLegs.count
         let hasSubway = viewModel.legTrafficInfo.contains { $0.mode == .subway }
         let hasLongWaitBus = busLegs.contains { ($0.targetBusTerm ?? 0) >= 40 }
-
+        
         let isException = (busCount == 1) && (hasSubway == false)
-
+        
         let shouldShowPopup = hasLongWaitBus && !isException
-
+        
         if shouldShowPopup {
             showCoursePopup()
         } else {
@@ -314,14 +320,14 @@ extension DetailRouteViewController {
         let popupVC = AtchaPopupViewController(viewModel: popupVM)
         
         popupVC.confirmButton.addAction(UIAction { [weak popupVC] _ in
-            popupVC?.dismiss(animated: true)
+            popupVC?.dismiss(animated: false)
             
             self.viewModel.getAlarmTapped?(self.viewModel.address, self.viewModel.infos)
         }, for: .touchUpInside)
         
         popupVC.cancelButton.addAction(UIAction { [weak self, weak popupVC] _ in
-            guard let self else { return }
-            popupVC?.dismiss(animated: true)
+            guard let _ = self else { return }
+            popupVC?.dismiss(animated: false)
             
         }, for: .touchUpInside)
         

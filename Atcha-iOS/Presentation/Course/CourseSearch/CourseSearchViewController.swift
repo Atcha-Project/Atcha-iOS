@@ -339,8 +339,8 @@ extension CourseSearchViewController {
         }, for: .touchUpInside)
         
         popupVC.cancelButton.addAction(UIAction { [weak self, weak popupVC] _ in
-            guard let self else { return }
-            popupVC?.dismiss(animated: true)
+            guard let _ = self else { return }
+            popupVC?.dismiss(animated: false)
             
         }, for: .touchUpInside)
         

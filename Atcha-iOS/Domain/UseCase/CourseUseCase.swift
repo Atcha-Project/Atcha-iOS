@@ -9,6 +9,7 @@ import Foundation
 
 protocol CourseUseCase {
     // 경로 탐색
+    func courseSearch(_ routeId: String) async throws -> Course
     func courseSearch(_ request: CourseSearchRequest) async throws -> [Course]
     func observeCourseStream(_ request: CourseSearchRequest) -> AsyncThrowingStream<Course, Error>
 }
@@ -18,6 +19,11 @@ final class CourseUseCaseImpl: CourseUseCase {
     
     init(repository: CourseRepository) {
         self.repository = repository
+    }
+    
+    // 경로 탐색 with RouteId
+    func courseSearch(_ routeId: String) async throws -> Course {
+        return try await repository.courseSearch(routeId).toEntity()
     }
     
     // 경로 탐색

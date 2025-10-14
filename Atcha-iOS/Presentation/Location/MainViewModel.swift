@@ -38,6 +38,8 @@ final class MainViewModel: BaseViewModel {
     private let locationStateHolder: LocationStateHolder
     private let busInfoUseCase: BusInfoUseCase
     private let alarmUseCase: AlarmUseCase
+    private let courseUseCase: CourseUseCase
+    
     private var streamTask: Task<Void, Never>?
     
     var routeHandler: ((MainRoute) -> Void)?
@@ -50,7 +52,8 @@ final class MainViewModel: BaseViewModel {
          searchAddressUseCase: SearchAddressUseCase,
          locationStateHolder: LocationStateHolder,
          busInfoUseCase: BusInfoUseCase,
-         alarmUseCase: AlarmUseCase) {
+         alarmUseCase: AlarmUseCase,
+         courseUseCase: CourseUseCase) {
         self.authorizationUseCase = authorizationUseCase
         self.streamUseCase = streamUseCase
         self.fetchTaxiFareUseCase = fetchTaxiFareUseCase
@@ -58,6 +61,7 @@ final class MainViewModel: BaseViewModel {
         self.locationStateHolder = locationStateHolder
         self.busInfoUseCase = busInfoUseCase
         self.alarmUseCase = alarmUseCase
+        self.courseUseCase = courseUseCase
         
         super.init()
         self.bind()
@@ -82,13 +86,46 @@ final class MainViewModel: BaseViewModel {
         let wrapper = UserDefaultsWrapper.shared
         wrapper.set(address, forKey: UserDefaultsWrapper.Key.addressDesc.rawValue)
         wrapper.set(info, forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
+        setupLegInfo(info: info)
+    }
+    
+    private func setupLegInfo(info: LegInfo?) {
+        let routeId = info?.pathInfo.first?.routeId
+        print("routeId : \(routeId)")
         
-        guard let time = legInfo?.pathInfo.first?.departureDateTime else {
-            return
+        guard let info, let departureStr = info.pathInfo.first?.departureDateTime,
+              let totalTime = info.trafficInfo.first?.totalTime else { return }
+        
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        formatter.locale = .current
+        
+        guard let departureDate = formatter.date(from: departureStr) else { return }
+        let minutes = parseTotalTimeToMinutes(totalTime)
+        
+        guard let arrivalDate = Calendar.current.date(byAdding: .minute, value: minutes, to: departureDate) else { return }
+        
+        print("departureDate : \(departureDate)")
+        print("arrivalDate : \(arrivalDate)")
+        let wrapper = UserDefaultsWrapper.shared
+        wrapper.set(departureStr, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
+        wrapper.set(arrivalDate, forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue)
+    }
+    
+    private func parseTotalTimeToMinutes(_ time: String) -> Int {
+        var totalMinutes = 0
+        
+        if let hourMatch = time.range(of: "\\d+(?=시간)", options: .regularExpression),
+           let hour = Int(time[hourMatch]) {
+            totalMinutes += hour * 60
         }
-        print("time : \(time)")
-        wrapper.set(time, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
-        AlarmManager.shared.startAlarm(after: time, title: "눌러서 출발 알람 끄기", body: "자리에서 일어나야 할 시간이에요!")
+        
+        if let minuteMatch = time.range(of: "\\d+(?=분)", options: .regularExpression),
+           let minute = Int(time[minuteMatch]) {
+            totalMinutes += minute
+        }
+        
+        return totalMinutes
     }
     
     func removeLegInfoAndAddress() {
@@ -100,7 +137,7 @@ final class MainViewModel: BaseViewModel {
         wrapper.remove(forKey: UserDefaultsWrapper.Key.startAddress.rawValue)
         wrapper.remove(forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
         wrapper.remove(forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue)
-        wrapper.remove(forKey: UserDefaultsWrapper.Key.trainRealTime.rawValue)
+        //        wrapper.remove(forKey: UserDefaultsWrapper.Key.trainRealTime.rawValue)
     }
     
     func requestPermissionAndStartTracking() {
@@ -119,59 +156,8 @@ final class MainViewModel: BaseViewModel {
                         didSendInitialLocation = true
                     }
                     
-                    getNearstToast(currentLocation: currentLocation)
+                    //                    getNearstToast(currentLocation: currentLocation)
                     selectedLocation = currentLocation
-                }
-            }
-        }
-    }
-    
-    func getNearstToast(currentLocation: CLLocationCoordinate2D) {
-        guard let legInfo = legInfo else { return }
-        
-        if let firstNonWalkMode = legInfo.trafficInfo.first(where: { $0.mode != .walk }),
-           let latStr = firstNonWalkMode.passStopList?.first?.lat,
-           let lonStr = firstNonWalkMode.passStopList?.first?.lon,
-           let lat = Double(latStr),
-           let lon = Double(lonStr) {
-            
-            // CLLocationCoordinate2D → CLLocation 변환
-            let stopCoordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
-            
-            let current = CLLocation(latitude: currentLocation.latitude, longitude: currentLocation.longitude)
-            let stop = CLLocation(latitude: stopCoordinate.latitude, longitude: stopCoordinate.longitude)
-            
-            //            let distanceMeters = current.distance(from: stop) // m 단위
-            //            print("현재 위치와 첫 정류장까지 거리: \(Int(distanceMeters)) m")
-        } else {
-            print("좌표를 가져오지 못했습니다.")
-        }
-    }
-    
-    func getBusRealTime() {
-        guard let legInfo else { return }
-        
-        if let firstNonWalkMode = legInfo.pathInfo.first(where: { $0.mode != .walk }) {
-            print("최초의 walk 제외 mode: \(firstNonWalkMode.mode?.rawValue ?? "없음")")
-            if firstNonWalkMode.mode == .bus {
-                let busDetailInfo = legInfo.busInfo.filter { $0.routeName?.isEmpty == false }
-                if let firstValidInfo = busDetailInfo.first(where: { $0.routeName != nil }) {
-                    let request = BusRealTimeInfoRequest(
-                        routeName: firstValidInfo.routeName,
-                        stationName: firstValidInfo.start?.name,
-                        lat: firstValidInfo.start?.lat,
-                        lon: firstValidInfo.start?.lon,
-                        passStations: firstValidInfo.passStations
-                    )
-                    
-                    Task {
-                        do {
-                            let info = try await busRealTimeInfo(request: request)
-                            self.busRealTimeInfo = info
-                        } catch {
-                            print("버스 실시간 조회 실패")
-                        }
-                    }
                 }
             }
         }
@@ -195,15 +181,38 @@ final class MainViewModel: BaseViewModel {
     override func handleRefreshNotification(_ notification: Notification) {
         guard let userInfo = notification.userInfo,
               let body = userInfo["body"] as? String,
-              let updatedAt = userInfo["updatedAt"] as? String else {
+              let _ = userInfo["updatedAt"] as? String else {
             return
         }
-        UserDefaultsWrapper.shared.set(body,
-                                       forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
+        
+        let wrapper = UserDefaultsWrapper.shared
+        wrapper.remove(forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
+        
+        let routeId = legInfo?.pathInfo.first?.routeId ?? ""
+        Task {
+            do {
+                let info = try await courseUseCase.courseSearch(routeId)
+                let pathinfo = info.toLegPathInfos()
+                let trafficInfo = info.toLegTrafficInfos()
+                let busInfo = info.toBusInfos()
+                
+                let legInfo: LegInfo = LegInfo(pathInfo: pathinfo,
+                                               trafficInfo: trafficInfo,
+                                               busInfo: busInfo)
+                wrapper.set(legInfo, forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
+                drawRoute(address: addressDesc, info: legInfo)
+            } catch {
+                print("routeId 조회 대실패 ㅠㅠ!!")
+            }
+        }
+        
+        wrapper.remove(forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
+        wrapper.set(body, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
         
         AlarmManager.shared.startAlarm(after: body,
                                        title: "눌러서 출발 알람 끄기",
                                        body: "자리에서 일어나야 할 시간이에요!")
+        
         departureTime = body
     }
     
@@ -243,8 +252,15 @@ extension MainViewModel {
     private func checkAlarmTime() {
         let wrapper = UserDefaultsWrapper.shared
         if let departureTime: String = wrapper.string(forKey: UserDefaultsWrapper.Key.departureTime.rawValue) {
-            if !checkFutureTimeOver(dateString: departureTime) {
+            print("departureTime : \(departureTime)")
+            //            if !checkFutureTimeOver(dateString: departureTime) {
+            if isInAlarmRange(dateString: departureTime) {
+                
+                // TODO: 알림 이후 등록이 되는지확인
                 showLockView = true
+                AlarmManager.shared.startAlarm(after: departureTime,
+                                               title: "눌러서 출발 알람 끄기",
+                                               body: "자리에서 일어나야 할 시간이에요!")
                 stopAlarmTimer()
             } else {
                 print("미래")
@@ -254,21 +270,21 @@ extension MainViewModel {
         }
     }
     
-    private func checkFutureTimeOver(dateString: String) -> Bool {
+    private func isInAlarmRange(dateString: String) -> Bool {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
         formatter.timeZone = .current
         
-        guard let inputDate = formatter.date(from: dateString) else {
+        guard let alarmDate = formatter.date(from: dateString) else {
             print("날짜 파싱 실패")
             return false
         }
         
-        let currentDate = Date()
-        let timeInterval = inputDate.timeIntervalSince(currentDate)
-        let isFuture = timeInterval >= 60
+        let now = Date()
+        let oneMinuteBefore = alarmDate.addingTimeInterval(-60) // 60초 전
         
-        return isFuture
+        // 현재가 60초 전과 알람 시간 사이인지 확인
+        return now >= oneMinuteBefore && now <= alarmDate
     }
     
     func startAlarmTimer() {
@@ -278,11 +294,9 @@ extension MainViewModel {
             .sink { [weak self] _ in
                 self?.checkAlarmTime()
             }
-    }
-    
-    func endAlarmTimer() {
+        
         alarmFinishCancellable = Timer
-            .publish(every: 10.0, on: .main, in: .common)
+            .publish(every: 60.0, on: .main, in: .common)
             .autoconnect()
             .sink { [weak self] _ in
                 guard let self else { return }
@@ -302,22 +316,6 @@ extension MainViewModel {
                     }
                 }
             }
-    }
-    
-    private func parseTotalTimeToMinutes(_ time: String) -> Int {
-        var totalMinutes = 0
-        
-        if let hourMatch = time.range(of: "\\d+(?=시간)", options: .regularExpression),
-           let hour = Int(time[hourMatch]) {
-            totalMinutes += hour * 60
-        }
-        
-        if let minuteMatch = time.range(of: "\\d+(?=분)", options: .regularExpression),
-           let minute = Int(time[minuteMatch]) {
-            totalMinutes += minute
-        }
-        
-        return totalMinutes
     }
     
     func stopAlarmTimer() {
@@ -357,8 +355,13 @@ extension MainViewModel {
             routeHandler?(.myPage)
             
         case .detailRoute:
-            guard let address, let legInfo else { return }
-            routeHandler?(.detailRoute(address: address, infos: legInfo, context: .afterReigster))
+            let wrapper = UserDefaultsWrapper.shared
+            guard let info = wrapper.object(forKey: UserDefaultsWrapper.Key.legInfo.rawValue,
+                                            of: LegInfo.self),
+                  let addressDesc = wrapper.string(forKey: UserDefaultsWrapper.Key.addressDesc.rawValue) else { return }
+            routeHandler?(.detailRoute(address: addressDesc,
+                                       infos: info,
+                                       context: .afterReigster))
         case .lockScreen:
             guard let address, let legInfo else { return }
             routeHandler?(.lockScreen(info: legInfo, address: address))
@@ -423,10 +426,6 @@ extension MainViewModel {
     
     private func fetchTaxiFare(request: FetchTaxiFareRequest) async throws -> Double {
         return try await fetchTaxiFareUseCase.fetchTaxiFare(request: request)
-    }
-    
-    private func busRealTimeInfo(request: BusRealTimeInfoRequest) async throws -> BusRealTimeInfo {
-        return try await busInfoUseCase.busRealTimeInfo(request)
     }
     
     private func realodDepartureTime() async throws -> AlarmRefresh {

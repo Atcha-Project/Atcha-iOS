@@ -16,11 +16,10 @@ final class MainViewController: BaseViewController<MainViewModel>,
                                 TMapWrapperDelegate {
     
     private let mapContainerView: TMapContainerView = TMapContainerView()
-    
     private let lastTrainSearchView: LastTrainSearchBottomView = LastTrainSearchBottomView() // 알람 등록 전
     private let lastTrainDepartView: LastTrainDepartBottomView = LastTrainDepartBottomView() // 알람 등록 이후
-    private let lastTrainRealTimeView: LastTrainRealTimeBottomView = LastTrainRealTimeBottomView() // 알람 등록 이후, 시간 지남
-    private let lastTrainArrivalView: LastTrainArrivalBottomView = LastTrainArrivalBottomView() // 알람 등록 이후, 시간 지남
+    //    private let lastTrainRealTimeView: LastTrainRealTimeBottomView = LastTrainRealTimeBottomView() // 알람 등록 이후, 시간 지남
+    //    private let lastTrainArrivalView: LastTrainArrivalBottomView = LastTrainArrivalBottomView() // 알람 등록 이후, 시간 지남
     
     private let flagImageView: UIImageView = UIImageView()
     private let myPageButton: UIButton = UIButton()
@@ -71,8 +70,8 @@ final class MainViewController: BaseViewController<MainViewModel>,
             myPageButton,
             loactionButton,
             lastTrainDepartView,
-            lastTrainRealTimeView,
-            lastTrainArrivalView,
+            //            lastTrainRealTimeView,
+            //            lastTrainArrivalView,
             ballonView
         )
         
@@ -113,14 +112,14 @@ extension MainViewController {
             make.horizontalEdges.equalToSuperview()
             make.bottom.equalToSuperview()
         }
-        lastTrainRealTimeView.snp.makeConstraints { make in
-            make.horizontalEdges.equalToSuperview()
-            make.bottom.equalToSuperview()
-        }
-        lastTrainArrivalView.snp.makeConstraints { make in
-            make.horizontalEdges.equalToSuperview()
-            make.bottom.equalToSuperview()
-        }
+        //        lastTrainRealTimeView.snp.makeConstraints { make in
+        //            make.horizontalEdges.equalToSuperview()
+        //            make.bottom.equalToSuperview()
+        //        }
+        //        lastTrainArrivalView.snp.makeConstraints { make in
+        //            make.horizontalEdges.equalToSuperview()
+        //            make.bottom.equalToSuperview()
+        //        }
         myPageButton.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
             make.trailing.equalToSuperview().inset(16)
@@ -138,7 +137,7 @@ extension MainViewController {
         atchaImageView.snp.makeConstraints { make in
             make.width.height.equalTo(64)
             make.leading.equalToSuperview().inset(8)
-            make.bottom.equalTo(lastTrainSearchView.snp.top).inset(24)
+            make.bottom.equalTo(lastTrainSearchView.snp.top).inset(22)
         }
         mapContainerView.snp.makeConstraints { make in
             make.horizontalEdges.equalToSuperview()
@@ -179,19 +178,19 @@ extension MainViewController {
             .sink { [weak self] in self?.handleSearchViewAction($0) }
             .store(in: &cancellables)
         
-        lastTrainRealTimeView.actionPublisher
-            .sink { [weak self] in self?.handleRealTimeViewAction($0) }
-            .store(in: &cancellables)
+        //        lastTrainRealTimeView.actionPublisher
+        //            .sink { [weak self] in self?.handleRealTimeViewAction($0) }
+        //            .store(in: &cancellables)
         
         lastTrainDepartView.actionPublisher
             .receive(on: RunLoop.main)
             .sink { [weak self] in self?.handleTrainDepartAction($0) }
             .store(in: &cancellables)
         
-        lastTrainArrivalView.actionPublisher
-            .receive(on: RunLoop.main)
-            .sink { [weak self] in self?.handleArrivalViewAction($0) }
-            .store(in: &cancellables)
+        //        lastTrainArrivalView.actionPublisher
+        //            .receive(on: RunLoop.main)
+        //            .sink { [weak self] in self?.handleArrivalViewAction($0) }
+        //            .store(in: &cancellables)
     }
     
     private func bindToastEvent() {
@@ -242,18 +241,21 @@ extension MainViewController {
         }
     }
     
-    private func handleRealTimeViewAction(_ action: LastTrainRealTimeBottomView.Action) {
-        switch action {
-        case .refreshBusTime, .reloadTapped: viewModel.getBusRealTime()
-        case .exitTapped:
-            showAlarmExitPopup()
-        case .detailRoadMapTapped: viewModel.handleRoute(route: .detailRoute(address: "",
-                                                                             infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: []),
-                                                                             context: .afterReigster)
-        )
-        case .finishAlarm: viewModel.bottomType = .finish
-        }
-    }
+    //    private func handleRealTimeViewAction(_ action: LastTrainRealTimeBottomView.Action) {
+    //        switch action {
+    //        case .refreshBusTime, .reloadTapped:
+    //            break
+    //            // TODO: 새로운 통신으로 변경하기
+    //            //            viewModel.getBusRealTime()
+    //        case .exitTapped:
+    //            showAlarmExitPopup()
+    //        case .detailRoadMapTapped: viewModel.handleRoute(route: .detailRoute(address: "",
+    //                                                                             infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: []),
+    //                                                                             context: .afterReigster)
+    //        )
+    //        case .finishAlarm: viewModel.bottomType = .finish
+    //        }
+    //    }
     
     private func handleTrainDepartAction(_ action: LastTrainDepartBottomView.Action) {
         switch action {
@@ -274,14 +276,15 @@ extension MainViewController {
         }
     }
     
-    private func handleArrivalViewAction(_ action: LastTrainArrivalBottomView.Action) {
-        switch action {
-        case .exitTapped:
-            showAlarmExitPopup()
-        case .detailRoadMapTapped: viewModel.handleRoute(route: .detailRoute(address: "",
-                                                                             infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: []), context: .afterReigster))
-        }
-    }
+    //    private func handleArrivalViewAction(_ action: LastTrainArrivalBottomView.Action) {
+    //        switch action {
+    //        case .exitTapped:
+    //            showAlarmExitPopup()
+    //        case .detailRoadMapTapped: viewModel.handleRoute(route: .detailRoute(address: "",
+    //                                                                             infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: []),
+    //                                                                             context: .afterReigster))
+    //        }
+    //    }
     
     private func showAlarmExitPopup() {
         let popupVM = AtchaPopupViewModel(info: .alarm)
@@ -293,7 +296,7 @@ extension MainViewController {
         
         popupVC.confirmButton.addAction(UIAction { [weak self, weak popupVC] _ in
             guard let self else { return }
-            popupVC?.dismiss(animated: true)
+            popupVC?.dismiss(animated: false)
             
             self.viewModel.alarmDelete()
             self.exitButtonTapped()
@@ -359,8 +362,8 @@ extension MainViewController {
             .receive(on: RunLoop.main)
             .sink { [weak self] desc in
                 self?.lastTrainDepartView.setupLoaction(location: desc)
-                self?.lastTrainArrivalView.setupLoaction(location: desc)
-                self?.lastTrainRealTimeView.setupLoaction(location: desc)
+                //                self?.lastTrainArrivalView.setupLoaction(location: desc)
+                //                self?.lastTrainRealTimeView.setupLoaction(location: desc)
             }
             .store(in: &cancellables)
     }
@@ -376,10 +379,15 @@ extension MainViewController {
                 switch bottomType {
                 case .departure:
                     self?.lastTrainDepartView.setupLegInfo(info: info)
-                case .realTime:
-                    self?.lastTrainRealTimeView.setupLegInfo(info: info)
-                case .finish:
-                    self?.lastTrainArrivalView.setupLegInfo(info: info)
+                    //                case .detail:
+                    //                    self?.viewModel.handleRoute(route: .detailRoute(address: "",
+                    //                                                                    infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: []),
+                    //                                                                    context: .afterReigster))
+                    //                case .realTime: do {}
+                    //                    self?.lastTrainRealTimeView.setupLegInfo(info: info)
+//                case .finish:
+//                    break
+                    //                    self?.lastTrainArrivalView.setupLegInfo(info: info)
                 default: do {}
                 }
                 
@@ -395,13 +403,13 @@ extension MainViewController {
             }
             .store(in: &cancellables)
         
-        viewModel.$busRealTimeInfo
-            .compactMap { $0 }
-            .receive(on: RunLoop.main)
-            .sink { [weak self] info in
-                self?.lastTrainRealTimeView.setupBusRealTime(realTime: info)
-            }
-            .store(in: &cancellables)
+        //        viewModel.$busRealTimeInfo
+        //            .compactMap { $0 }
+        //            .receive(on: RunLoop.main)
+        //            .sink { [weak self] info in
+        //                self?.lastTrainRealTimeView.setupBusRealTime(realTime: info)
+        //            }
+        //            .store(in: &cancellables)
         
         viewModel.$departureTime
             .compactMap { $0 }
@@ -417,18 +425,20 @@ extension MainViewController {
     }
     
     private func setupBottomType(_ type: MapBottomType?) {
-        lastTrainRealTimeView.isHidden = true
+        //        lastTrainRealTimeView.isHidden = true
         flagImageView.isHidden = true
         lastTrainSearchView.isHidden = true
         lastTrainDepartView.isHidden = true
-        lastTrainArrivalView.isHidden = true
+        //        lastTrainArrivalView.isHidden = true
         
         switch type {
-        case .realTime:
-            lastTrainRealTimeView.isHidden = false
+            //        case .realTime: do {}
+            //            lastTrainRealTimeView.isHidden = false
         case .departure:
             lastTrainDepartView.isHidden = false
             viewModel.startAlarmTimer()
+        case .detail:
+            lastTrainDepartView.isHidden = false
         case .search:
             viewModel.stopAlarmTimer()
             viewModel.stopFinishAlarmTimer()
@@ -436,9 +446,14 @@ extension MainViewController {
             flagImageView.isHidden = false
             mapContainerView.clearMapView()
             updateAtchaImageConstraint(relativeTo: lastTrainSearchView)
-        case .finish:
-            lastTrainArrivalView.isHidden = false
-            viewModel.endAlarmTimer()
+            //        case .detail:
+            //            viewModel.handleRoute(route: .detailRoute(address: "",
+            //                                                      infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: []),
+            //                                                      context: .afterReigster))
+//        case .finish:
+//            lastTrainSearchView.isHidden = false // 원상복구
+            //            lastTrainArrivalView.isHidden = false
+//            viewModel.endAlarmTimer()
         default: do {}
         }
     }

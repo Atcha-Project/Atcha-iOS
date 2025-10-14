@@ -30,22 +30,18 @@ final class DetailRouteInfoBottomView: UIView {
     }
     
     private let routerInfo: [LegTrafficInfo] = []
-    private var snapshot = NSDiffableDataSourceSnapshot<Section, LegTrafficInfo>()
-    private var dataSource: UICollectionViewDiffableDataSource<Section, LegTrafficInfo>!
+    private var snapshot = NSDiffableDataSourceSnapshot<Section, LegTrafficUIInfo>()
+    private var dataSource: UICollectionViewDiffableDataSource<Section, LegTrafficUIInfo>!
     private var collectionView: UICollectionView!
     
     private var panGestureRecognizer: UIPanGestureRecognizer!
     private var currentState: SheetState = .collapsed
     
     private let handleView: UIView = UIView()
-    private let totalTimeLabel: UILabel = UILabel()
-    private let startEndTimeLabel: UILabel = UILabel()
-    private let progressView: DetailRouteProgressView = DetailRouteProgressView()
-    private let dividerView: UIView = UIView()
-    
     private var startAddress: String = ""
-    private var busRealTimeInfo: [BusRealTimeInfo] = []
+    private var busRealTimeInfo: [[RealTimeBusArrival]] = []
     var onBusDetail: ((BusDetailInfo) -> Void)?
+    var getNewBusRealTime: (() -> Void)?
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -65,20 +61,14 @@ final class DetailRouteInfoBottomView: UIView {
         setupDataSource()
     }
     
-    
     private func setupView() {
-        addSubViews(handleView,
-                    totalTimeLabel,
-                    startEndTimeLabel,
-                    progressView,
-                    dividerView)
+        addSubViews(handleView)
         
         backgroundColor = .gray950
         layer.cornerRadius = 20
         layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         
         handleView.backgroundColor = .gray700
-        dividerView.backgroundColor = .opacity100
     }
     
     private func setupAutoLayout() {
@@ -88,50 +78,59 @@ final class DetailRouteInfoBottomView: UIView {
             make.centerX.equalToSuperview()
             make.top.equalToSuperview().offset(12)
         }
-        
-        totalTimeLabel.snp.makeConstraints { make in
-            make.height.equalTo(34)
-            make.horizontalEdges.equalToSuperview().inset(16)
-            make.top.equalTo(handleView.snp.bottom).offset(12)
-        }
-        
-        startEndTimeLabel.snp.makeConstraints { make in
-            make.height.equalTo(16)
-            make.horizontalEdges.equalToSuperview().inset(16)
-            make.top.equalTo(totalTimeLabel.snp.bottom).offset(6)
-        }
-        
-        progressView.snp.makeConstraints { make in
-            make.horizontalEdges.equalToSuperview().inset(16)
-            make.height.equalTo(16)
-            make.top.equalTo(startEndTimeLabel.snp.bottom).offset(16)
-        }
-        
-        dividerView.snp.makeConstraints { make in
-            make.height.equalTo(1)
-            make.horizontalEdges.equalToSuperview()
-            make.top.equalTo(progressView.snp.bottom).offset(16)
-        }
     }
     
     func setupRouteInfo(_ infos: [LegTrafficInfo]) {
-        // TODO: 폰트 변경해야함
-        totalTimeLabel.attributedText = AtchaFont.H1_B_26(infos.first?.totalTime ?? "")
-        startEndTimeLabel.attributedText = AtchaFont.B7_M_13(infos.first?.timeText ?? "", color: .gray400)
-        progressView.configure(infos: infos)
+        snapshot = NSDiffableDataSourceSnapshot<Section, LegTrafficUIInfo>()
         
-        snapshot = NSDiffableDataSourceSnapshot<Section, LegTrafficInfo>()
+        // ✅ 1. Summary Section
+        let summarySection = Section.item(UUID())
+        snapshot.appendSections([summarySection])
+        snapshot.appendItems([
+            LegTrafficUIInfo(type: .summary, info: nil, routeInfos: infos)
+        ], toSection: summarySection)
         
+        // ✅ 2. Start Section (첫 번째 info 사용)
+        if let firstInfo = infos.first {
+            let startSection = Section.item(UUID())
+            snapshot.appendSections([startSection])
+            snapshot.appendItems([
+                LegTrafficUIInfo(type: .start, info: firstInfo)
+            ], toSection: startSection)
+        }
+        
+        // ✅ 3. Transport Sections (각 교통 수단마다 한 섹션)
         for info in infos {
-            let section = Section.item(info.id)
-            snapshot.appendSections([section])
-            snapshot.appendItems([info], toSection: section)
+            let transportSection = Section.item(UUID())
+            snapshot.appendSections([transportSection])
+            
+            let transportType: DetailRouteInfoLayoutType = {
+                switch info.mode {
+                case .walk: return .transport(.walk)
+                case .bus: return .transport(.bus)
+                case .subway: return .transport(.subway)
+                default: return .transport(.unknown)
+                }
+            }()
+            
+            let transportItem = LegTrafficUIInfo(type: transportType, info: info)
+            snapshot.appendItems([transportItem], toSection: transportSection)
+        }
+        
+        // ✅ 4. End Section (마지막 info 사용)
+        if let lastInfo = infos.last {
+            let endSection = Section.item(UUID())
+            snapshot.appendSections([endSection])
+            snapshot.appendItems([
+                LegTrafficUIInfo(type: .end, info: lastInfo)
+            ], toSection: endSection)
         }
         
         applySnapshot()
     }
     
-    func setupBusTimerLabel(_ time: [BusRealTimeInfo]) {
+    // v2
+    func setupBusTimerLabel(_ time: [[RealTimeBusArrival]]) {
         busRealTimeInfo = time
         collectionView.reloadData()
     }
@@ -154,31 +153,23 @@ extension DetailRouteInfoBottomView {
         addSubview(collectionView)
         
         collectionView.snp.makeConstraints {
-            $0.top.equalTo(dividerView.snp.bottom).offset(8)
+            $0.top.equalTo(handleView.snp.bottom).offset(8)
             $0.leading.trailing.bottom.equalToSuperview()
         }
         
         collectionView.alwaysBounceVertical = true
         collectionView.backgroundColor = .gray950
-        collectionView.register(
-            DetailRouteStartCell.self,
-            forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
-            withReuseIdentifier: DetailRouteStartCell.id
-        )
-        
-        collectionView.register(
-            DetailRouteEndCell.self,
-            forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter,
-            withReuseIdentifier: DetailRouteEndCell.id
-        )
-        
-        collectionView.register(DetailRouteWalkCell.self, forCellWithReuseIdentifier: "DetailRouteWalkCell")
-        collectionView.register(DetailRouteBusCell.self, forCellWithReuseIdentifier: "DetailRouteBusCell")
-        collectionView.register(DetailRouteSubwayCell.self, forCellWithReuseIdentifier: "DetailRouteSubwayCell")
+        collectionView.register(DetailRouteStartCell.self, forCellWithReuseIdentifier: DetailRouteStartCell.id)
+        collectionView.register(DetailRouteSummaryCell.self, forCellWithReuseIdentifier: DetailRouteSummaryCell.id)
+        collectionView.register(DetailRouteEndCell.self, forCellWithReuseIdentifier: DetailRouteEndCell.id)
+        collectionView.register(DetailRouteWalkCell.self, forCellWithReuseIdentifier: DetailRouteWalkCell.id)
+        collectionView.register(DetailRouteBusCell.self, forCellWithReuseIdentifier: DetailRouteBusCell.id)
+        collectionView.register(DetailRouteSubwayCell.self, forCellWithReuseIdentifier: DetailRouteSubwayCell.id)
+        collectionView.showsVerticalScrollIndicator = false
     }
     
     private func createLayout() -> UICollectionViewCompositionalLayout {
-        return UICollectionViewCompositionalLayout { [weak self] sectionIndex, _ in
+        return UICollectionViewCompositionalLayout { [weak self] sectionIndex, item in
             guard
                 let self = self,
                 sectionIndex < self.dataSource.snapshot().sectionIdentifiers.count,
@@ -189,32 +180,7 @@ extension DetailRouteInfoBottomView {
                 return self?.defaultSectionLayout()
             }
             
-            let section = self.layout(for: item.mode ?? .bus)
-            var supplementaryItems: [NSCollectionLayoutBoundarySupplementaryItem] = []
-            
-            if sectionIndex == 0 {
-                let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                                        heightDimension: .absolute(38))
-                let header = NSCollectionLayoutBoundarySupplementaryItem(
-                    layoutSize: headerSize,
-                    elementKind: UICollectionView.elementKindSectionHeader,
-                    alignment: .top
-                )
-                supplementaryItems.append(header)
-            }
-            
-            if sectionIndex == self.dataSource.snapshot().sectionIdentifiers.count - 1 {
-                let footerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                                        heightDimension: .absolute(38))
-                let footer = NSCollectionLayoutBoundarySupplementaryItem(
-                    layoutSize: footerSize,
-                    elementKind: UICollectionView.elementKindSectionFooter,
-                    alignment: .bottom
-                )
-                supplementaryItems.append(footer)
-            }
-            
-            section.boundarySupplementaryItems = supplementaryItems
+            let section = self.layout(for: item.type)
             return section
         }
     }
@@ -227,19 +193,20 @@ extension DetailRouteInfoBottomView {
         return section
     }
     
-    private func layout(for type: TransportMode) -> NSCollectionLayoutSection {
+    private func layout(for type: DetailRouteInfoLayoutType) -> NSCollectionLayoutSection {
         let height: CGFloat
         switch type {
-        case .walk:
-            height = 70
-        case .bus:
-            height = 170
-        case .subway:
-            height = 160
-        default:
-            height = 38
+        case .start: height = 58
+        case .summary: height = 120
+        case .transport(let transportMode):
+            switch transportMode {
+            case .walk: height = 74
+            case .bus: height = 175
+            case .subway: height = 154
+            case .unknown: height = 38
+            }
+        case .end: height = 58
         }
-        
         let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
                                               heightDimension: .estimated(height))
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
@@ -247,124 +214,95 @@ extension DetailRouteInfoBottomView {
         let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
                                                heightDimension: .estimated(height))
         let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
-        let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(38))
-        let header = NSCollectionLayoutBoundarySupplementaryItem(
-            layoutSize: headerSize,
-            elementKind: UICollectionView.elementKindSectionHeader,
-            alignment: .top
-        )
-        
-        let footerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(38))
-        let footer = NSCollectionLayoutBoundarySupplementaryItem(
-            layoutSize: footerSize,
-            elementKind: UICollectionView.elementKindSectionFooter,
-            alignment: .bottom
-        )
-        
         let section = NSCollectionLayoutSection(group: group)
-        section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16)
-        section.boundarySupplementaryItems = [header, footer]
         return section
     }
     
-    
     private func setupDataSource() {
-        dataSource = UICollectionViewDiffableDataSource<Section, LegTrafficInfo>(
-            collectionView: collectionView
-        ) { collectionView, indexPath, item in
-            switch item.mode {
-            case .walk:
-                let cell = collectionView.dequeueReusableCell(
-                    withReuseIdentifier: DetailRouteWalkCell.id,
-                    for: indexPath
-                ) as! DetailRouteWalkCell
-                cell.configure(info: item)
+        dataSource = UICollectionViewDiffableDataSource<Section, LegTrafficUIInfo>(collectionView: collectionView) { collectionView, indexPath, item in
+            switch item.type {
+            case .summary:
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: DetailRouteSummaryCell.id, for: indexPath) as! DetailRouteSummaryCell
+                cell.configure(infos: item.routeInfos)
                 return cell
-                
-            case .bus:
-                let cell = collectionView.dequeueReusableCell(
-                    withReuseIdentifier: DetailRouteBusCell.id,
-                    for: indexPath
-                ) as! DetailRouteBusCell
-                cell.didTapSummary = { [weak self] in
-                    self?.applySnapshot()
-                }
-                cell.didTapDetail = { [weak self] in
-                    let stations = (item.passStopList ?? []).map {
-                        PassStations(index: $0.index, stationName: $0.stationName, lat: $0.lat, lon: $0.lon)
+            case .start:
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: DetailRouteStartCell.id, for: indexPath) as! DetailRouteStartCell
+                cell.configure(address: self.startAddress, info: item.info)
+                return cell
+            case .end:
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: DetailRouteEndCell.id, for: indexPath) as! DetailRouteEndCell
+                cell.configure(info: item.info)
+                return cell
+            case .transport(let mode):
+                switch mode {
+                case .walk:
+                    let cell = collectionView.dequeueReusableCell(
+                        withReuseIdentifier: DetailRouteWalkCell.id,
+                        for: indexPath
+                    ) as! DetailRouteWalkCell
+                    cell.configure(info: item.info)
+                    return cell
+                    
+                case .bus:
+                    let cell = collectionView.dequeueReusableCell(
+                        withReuseIdentifier: DetailRouteBusCell.id,
+                        for: indexPath
+                    ) as! DetailRouteBusCell
+                    cell.didTapSummary = { [weak self] in
+                        self?.applySnapshot()
                     }
-                    let first = item.passStopList?.first
-                    let lat = first?.lat.flatMap { Double($0) }
-                    let lon = first?.lon.flatMap { Double($0) }
+                    cell.getNewBusRealTime = { [weak self] in
+                        self?.getNewBusRealTime?()
+                    }
+                    cell.didTapDetail = { [weak self] in
+                        let stations = (item.info?.passStopList ?? []).map {
+                            PassStations(index: $0.index, stationName: $0.stationName, lat: $0.lat, lon: $0.lon)
+                        }
+                        let first = item.info?.passStopList?.first
+                        let lat = first?.lat.flatMap { Double($0) }
+                        let lon = first?.lon.flatMap { Double($0) }
+                        
+                        let start = AddressInfo(
+                            name: first?.stationName,
+                            lat: lat,
+                            lon: lon
+                        )
+                        
+                        let info = BusDetailInfo(
+                            routeName: item.info?.route,
+                            start: start,
+                            passStations: stations,
+                            targetBusStation: item.info?.targetBusStation
+                        )
+                        self?.onBusDetail?(info)
+                    }
+                    cell.configure(info: item.info)
                     
-                    let start = AddressInfo(
-                        name: first?.stationName,
-                        lat: lat,
-                        lon: lon
-                    )
+                    // 이 부분에서 나눠서 값을 넣어줘야 해
                     
-                    let info = BusDetailInfo(
-                        routeName: item.route,
-                        start: start,
-                        passStations: stations,
-                        targetBusStation: item.targetBusStation
-                    )
-                    self?.onBusDetail?(info)
+                    //                    cell.setupBusRealTimeInfo(busInfo: self.busRealTimeInfo)
+                    if let routeName = item.info?.route {
+                        let matchedInfo = self.busRealTimeInfo.first(where: { $0.first?.routeName == routeName }) ?? []
+                        cell.setupBusRealTimeInfo(info: item.info, busInfo: matchedInfo)
+                    }
+
+                    return cell
+                    
+                case .subway:
+                    let cell = collectionView.dequeueReusableCell(
+                        withReuseIdentifier: DetailRouteSubwayCell.id,
+                        for: indexPath
+                    ) as! DetailRouteSubwayCell
+                    cell.didTapSummary = { [weak self] in
+                        self?.applySnapshot()
+                    }
+                    cell.configure(info: item.info)
+                    return cell
+                    
+                default:
+                    return nil
                 }
-                cell.configure(info: item, busInfo: self.busRealTimeInfo)
-                return cell
-                
-            case .subway:
-                let cell = collectionView.dequeueReusableCell(
-                    withReuseIdentifier: DetailRouteSubwayCell.id,
-                    for: indexPath
-                ) as! DetailRouteSubwayCell
-                cell.didTapSummary = { [weak self] in
-                    self?.applySnapshot()
-                }
-                cell.configure(info: item)
-                return cell
-                
-            default:
-                return nil
             }
-        }
-        
-        dataSource.supplementaryViewProvider = { collectionView, kind, indexPath in
-            let sectionIndex = indexPath.section
-            let totalSections = self.dataSource.snapshot().sectionIdentifiers.count
-            if (kind == UICollectionView.elementKindSectionHeader && sectionIndex != 0) ||
-                (kind == UICollectionView.elementKindSectionFooter && sectionIndex != totalSections - 1) {
-                return nil
-            }
-            
-            let section = self.dataSource.snapshot().sectionIdentifiers[sectionIndex]
-            guard let item = self.dataSource.snapshot().itemIdentifiers(inSection: section).first else {
-                return nil
-            }
-            
-            if kind == UICollectionView.elementKindSectionHeader {
-                let headerView = collectionView.dequeueReusableSupplementaryView(
-                    ofKind: kind,
-                    withReuseIdentifier: DetailRouteStartCell.id,
-                    for: indexPath
-                ) as! DetailRouteStartCell
-                
-                headerView.configure(address: self.startAddress, info: item)
-                return headerView
-                
-            } else if kind == UICollectionView.elementKindSectionFooter {
-                let footerView = collectionView.dequeueReusableSupplementaryView(
-                    ofKind: kind,
-                    withReuseIdentifier: DetailRouteEndCell.id,
-                    for: indexPath
-                ) as! DetailRouteEndCell
-                
-                footerView.configure(info: item)
-                return footerView
-            }
-            
-            return nil
         }
     }
 }
@@ -396,7 +334,10 @@ extension DetailRouteInfoBottomView {
             break
         }
     }
-    
+}
+
+// MARK: Animation
+extension DetailRouteInfoBottomView {
     private func animateTransition(shouldExpand: Bool) {
         guard let superview = self.superview else { return }
         

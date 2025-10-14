@@ -19,9 +19,9 @@ struct BusRealTimeInfoResponse: Codable {
 }
 
 struct RealTimeBusArrivalResponse: Codable {
-    let busStatus: String?
+    let busStatus: BusStatus?
     let remainingTime: Int?
-    let busCongestion: String?
+    let busCongestion: BusCongestion?
     let remainingSeats: Int?
     let expectedArrivalTime: String?
     let vehicleId: String?
@@ -57,6 +57,7 @@ extension BusRealTimeInfoResponse {
 }
 
 extension RealTimeBusArrivalResponse {
+    // TODO: 추후에 변경사항 있는지 확인해야함
     func toEntity() -> RealTimeBusArrival? {
         guard
             let busStatus = busStatus,
@@ -70,14 +71,25 @@ extension RealTimeBusArrivalResponse {
             return nil
         }
         
-        return RealTimeBusArrival(
-            busStatus: busStatus,
-            remainingTime: remainingTime,
-            busCongestion: busCongestion,
-            remainingSeats: remainingSeats,
-            expectedArrivalTime: expectedArrivalTime,
-            vehicleId: vehicleId,
-            remainingStations: remainingStations
-        )
+        return RealTimeBusArrival(routeName: "",
+                                  busStatus: busStatus,
+                                  remainingTime: remainingTime,
+                                  remainingStations: remainingStations,
+                                  isLast: nil,
+                                  busCongestion: busCongestion,
+                                  remainingSeats: remainingSeats,
+                                  expectedArrivalTime: expectedArrivalTime,
+                                  vehicleId: vehicleId,
+                                  infoType: nil)
+        
+//        return RealTimeBusArrival(
+//            busStatus: busStatus,
+//            remainingTime: remainingTime,
+//            remainingStations: busCongestion,
+//            isLast: remainingSeats,
+//            busCongestion: expectedArrivalTime,
+//            remainingSeats: vehicleId,
+//            expectedArrivalTime: remainingStations
+//        )
     }
 }
