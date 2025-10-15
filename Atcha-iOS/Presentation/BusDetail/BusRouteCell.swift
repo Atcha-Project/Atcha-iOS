@@ -88,8 +88,6 @@ class BusRouteCell: UICollectionViewCell {
         let baseHeight: CGFloat = isCurrentStationFlag ? 108 : 68
         let yPosition = baseHeight * CGFloat(progress)
         busYConstraint?.update(offset: yPosition + 12)
-        contentView.insertSubview(realTimeBusStack, aboveSubview: routeStack)
-        contentView.bringSubviewToFront(realTimeBusStack)
     }
     
     
@@ -99,6 +97,7 @@ class BusRouteCell: UICollectionViewCell {
     
     // MARK: - 버스 노선 UI
     private func setupUI() {
+        
         stationStack.addArrangedSubview(stationLabel)
         stationStack.addArrangedSubview(stationNumberLabel)
         stationStack.axis = .vertical
@@ -114,7 +113,7 @@ class BusRouteCell: UICollectionViewCell {
         routeStack.addArrangedSubview(routeLineView)
         routeStack.addArrangedSubview(busInfoStack)
         routeStack.axis = .horizontal
-        routeStack.spacing = 10
+        routeStack.spacing = 15
         routeStack.alignment = .center
         
         realTimeBusImageView.image = UIImage.busDefualt20Px
@@ -125,11 +124,15 @@ class BusRouteCell: UICollectionViewCell {
         realTimeBusStack.addArrangedSubview(remainSeatLabel)
         realTimeBusStack.addArrangedSubview(realTimeBusImageView)
         
-        
         contentView.addSubview(routeStack)
         contentView.addSubview(realTimeBusStack)
-        contentView.insertSubview(realTimeBusStack, aboveSubview: routeStack)
-        contentView.bringSubviewToFront(realTimeBusStack)
+        
+        layer.zPosition = 10
+        contentView.clipsToBounds = false
+        routeStack.clipsToBounds = false
+        realTimeBusStack.clipsToBounds = false
+        routeStack.layer.zPosition = 0
+        realTimeBusStack.layer.zPosition = 100
     }
     
     // MARK: - 버스 노선 AutoLayout
@@ -156,10 +159,10 @@ class BusRouteCell: UICollectionViewCell {
         remainInfo: [RealTimeBusArrival],
         bus: [BusPositions],
         isAfterTurnPoint: Bool,
-        isFirstStation: Bool,  
+        isFirstStation: Bool,
         isLastStation: Bool
     ) {
-    
+        
         stationLabel.attributedText = AtchaFont.B6_R_14(lineHeight: 0, station.busStationName ?? "", color: AtchaColor.white)
         stationNumberLabel.attributedText = AtchaFont.B7_M_13(lineHeight: 0, station.busStationNumber ?? "", color: AtchaColor.gray200)
         
@@ -316,7 +319,8 @@ class BusRouteCell: UICollectionViewCell {
            let progress = matchedBus.sectionProgress {
             self.currentBusProgress = progress // 0 ~ 1 값 저장
             realTimeBusStack.isHidden = false
-            
+            realTimeBusStack.layer.zPosition = 100
+            contentView.bringSubviewToFront(realTimeBusStack)
             let combined = NSMutableAttributedString()
             
             if let vehicleNumber = matchedBus.vehicleNumber {
@@ -361,8 +365,6 @@ class BusRouteCell: UICollectionViewCell {
             self.currentBusProgress = nil
             realTimeBusStack.isHidden = true
         }
-        
-        setNeedsLayout()
     }
     
     // MARK: - 버스 노선 Configuration
@@ -499,19 +501,27 @@ class BusRouteCell: UICollectionViewCell {
             }
         }
     }
-}
-
-extension BusRouteCell{
-    static func busRouteLayout() -> NSCollectionLayoutSection {
-        
-        let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .estimated(68))
-        let item = NSCollectionLayoutItem(layoutSize: itemSize)
-        
-        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .estimated(68))
-        let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
-        
-        let section = NSCollectionLayoutSection(group: group)
-        
-        return section
+    
+    func ensureBusOnTop() {
+        guard contentView.subviews.contains(realTimeBusStack) else { return }
+        routeStack.layer.zPosition = 0
+        realTimeBusStack.layer.zPosition = 100
+        layer.zPosition = 10
+        contentView.bringSubviewToFront(realTimeBusStack)
     }
 }
+
+//extension BusRouteCell{
+//    static func busRouteLayout() -> NSCollectionLayoutSection {
+//        
+//        let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .estimated(68))
+//        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+//        
+//        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .estimated(68))
+//        let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
+//        
+//        let section = NSCollectionLayoutSection(group: group)
+//        
+//        return section
+//    }
+//}

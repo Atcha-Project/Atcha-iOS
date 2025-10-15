@@ -57,7 +57,6 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
             switch result {
             case .success(let payload):
                 guard let p = payload else {
-                    SessionController.shared.expireAndRouteToLogin()
                     completion(.doNotRetry)
                     return
                 }

@@ -102,6 +102,8 @@ final class RouteLineView: UIView {
     // MARK: - Bus Route 하나의 Cell UI
     private func setupUI() {
         backgroundColor = .clear
+        clipsToBounds = false
+        self.layer.zPosition = 0
         
         addSubview(topLine)
         addSubview(bottomLine)
