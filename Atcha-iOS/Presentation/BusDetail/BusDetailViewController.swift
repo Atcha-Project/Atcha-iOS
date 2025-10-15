@@ -52,6 +52,15 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         bindActions()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        DispatchQueue.main.async {
+            self.busRouteCollectionView.visibleCells.forEach {
+                ($0 as? BusRouteCell)?.ensureBusOnTop()
+            }
+        }
+    }
+    
     override func viewDidDisappear(_ animated: Bool) {
         refreshButton.stop()
         loadingView.stop()
@@ -136,17 +145,17 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         return dataSource
     }
     
-    // MARK: - BusRoute CollectionView Layout
-    private func layout() -> UICollectionViewCompositionalLayout {
-        UICollectionViewCompositionalLayout{ [weak self] section, _ in
-            switch self?.currentSection[section] {
-            case .busRouteList:
-                return BusRouteCell.busRouteLayout()
-            case .none:
-                return nil
-            }
-        }
-    }
+//    // MARK: - BusRoute CollectionView Layout
+//    private func layout() -> UICollectionViewCompositionalLayout {
+//        UICollectionViewCompositionalLayout{ [weak self] section, _ in
+//            switch self?.currentSection[section] {
+//            case .busRouteList:
+//                return BusRouteCell.busRouteLayout()
+//            case .none:
+//                return nil
+//            }
+//        }
+//    }
     
     // MARK: - BusRoute CollectionView Cell 설정
     private func busRouteCell(_ collectionView: UICollectionView, _ indexPath: IndexPath, _ station: BusRouteStationList) -> UICollectionViewCell {
@@ -206,22 +215,34 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         if let stations = busRoute.busRouteStationList {
             snapshot.appendItems(stations, toSection: .busRouteList)
         }
-        dataSource.apply(snapshot, animatingDifferences: true)
         
-        if !didScrollToCurrentStation,
-           let stations = busRoute.busRouteStationList,
-           let currentStationId = viewModel.busDetailInfo.targetBusStation?.first?.busStationId,
-           let currentIndex = stations.firstIndex(where: { $0.busStationId == currentStationId }) {
+        dataSource.apply(snapshot, animatingDifferences: true) { [weak self] in
+            guard let self = self else { return }
+            self.busRouteCollectionView.collectionViewLayout.invalidateLayout()
             
-            let indexPath = IndexPath(item: currentIndex, section: 0)
+            if !didScrollToCurrentStation,
+               let stations = busRoute.busRouteStationList,
+               let currentStationId = viewModel.busDetailInfo.targetBusStation?.first?.busStationId,
+               let currentIndex = stations.firstIndex(where: { $0.busStationId == currentStationId }) {
+                
+                let indexPath = IndexPath(item: currentIndex, section: 0)
+                
+                busRouteCollectionView.performBatchUpdates(nil) { [weak self] _ in
+                    self?.busRouteCollectionView.scrollToItem(
+                        at: indexPath,
+                        at: .centeredVertically,
+                        animated: false
+                    )
+                    self?.didScrollToCurrentStation = true
+                }
+            }
             
-            busRouteCollectionView.performBatchUpdates(nil) { [weak self] _ in
-                self?.busRouteCollectionView.scrollToItem(
-                    at: indexPath,
-                    at: .centeredVertically,
-                    animated: false
-                )
-                self?.didScrollToCurrentStation = true
+            DispatchQueue.main.async {
+                self.busRouteCollectionView.performBatchUpdates(nil) { _ in
+                    self.busRouteCollectionView.visibleCells.forEach {
+                        ($0 as? BusRouteCell)?.ensureBusOnTop()
+                    }
+                }
             }
         }
     }
@@ -232,6 +253,46 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         loadingView.isHidden = false
         loadingView.startOnce()
         viewModel.refresh()
+    }
+    
+    private func itemAt(_ indexPath: IndexPath) -> BusRouteStationList? {
+        let snap = dataSource.snapshot()
+        let items = snap.itemIdentifiers(inSection: .busRouteList)
+        guard indexPath.item < items.count else { return nil }
+        return items[indexPath.item]
+    }
+
+    private func itemHasRealTimeBus(at indexPath: IndexPath) -> Bool {
+        guard let station = itemAt(indexPath),
+              let order = station.order else { return false }
+        let buses = viewModel.busPositionInfo?.busPositions ?? []
+        // 셀 configure할 때 쓰던 것과 동일한 기준
+        return buses.contains { $0.sectionOrder == order && $0.sectionProgress != nil }
+    }
+    
+    private func layout() -> UICollectionViewCompositionalLayout {
+        UICollectionViewCompositionalLayout { [weak self] section, _ in
+            guard let self = self else { return nil }
+
+            let itemSize  = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .estimated(68))
+            let item      = NSCollectionLayoutItem(layoutSize: itemSize)
+            let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .estimated(68))
+            let group     = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
+            let section   = NSCollectionLayoutSection(group: group)
+
+            section.visibleItemsInvalidationHandler = { [weak self] items, _, _ in
+                guard let self = self else { return }
+                for v in items where v.representedElementCategory == .cell {
+                    // 기본은 0
+                    v.zIndex = 0
+                    // 이 indexPath의 역(Station)에 '실시간 버스'가 있으면 높게
+                    if self.itemHasRealTimeBus(at: v.indexPath) {
+                        v.zIndex = 999
+                    }
+                }
+            }
+            return section
+        }
     }
 }
 
@@ -251,5 +312,11 @@ extension BusDetailViewController: UICollectionViewDelegate {
         }) ?? false
         return CGSize(width: collectionView.bounds.width,
                       height: isCurrent ? 108 : 68)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView,
+                        willDisplay cell: UICollectionViewCell,
+                        forItemAt indexPath: IndexPath) {
+        (cell as? BusRouteCell)?.ensureBusOnTop()
     }
 }
