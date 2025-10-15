@@ -169,7 +169,7 @@ final class CourseRepositoryImpl: CourseRepository {
             let (data, response) = try await URLSession.shared.data(for: request)
             guard let http = response as? HTTPURLResponse else {
                 print("reissue: HTTPURLResponse 아님")
-                SessionController.shared.expireAndRouteToLogin()
+//                SessionController.shared.expireAndRouteToLogin()
                 return nil
             }
             
@@ -187,19 +187,19 @@ final class CourseRepositoryImpl: CourseRepository {
                 let decoded = try decoder.decode(APIResponse<RefreshTokenResponse>.self, from: data)
                 guard let result = decoded.result else {
                     print("reissue: result nil (responseCode=\(decoded.responseCode))")
-                    SessionController.shared.expireAndRouteToLogin()
+//                    SessionController.shared.expireAndRouteToLogin()
                     return nil
                 }
                 return (accessToken: result.accessToken, refreshToken: result.refreshToken)
             } catch {
                 print("reissue 디코딩 실패:", error)
-                SessionController.shared.expireAndRouteToLogin()
+//                SessionController.shared.expireAndRouteToLogin()
                 return nil
             }
             
         } catch {
             print("reissue 네트워크 오류:", error)
-            SessionController.shared.expireAndRouteToLogin()
+//            SessionController.shared.expireAndRouteToLogin()
             return nil
         }
     }
