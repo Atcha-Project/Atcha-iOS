@@ -23,6 +23,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         FirebaseApp.configure()
         Messaging.messaging().delegate = self
         application.registerForRemoteNotifications()
+        
+        AmplitudeManager.shared.start(
+            environment: .auto,
+            autocapture: .sessions,
+            logLevel: .WARN
+        )
+        
         return true
     }
     
