@@ -270,10 +270,18 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         
         let isAlarmRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
         
-        if shouldShowPopup {
-            showCoursePopup()
+        if isAlarmRegistered {
+            if shouldShowPopup {
+                showCoursePopup()
+            } else {
+                showRe_RegisterPopup()
+            }
         } else {
-            viewModel.getAlarmTapped?(viewModel.address, viewModel.infos)
+            if shouldShowPopup {
+                showCoursePopup()
+            } else {
+                viewModel.getAlarmTapped?(viewModel.address, viewModel.infos)
+            }
         }
     }
     

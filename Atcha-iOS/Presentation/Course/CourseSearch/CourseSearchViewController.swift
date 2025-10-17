@@ -241,33 +241,41 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
 
             let isAlarmRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
             
-            if shouldShowPopup {
-                showCoursePopup(alarmRequest, alarmTapped, r)
+            if isAlarmRegistered {
+                if shouldShowPopup {
+                    showCoursePopup(alarmRequest, alarmTapped, r)
+                } else {
+                    showCoursePopup(alarmRequest, alarmTapped, r)
+                }
             } else {
-                viewModel.alarmRegister(alarmRequest)
-                viewModel.getAlarmTapped?(alarmTapped.0, alarmTapped.1)
-                
-                let second = AmplitudeManager.shared.timerEndSeconds("notification_registration_duration")
-                
-                AmplitudeManager.shared.track(
-                    AmplitudeEvent.notification_registration_duration.rawValue,
-                    [
-                        "screen_name": "coursesearch",
-                        "duration": second
-                    ]
-                )
-                
-                AmplitudeManager.shared.track(
-                    AmplitudeEvent.alarm_registered.rawValue,
-                    [
-                        "later_departure_time_rank": r.laterDepartureTimeRank,
-                        "minimal_walk_rank":        r.minimalWalkRank,
-                        "minimal_total_time_rank":  r.minimalTotalTimeRank,
-                        "transfer_count":           r.transferCount
-                    ]
-                )
-                
-                navigationController?.popToRootViewController(animated: true)
+                if shouldShowPopup {
+                    showCoursePopup(alarmRequest, alarmTapped, r)
+                } else {
+                    viewModel.alarmRegister(alarmRequest)
+                    viewModel.getAlarmTapped?(alarmTapped.0, alarmTapped.1)
+                    
+                    let second = AmplitudeManager.shared.timerEndSeconds("notification_registration_duration")
+                    
+                    AmplitudeManager.shared.track(
+                        AmplitudeEvent.notification_registration_duration.rawValue,
+                        [
+                            "screen_name": "coursesearch",
+                            "duration": second
+                        ]
+                    )
+                    
+                    AmplitudeManager.shared.track(
+                        AmplitudeEvent.alarm_registered.rawValue,
+                        [
+                            "later_departure_time_rank": r.laterDepartureTimeRank,
+                            "minimal_walk_rank":        r.minimalWalkRank,
+                            "minimal_total_time_rank":  r.minimalTotalTimeRank,
+                            "transfer_count":           r.transferCount
+                        ]
+                    )
+                    
+                    navigationController?.popToRootViewController(animated: true)
+                }
             }
         }
         

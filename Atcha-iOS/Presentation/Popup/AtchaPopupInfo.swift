@@ -31,7 +31,7 @@ enum AtcahPopuInfo {
         case .logout: return "로그아웃"
         case .withdraw: return "탈퇴하기"
         case .alarm: return "종료하기"
-        case .re_register: return "종료하기"
+        case .re_register: return "변경하기"
         case .course: return "알람 받기"
         case .announeExit: return "확인"
         }
