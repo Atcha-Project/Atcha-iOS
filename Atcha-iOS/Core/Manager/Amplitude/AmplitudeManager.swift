@@ -19,6 +19,8 @@ final class AmplitudeManager {
     
     private(set) var environment: Environment = .dev
     
+    private var timers: [String: Date] = [:]
+    
     // MARK: Public API
     
     func start(environment: Environment = .auto,
@@ -42,6 +44,8 @@ final class AmplitudeManager {
         queue.sync {
             self.client = Amplitude(configuration: config)
         }
+        
+        print("[Amplitude] Initialized env=\(resolvedEnv.rawValue)")
     }
     
     func track(_ event: String, _ properties: [String: Any?] = [:]) {
@@ -143,5 +147,21 @@ extension UIViewController {
     func amp_trackScreen(_ name: String? = nil, extra: [String: Any?] = [:]) {
         let screen = name ?? String(describing: type(of: self))
         AmplitudeManager.shared.trackScreen(screen, extra)
+    }
+}
+
+extension AmplitudeManager {
+    /// 타이머 시작
+    func timerStart(_ key: String) {
+        queue.async { [weak self] in self?.timers[key] = Date() }
+    }
+
+    /// 타이머 종료(초 단위 반환). 없으면 0
+    @discardableResult
+    func timerEndSeconds(_ key: String) -> Int {
+        var start: Date?
+        queue.sync { start = timers.removeValue(forKey: key) }
+        guard let s = start else { return 0 }
+        return Int(Date().timeIntervalSince(s).rounded())
     }
 }

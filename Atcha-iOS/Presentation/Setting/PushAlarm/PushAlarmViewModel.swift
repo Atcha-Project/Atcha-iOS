@@ -68,6 +68,9 @@ final class PushAlarmViewModel: BaseViewModel {
                 if let lat = response.lat, let lon = response.lon {
                     UserDefaultsWrapper.shared.set(lat, forKey: UserDefaultsWrapper.Key.homeLat.rawValue)
                     UserDefaultsWrapper.shared.set(lon, forKey: UserDefaultsWrapper.Key.homeLon.rawValue)
+                    
+                    AmplitudeManager.shared.track(AmplitudeEvent.onboarding_complete.rawValue)
+                    
                     print("✅ 회원가입 lat/lon 저장 완료: \(lat), \(lon)")
                 } else {
                     print("⚠️ 회원가입 응답에 lat/lon 없음")

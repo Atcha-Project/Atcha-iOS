@@ -268,6 +268,8 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         
         let shouldShowPopup = hasLongWaitBus && !isException
         
+        let isAlarmRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
+        
         if shouldShowPopup {
             showCoursePopup()
         } else {
@@ -317,6 +319,26 @@ extension DetailRouteViewController {
 extension DetailRouteViewController {
     private func showCoursePopup() {
         let popupVM = AtchaPopupViewModel(info: .course)
+        let popupVC = AtchaPopupViewController(viewModel: popupVM)
+        
+        popupVC.confirmButton.addAction(UIAction { [weak popupVC] _ in
+            popupVC?.dismiss(animated: false)
+            
+            self.viewModel.getAlarmTapped?(self.viewModel.address, self.viewModel.infos)
+        }, for: .touchUpInside)
+        
+        popupVC.cancelButton.addAction(UIAction { [weak self, weak popupVC] _ in
+            guard let _ = self else { return }
+            popupVC?.dismiss(animated: false)
+            
+        }, for: .touchUpInside)
+        
+        popupVC.modalPresentationStyle = .overFullScreen
+        present(popupVC, animated: false)
+    }
+    
+    private func showRe_RegisterPopup() {
+        let popupVM = AtchaPopupViewModel(info: .re_register)
         let popupVC = AtchaPopupViewController(viewModel: popupVM)
         
         popupVC.confirmButton.addAction(UIAction { [weak popupVC] _ in

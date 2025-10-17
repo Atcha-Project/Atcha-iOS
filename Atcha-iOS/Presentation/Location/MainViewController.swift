@@ -38,6 +38,16 @@ final class MainViewController: BaseViewController<MainViewModel>,
     
     private var firstAddress: String?
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        let isAlarmRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
+        
+        if !isAlarmRegistered {
+            AmplitudeManager.shared.timerStart("notification_registration_duration")
+        }
+        
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -317,6 +327,7 @@ extension MainViewController {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
             guard let self else { return }
             view.showToast(message: "알람이 종료되었어요")
+            UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue)
         }
     }
     
@@ -385,8 +396,8 @@ extension MainViewController {
                     //                                                                    context: .afterReigster))
                     //                case .realTime: do {}
                     //                    self?.lastTrainRealTimeView.setupLegInfo(info: info)
-//                case .finish:
-//                    break
+                    //                case .finish:
+                    //                    break
                     //                    self?.lastTrainArrivalView.setupLegInfo(info: info)
                 default: do {}
                 }
@@ -450,10 +461,10 @@ extension MainViewController {
             //            viewModel.handleRoute(route: .detailRoute(address: "",
             //                                                      infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: []),
             //                                                      context: .afterReigster))
-//        case .finish:
-//            lastTrainSearchView.isHidden = false // 원상복구
+            //        case .finish:
+            //            lastTrainSearchView.isHidden = false // 원상복구
             //            lastTrainArrivalView.isHidden = false
-//            viewModel.endAlarmTimer()
+            //            viewModel.endAlarmTimer()
         default: do {}
         }
     }

@@ -220,6 +220,9 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
         
         cell.onGetAlarmTapped = { [weak self] in
             guard let self else { return }
+            let course = model.course
+            let r = self.viewModel.ranks(for: course)
+            
             let pathInfo: [LegPathInfo] = model.course.toLegPathInfos()
             let trafficInfo: [LegTrafficInfo] = model.course.toLegTrafficInfos()
             let busInfo: [BusDetailInfo] = model.course.toBusInfos()
@@ -236,11 +239,37 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
 
             let shouldShowPopup = hasLongWaitBus && !isException
 
+            let isAlarmRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
+            
             if shouldShowPopup {
-                showCoursePopup(alarmRequest, alarmTapped)
+                showCoursePopup(alarmRequest, alarmTapped, r)
             } else {
                 viewModel.alarmRegister(alarmRequest)
                 viewModel.getAlarmTapped?(alarmTapped.0, alarmTapped.1)
+                
+                let second = AmplitudeManager.shared.timerEndSeconds("notification_registration_duration")
+                let userID = UserDefaultsWrapper.shared.double(forKey: UserDefaultsWrapper.Key.userId.rawValue) ?? 0.0
+                
+                AmplitudeManager.shared.track(
+                    AmplitudeEvent.notification_registration_duration.rawValue ,
+                    [
+                        "screen_name": "coursesearch",
+                        "duration": second,
+                        "USER_ID": String(userID),
+                    ]
+                )
+                
+                AmplitudeManager.shared.track(
+                    AmplitudeEvent.alarm_registered.rawValue,
+                    [
+                        "later_departure_time_rank": r.laterDepartureTimeRank,
+                        "minimal_walk_rank":        r.minimalWalkRank,
+                        "minimal_total_time_rank":  r.minimalTotalTimeRank,
+                        "transfer_count":           r.transferCount
+                    ]
+                )
+                
+                print(r)
                 navigationController?.popToRootViewController(animated: true)
             }
         }
@@ -325,8 +354,53 @@ extension CourseSearchViewController: UICollectionViewDelegate, UICollectionView
 
 extension CourseSearchViewController {
     
-    private func showCoursePopup(_ alarmRequest: AlarmRequest, _ alarmTapped: (String, LegInfo)) {
+    private func showCoursePopup(_ alarmRequest: AlarmRequest, _ alarmTapped: (String, LegInfo), _ rank: RouteRanks) {
         let popupVM = AtchaPopupViewModel(info: .course)
+        let popupVC = AtchaPopupViewController(viewModel: popupVM)
+        
+        popupVC.confirmButton.addAction(UIAction { [weak popupVC] _ in
+            popupVC?.dismiss(animated: true)
+            
+            self.viewModel.alarmRegister(alarmRequest)
+            self.viewModel.getAlarmTapped?(alarmTapped.0, alarmTapped.1)
+            
+            let second = AmplitudeManager.shared.timerEndSeconds("notification_registration_duration")
+            let userID = UserDefaultsWrapper.shared.double(forKey: UserDefaultsWrapper.Key.userId.rawValue) ?? 0.0
+            
+            AmplitudeManager.shared.track(
+                AmplitudeEvent.notification_registration_duration.rawValue ,
+                [
+                    "screen_name": "coursesearch",
+                    "duration": second
+                ]
+            )
+            
+            AmplitudeManager.shared.track(
+                AmplitudeEvent.alarm_registered.rawValue,
+                [
+                    "later_departure_time_rank": rank.laterDepartureTimeRank,
+                    "minimal_walk_rank":        rank.minimalWalkRank,
+                    "minimal_total_time_rank":  rank.minimalTotalTimeRank,
+                    "transfer_count":           rank.transferCount
+                ]
+            )
+            
+            self.navigationController?.popToRootViewController(animated: true)
+            
+        }, for: .touchUpInside)
+        
+        popupVC.cancelButton.addAction(UIAction { [weak self, weak popupVC] _ in
+            guard let _ = self else { return }
+            popupVC?.dismiss(animated: false)
+            
+        }, for: .touchUpInside)
+        
+        popupVC.modalPresentationStyle = .overFullScreen
+        present(popupVC, animated: false)
+    }
+    
+    private func showRe_RegisterPopup(_ alarmRequest: AlarmRequest, _ alarmTapped: (String, LegInfo)) {
+        let popupVM = AtchaPopupViewModel(info: .re_register)
         let popupVC = AtchaPopupViewController(viewModel: popupVM)
         
         popupVC.confirmButton.addAction(UIAction { [weak popupVC] _ in

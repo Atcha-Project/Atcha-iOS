@@ -19,6 +19,7 @@ final class WithdrawViewModel: BaseViewModel {
         Task {
             do {
                 let _ = try await signOutUseCase.excute(request)
+                
                 AppDIContainer.shared.tokenStorage.clearAllTokens()
                 UserDefaultsWrapper.shared.removeAll()
                 AppDIContainer.shared.locationStateHolder.clear()

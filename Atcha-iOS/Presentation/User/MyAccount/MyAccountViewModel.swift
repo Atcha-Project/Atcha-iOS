@@ -21,6 +21,7 @@ final class MyAccountViewModel: BaseViewModel {
         Task {
             do {
                 let _ = try await logoutUseCase.excute()
+                
                 AppDIContainer.shared.tokenStorage.clearAccessToken()
                 AppDIContainer.shared.tokenStorage.clearRefreshToken()
                 UserDefaultsWrapper.shared.removeAll()

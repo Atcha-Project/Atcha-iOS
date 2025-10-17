@@ -66,6 +66,9 @@ extension LoginViewModel {
                     UserDefaultsWrapper.shared.set(lon, forKey: UserDefaultsWrapper.Key.homeLon.rawValue)
                 }
                 
+                UserDefaultsWrapper.shared.set(response.id, forKey: UserDefaultsWrapper.Key.userId
+                    .rawValue)
+                
                 print("로그인 완료")
             } catch {
                 print("로그인 실패: \(error.localizedDescription)")

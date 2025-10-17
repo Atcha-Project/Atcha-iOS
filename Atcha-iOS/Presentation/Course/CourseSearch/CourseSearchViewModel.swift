@@ -26,6 +26,13 @@ struct CourseUIModel: Hashable {
     }
 }
 
+struct RouteRanks {
+    let laterDepartureTimeRank: Int      // 출발이 얼마나 늦은지 (늦을수록 1위)
+    let minimalWalkRank: Int             // 도보가 얼마나 적은지 (적을수록 1위)
+    let minimalTotalTimeRank: Int        // 총 소요시간이 얼마나 짧은지 (짧을수록 1위)
+    let transferCount: Int               // 환승 횟수
+}
+
 final class CourseSearchViewModel: BaseViewModel {
     @Published var courses: [CourseUIModel] = []
     private var allCourses: [CourseUIModel] = []
@@ -261,5 +268,62 @@ final class CourseSearchViewModel: BaseViewModel {
         let hour = cal.component(.hour, from: Date())
         // 00:00 <= now < 05:00
         return hour >= 0 && hour < 5
+    }
+}
+
+extension CourseSearchViewModel {
+
+    // 걷는 시간 측정
+    private func walkMetric(of course: Course) -> Int {
+        let walks = course.totalWalkTime ?? 0
+        return walks
+    }
+
+    private func departureDate(of course: Course) -> Date {
+        (course.departureDateTime.flatMap { parseServerDate($0) }) ?? .distantPast
+    }
+
+    private func totalTime(of course: Course) -> Int {
+        course.totalTime ?? Int.max
+    }
+
+    private func transferCount(of course: Course) -> Int {
+        let count = course.legs.filter { $0.mode == .bus || $0.mode == .subway }.count
+        return max(0, count - 1)
+    }
+
+    private func rankIndex<T: Comparable>(
+        value: T,
+        in values: [T],
+        order: SortOrder 
+    ) -> Int {
+        let sorted = (order == .forward) ? values.sorted() : values.sorted(by: >)
+        // 동점일 때는 “가장 좋은 순위”로
+        guard let firstIdx = sorted.firstIndex(of: value) else { return values.count }
+        return firstIdx + 1
+    }
+
+    enum SortOrder { case forward, reverse }
+
+    // 외부에서 호출: 선택된 코스의 순위 계산
+    func ranks(for selected: Course) -> RouteRanks {
+        // 현재 탭 정렬과 무관하게 “전체 후보(allCourses)” 기준으로 순위 산정
+        let courses = allCourses.map { $0.course }
+
+        let depValues   = courses.map { departureDate(of: $0) }   // 늦을수록 1위 ⇒ 내림차순
+        let walkValues  = courses.map { walkMetric(of: $0) }       // 적을수록 1위 ⇒ 오름차순
+        let timeValues  = courses.map { totalTime(of: $0) }        // 짧을수록 1위 ⇒ 오름차순
+
+        let laterDepRank  = rankIndex(value: departureDate(of: selected), in: depValues,  order: .reverse)
+        let minWalkRank   = rankIndex(value: walkMetric(of: selected),   in: walkValues, order: .forward)
+        let minTimeRank   = rankIndex(value: totalTime(of: selected),    in: timeValues, order: .forward)
+        let transfers     = transferCount(of: selected)
+
+        return RouteRanks(
+            laterDepartureTimeRank: laterDepRank,
+            minimalWalkRank:        minWalkRank,
+            minimalTotalTimeRank:   minTimeRank,
+            transferCount:          transfers
+        )
     }
 }

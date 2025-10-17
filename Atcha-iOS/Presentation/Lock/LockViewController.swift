@@ -133,6 +133,8 @@ final class LockViewController: BaseViewController<LockViewModel> {
         let legInfo = wrapper.object(forKey: UserDefaultsWrapper.Key.legInfo.rawValue, of: LegInfo.self)
         let addressDesc = wrapper.string(forKey: UserDefaultsWrapper.Key.addressDesc.rawValue) ?? ""
         viewModel.routerHandler?(.lockScreen(info: legInfo, address: addressDesc))
+        
+        AmplitudeManager.shared.track(AmplitudeEvent.lock_button.rawValue)
     }
     
     @objc private func detailRouteTapped() {
@@ -144,5 +146,7 @@ final class LockViewController: BaseViewController<LockViewModel> {
         let address = wrapper.string(forKey: UserDefaultsWrapper.Key.startAddress.rawValue) ?? ""
         
         viewModel.routerHandler?(.courseSearch(startLat: lat, startLon: lon, startAddress: address))
+        
+        AmplitudeManager.shared.track(AmplitudeEvent.lock_button.rawValue)
     }
 }
