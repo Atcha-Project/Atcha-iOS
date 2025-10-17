@@ -248,14 +248,14 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
                 viewModel.getAlarmTapped?(alarmTapped.0, alarmTapped.1)
                 
                 let second = AmplitudeManager.shared.timerEndSeconds("notification_registration_duration")
-                let userID = UserDefaultsWrapper.shared.double(forKey: UserDefaultsWrapper.Key.userId.rawValue) ?? 0.0
+                let userID = UserDefaultsWrapper.shared.integer(forKey: UserDefaultsWrapper.Key.userId.rawValue)
+                print("userID: \(userID)")
                 
                 AmplitudeManager.shared.track(
                     AmplitudeEvent.notification_registration_duration.rawValue ,
                     [
                         "screen_name": "coursesearch",
-                        "duration": second,
-                        "USER_ID": String(userID),
+                        "duration": second
                     ]
                 )
                 
@@ -365,8 +365,8 @@ extension CourseSearchViewController {
             self.viewModel.getAlarmTapped?(alarmTapped.0, alarmTapped.1)
             
             let second = AmplitudeManager.shared.timerEndSeconds("notification_registration_duration")
-            let userID = UserDefaultsWrapper.shared.double(forKey: UserDefaultsWrapper.Key.userId.rawValue) ?? 0.0
-            
+            let userID = UserDefaultsWrapper.shared.integer(forKey: UserDefaultsWrapper.Key.userId.rawValue)
+
             AmplitudeManager.shared.track(
                 AmplitudeEvent.notification_registration_duration.rawValue ,
                 [
