@@ -15,7 +15,7 @@ enum AmplitudeEvent: String {
     case onboarding_location_permission_settings_clicked = "onboarding_location_permission_settings_clicked" /// 위치 권한 설정하기 클릭 수
     case onboarding_location_permission_clicked = "onboarding_location_permission_clicked" /// 위치 권한 허용 여부 클릭 수
     
-    case home_register_location_permission_clicked = "homeregister_location_permission_clicked" /// 집등록 > 위치 접근 모달 > 허용하기 버튼 클릭 수
+    case home_register_permission_clicked = "homeregister_permission_clicked" /// 집등록 > 위치 접근 모달 > 허용하기 버튼 클릭 수
     case home_register_complete_clicked = "homeregister_complete_clicked" /// 알람 설정 > 알람 권한 모달 허용하기 버튼 클릭 수
     
     case alarmsetting_alarm_permission_clicked = "alarmsetting_alarm_permission_clicked" /// 알람 설정 > 알람 허용 모달 > 허용하기 버튼 클릭 수
@@ -38,9 +38,11 @@ enum AmplitudeEvent: String {
     case home_destination_clicked = "home_destination_clicked" /// 도착지 영역 클릭 수
     case home_departure_time_clicked = "home_departure_time_clicked" /// 출발시간 영역 클릭 수
     case home_route_clicked = "home_route_clicked" /// 출발지 -> 도착지 영역 클릭 수
+    case home_coursesearch_entered = "home_coursesearch_entered" ///홈 → 경로검색 진입 방식 비교
     
     case character_clicked_before_alarm = "character_clicked_before_alarm" /// 알람 등록 전, 캐릭터 클릭 수
     case character_clicked_after_alarm = "character_clicked_after_alarm" /// 알람 등록 후, 캐릭터 클릭 수
+
     
     
     // MARK: - 알람 관련

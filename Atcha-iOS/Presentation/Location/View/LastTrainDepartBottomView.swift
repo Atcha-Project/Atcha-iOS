@@ -79,7 +79,7 @@ final class LastTrainDepartBottomView: UIView {
         reloadImageView.contentMode = .scaleAspectFit
         reloadImageView.tintColor = .white
         reloadImageView.setContentHuggingPriority(.required, for: .horizontal)
-        
+
         hourTimeLabel.attributedText = AtchaFont.D2_EB_48("--", color: .white)
         minuteTimeLabel.attributedText = AtchaFont.D2_EB_48("--", color: .white)
         hourLabel.attributedText = AtchaFont.B1_R_17("시", color: .white)
@@ -167,6 +167,8 @@ final class LastTrainDepartBottomView: UIView {
         hourTimeLabel.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleTimeTapped)))
         locationLabel.isUserInteractionEnabled = true
         locationLabel.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleLocationTapped)))
+        titleView.isUserInteractionEnabled = true
+        titleView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleDepartTimeTap)))
     }
     
     func setupLoaction(location: String?) {
@@ -225,6 +227,15 @@ extension LastTrainDepartBottomView {
     
     @objc private func handleLocationTapped() {
         actionPublisher.send(.locationTapped)
+    }
+    
+    @objc private func handleDepartTimeTap() {
+        AmplitudeManager.shared.track(
+            AmplitudeEvent.home_departure_time_clicked.rawValue,
+            [
+                "clicked": 1
+            ]
+        )
     }
 }
 

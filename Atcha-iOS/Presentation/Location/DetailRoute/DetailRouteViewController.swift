@@ -281,6 +281,7 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
                 showCoursePopup()
             } else {
                 viewModel.getAlarmTapped?(viewModel.address, viewModel.infos)
+                amplitudeActions()
             }
         }
     }
@@ -310,7 +311,7 @@ extension DetailRouteViewController {
     func mapView(_ mapView: TMapWrapper, didUpdateLocation coordinate: CLLocationCoordinate2D) {}
     
     func mapView(_ mapView: TMapWrapper, didSelectLocation coordinate: CLLocationCoordinate2D) {}
-    
+
     func didFinishLoadingMap(_ mapView: TMapWrapper) {
         viewModel.$legtPathInfo
             .filter { !$0.isEmpty }
@@ -333,6 +334,7 @@ extension DetailRouteViewController {
             popupVC?.dismiss(animated: false)
             
             self.viewModel.getAlarmTapped?(self.viewModel.address, self.viewModel.infos)
+            self.amplitudeActions()
         }, for: .touchUpInside)
         
         popupVC.cancelButton.addAction(UIAction { [weak self, weak popupVC] _ in
@@ -353,6 +355,14 @@ extension DetailRouteViewController {
             popupVC?.dismiss(animated: false)
             
             self.viewModel.getAlarmTapped?(self.viewModel.address, self.viewModel.infos)
+            self.amplitudeActions()
+            AmplitudeManager.shared.track(
+                AmplitudeEvent.alert_end_popup_2.rawValue,
+                [
+                    "screen_name": "itinerary",
+                    "clicked": 1
+                ]
+            )
         }, for: .touchUpInside)
         
         popupVC.cancelButton.addAction(UIAction { [weak self, weak popupVC] _ in
@@ -364,4 +374,24 @@ extension DetailRouteViewController {
         popupVC.modalPresentationStyle = .overFullScreen
         present(popupVC, animated: false)
     }
+    
+    private func amplitudeActions() {
+        let second = AmplitudeManager.shared.timerEndSeconds("notification_registration_duration")
+
+        AmplitudeManager.shared.track(
+            AmplitudeEvent.notification_registration_duration.rawValue ,
+            [
+                "duration": second
+            ]
+        )
+        
+        AmplitudeManager.shared.track(
+            AmplitudeEvent.alert_button.rawValue,
+            [
+                "screen_name": "itinerary",
+                "clicked": 1
+            ]
+        )
+    }
+
 }

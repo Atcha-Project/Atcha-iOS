@@ -38,6 +38,11 @@ final class MainViewController: BaseViewController<MainViewModel>,
     
     private var firstAddress: String?
     
+    // 홈 화면 상호작용 추적용 플래그
+    private var didTouchMap: Int = 0          // 지도 드래그/선택 여부
+    private var didTapCurrentLocation: Int = 0// ‘현위치’ 버튼 사용 여부
+    private var didUseTextInput: Int = 0
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         let isAlarmRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
@@ -94,6 +99,8 @@ final class MainViewController: BaseViewController<MainViewModel>,
                         action: #selector(didTapLocationButton))
         flagImageView.image = UIImage.settingLocationMark
         atchaImageView.image = UIImage.atcha
+        atchaImageView.isUserInteractionEnabled = true
+        atchaImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleBallonTap)))
         ballonView.setupTitle(bottomMessage: "지도를 움직여 출발지를 설정해 봐요.")
     }
     
@@ -223,6 +230,7 @@ extension MainViewController {
         case .currentTapped:
             viewModel.handleRoute(route: .changeCourse(
                 location: Location(name: "", lat: 0.0, lon: 0.0, businessCategory: "", address: "", radius: "")))
+            didUseTextInput += 1
         case .searchTapped:
             
             guard let startCoord = viewModel.currentLocation else {
@@ -248,6 +256,31 @@ extension MainViewController {
             viewModel.handleRoute(route: .courseSearch(
                 startLat: "", startLon: "", startAddress: ""
             ))
+            
+            if didTouchMap - 2 == 0 && didTapCurrentLocation == 0 && didUseTextInput == 0 {
+                AmplitudeManager.shared.track(
+                    AmplitudeEvent.home_coursesearch_entered.rawValue,
+                    [
+                        "entered_direct": 1,
+                        "entered_with_map_drag": 0,
+                        "entered_with_current_location": 0,
+                        "entered_with_input": 0
+                        
+                    ]
+                )
+            } else {
+                AmplitudeManager.shared.track(
+                    AmplitudeEvent.home_coursesearch_entered.rawValue,
+                    [
+                        "entered_direct": 0,
+                        "entered_with_map_drag": didTouchMap - 1,
+                        "entered_with_current_location": didTapCurrentLocation,
+                        "entered_with_input": didUseTextInput
+                        
+                    ]
+                )
+            }
+            
         }
     }
     
@@ -271,13 +304,32 @@ extension MainViewController {
         switch action {
         case .exitTapped:
             showAlarmExitPopup()
+            AmplitudeManager.shared.track(
+                AmplitudeEvent.alert_end_popup_1.rawValue,
+                [
+                    "clicked": 1
+                ]
+            )
+            
         case .detailRoadMapTapped:
             viewModel.handleRoute(route: .detailRoute(address: "",
                                                       infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: []),
                                                       context: .afterReigster)
             )
+            AmplitudeManager.shared.track(
+                AmplitudeEvent.home_itinerary_clicked.rawValue,
+                [
+                    "clicked": 1
+                ]
+            )
         case .locationTapped:
             ballonView.setupTitle(bottomMessage: "위치를 변경하려면 알람을 종료해야 해요")
+            AmplitudeManager.shared.track(
+                AmplitudeEvent.home_route_clicked.rawValue,
+                [
+                    "clicked": 1
+                ]
+            )
         case .reloadTapped:
             viewModel.refreshDepatrueTime()
         case .timeTapped:
@@ -350,6 +402,7 @@ extension MainViewController {
         
         let title = (address == firstAddress) ? "현위치: \(address)" : address
         lastTrainSearchView.setupCurrentLocationTitle(title)
+        didTouchMap += 1
     }
     
     private func bindCurrentLocationUpdates() {
@@ -621,6 +674,28 @@ extension MainViewController {
     
     @objc private func didTapLocationButton() {
         viewModel.setupLocation()
+        
+        didTapCurrentLocation += 1
+    }
+    
+    @objc private func handleBallonTap() {
+        let isAlarmRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
+        
+        if isAlarmRegistered {
+            AmplitudeManager.shared.track(
+                AmplitudeEvent.character_clicked_after_alarm.rawValue,
+                [
+                    "clicked": 1
+                ]
+            )
+        } else {
+            AmplitudeManager.shared.track(
+                AmplitudeEvent.character_clicked_before_alarm.rawValue,
+                [
+                    "clicked": 1
+                ]
+            )
+        }
     }
 }
 

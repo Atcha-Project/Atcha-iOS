@@ -59,7 +59,7 @@ final class AmplitudeManager {
             client.setUserId(userId: "USER_ID: \(id)")
         }
     }
-
+    
     
     func track(_ event: String, _ properties: [String: Any?] = [:]) {
         queue.async { [weak self] in
@@ -168,7 +168,7 @@ extension AmplitudeManager {
     func timerStart(_ key: String) {
         queue.async { [weak self] in self?.timers[key] = Date() }
     }
-
+    
     /// 타이머 종료(초 단위 반환). 없으면 0
     @discardableResult
     func timerEndSeconds(_ key: String) -> Int {
@@ -176,5 +176,15 @@ extension AmplitudeManager {
         queue.sync { start = timers.removeValue(forKey: key) }
         guard let s = start else { return 0 }
         return Int(Date().timeIntervalSince(s).rounded())
+    }
+    
+    /// 사용자 프로퍼티 값을 누적(+)
+    func incrementUserProperty(_ key: String, by value: Double = 1) {
+        queue.async { [weak self] in
+            guard let self, let client = self.client else { return }
+            let identify = Identify()
+            identify.add(property: key, value: value)
+            client.identify(identify: identify)
+        }
     }
 }

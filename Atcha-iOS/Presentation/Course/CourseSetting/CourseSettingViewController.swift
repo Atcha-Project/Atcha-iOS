@@ -169,4 +169,7 @@ extension CourseSettingViewController {
     func mapView(_ mapView: TMapWrapper, didSelectLocation coordinate: CLLocationCoordinate2D) {
         viewModel.currentLocation = coordinate
     }
+    func mapView(_ mapView: TMapWrapper, singleTapOnMap location: CLLocationCoordinate2D) {
+        
+    }
 }
