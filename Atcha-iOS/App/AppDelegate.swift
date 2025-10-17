@@ -24,11 +24,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         Messaging.messaging().delegate = self
         application.registerForRemoteNotifications()
         
+        AmplitudeManager.shared.reset()
+        
         AmplitudeManager.shared.start(
             environment: .auto,
-            autocapture: .sessions,
+            userId: nil,
+            autocapture: [],     
             logLevel: .WARN
         )
+        AmplitudeManager.shared.flush()
+        
+        if let savedId = UserDefaultsWrapper.shared.integer(forKey: UserDefaultsWrapper.Key.userId.rawValue) {
+            AmplitudeManager.shared.bindUser(id: String(savedId))
+        }
+        
         
         return true
     }

@@ -21,6 +21,7 @@ final class MyAccountViewModel: BaseViewModel {
         Task {
             do {
                 let _ = try await logoutUseCase.excute()
+                AmplitudeManager.shared.reset()
                 
                 AppDIContainer.shared.tokenStorage.clearAccessToken()
                 AppDIContainer.shared.tokenStorage.clearRefreshToken()

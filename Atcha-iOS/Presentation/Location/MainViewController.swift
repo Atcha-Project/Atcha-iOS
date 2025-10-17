@@ -328,6 +328,8 @@ extension MainViewController {
             guard let self else { return }
             view.showToast(message: "알람이 종료되었어요")
             UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue)
+            AmplitudeManager.shared.timerEndSeconds("notification_registration_duration")
+            AmplitudeManager.shared.timerStart("notification_registration_duration")
         }
     }
     

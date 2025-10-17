@@ -23,9 +23,12 @@ final class AmplitudeManager {
     
     // MARK: Public API
     
-    func start(environment: Environment = .auto,
-               autocapture: AutocaptureOptions = .sessions,
-               logLevel: LogLevelEnum = .WARN) {
+    func start(
+        environment: Environment = .auto,
+        userId: Int? = nil,
+        autocapture: AutocaptureOptions = .sessions,
+        logLevel: LogLevelEnum = .WARN
+    ) {
         let resolvedEnv = environment.resolved()
         self.environment = resolvedEnv
         
@@ -42,11 +45,21 @@ final class AmplitudeManager {
         )
         
         queue.sync {
-            self.client = Amplitude(configuration: config)
+            let c = Amplitude(configuration: config)
+            if let uid = userId {
+                c.setUserId(userId: "USER_ID: \(uid)")
+            }
+            self.client = c
         }
-        
-        print("[Amplitude] Initialized env=\(resolvedEnv.rawValue)")
     }
+    
+    func bindUser(id: String) {
+        queue.async { [weak self] in
+            guard let self, let client = self.client else { return }
+            client.setUserId(userId: "USER_ID: \(id)")
+        }
+    }
+
     
     func track(_ event: String, _ properties: [String: Any?] = [:]) {
         queue.async { [weak self] in

@@ -67,6 +67,9 @@ extension LoginViewModel {
                     UserDefaultsWrapper.shared.set(lon, forKey: UserDefaultsWrapper.Key.homeLon.rawValue)
                     UserDefaultsWrapper.shared.set(id, forKey: UserDefaultsWrapper.Key.userId
                         .rawValue)
+                
+                    AmplitudeManager.shared.bindUser(id: String(id))
+                    AmplitudeManager.shared.flush()
                 }
                 
                 

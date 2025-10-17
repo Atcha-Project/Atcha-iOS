@@ -129,12 +129,12 @@ final class CourseSearchViewModel: BaseViewModel {
     // MARK: - 코스 검색 스트리밍용
     func startCourseStream() {
         
-        if isBlackoutNow() {
-            setLoading(false)
-            isServerError = true
-            courses = []
-            return
-        }
+//        if isBlackoutNow() {
+//            setLoading(false)
+//            isServerError = true
+//            courses = []
+//            return
+//        }
         
         courseStreamTask?.cancel()
         setLoading(true)
@@ -295,7 +295,7 @@ extension CourseSearchViewModel {
     private func rankIndex<T: Comparable>(
         value: T,
         in values: [T],
-        order: SortOrder 
+        order: SortOrder
     ) -> Int {
         let sorted = (order == .forward) ? values.sorted() : values.sorted(by: >)
         // 동점일 때는 “가장 좋은 순위”로
