@@ -97,6 +97,9 @@
 		6D91A90F2E38A1C60081BAFC /* BusDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D91A90E2E38A1C60081BAFC /* BusDetailViewModel.swift */; };
 		6D9283742E3AFF6A0090889B /* BusRouteCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D9283732E3AFF6A0090889B /* BusRouteCell.swift */; };
 		6D9284422E3C6ADF0090889B /* PaddingLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D9284412E3C6ADF0090889B /* PaddingLabel.swift */; };
+		6DADA5932EA09B6E00CA9BE2 /* AmplitudeSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 6DADA5922EA09B6E00CA9BE2 /* AmplitudeSwift */; };
+		6DADA5972EA09BA400CA9BE2 /* AmplitudeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DADA5962EA09BA400CA9BE2 /* AmplitudeManager.swift */; };
+		6DADA5992EA09BAC00CA9BE2 /* AmplitudeEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DADA5982EA09BAC00CA9BE2 /* AmplitudeEvent.swift */; };
 		6DB763692E45C53A00D06A49 /* AlarmRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DB763682E45C53A00D06A49 /* AlarmRequest.swift */; };
 		6DB7636B2E45C5EC00D06A49 /* AlarmUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DB7636A2E45C5EC00D06A49 /* AlarmUseCase.swift */; };
 		6DB7636D2E45C69400D06A49 /* AlarmRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DB7636C2E45C69400D06A49 /* AlarmRepository.swift */; };
@@ -401,6 +404,8 @@
 		6D91A90E2E38A1C60081BAFC /* BusDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusDetailViewModel.swift; sourceTree = "<group>"; };
 		6D9283732E3AFF6A0090889B /* BusRouteCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusRouteCell.swift; sourceTree = "<group>"; };
 		6D9284412E3C6ADF0090889B /* PaddingLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaddingLabel.swift; sourceTree = "<group>"; };
+		6DADA5962EA09BA400CA9BE2 /* AmplitudeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmplitudeManager.swift; sourceTree = "<group>"; };
+		6DADA5982EA09BAC00CA9BE2 /* AmplitudeEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmplitudeEvent.swift; sourceTree = "<group>"; };
 		6DB763682E45C53A00D06A49 /* AlarmRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmRequest.swift; sourceTree = "<group>"; };
 		6DB7636A2E45C5EC00D06A49 /* AlarmUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmUseCase.swift; sourceTree = "<group>"; };
 		6DB7636C2E45C69400D06A49 /* AlarmRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmRepository.swift; sourceTree = "<group>"; };
@@ -606,6 +611,7 @@
 				6D8D8AE32E01386D003DABB2 /* PanModal in Frameworks */,
 				6DC3BEE92E04FD7B00831470 /* FirebaseAuth in Frameworks */,
 				6D8D8AE02E013819003DABB2 /* SnapKit in Frameworks */,
+				6DADA5932EA09B6E00CA9BE2 /* AmplitudeSwift in Frameworks */,
 				6DB7637C2E48E6AC00D06A49 /* TMapSDK.framework in Frameworks */,
 				6DC3BEE22E04FD0700831470 /* KakaoSDK in Frameworks */,
 				6DC3BEEB2E04FD7B00831470 /* FirebaseCore in Frameworks */,
@@ -927,6 +933,15 @@
 			path = BusDetail;
 			sourceTree = "<group>";
 		};
+		6DADA5952EA09B9500CA9BE2 /* Amplitude */ = {
+			isa = PBXGroup;
+			children = (
+				6DADA5962EA09BA400CA9BE2 /* AmplitudeManager.swift */,
+				6DADA5982EA09BAC00CA9BE2 /* AmplitudeEvent.swift */,
+			);
+			path = Amplitude;
+			sourceTree = "<group>";
+		};
 		6DB763672E45C52600D06A49 /* AlarmDTO */ = {
 			isa = PBXGroup;
 			children = (
@@ -1041,6 +1056,7 @@
 		B61C448A2E3F57A900285A4B /* Manager */ = {
 			isa = PBXGroup;
 			children = (
+				6DADA5952EA09B9500CA9BE2 /* Amplitude */,
 				B61C448D2E3F57B600285A4B /* AlarmManager.swift */,
 				6DD632B72E52E8D000C6A66E /* Proximity */,
 			);
@@ -1855,6 +1871,7 @@
 				6DC3BEEC2E04FD7B00831470 /* FirebaseCrashlytics */,
 				6DC3BEEE2E04FD7B00831470 /* FirebaseMessaging */,
 				6D8157482E129A7C003688A6 /* Lottie */,
+				6DADA5922EA09B6E00CA9BE2 /* AmplitudeSwift */,
 			);
 			productName = "Atcha-iOS";
 			productReference = 6DE42B8D2DFDE6360041344C /* Atcha-iOS.app */;
@@ -1890,6 +1907,7 @@
 				6DC3BEE02E04FD0700831470 /* XCRemoteSwiftPackageReference "kakao-ios-sdk" */,
 				6DC3BEE72E04FD7B00831470 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				6D8157472E129A7C003688A6 /* XCRemoteSwiftPackageReference "lottie-ios" */,
+				6DADA5912EA09B6E00CA9BE2 /* XCRemoteSwiftPackageReference "Amplitude-Swift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 6DE42B8E2DFDE6360041344C /* Products */;
@@ -2111,6 +2129,7 @@
 				6D6879C02E40684C00E59C55 /* RefreshView.swift in Sources */,
 				6D2B8CB32E39AC4B00608104 /* BusPositionInfoRequest.swift in Sources */,
 				6D1EE2E02E090A6B00F7BBF1 /* SearchLocationViewModel.swift in Sources */,
+				6DADA5972EA09BA400CA9BE2 /* AmplitudeManager.swift in Sources */,
 				6DD632C22E544DB500C6A66E /* PushAlarmBottomView.swift in Sources */,
 				6D5E03D02E28853E0065AFBE /* CourseSearchResponse.swift in Sources */,
 				6D91A8E62E29F5BC0081BAFC /* CourseSettingViewModel.swift in Sources */,
@@ -2158,6 +2177,7 @@
 				6D6879DC2E43703200E59C55 /* PushAlarmPatchRequest.swift in Sources */,
 				B6DC7C1D2E169F37005D8E17 /* MapBottomType.swift in Sources */,
 				B65C134A2E07A1280016D2F0 /* MyPageRouter.swift in Sources */,
+				6DADA5992EA09BAC00CA9BE2 /* AmplitudeEvent.swift in Sources */,
 				B65C131C2E058C150016D2F0 /* CheckAppVersionUseCase.swift in Sources */,
 				B6C5074D2E12965D000AB39F /* LocationStreamRepository.swift in Sources */,
 				B6AC8BEE2E2BC62800410ECD /* AlarmSoundType.swift in Sources */,
@@ -2249,7 +2269,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2.0;
+				MARKETING_VERSION = 1.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.atcha.iOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -2297,7 +2317,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2.0;
+				MARKETING_VERSION = 1.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.atcha.iOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -2483,6 +2503,14 @@
 				minimumVersion = 1.2.7;
 			};
 		};
+		6DADA5912EA09B6E00CA9BE2 /* XCRemoteSwiftPackageReference "Amplitude-Swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/amplitude/Amplitude-Swift";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 		6DC3BEE02E04FD0700831470 /* XCRemoteSwiftPackageReference "kakao-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/kakao/kakao-ios-sdk";
@@ -2516,6 +2544,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 6D8D8AE12E01386D003DABB2 /* XCRemoteSwiftPackageReference "PanModal" */;
 			productName = PanModal;
+		};
+		6DADA5922EA09B6E00CA9BE2 /* AmplitudeSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6DADA5912EA09B6E00CA9BE2 /* XCRemoteSwiftPackageReference "Amplitude-Swift" */;
+			productName = AmplitudeSwift;
 		};
 		6DC3BEE12E04FD0700831470 /* KakaoSDK */ = {
 			isa = XCSwiftPackageProductDependency;

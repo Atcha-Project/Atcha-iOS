@@ -268,10 +268,21 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         
         let shouldShowPopup = hasLongWaitBus && !isException
         
-        if shouldShowPopup {
-            showCoursePopup()
+        let isAlarmRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
+        
+        if isAlarmRegistered {
+            if shouldShowPopup {
+                showCoursePopup()
+            } else {
+                showRe_RegisterPopup()
+            }
         } else {
-            viewModel.getAlarmTapped?(viewModel.address, viewModel.infos)
+            if shouldShowPopup {
+                showCoursePopup()
+            } else {
+                viewModel.getAlarmTapped?(viewModel.address, viewModel.infos)
+                amplitudeActions()
+            }
         }
     }
     
@@ -300,7 +311,7 @@ extension DetailRouteViewController {
     func mapView(_ mapView: TMapWrapper, didUpdateLocation coordinate: CLLocationCoordinate2D) {}
     
     func mapView(_ mapView: TMapWrapper, didSelectLocation coordinate: CLLocationCoordinate2D) {}
-    
+
     func didFinishLoadingMap(_ mapView: TMapWrapper) {
         viewModel.$legtPathInfo
             .filter { !$0.isEmpty }
@@ -323,6 +334,7 @@ extension DetailRouteViewController {
             popupVC?.dismiss(animated: false)
             
             self.viewModel.getAlarmTapped?(self.viewModel.address, self.viewModel.infos)
+            self.amplitudeActions()
         }, for: .touchUpInside)
         
         popupVC.cancelButton.addAction(UIAction { [weak self, weak popupVC] _ in
@@ -334,4 +346,52 @@ extension DetailRouteViewController {
         popupVC.modalPresentationStyle = .overFullScreen
         present(popupVC, animated: false)
     }
+    
+    private func showRe_RegisterPopup() {
+        let popupVM = AtchaPopupViewModel(info: .re_register)
+        let popupVC = AtchaPopupViewController(viewModel: popupVM)
+        
+        popupVC.confirmButton.addAction(UIAction { [weak popupVC] _ in
+            popupVC?.dismiss(animated: false)
+            
+            self.viewModel.getAlarmTapped?(self.viewModel.address, self.viewModel.infos)
+            self.amplitudeActions()
+            AmplitudeManager.shared.track(
+                AmplitudeEvent.alert_end_popup_2.rawValue,
+                [
+                    "screen_name": "itinerary",
+                    "clicked": 1
+                ]
+            )
+        }, for: .touchUpInside)
+        
+        popupVC.cancelButton.addAction(UIAction { [weak self, weak popupVC] _ in
+            guard let _ = self else { return }
+            popupVC?.dismiss(animated: false)
+            
+        }, for: .touchUpInside)
+        
+        popupVC.modalPresentationStyle = .overFullScreen
+        present(popupVC, animated: false)
+    }
+    
+    private func amplitudeActions() {
+        let second = AmplitudeManager.shared.timerEndSeconds("notification_registration_duration")
+
+        AmplitudeManager.shared.track(
+            AmplitudeEvent.notification_registration_duration.rawValue ,
+            [
+                "duration": second
+            ]
+        )
+        
+        AmplitudeManager.shared.track(
+            AmplitudeEvent.alert_button.rawValue,
+            [
+                "screen_name": "itinerary",
+                "clicked": 1
+            ]
+        )
+    }
+
 }

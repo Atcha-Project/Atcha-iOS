@@ -82,6 +82,10 @@ final class LastTrainSearchBottomView: UIView {
         currentLocationView.isUserInteractionEnabled = true
         currentLocationView.addGestureRecognizer(tap)
         
+        let arrivalTap = UITapGestureRecognizer(target: self, action: #selector(handleDestinationTap))
+        arrivalLocationView.isUserInteractionEnabled = true
+        arrivalLocationView.addGestureRecognizer(arrivalTap)
+        
         searchButton.addTarget(self, action: #selector(handleSearchTap), for: .touchUpInside)
     }
     
@@ -132,5 +136,14 @@ extension LastTrainSearchBottomView {
     
     @objc private func handleSearchTap() {
         actionPublisher.send(.searchTapped)
+    }
+    
+    @objc private func handleDestinationTap() {
+        AmplitudeManager.shared.track(
+            AmplitudeEvent.home_destination_clicked.rawValue,
+            [
+                "clicked": 1
+            ]
+        )
     }
 }

@@ -70,6 +70,7 @@ final class MainCoordinator {
                 guard let self else { return }
                 self.mainViewModel?.courseSearchResultHandler?(address, infos)
                 self.mainViewModel?.enqueueToast("알림이 등록되었습니다.")
+                UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue)
                 navigationController.popViewController(animated: true)
             }
             vm.getDetailTapped = { [weak self] address, infos in
@@ -99,6 +100,7 @@ final class MainCoordinator {
                         guard let self else { return }
                         self.mainViewModel?.courseSearchResultHandler?(address, infos)
                         self.mainViewModel?.enqueueToast("알림이 등록되었습니다.")
+                        UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue)
                         self.navigationController.popToMainViewControllerNoAnimation()
                     }
                     searchVM.getDetailTapped = { [weak self] address, infos in
@@ -126,6 +128,7 @@ final class MainCoordinator {
                     guard let self else { return }
                     self.mainViewModel?.courseSearchResultHandler?(address, infos)
                     self.mainViewModel?.enqueueToast("알림이 등록되었습니다.")
+                    UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue)
                     self.navigationController.popToMainViewControllerNoAnimation()
                 }
                 searchVM.getDetailTapped = { [weak self] address, infos in
@@ -160,6 +163,7 @@ final class MainCoordinator {
                 guard let self else { return }
                 mainViewModel?.courseSearchResultHandler?(address, infos)
                 self.mainViewModel?.enqueueToast("알림이 등록되었습니다.")
+                UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue)
                 self.navigationController.popToMainViewControllerNoAnimation()
             }
             

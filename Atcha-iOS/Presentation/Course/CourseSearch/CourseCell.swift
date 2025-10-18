@@ -16,6 +16,7 @@ final class CourseCell: UICollectionViewCell {
     
     private let courseTapGesture = UITapGestureRecognizer()
     private let detailTapGesture = UITapGestureRecognizer()
+    private let detailLabelTapGesture = UITapGestureRecognizer()
     private let onDetailTapGesture = UITapGestureRecognizer()
     
     private let containerView: UIView = UIView()
@@ -408,6 +409,10 @@ final class CourseCell: UICollectionViewCell {
     }
     
     private func setupGesture() {
+        detailLabelTapGesture.addTarget(self, action: #selector(detailLabelTapped))
+        detailStack.isUserInteractionEnabled = true
+        detailStack.addGestureRecognizer(detailLabelTapGesture)
+        
         detailTapGesture.addTarget(self, action: #selector(detailTapped))
         containerView.isUserInteractionEnabled = true
         containerView.addGestureRecognizer(detailTapGesture)
@@ -428,6 +433,24 @@ final class CourseCell: UICollectionViewCell {
     // MARK: - Course Detail View Handler
     @objc private func detailTapped() {
         onDetailTapped?()
+        AmplitudeManager.shared.track(
+            AmplitudeEvent.coursesearch_card.rawValue,
+            [
+                "card_expand": 1,
+                "card_viewdetails": 0
+            ]
+        )
+    }
+    
+    @objc private func detailLabelTapped() {
+        onDetailTapped?()
+        AmplitudeManager.shared.track(
+            AmplitudeEvent.coursesearch_card.rawValue,
+            [
+                "card_expand": 0,
+                "card_viewdetails": 1
+            ]
+        )
     }
     
     // MARK: - Course Detail Toggle Handler

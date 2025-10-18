@@ -69,6 +69,22 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
         viewModel.startCourseStream()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        AmplitudeManager.shared.timerStart("coursesearch_view_duration")
+        
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+
+        let seconds = AmplitudeManager.shared.timerEndSeconds("coursesearch_view_duration")
+        AmplitudeManager.shared.track(
+            AmplitudeEvent.coursesearch_view_duration.rawValue,
+            ["duration": seconds]
+        )
+    }
+    
     // MARK: ViewModel 바인딩
     private func bind() {
         // 1. 로딩 상태에 따라 로딩뷰 제어
@@ -220,6 +236,9 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
         
         cell.onGetAlarmTapped = { [weak self] in
             guard let self else { return }
+            let course = model.course
+            let r = self.viewModel.ranks(for: course)
+            
             let pathInfo: [LegPathInfo] = model.course.toLegPathInfos()
             let trafficInfo: [LegTrafficInfo] = model.course.toLegTrafficInfos()
             let busInfo: [BusDetailInfo] = model.course.toBusInfos()
@@ -236,12 +255,24 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
 
             let shouldShowPopup = hasLongWaitBus && !isException
 
-            if shouldShowPopup {
-                showCoursePopup(alarmRequest, alarmTapped)
+            let isAlarmRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
+            
+            if isAlarmRegistered {
+                if shouldShowPopup {
+                    showCoursePopup(alarmRequest, alarmTapped, r)
+                } else {
+                    showRe_RegisterPopup(alarmRequest, alarmTapped, r)
+                }
             } else {
-                viewModel.alarmRegister(alarmRequest)
-                viewModel.getAlarmTapped?(alarmTapped.0, alarmTapped.1)
-                navigationController?.popToRootViewController(animated: true)
+                if shouldShowPopup {
+                    showCoursePopup(alarmRequest, alarmTapped, r)
+                } else {
+                    viewModel.alarmRegister(alarmRequest)
+                    viewModel.getAlarmTapped?(alarmTapped.0, alarmTapped.1)
+                    
+                    amplitudeActions(r)
+                    navigationController?.popToRootViewController(animated: true)
+                }
             }
         }
         
@@ -258,6 +289,13 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
         // 버튼 탭 시 확장/축소 상태 변경 핸들러 연결
         cell.onToggleExpanded = { [weak self] in
             self?.viewModel.toggleExpanded(for: model)
+            
+            AmplitudeManager.shared.track(
+                AmplitudeEvent.coursesearch_toggle.rawValue,
+                [
+                    "toggle": 1
+                ]
+            )
         }
         
         return cell
@@ -325,7 +363,7 @@ extension CourseSearchViewController: UICollectionViewDelegate, UICollectionView
 
 extension CourseSearchViewController {
     
-    private func showCoursePopup(_ alarmRequest: AlarmRequest, _ alarmTapped: (String, LegInfo)) {
+    private func showCoursePopup(_ alarmRequest: AlarmRequest, _ alarmTapped: (String, LegInfo), _ rank: RouteRanks) {
         let popupVM = AtchaPopupViewModel(info: .course)
         let popupVC = AtchaPopupViewController(viewModel: popupVM)
         
@@ -334,6 +372,8 @@ extension CourseSearchViewController {
             
             self.viewModel.alarmRegister(alarmRequest)
             self.viewModel.getAlarmTapped?(alarmTapped.0, alarmTapped.1)
+            
+            self.amplitudeActions(rank)
             self.navigationController?.popToRootViewController(animated: true)
             
         }, for: .touchUpInside)
@@ -346,5 +386,66 @@ extension CourseSearchViewController {
         
         popupVC.modalPresentationStyle = .overFullScreen
         present(popupVC, animated: false)
+    }
+    
+    private func showRe_RegisterPopup(_ alarmRequest: AlarmRequest, _ alarmTapped: (String, LegInfo), _ rank: RouteRanks) {
+        let popupVM = AtchaPopupViewModel(info: .re_register)
+        let popupVC = AtchaPopupViewController(viewModel: popupVM)
+        
+        popupVC.confirmButton.addAction(UIAction { [weak popupVC] _ in
+            popupVC?.dismiss(animated: true)
+            
+            self.viewModel.alarmRegister(alarmRequest)
+            self.viewModel.getAlarmTapped?(alarmTapped.0, alarmTapped.1)
+            
+            self.amplitudeActions(rank)
+            AmplitudeManager.shared.track(
+                AmplitudeEvent.alert_end_popup_2.rawValue,
+                [
+                    "screen_name": "coursesearch",
+                    "clicked": 1
+                ]
+            )
+            self.navigationController?.popToRootViewController(animated: true)
+            
+        }, for: .touchUpInside)
+        
+        popupVC.cancelButton.addAction(UIAction { [weak self, weak popupVC] _ in
+            guard let _ = self else { return }
+            popupVC?.dismiss(animated: false)
+            
+        }, for: .touchUpInside)
+        
+        popupVC.modalPresentationStyle = .overFullScreen
+        present(popupVC, animated: false)
+    }
+    
+    private func amplitudeActions(_ rank: RouteRanks) {
+        let second = AmplitudeManager.shared.timerEndSeconds("notification_registration_duration")
+
+        AmplitudeManager.shared.track(
+            AmplitudeEvent.notification_registration_duration.rawValue ,
+            [
+                "duration": second
+            ]
+        )
+        
+        AmplitudeManager.shared.track(
+            AmplitudeEvent.alarm_registered.rawValue,
+            [
+                "later_departure_time_rank": rank.laterDepartureTimeRank,
+                "minimal_walk_rank":        rank.minimalWalkRank,
+                "minimal_total_time_rank":  rank.minimalTotalTimeRank,
+                "transfer_count":           rank.transferCount
+            ]
+        )
+        
+        AmplitudeManager.shared.track(
+            AmplitudeEvent.alert_button.rawValue,
+            [
+                "screen_name": "coursesearch",
+                "clicked": 1
+            ]
+        )
     }
 }

@@ -23,6 +23,25 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         FirebaseApp.configure()
         Messaging.messaging().delegate = self
         application.registerForRemoteNotifications()
+        
+        AmplitudeManager.shared.reset()
+        
+        let savedId = UserDefaultsWrapper.shared.integer(forKey: UserDefaultsWrapper.Key.userId.rawValue)
+        AmplitudeManager.shared.start(
+            environment: .auto,
+            userId: savedId,
+            autocapture: [],
+            logLevel: .WARN
+        )
+        AmplitudeManager.shared.flush()
+        
+        
+        
+        if let savedId = UserDefaultsWrapper.shared.integer(forKey: UserDefaultsWrapper.Key.userId.rawValue) {
+            AmplitudeManager.shared.bindUser(id: String(savedId))
+        }
+        
+        
         return true
     }
     

@@ -61,10 +61,18 @@ extension LoginViewModel {
                 AppDIContainer.shared.tokenStorage.refreshToken = response.refreshToken
                 
                 if let lat = response.latitude,
-                   let lon = response.longitude {
+                   let lon = response.longitude,
+                   let id = response.id {
                     UserDefaultsWrapper.shared.set(lat, forKey: UserDefaultsWrapper.Key.homeLat.rawValue)
                     UserDefaultsWrapper.shared.set(lon, forKey: UserDefaultsWrapper.Key.homeLon.rawValue)
+                    UserDefaultsWrapper.shared.set(id, forKey: UserDefaultsWrapper.Key.userId
+                        .rawValue)
+                
+                    AmplitudeManager.shared.bindUser(id: String(id))
+                    AmplitudeManager.shared.flush()
                 }
+                
+                
                 
                 print("로그인 완료")
             } catch {
