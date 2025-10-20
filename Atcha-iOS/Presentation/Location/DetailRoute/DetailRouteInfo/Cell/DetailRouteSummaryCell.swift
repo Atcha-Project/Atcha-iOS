@@ -59,7 +59,7 @@ final class DetailRouteSummaryCell: UICollectionViewCell {
     }
     
     func configure(infos: [LegTrafficInfo]) {
-        totalTimeLabel.attributedText = AtchaFont.H1_B_26(infos.first?.totalTime ?? "")
+        totalTimeLabel.attributedText = AtchaFont.H1_B_26(infos.first?.totalTime ?? "", color: .white)
         startEndTimeLabel.attributedText = AtchaFont.B7_M_13(infos.first?.timeText ?? "", color: .gray400)
         progressView.configure(infos: infos)
     }
