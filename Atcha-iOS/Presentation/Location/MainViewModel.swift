@@ -185,9 +185,38 @@ final class MainViewModel: BaseViewModel {
             return
         }
         
-        let wrapper = UserDefaultsWrapper.shared
-        wrapper.remove(forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
+        fetchDetailRoute()
+        //        wrapper.remove(forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
+        //
+        //        let routeId = legInfo?.pathInfo.first?.routeId ?? ""
+        //        Task {
+        //            do {
+        //                let info = try await courseUseCase.courseSearch(routeId)
+        //                let pathinfo = info.toLegPathInfos()
+        //                let trafficInfo = info.toLegTrafficInfos()
+        //                let busInfo = info.toBusInfos()
+        //
+        //                let legInfo: LegInfo = LegInfo(pathInfo: pathinfo,
+        //                                               trafficInfo: trafficInfo,
+        //                                               busInfo: busInfo)
+        //                wrapper.set(legInfo, forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
+        //                drawRoute(address: addressDesc, info: legInfo)
+        //            } catch {
+        //                print("routeId 조회 대실패 ㅠㅠ!!")
+        //            }
+        //        }
+        //
+        //        wrapper.remove(forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
+        UserDefaultsWrapper.shared.set(body, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
+        AlarmManager.shared.startAlarm(after: body,
+                                       title: "눌러서 출발 알람 끄기",
+                                       body: "자리에서 일어나야 할 시간이에요!")
         
+        departureTime = body
+    }
+    
+    private func fetchDetailRoute() {
+        let wrapper = UserDefaultsWrapper.shared
         let routeId = legInfo?.pathInfo.first?.routeId ?? ""
         Task {
             do {
@@ -206,14 +235,14 @@ final class MainViewModel: BaseViewModel {
             }
         }
         
-        wrapper.remove(forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
-        wrapper.set(body, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
-        
-        AlarmManager.shared.startAlarm(after: body,
-                                       title: "눌러서 출발 알람 끄기",
-                                       body: "자리에서 일어나야 할 시간이에요!")
-        
-        departureTime = body
+        //        wrapper.remove(forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
+        //        wrapper.set(body, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
+        //
+        //        AlarmManager.shared.startAlarm(after: body,
+        //                                       title: "눌러서 출발 알람 끄기",
+        //                                       body: "자리에서 일어나야 할 시간이에요!")
+        //
+        //        departureTime = body
     }
     
     // MARK: - 알림 취소
@@ -355,6 +384,7 @@ extension MainViewModel {
             routeHandler?(.myPage)
             
         case .detailRoute:
+            fetchDetailRoute() // 이걸 통신을 할까 말까
             let wrapper = UserDefaultsWrapper.shared
             guard let info = wrapper.object(forKey: UserDefaultsWrapper.Key.legInfo.rawValue,
                                             of: LegInfo.self),

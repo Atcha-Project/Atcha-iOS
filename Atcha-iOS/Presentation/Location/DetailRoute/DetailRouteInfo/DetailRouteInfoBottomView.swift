@@ -69,6 +69,7 @@ final class DetailRouteInfoBottomView: UIView {
         layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         
         handleView.backgroundColor = .gray700
+        handleView.setCornerRadius(4)
     }
     
     private func setupAutoLayout() {

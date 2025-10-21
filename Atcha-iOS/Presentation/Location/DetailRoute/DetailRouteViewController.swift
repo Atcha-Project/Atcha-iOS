@@ -175,8 +175,7 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             .receive(on: DispatchQueue.main)
             .sink { [weak self] location in
                 guard let self else { return }
-                //                mapContainerView.adjustMapToFit(coordinates: allCoordinates)
-                mapContainerView.setupCenter(location: location)
+                mapContainerView.updateUserMarker(location: location)
             }
             .store(in: &cancellables)
         
@@ -311,7 +310,7 @@ extension DetailRouteViewController {
     func mapView(_ mapView: TMapWrapper, didUpdateLocation coordinate: CLLocationCoordinate2D) {}
     
     func mapView(_ mapView: TMapWrapper, didSelectLocation coordinate: CLLocationCoordinate2D) {}
-
+    
     func didFinishLoadingMap(_ mapView: TMapWrapper) {
         viewModel.$legtPathInfo
             .filter { !$0.isEmpty }
@@ -377,7 +376,7 @@ extension DetailRouteViewController {
     
     private func amplitudeActions() {
         let second = AmplitudeManager.shared.timerEndSeconds("notification_registration_duration")
-
+        
         AmplitudeManager.shared.track(
             AmplitudeEvent.notification_registration_duration.rawValue ,
             [
@@ -393,5 +392,5 @@ extension DetailRouteViewController {
             ]
         )
     }
-
+    
 }

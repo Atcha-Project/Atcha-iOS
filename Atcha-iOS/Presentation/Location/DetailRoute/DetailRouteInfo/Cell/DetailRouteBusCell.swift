@@ -279,7 +279,7 @@ final class DetailRouteBusCell: UICollectionViewCell {
             busTimerStackView.isHidden = false
             busTimerFirstLabel.attributedText = AtchaFont.B6_R_14("정보 없음", color: .gray300)
             busTimerSecondLabel.text = ""
-            return 
+            return
         }
         
         currentBusInfo = currentBusInfo.filter { $0.remainingTime ?? 0 > 0 }
@@ -292,16 +292,13 @@ final class DetailRouteBusCell: UICollectionViewCell {
         busTimerStackView.isHidden = false
         updateBusTimerLabels()
         
-        busTimerStackView.isHidden = false
-        updateBusTimerLabels()
-        
         // 1초마다 시간 감소
         countdownTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             self?.decrementRemainingTime()
         }
         
         // 30초마다 재요청
-        reloadTimer = Timer.scheduledTimer(withTimeInterval: 30.0, repeats: true) { [weak self] _ in
+        reloadTimer = Timer.scheduledTimer(withTimeInterval: 15.0, repeats: true) { [weak self] _ in
             self?.getNewBusRealTime?()
         }
     }
