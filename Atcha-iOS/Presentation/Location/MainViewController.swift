@@ -71,6 +71,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
     
     private var postAlarmMessages: [BalloonContent] = []
     private var postAlarmIndex = 0
+    private var firstPostBalloonGeneration = 0
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -548,7 +549,18 @@ extension MainViewController {
             lastTrainDepartView.isHidden = false
             viewModel.startAlarmTimer()
             setupPostAlarmMessages()
-            enqueueNextBalloon(postAlarmMessages[0])
+
+            firstPostBalloonGeneration += 1
+            let myGen = firstPostBalloonGeneration
+
+            // 200ms 뒤에 첫 풍선 예약 (여기서 3번 호출돼도 OK)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+                guard let self = self else { return }
+                guard myGen == self.firstPostBalloonGeneration else { return }
+                guard self.viewModel.bottomType == .departure else { return }
+
+                self.enqueueNextBalloon(self.postAlarmMessages[0], delay: 0)
+            }
         case .detail:
             cancelBalloonQueueAndHide()
             lastTrainDepartView.isHidden = false
