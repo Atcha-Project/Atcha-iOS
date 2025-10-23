@@ -24,7 +24,8 @@ final class MainViewController: BaseViewController<MainViewModel>,
     private let flagImageView: UIImageView = UIImageView()
     private let myPageButton: UIButton = UIButton()
     private let loactionButton: UIButton = UIButton()
-    private let atchaImageView: UIImageView = UIImageView()
+//    private let atchaImageView: UIImageView = UIImageView()
+    private let atchaImageView: CharacterJumpView = CharacterJumpView()
     private let ballonView: AtchaBallon = AtchaBallon()
     private let decimalFormatter: NumberFormatter = {
         let f = NumberFormatter()
@@ -128,7 +129,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
                         imageName: "mylocation-filled",
                         action: #selector(didTapLocationButton))
         flagImageView.image = UIImage.settingLocationMark
-        atchaImageView.image = UIImage.atcha
+//        atchaImageView.image = UIImage.atcha
         atchaImageView.isUserInteractionEnabled = true
         atchaImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleBallonTap)))
         
@@ -558,9 +559,15 @@ extension MainViewController {
                 guard let self = self else { return }
                 guard myGen == self.firstPostBalloonGeneration else { return }
                 guard self.viewModel.bottomType == .departure else { return }
-
+                
                 self.enqueueNextBalloon(self.postAlarmMessages[0], delay: 0)
+                
             }
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+                self?.atchaImageView.start()
+            }
+            
         case .detail:
             cancelBalloonQueueAndHide()
             lastTrainDepartView.isHidden = false
@@ -753,6 +760,8 @@ extension MainViewController {
     }
     
     @objc private func handleBallonTap() {
+        atchaImageView.start()
+        
         let isAlarmRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
         if isAlarmRegistered {
             AmplitudeManager.shared.track(AmplitudeEvent.character_clicked_after_alarm.rawValue, ["clicked": 1])
@@ -851,13 +860,12 @@ extension MainViewController {
     }
     
     private func showInitialPreAlarmBalloons(force: Bool = false) {
-        // force == true면 hasShownInitialBalloon 여부와 상관없이 강제 표출
         guard force || !hasShownInitialBalloon,
               let isService = latestIsServiceRegion else { return }
 
         let d1 = balloonInitialDelayFirst
         let d2 = balloonInitialDelaySecond
-
+        
         if isService {
             // 1) 가이드 + (가능하면) 택시비 안내
             let fareBottom = latestFareString.map { "택시비 약 \($0)원" } ?? "택시비를 불러오는 중이에요"
@@ -885,7 +893,10 @@ extension MainViewController {
                 delay: d2
             )
         }
-
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+            self?.atchaImageView.start()
+        }
         hasShownInitialBalloon = true
     }
     
