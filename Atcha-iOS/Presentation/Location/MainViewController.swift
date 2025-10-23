@@ -43,6 +43,32 @@ final class MainViewController: BaseViewController<MainViewModel>,
     private var didTapCurrentLocation: Int = 0// ‘현위치’ 버튼 사용 여부
     private var didUseTextInput: Int = 0
     
+    private let balloonInitialDelayFirst: TimeInterval = 0.7   // 첫 노출 700ms
+    private let balloonInitialDelaySecond: TimeInterval = 1.5  // (2개일 때) 두 번째 1500ms
+    private let balloonHold: TimeInterval = 2.5                // 유지 2500ms
+    private let balloonFade: TimeInterval = 0.25               // 페이드 250ms
+
+    // 큐/상태
+    private enum BalloonContent: Equatable {
+        case text(top: String?, bottom: String)
+        case separation(gray: String, white: String) // (택시비: 회색+흰색 분리용)
+    }
+    
+    private enum BalloonScope {
+        case pre     // 알람 등록 전에서만
+        case next      // 알람 등록 이후
+    }
+    
+    private var balloonQueue: [(content: BalloonContent, delay: TimeInterval, scope: BalloonScope)] = []
+    private var isBalloonShowing = false
+    private var hasShownInitialBalloon = false
+
+    // 최신 값 보관(비동기 합치기)
+    private var latestIsServiceRegion: Bool?
+    private var latestFareString: String?
+    private var lastShownBalloon: BalloonContent?
+    private var lastShownScope: BalloonScope?
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         let isAlarmRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
@@ -101,7 +127,9 @@ final class MainViewController: BaseViewController<MainViewModel>,
         atchaImageView.image = UIImage.atcha
         atchaImageView.isUserInteractionEnabled = true
         atchaImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleBallonTap)))
-        ballonView.setupTitle(bottomMessage: "지도를 움직여 출발지를 설정해 봐요.")
+        
+        ballonView.isHidden = true
+        ballonView.alpha = 0
     }
     
     private func configureButton(_ button: UIButton, imageName: String, action: Selector) {
@@ -323,7 +351,7 @@ extension MainViewController {
                 ]
             )
         case .locationTapped:
-            ballonView.setupTitle(bottomMessage: "위치를 변경하려면 알람을 종료해야 해요")
+            enqueueNextBalloon(.text(top: nil, bottom: "위치를 변경하려면 알람을 종료해야 해요"))
             AmplitudeManager.shared.track(
                 AmplitudeEvent.home_route_clicked.rawValue,
                 [
@@ -333,8 +361,7 @@ extension MainViewController {
         case .reloadTapped:
             viewModel.refreshDepatrueTime()
         case .timeTapped:
-            ballonView.setupTitle(topMessage: "이때쯤 자리에서 출발하면 돼요",
-                                  bottomMessage: "현재 교통 상황 기준으로,\n출발 시간이 가까워질수록 더 정확해져요")
+            enqueueNextBalloon(.text(top: "이때쯤 자리에서 출발하면 돼요", bottom: "현재 교통 상황 기준으로,\n출발 시간이 가까워질수록 더 정확해져요"))
         }
     }
     
@@ -386,12 +413,34 @@ extension MainViewController {
     }
     
     // MARK: - ViewModel Bindings
+    private func bindCurrentLocationUpdates() {
+        viewModel.$currentLocation
+            .removeDuplicates()
+            .compactMap { $0 }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] in self?.mapContainerView.setupCenter(location: $0) }
+            .store(in: &cancellables)
+    }
+
     private func bindAddressUpdates() {
         viewModel.$address
             .removeDuplicates()
             .compactMap { $0 }
             .receive(on: RunLoop.main)
-            .sink { [weak self] in self?.updateAddress($0) }
+            .sink { [weak self] addr in
+                guard let self else { return }
+                self.updateAddress(addr)
+
+                if self.hasShownInitialBalloon {
+                    if self.latestIsServiceRegion == false {
+                        // 알람 등록 전에서만
+                        self.enqueuePreAlarmBalloon(.text(top: nil,
+                                                          bottom: "서울, 경기, 인천 내에서만 사용할 수 있어요"))
+                    }
+                } else {
+                    self.tryShowInitialBalloonIfNeeded()
+                }
+            }
             .store(in: &cancellables)
     }
     
@@ -403,15 +452,6 @@ extension MainViewController {
         let title = (address == firstAddress) ? "현위치: \(address)" : address
         lastTrainSearchView.setupCurrentLocationTitle(title)
         didTouchMap += 1
-    }
-    
-    private func bindCurrentLocationUpdates() {
-        viewModel.$currentLocation
-            .removeDuplicates()
-            .compactMap { $0 }
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] in self?.mapContainerView.setupCenter(location: $0) }
-            .store(in: &cancellables)
     }
     
     private func bindSelectedLocationUpdates() {
@@ -501,9 +541,11 @@ extension MainViewController {
             //        case .realTime: do {}
             //            lastTrainRealTimeView.isHidden = false
         case .departure:
+            cancelBalloonQueueAndHide()
             lastTrainDepartView.isHidden = false
             viewModel.startAlarmTimer()
         case .detail:
+            cancelBalloonQueueAndHide()
             lastTrainDepartView.isHidden = false
         case .search:
             viewModel.stopAlarmTimer()
@@ -527,26 +569,34 @@ extension MainViewController {
     private func bindTaxiFareUpdates() {
         viewModel.$taxiFare
             .compactMap { $0 }
-            .combineLatest(viewModel.$isServiceRegion)
-            .filter { _, isService in isService == true }
-            .map { fare, _ in fare }
+            .map { Int($0) }
             .removeDuplicates()
             .receive(on: RunLoop.main)
-            .sink { [weak self] fare in
-                self?.updateTaxiFare(fare)
+            .sink { [weak self] fareInt in
+                guard let self else { return }
+                let fareStr = self.decimalFormatter.string(from: NSNumber(value: fareInt)) ?? "\(fareInt)"
+                self.latestFareString = fareStr
+
+                self.tryShowInitialBalloonIfNeeded()
+
+                if self.hasShownInitialBalloon, self.latestIsServiceRegion == true {
+                    // 알람 등록 전에서만
+                    self.enqueuePreAlarmBalloon(.separation(gray: "여기서 막차 놓치면 택시비 ",
+                                                            white: "약 \(fareStr)원"))
+                }
             }
             .store(in: &cancellables)
     }
     
-    private func updateTaxiFare(_ fare: Double) {
-        guard fare.isFinite else { return }
-        let fareInt = Int(fare)
-        let fareStr = decimalFormatter.string(from: NSNumber(value: fareInt)) ?? "\(fareInt)"
-        ballonView.separationTitle(
-            grayMessage: "여기서 막차 놓치면 택시비 ",
-            whiteMessage: "약 \(fareStr)원"
-        )
-    }
+//    private func updateTaxiFare(_ fare: Double) {
+//        guard fare.isFinite else { return }
+//        let fareInt = Int(fare)
+//        let fareStr = decimalFormatter.string(from: NSNumber(value: fareInt)) ?? "\(fareInt)"
+//        ballonView.separationTitle(
+//            grayMessage: "여기서 막차 놓치면 택시비 ",
+//            whiteMessage: "약 \(fareStr)원"
+//        )
+//    }
     
     private func bindServiceRegionUpdates() {
         viewModel.$isServiceRegion
@@ -554,17 +604,15 @@ extension MainViewController {
             .receive(on: RunLoop.main)
             .sink { [weak self] ok in
                 guard let self else { return }
+                self.latestIsServiceRegion = ok
+
                 switch ok {
                 case .some(true):
                     self.lastTrainSearchView.updateSearchEnabled(true)
-                    if let fare = self.viewModel.taxiFare {
-                        self.updateTaxiFare(fare)
-                    }
-                    
+                    self.tryShowInitialBalloonIfNeeded()
                 case .some(false):
                     self.lastTrainSearchView.updateSearchEnabled(false)
-                    self.ballonView.setupTitle(bottomMessage: "서울, 경기, 인천에서만 이용 가능해요")
-                    
+                    self.tryShowInitialBalloonIfNeeded()
                 case .none:
                     self.lastTrainSearchView.updateSearchEnabled(false)
                 }
@@ -680,22 +728,118 @@ extension MainViewController {
     
     @objc private func handleBallonTap() {
         let isAlarmRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
-        
         if isAlarmRegistered {
-            AmplitudeManager.shared.track(
-                AmplitudeEvent.character_clicked_after_alarm.rawValue,
-                [
-                    "clicked": 1
-                ]
-            )
+            AmplitudeManager.shared.track(AmplitudeEvent.character_clicked_after_alarm.rawValue, ["clicked": 1])
         } else {
-            AmplitudeManager.shared.track(
-                AmplitudeEvent.character_clicked_before_alarm.rawValue,
-                [
-                    "clicked": 1
-                ]
-            )
+            AmplitudeManager.shared.track(AmplitudeEvent.character_clicked_before_alarm.rawValue, ["clicked": 1])
         }
+
+        guard let last = lastShownBalloon, let scope = lastShownScope else { return }
+
+        switch scope {
+        case .pre:
+            // 등록 전에서만 재생
+            if isPreAlarmBalloonActive() { enqueuePreAlarmBalloon(last) }
+        case .next:
+            enqueueNextBalloon(last)
+        }
+    }
+    
+    private func enqueueInternal(_ content: BalloonContent,
+                                 delay: TimeInterval = 0,
+                                 hold: TimeInterval? = nil,
+                                 scope: BalloonScope) {
+        // 스코프 검사
+        if scope == .pre && !isPreAlarmBalloonActive() { return }
+        balloonQueue.append((content, delay, scope))
+        drainBalloonQueue(hold: hold ?? balloonHold)
+    }
+
+    // 알람 등록 전에서만 노출 (택시비/서비스지역/초기풍선)
+    private func enqueuePreAlarmBalloon(_ content: BalloonContent,
+                                        delay: TimeInterval = 0,
+                                        hold: TimeInterval? = nil) {
+        enqueueInternal(content, delay: delay, hold: hold, scope: .pre)
+    }
+
+    // 등록 후 안내
+    private func enqueueNextBalloon(_ content: BalloonContent,
+                                   delay: TimeInterval = 0,
+                                   hold: TimeInterval? = nil) {
+        enqueueInternal(content, delay: delay, hold: hold, scope: .next)
+    }
+
+    private func drainBalloonQueue(hold: TimeInterval) {
+        guard !isBalloonShowing, let next = balloonQueue.first else { return }
+        isBalloonShowing = true
+        balloonQueue.removeFirst()
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + next.delay) { [weak self] in
+            guard let self else { return }
+
+            self.ballonView.layer.removeAllAnimations()
+            self.view.bringSubviewToFront(self.ballonView)
+
+            switch next.content {
+            case .text(let top, let bottom):
+                if let top = top {
+                    self.ballonView.setupTitle(topMessage: top, bottomMessage: bottom)
+                } else {
+                    self.ballonView.setupTitle(bottomMessage: bottom)
+                }
+            case .separation(let gray, let white):
+                self.ballonView.separationTitle(grayMessage: gray, whiteMessage: white)
+            }
+
+            // 마지막 말풍선/스코프 저장
+            self.lastShownBalloon = next.content
+            self.lastShownScope = next.scope
+
+            self.ballonView.alpha = 0
+            self.ballonView.isHidden = false
+            UIView.animate(withDuration: self.balloonFade, delay: 0, options: .curveEaseInOut) {
+                self.ballonView.alpha = 1
+            } completion: { _ in
+                UIView.animate(withDuration: self.balloonFade,
+                               delay: hold,
+                               options: .curveEaseInOut) {
+                    self.ballonView.alpha = 0
+                } completion: { _ in
+                    self.ballonView.isHidden = true
+                    self.isBalloonShowing = false
+                    self.drainBalloonQueue(hold: hold)
+                }
+            }
+        }
+    }
+    
+    private func tryShowInitialBalloonIfNeeded() {
+        guard !hasShownInitialBalloon,
+              let isService = latestIsServiceRegion else { return }
+
+        if isService {
+            let fareBottom = latestFareString.map { "약 \($0)원" } ?? "요금을 불러오는 중이에요"
+            enqueuePreAlarmBalloon(.text(top: "지도를 움직여 출발지를 설정해 봐요",
+                                         bottom: "택시비 \(fareBottom)"),
+                                   delay: balloonInitialDelayFirst)
+        } else {
+            enqueuePreAlarmBalloon(.text(top: "지도를 움직여 출발지를 설정해 봐요",
+                                         bottom: "서울, 경기, 인천 내에서만 사용할 수 있어요"),
+                                   delay: balloonInitialDelayFirst)
+        }
+        hasShownInitialBalloon = true
+    }
+    
+    private func isPreAlarmBalloonActive() -> Bool {
+        return viewModel.bottomType == .search
+    }
+    
+    private func cancelBalloonQueueAndHide() {
+        balloonQueue.removeAll()
+        ballonView.layer.removeAllAnimations()
+        ballonView.isHidden = true
+        ballonView.alpha = 0
+        isBalloonShowing = false
     }
 }
 
@@ -709,4 +853,3 @@ extension MainViewController {
         viewModel.currentLocation = coordinate
     }
 }
-
