@@ -565,6 +565,7 @@ extension MainViewController {
             }
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+                self?.atchaImageView.stop()
                 self?.atchaImageView.start()
             }
             
@@ -760,6 +761,7 @@ extension MainViewController {
     }
     
     @objc private func handleBallonTap() {
+        atchaImageView.stop()
         atchaImageView.start()
         
         let isAlarmRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
@@ -887,14 +889,10 @@ extension MainViewController {
                 .text(top: "지도를 움직여 출발지를 설정해 봐요", bottom: "서울, 경기, 인천 내에서만 사용할 수 있어요"),
                 delay: d1
             )
-            // 두 번째 풍선도 동일 안내로 반복(요구사항: '두 개')
-            enqueuePreAlarmBalloon(
-                .text(top: nil, bottom: "서울, 경기, 인천 내에서만 사용할 수 있어요"),
-                delay: d2
-            )
         }
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
+            self?.atchaImageView.stop()
             self?.atchaImageView.start()
         }
         hasShownInitialBalloon = true
