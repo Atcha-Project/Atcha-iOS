@@ -78,19 +78,30 @@ final class AtchaBallon: UIView {
         }
     }
     
-    func separationTitle(grayMessage: String, whiteMessage: String) {
+    func separationTitle(grayMessage: String, whiteMessage: String, showTopLine: Bool) {
+        if showTopLine {
+            // 알람 등록 전: 위 줄 보이게 (고정 문구)
+            topLabel.isHidden = false
+            topLabel.attributedText = AtchaFont.B7_M_13("지도를 움직여 출발지를 설정해 봐요", color: .white)
+            topLabel.alpha = 1
+        } else {
+            // 알람 등록 후: 위 줄 숨김
+            topLabel.isHidden = true
+            topLabel.attributedText = nil
+            topLabel.alpha = 0
+        }
+
+        // 아래줄 구성 (택시비)
         let gray = NSMutableAttributedString(attributedString: AtchaFont.B7_M_13(grayMessage))
         gray.addAttributes([.foregroundColor: UIColor.gray100],
                            range: NSRange(location: 0, length: gray.length))
-        
         let white = NSMutableAttributedString(attributedString: AtchaFont.B7_M_13(whiteMessage))
         white.addAttributes([.foregroundColor: UIColor.white],
                             range: NSRange(location: 0, length: white.length))
-        
+
         let composed = NSMutableAttributedString()
         composed.append(gray)
         composed.append(white)
-        
         bottomLabel.attributedText = composed
     }
     

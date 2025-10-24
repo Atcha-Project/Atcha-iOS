@@ -849,7 +849,7 @@ extension MainViewController {
                     self.ballonView.setupTitle(bottomMessage: bottom)
                 }
             case .separation(let gray, let white):
-                self.ballonView.separationTitle(grayMessage: gray, whiteMessage: white)
+                self.ballonView.separationTitle(grayMessage: gray, whiteMessage: white, showTopLine: false)
             }
             
             self.lastShownBalloon = next.content
@@ -904,7 +904,7 @@ extension MainViewController {
                     self.ballonView.setupTitle(bottomMessage: bottom)
                 }
             case .separation(let gray, let white):
-                self.ballonView.separationTitle(grayMessage: gray, whiteMessage: white)
+                self.ballonView.separationTitle(grayMessage: gray, whiteMessage: white, showTopLine: true)
             }
 
             if self.ballonView.isHidden {
@@ -981,7 +981,7 @@ extension MainViewController {
                 ballonView.setupTitle(bottomMessage: bottom)
             }
         case .separation(let gray, let white):
-            ballonView.separationTitle(grayMessage: gray, whiteMessage: white)
+            ballonView.separationTitle(grayMessage: gray, whiteMessage: white, showTopLine: false)
         }
         
         // 즉시 표시 (페이드인)
@@ -1033,10 +1033,9 @@ extension MainViewController {
         let fareStr = latestFareString ?? "12,000"
         postAlarmMessages = [
             .text(top: "이때 자리에서 출발하면 돼요", bottom: "교통 상황에 따라 시간이 달라질 수 있어요"),
-            .text(top: nil, bottom: "교통 상황에 따라 시간이 달라질 수 있어요"),
+            .separation(gray: "막차 놓치면 택시비 ", white: "약 \(fareStr)원"),
             .text(top: nil, bottom: "시간에 맞춰 알림을 드릴게요"),
-            .text(top: nil, bottom: "믿을 수 있는 공공 데이터를 활용하고 있어요"),
-            .separation(gray: "여기서 막차 놓치면 택시비 ", white: "약 \(fareStr)원")
+            .text(top: nil, bottom: "교통 상황에 따라 시간이 달라질 수 있어요")
         ]
         postAlarmIndex = 1
     }
