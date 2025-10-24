@@ -128,6 +128,12 @@ final class MainViewController: BaseViewController<MainViewModel>,
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
             self?.viewModel.setupLocation()
             self?.hideLoading()
+            let isAlarmRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
+            if !isAlarmRegistered {
+                self?.mapContainerView.hideUserMarker()
+            } else {
+                self?.mapContainerView.showUserMarker()
+            }
         }
     }
     
@@ -808,6 +814,8 @@ extension MainViewController {
             let isAlarmRegistered = wrapper.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
             if !isAlarmRegistered {
                 self.mapContainerView.hideUserMarker()
+            } else {
+                self.mapContainerView.showUserMarker()
             }
         }
     }
