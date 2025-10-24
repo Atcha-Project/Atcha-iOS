@@ -93,5 +93,6 @@ final class TitleNavigationBar: UIView {
     // MARK: - 타이틀 업데이트
     func updateTitle(_ text: String?) {
         titleLabel.attributedText = AtchaFont.H4_SB_17(text)
+        titleLabel.textColor = AtchaColor.white
     }
 }
