@@ -138,6 +138,45 @@ final class AtchaBallon: UIView {
         }
     }
     
+    func animateHideStaggered(secondaryDelay: TimeInterval = 0.6,
+                              fade: TimeInterval = 0.25,
+                              completion: (() -> Void)? = nil) {
+        // 기존 애니메이션 제거
+        layer.removeAllAnimations()
+        topLabel.layer.removeAllAnimations()
+        bottomLabel.layer.removeAllAnimations()
+        triangeImageView.layer.removeAllAnimations()
+
+        if topLabel.isHidden {
+            // 한 줄: 아래줄+삼각형만 페이드아웃
+            UIView.animate(withDuration: fade, animations: {
+                self.bottomLabel.alpha = 0
+                self.triangeImageView.alpha = 0
+            }, completion: { _ in
+                self.isHidden = true
+                self.alpha = 0
+                completion?()
+            })
+        } else {
+            // 두 줄: (1) 위줄 먼저 사라짐 -> (2) 아래줄+삼각형 사라짐
+            UIView.animate(withDuration: fade, animations: {
+                self.topLabel.alpha = 0
+            }, completion: { _ in
+                UIView.animate(withDuration: fade,
+                               delay: secondaryDelay,
+                               options: .curveEaseInOut,
+                               animations: {
+                    self.bottomLabel.alpha = 0
+                    self.triangeImageView.alpha = 0
+                }, completion: { _ in
+                    self.isHidden = true
+                    self.alpha = 0
+                    completion?()
+                })
+            })
+        }
+    }
+    
     func revealImmediately() {
             topLabel.alpha = 1
             bottomLabel.alpha = 1

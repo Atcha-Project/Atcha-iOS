@@ -90,6 +90,8 @@ final class MainViewController: BaseViewController<MainViewModel>,
     private var firstBalloonWork: DispatchWorkItem?
     
     // MARK: - 네트워크/조회 상태
+    private var lastFareRefreshTime: CFTimeInterval = 0
+    private let fareRefreshInterval: CFTimeInterval = 60
     private var isFetchingFare = false
     
     // MARK: - 점프 애니메이션 스로틀링
@@ -849,48 +851,46 @@ extension MainViewController {
             AmplitudeManager.shared.track(AmplitudeEvent.character_clicked_after_alarm.rawValue, ["clicked": 1])
             
         case .next:
-            // 알람 등록 이후 캐릭터 탭 시 — 항상 요금 재조회
-            guard !isFetchingFare else { return }
-            isFetchingFare = true
-            
-            let vm = viewModel
-            Task(priority: .userInitiated) {
-                defer {
-                    Task { @MainActor in self.isFetchingFare = false }
-                }
-                do {
-                    let fare = try await vm.fetchFareForRegisteredStart()
-                    let fareInt = Int(fare)
-                    let fareStr = self.decimalFormatter.string(from: NSNumber(value: fareInt)) ?? "\(fareInt)"
-                    
-                    await MainActor.run {
-                        // 최신 요금 반영
-                        self.latestFareString = fareStr
-                        self.setupPostAlarmMessages()
-                        
-                        // 바로 요금 메시지 보여주기
-                        self.showOrUpdateImmediateBalloon(
-                            .separation(gray: "막차 놓치면 택시비 ", white: "약 \(fareStr)원")
-                        )
-                        
-                        // 이후 순환은 기존대로
-                        self.postAlarmIndex = 2
+            let now = CACurrentMediaTime()
+            let shouldRefreshFare = (now - lastFareRefreshTime) > fareRefreshInterval
+
+            if shouldRefreshFare && !isFetchingFare {
+                isFetchingFare = true
+                let vm = viewModel
+                Task(priority: .userInitiated) {
+                    defer { Task { @MainActor in self.isFetchingFare = false } }
+                    do {
+                        let fare = try await vm.fetchFareForRegisteredStart()
+                        let fareInt = Int(fare)
+                        let fareStr = self.decimalFormatter.string(from: NSNumber(value: fareInt)) ?? "\(fareInt)"
+                        await MainActor.run {
+                            self.latestFareString = fareStr
+                            self.setupPostAlarmMessages()
+                            // 이번 탭에선 요금 먼저 한 번 보여주고
+                            self.showOrUpdateImmediateBalloon(
+                                .separation(gray: "막차 놓치면 택시비 ", white: "약 \(fareStr)원")
+                            )
+                            // 다음 탭부터는 순환 문구가 나오도록 시작 인덱스 조정
+                            self.postAlarmIndex = 1
+                            self.lastFareRefreshTime = CACurrentMediaTime()
+                        }
+                    } catch {
+                        await MainActor.run {
+                            self.showOrUpdateImmediateBalloon(.text(top: nil, bottom: "택시비 조회에 실패했어요"))
+                            // 실패 시에도 다음 탭은 순환 시작
+                            self.postAlarmIndex = max(1, self.postAlarmIndex)
+                        }
                     }
-                } catch {
-                    await MainActor.run {
-                        self.showOrUpdateImmediateBalloon(.text(top: nil, bottom: "택시비 조회에 실패했어요"))
-                    }
                 }
+                return  // 이번 탭은 요금만 보여주고 종료
             }
-            return
-            
-            // 이미 요금이 있거나, 현재 조회 중이면 기존 순환 로직
+
+            // ===== 재조회 주기가 아닐 땐 순환 메시지 =====
             guard !postAlarmMessages.isEmpty else { return }
-            if postAlarmIndex < 1 { postAlarmIndex = 1 }
+            if postAlarmIndex < 1 { postAlarmIndex = 1 } // 1..N-1 범위에서 순환
             let content = postAlarmMessages[postAlarmIndex]
-            
             showOrUpdateImmediateBalloon(content)
-            
+
             let cycleCount = postAlarmMessages.count - 1
             postAlarmIndex = 1 + ((postAlarmIndex - 1 + 1) % cycleCount)
             
@@ -937,13 +937,19 @@ extension MainViewController {
     }
     
     private func autoHideBalloon(after delay: TimeInterval, completion: (() -> Void)? = nil) {
-        UIView.animate(withDuration: balloonFade,
-                       delay: delay,
-                       options: .curveEaseInOut) {
-            self.ballonView.alpha = 0
-        } completion: { _ in
-            self.ballonView.isHidden = true
-            completion?()
+        guard !isPreAlarmBalloonActive() else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+            guard let self else { return }
+            self.ballonView.animateHideStaggered(
+                secondaryDelay: 0.6,          // 필요하면 조절 (등장과 비슷하게 0.6~0.8 추천)
+                fade: self.balloonFade,       // 기존 0.25 유지
+                completion: { [weak self] in
+                    guard let self else { return }
+                    // 기존 상태 정리 로직 유지
+                    self.ballonView.isHidden = true
+                    completion?()
+                }
+            )
         }
     }
     
@@ -1105,9 +1111,9 @@ extension MainViewController {
         let fareStr = latestFareString ?? "12,000"
         postAlarmMessages = [
             .text(top: "이때 자리에서 출발하면 돼요", bottom: "교통 상황에 따라 시간이 달라질 수 있어요"),
-            .separation(gray: "막차 놓치면 택시비 ", white: "약 \(fareStr)원"),
             .text(top: nil, bottom: "시간에 맞춰 알림을 드릴게요"),
-            .text(top: nil, bottom: "교통 상황에 따라 시간이 달라질 수 있어요")
+            .text(top: nil, bottom: "교통 상황에 따라 시간이 달라질 수 있어요"),
+            .separation(gray: "막차 놓치면 택시비 ", white: "약 \(fareStr)원")
         ]
         postAlarmIndex = 1
     }
