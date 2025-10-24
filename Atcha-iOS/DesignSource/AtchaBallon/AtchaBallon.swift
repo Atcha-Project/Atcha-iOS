@@ -70,12 +70,12 @@ final class AtchaBallon: UIView {
     func setupTitle(topMessage: String? = nil, bottomMessage: String) {
         bottomLabel.attributedText = AtchaFont.B7_M_13(bottomMessage, color: .white)
         
-        guard let topMessage else {
+        if let topMessage {
+            topLabel.attributedText = AtchaFont.B7_M_13(topMessage, color: .white)
+            topLabel.isHidden = false
+        } else {
             topLabel.isHidden = true
-            return
         }
-        topLabel.attributedText = AtchaFont.B7_M_13(topMessage, color: .white)
-        topLabel.isHidden = false
     }
     
     func separationTitle(grayMessage: String, whiteMessage: String) {
@@ -93,5 +93,44 @@ final class AtchaBallon: UIView {
         
         bottomLabel.attributedText = composed
     }
+    
+    func animateStaggered(secondaryDelay: TimeInterval = 0.8, fade: TimeInterval = 0.25) {
+        // 기존 애니메이션 정리
+        layer.removeAllAnimations()
+        topLabel.layer.removeAllAnimations()
+        bottomLabel.layer.removeAllAnimations()
+        triangeImageView.layer.removeAllAnimations()   // 삼각형도 초기화
+
+        // 시작 상태
+        if topLabel.isHidden {
+            // 한 줄만 사용하는 경우: 아래줄 + 삼각형 같이 페이드인
+            bottomLabel.alpha = 0
+            triangeImageView.alpha = 0
+            UIView.animate(withDuration: fade) {
+                self.bottomLabel.alpha = 1
+                self.triangeImageView.alpha = 1
+            }
+        } else {
+            // 두 줄 사용하는 경우: 위 줄 먼저 -> (secondaryDelay) -> 아래줄 + 삼각형
+            topLabel.alpha = 0
+            bottomLabel.alpha = 0
+            triangeImageView.alpha = 0
+
+            UIView.animate(withDuration: fade) {
+                self.topLabel.alpha = 1
+            }
+
+            UIView.animate(withDuration: fade, delay: secondaryDelay, options: .curveEaseInOut) {
+                self.bottomLabel.alpha = 1
+                self.triangeImageView.alpha = 1
+            }
+        }
+    }
+    
+    func revealImmediately() {
+            topLabel.alpha = 1
+            bottomLabel.alpha = 1
+            triangeImageView.alpha = 1
+        }
 }
 

@@ -852,24 +852,24 @@ extension MainViewController {
                 self.ballonView.separationTitle(grayMessage: gray, whiteMessage: white)
             }
             
-            // 마지막 말풍선/스코프 저장
             self.lastShownBalloon = next.content
             self.lastShownScope = next.scope
-            
-            self.ballonView.alpha = 0
+
+            // 스태거 시작 (부모뷰는 바로 보여주고 라벨들만 애니메이션)
             self.ballonView.isHidden = false
-            UIView.animate(withDuration: self.balloonFade, delay: 0, options: .curveEaseInOut) {
-                self.ballonView.alpha = 1
+            self.ballonView.alpha = 1
+            self.view.bringSubviewToFront(self.ballonView)
+            self.ballonView.animateStaggered(secondaryDelay: 0.8, fade: self.balloonFade)
+
+            // 자동 숨김(부모뷰 페이드아웃만)
+            UIView.animate(withDuration: self.balloonFade,
+                           delay: hold,
+                           options: .curveEaseInOut) {
+                self.ballonView.alpha = 0
             } completion: { _ in
-                UIView.animate(withDuration: self.balloonFade,
-                               delay: hold,
-                               options: .curveEaseInOut) {
-                    self.ballonView.alpha = 0
-                } completion: { _ in
-                    self.ballonView.isHidden = true
-                    self.isBalloonShowing = false
-                    self.drainBalloonQueue(hold: hold)
-                }
+                self.ballonView.isHidden = true
+                self.isBalloonShowing = false
+                self.drainBalloonQueue(hold: hold)
             }
         }
     }
@@ -883,18 +883,19 @@ extension MainViewController {
                                         delay: TimeInterval = 0,
                                         animated: Bool = true) {
         guard isPreAlarmBalloonActive() else { return }
-        
+
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
             guard let self else { return }
-            
-            // 동일 콘텐츠면 불필요 업데이트 방지 (원하면 지워도 됨)
+
+            // 동일 콘텐츠면 불필요 업데이트 방지
             if self.pinnedPreBalloon == content, self.lastShownScope == .pre {
                 return
             }
-            
+
             self.ballonView.layer.removeAllAnimations()
             self.view.bringSubviewToFront(self.ballonView)
-            
+
+            // 1) 내용 세팅
             switch content {
             case .text(let top, let bottom):
                 if let top = top {
@@ -905,17 +906,22 @@ extension MainViewController {
             case .separation(let gray, let white):
                 self.ballonView.separationTitle(grayMessage: gray, whiteMessage: white)
             }
-            
+
             if self.ballonView.isHidden {
+                // 2-a) 처음 뜰 때만 페이드인 + (두 줄이면) 스태거
                 self.ballonView.alpha = 0
                 self.ballonView.isHidden = false
                 UIView.animate(withDuration: animated ? self.balloonFade : 0) {
                     self.ballonView.alpha = 1
                 }
+                // 두 줄이면 0.8초 뒤에 아래줄+삼각형 뜨는 스태거
+                self.ballonView.animateStaggered(secondaryDelay: 0.8, fade: self.balloonFade)
             } else {
-                // 이미 떠있을 때는 자연스럽게 내용만 갈아끼우고 알파는 유지
+                // 2-b) 이미 떠있으면 깜빡임 없이 텍스트만 교체 (애니메이션 X)
+                self.ballonView.revealImmediately()   // 알파 보정(=1)
+                // ✳️ 스태거/페이드 재실행하지 않음 → "그대로 텍스트만 바뀌는" 효과
             }
-            
+
             // 마지막/고정 상태 갱신
             self.lastShownBalloon = content
             self.lastShownScope = .pre
@@ -982,6 +988,8 @@ extension MainViewController {
         ballonView.isHidden = false
         ballonView.alpha = 0
         view.bringSubviewToFront(ballonView)
+        
+        self.ballonView.animateStaggered(secondaryDelay: 0.8, fade: 0.25)
         
         UIView.animate(withDuration: 0.25) {
             self.ballonView.alpha = 1
