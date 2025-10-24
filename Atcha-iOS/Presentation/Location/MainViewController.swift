@@ -73,6 +73,10 @@ final class MainViewController: BaseViewController<MainViewModel>,
     private var postAlarmMessages: [BalloonContent] = []
     private var postAlarmIndex = 0
     private var firstPostBalloonGeneration = 0
+    private var isRevisit: Bool {
+        UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.reVisit.rawValue) ?? false
+    }
+    private var showTopLineForPre: Bool { !isRevisit } // 신규= true, 재방문= false
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -435,13 +439,15 @@ extension MainViewController {
             .sink { [weak self] addr in
                 guard let self else { return }
                 self.updateAddress(addr)
-                
+
                 if self.hasShownInitialBalloon {
                     if self.latestIsServiceRegion == false {
-                        // 알람 등록 전에서만
-                        self.enqueuePreAlarmBalloon(
-                            .text(top: "지도를 움직여 출발지를 설정해 봐요",
-                                  bottom: "서울, 경기, 인천 내에서만 사용할 수 있어요")
+                        // 재방문이면 윗줄 숨김
+                        self.showOrUpdatePreBalloon(
+                            .text(
+                                top: self.showTopLineForPre ? "지도를 움직여 출발지를 설정해 봐요" : nil,
+                                bottom: "서울, 경기, 인천 내에서만 사용할 수 있어요"
+                            )
                         )
                     }
                 } else {
@@ -608,15 +614,15 @@ extension MainViewController {
                 guard let self else { return }
                 let fareStr = self.decimalFormatter.string(from: NSNumber(value: fareInt)) ?? "\(fareInt)"
                 self.latestFareString = fareStr
-                
-                // 알람 등록 전 + 서비스 가능: 항상 분리 풍선으로 고정/갱신
+
                 if self.isPreAlarmBalloonActive(), self.latestIsServiceRegion == true {
+                    // 재방문이면 윗줄 숨김
                     self.showOrUpdatePreBalloon(
-                        .separation(gray: "여기서 막차 놓치면 택시비 ", white: "약 \(fareStr)원")
+                        .separation(gray: "여기서 막차 놓치면 택시비 ", white: "약 \(fareStr)원"),
+                        showTopLine: self.showTopLineForPre
                     )
                 }
-                
-                // 등록 후 회전 메시지의 마지막(택시비)도 유지
+
                 if !self.postAlarmMessages.isEmpty {
                     self.postAlarmMessages[self.postAlarmMessages.count - 1] =
                         .separation(gray: "여기서 막차 놓치면 택시비 ", white: "약 \(fareStr)원")
@@ -633,39 +639,43 @@ extension MainViewController {
                 guard let self else { return }
                 let previous = self.latestIsServiceRegion
                 self.latestIsServiceRegion = ok
-                
+
                 switch ok {
                 case .some(true):
                     self.lastTrainSearchView.updateSearchEnabled(true)
                     if previous == nil {
-                        // 첫 진입 시 강제 표시
                         self.showInitialPreAlarmBalloons(force: true)
                     } else if self.isPreAlarmBalloonActive() {
                         if let fare = self.latestFareString {
-                            // 금액 있으면 분리 풍선
+                            // ✅ 재방문이면 윗줄 숨김
                             self.showOrUpdatePreBalloon(
-                                .separation(gray: "여기서 막차 놓치면 택시비 ", white: "약 \(fare)원")
+                                .separation(gray: "여기서 막차 놓치면 택시비 ", white: "약 \(fare)원"),
+                                showTopLine: self.showTopLineForPre
                             )
                         } else {
-                            // 금액 아직 없으면 로딩 텍스트
                             self.showOrUpdatePreBalloon(
-                                .text(top: "지도를 움직여 출발지를 설정해 봐요",
-                                      bottom: "택시비를 불러오는 중이에요")
+                                .text(
+                                    top: self.showTopLineForPre ? "지도를 움직여 출발지를 설정해 봐요" : nil,
+                                    bottom: "택시비를 불러오는 중이에요"
+                                )
                             )
                         }
                     }
-                    
+
                 case .some(false):
                     self.lastTrainSearchView.updateSearchEnabled(false)
                     if previous == nil {
                         self.showInitialPreAlarmBalloons(force: true)
                     } else if self.isPreAlarmBalloonActive() {
+                        // ✅ 재방문이면 윗줄 숨김
                         self.showOrUpdatePreBalloon(
-                            .text(top: "지도를 움직여 출발지를 설정해 봐요",
-                                  bottom: "서울, 경기, 인천 내에서만 사용할 수 있어요")
+                            .text(
+                                top: self.showTopLineForPre ? "지도를 움직여 출발지를 설정해 봐요" : nil,
+                                bottom: "서울, 경기, 인천 내에서만 사용할 수 있어요"
+                            )
                         )
                     }
-                    
+
                 case .none:
                     self.lastTrainSearchView.updateSearchEnabled(false)
                 }
@@ -881,21 +891,18 @@ extension MainViewController {
     /// 알람 등록 전: 큐/페이드아웃 없이 바로 표시(고정)
     private func showOrUpdatePreBalloon(_ content: BalloonContent,
                                         delay: TimeInterval = 0,
-                                        animated: Bool = true) {
+                                        animated: Bool = true,
+                                        showTopLine: Bool = true) {
         guard isPreAlarmBalloonActive() else { return }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
             guard let self else { return }
 
-            // 동일 콘텐츠면 불필요 업데이트 방지
-            if self.pinnedPreBalloon == content, self.lastShownScope == .pre {
-                return
-            }
+            if self.pinnedPreBalloon == content, self.lastShownScope == .pre { return }
 
             self.ballonView.layer.removeAllAnimations()
             self.view.bringSubviewToFront(self.ballonView)
 
-            // 1) 내용 세팅
             switch content {
             case .text(let top, let bottom):
                 if let top = top {
@@ -904,25 +911,22 @@ extension MainViewController {
                     self.ballonView.setupTitle(bottomMessage: bottom)
                 }
             case .separation(let gray, let white):
-                self.ballonView.separationTitle(grayMessage: gray, whiteMessage: white, showTopLine: true)
+                self.ballonView.separationTitle(grayMessage: gray,
+                                                whiteMessage: white,
+                                                showTopLine: showTopLine)
             }
 
             if self.ballonView.isHidden {
-                // 2-a) 처음 뜰 때만 페이드인 + (두 줄이면) 스태거
                 self.ballonView.alpha = 0
                 self.ballonView.isHidden = false
                 UIView.animate(withDuration: animated ? self.balloonFade : 0) {
                     self.ballonView.alpha = 1
                 }
-                // 두 줄이면 0.8초 뒤에 아래줄+삼각형 뜨는 스태거
                 self.ballonView.animateStaggered(secondaryDelay: 0.8, fade: self.balloonFade)
             } else {
-                // 2-b) 이미 떠있으면 깜빡임 없이 텍스트만 교체 (애니메이션 X)
-                self.ballonView.revealImmediately()   // 알파 보정(=1)
-                // ✳️ 스태거/페이드 재실행하지 않음 → "그대로 텍스트만 바뀌는" 효과
+                self.ballonView.revealImmediately()
             }
 
-            // 마지막/고정 상태 갱신
             self.lastShownBalloon = content
             self.lastShownScope = .pre
             self.pinnedPreBalloon = content
@@ -930,35 +934,43 @@ extension MainViewController {
     }
     
     private func showInitialPreAlarmBalloons(force: Bool = false) {
-        guard force || !hasShownInitialBalloon,
-              let isService = latestIsServiceRegion else { return }
-        
+        guard let isService = latestIsServiceRegion else { return }
+
+        // reVisit == true → 재방문(위줄 숨김), false → 신규(위줄 표시)
+        let isRevisit = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.reVisit.rawValue) ?? false
+        let showTopLine = !isRevisit
+
         let d1 = balloonInitialDelayFirst
-        
+
         if isService {
             if let fare = latestFareString {
-                // 금액 있으면 바로 분리 풍선
+                // 서비스 지역 + 택시비 있음
                 showOrUpdatePreBalloon(
                     .separation(gray: "여기서 막차 놓치면 택시비 ", white: "약 \(fare)원"),
-                    delay: d1
+                    delay: d1,
+                    animated: true,
+                    showTopLine: showTopLine // 신규면 위줄 표시, 재방문이면 숨김
                 )
             } else {
-                // 금액 없으면 일단 로딩 텍스트 -> 금액 들어오면 위 (1)에서 자동 교체됨
-                showOrUpdatePreBalloon(
-                    .text(top: "지도를 움직여 출발지를 설정해 봐요",
-                          bottom: "택시비를 불러오는 중이에요"),
-                    delay: d1
-                )
+                // 서비스 지역 + 택시비 로딩
+                showOrUpdatePreBalloon(.text(
+                    top: showTopLine ? "지도를 움직여 출발지를 설정해 봐요" : nil,
+                    bottom: "택시비를 불러오는 중이에요"
+                ), delay: d1)
             }
         } else {
-            // 서비스 불가 지역 문구
-            showOrUpdatePreBalloon(
-                .text(top: "지도를 움직여 출발지를 설정해 봐요",
-                      bottom: "서울, 경기, 인천 내에서만 사용할 수 있어요"),
-                delay: d1
-            )
+            // 비서비스 지역
+            showOrUpdatePreBalloon(.text(
+                top: showTopLine ? "지도를 움직여 출발지를 설정해 봐요" : nil,
+                bottom: "서울, 경기, 인천 내에서만 사용할 수 있어요"
+            ), delay: d1)
         }
-        
+
+        // ✅ 신규 로그인 첫 노출 후에만 reVisit=true로 세팅 (앱 재실행 시 위줄 숨김)
+        if !isRevisit {
+            UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.reVisit.rawValue)
+        }
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
             self?.atchaImageView.stop()
             self?.atchaImageView.start()

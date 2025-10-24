@@ -70,7 +70,8 @@ final class PushAlarmViewModel: BaseViewModel {
                     UserDefaultsWrapper.shared.set(lon, forKey: UserDefaultsWrapper.Key.homeLon.rawValue)
                     UserDefaultsWrapper.shared.set(id, forKey: UserDefaultsWrapper.Key.userId
                         .rawValue)
-                    
+                    UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.reVisit
+                        .rawValue)
                     AmplitudeManager.shared.track(AmplitudeEvent.onboarding_complete.rawValue)
                     
                     print("회원가입 lat/lon 저장 완료: \(lat), \(lon)")
