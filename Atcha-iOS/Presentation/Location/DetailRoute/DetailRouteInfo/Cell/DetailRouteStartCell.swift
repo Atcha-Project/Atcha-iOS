@@ -53,5 +53,6 @@ final class DetailRouteStartCell: UICollectionViewCell {
     func configure(address: String, info: LegTrafficInfo?) {
         timeBadegLabel.setText(info?.departureDateTime)
         locationLabel.attributedText = AtchaFont.B3_M_15(address)
+        locationLabel.textColor = .white
     }
 }
