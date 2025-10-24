@@ -554,28 +554,42 @@ extension MainViewController {
             //        case .realTime: do {}
             //            lastTrainRealTimeView.isHidden = false
         case .departure:
-            cancelBalloonQueueAndHide()
-            lastTrainDepartView.isHidden = false
-            viewModel.startAlarmTimer()
-            setupPostAlarmMessages()
-            
-            firstPostBalloonGeneration += 1
-            let myGen = firstPostBalloonGeneration
-            
-            // 200ms 뒤에 첫 풍선 예약 (여기서 3번 호출돼도 OK)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
-                guard let self = self else { return }
-                guard myGen == self.firstPostBalloonGeneration else { return }
-                guard self.viewModel.bottomType == .departure else { return }
-                
-                self.enqueueNextBalloon(self.postAlarmMessages[0], delay: 0)
-                
-            }
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
-                self?.atchaImageView.stop()
-                self?.atchaImageView.start()
-            }
+                cancelBalloonQueueAndHide()
+                lastTrainDepartView.isHidden = false
+                viewModel.startAlarmTimer()
+
+                // 알람 등록 직후, 최신 택시비 먼저 가져와서 postAlarmMessages에 반영
+                Task { [weak self] in
+                    guard let self else { return }
+                    do {
+                        let fare = try await self.viewModel.fetchFareForRegisteredStart()
+                        let fareInt = Int(fare)
+                        let fareStr = self.decimalFormatter.string(from: NSNumber(value: fareInt)) ?? "\(fareInt)"
+                        self.latestFareString = fareStr
+                    } catch {
+                        // 실패 시 기본값 유지
+                        self.latestFareString = self.latestFareString ?? "12,000"
+                    }
+
+                    // 최신 latestFareString으로 리스트 구성
+                    self.setupPostAlarmMessages()
+
+                    // 첫 풍선 예약 (기존 로직 유지)
+                    self.firstPostBalloonGeneration += 1
+                    let myGen = self.firstPostBalloonGeneration
+
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+                        guard let self = self else { return }
+                        guard myGen == self.firstPostBalloonGeneration else { return }
+                        guard self.viewModel.bottomType == .departure else { return }
+                        self.enqueueNextBalloon(self.postAlarmMessages[0], delay: 0)
+                    }
+
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+                        self?.atchaImageView.stop()
+                        self?.atchaImageView.start()
+                    }
+                }
             
         case .detail:
             cancelBalloonQueueAndHide()
@@ -647,7 +661,7 @@ extension MainViewController {
                         self.showInitialPreAlarmBalloons(force: true)
                     } else if self.isPreAlarmBalloonActive() {
                         if let fare = self.latestFareString {
-                            // ✅ 재방문이면 윗줄 숨김
+                            // 재방문이면 윗줄 숨김
                             self.showOrUpdatePreBalloon(
                                 .separation(gray: "여기서 막차 놓치면 택시비 ", white: "약 \(fare)원"),
                                 showTopLine: self.showTopLineForPre
@@ -667,7 +681,7 @@ extension MainViewController {
                     if previous == nil {
                         self.showInitialPreAlarmBalloons(force: true)
                     } else if self.isPreAlarmBalloonActive() {
-                        // ✅ 재방문이면 윗줄 숨김
+                        // 재방문이면 윗줄 숨김
                         self.showOrUpdatePreBalloon(
                             .text(
                                 top: self.showTopLineForPre ? "지도를 움직여 출발지를 설정해 봐요" : nil,
@@ -800,7 +814,6 @@ extension MainViewController {
             AmplitudeManager.shared.track(AmplitudeEvent.character_clicked_after_alarm.rawValue, ["clicked": 1])
         case .next:
             guard !postAlarmMessages.isEmpty else { return }
-            
             if postAlarmIndex < 1 { postAlarmIndex = 1 }
             let content = postAlarmMessages[postAlarmIndex]
             
@@ -966,7 +979,7 @@ extension MainViewController {
             ), delay: d1)
         }
 
-        // ✅ 신규 로그인 첫 노출 후에만 reVisit=true로 세팅 (앱 재실행 시 위줄 숨김)
+        // 신규 로그인 첫 노출 후에만 reVisit=true로 세팅 (앱 재실행 시 위줄 숨김)
         if !isRevisit {
             UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.reVisit.rawValue)
         }
