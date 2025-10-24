@@ -24,7 +24,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
     private let flagImageView: UIImageView = UIImageView()
     private let myPageButton: UIButton = UIButton()
     private let loactionButton: UIButton = UIButton()
-//    private let atchaImageView: UIImageView = UIImageView()
+    //    private let atchaImageView: UIImageView = UIImageView()
     private let atchaImageView: CharacterJumpView = CharacterJumpView()
     private let ballonView: AtchaBallon = AtchaBallon()
     private let decimalFormatter: NumberFormatter = {
@@ -129,7 +129,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
                         imageName: "mylocation-filled",
                         action: #selector(didTapLocationButton))
         flagImageView.image = UIImage.settingLocationMark
-//        atchaImageView.image = UIImage.atcha
+        //        atchaImageView.image = UIImage.atcha
         atchaImageView.isUserInteractionEnabled = true
         atchaImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleBallonTap)))
         
@@ -552,10 +552,10 @@ extension MainViewController {
             lastTrainDepartView.isHidden = false
             viewModel.startAlarmTimer()
             setupPostAlarmMessages()
-
+            
             firstPostBalloonGeneration += 1
             let myGen = firstPostBalloonGeneration
-
+            
             // 200ms 뒤에 첫 풍선 예약 (여기서 3번 호출돼도 OK)
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
                 guard let self = self else { return }
@@ -576,14 +576,14 @@ extension MainViewController {
             lastTrainDepartView.isHidden = false
         case .search:
             cancelBalloonQueueAndHide()
-// 타이머/뷰 상태 기존 로직
+            // 타이머/뷰 상태 기존 로직
             viewModel.stopAlarmTimer()
             viewModel.stopFinishAlarmTimer()
             lastTrainSearchView.isHidden = false
             flagImageView.isHidden = false
             mapContainerView.clearMapView()
             updateAtchaImageConstraint(relativeTo: lastTrainSearchView)
-
+            
             hasShownInitialBalloon = false
             showInitialPreAlarmBalloons(force: true)
             //        case .detail:
@@ -608,14 +608,14 @@ extension MainViewController {
                 guard let self else { return }
                 let fareStr = self.decimalFormatter.string(from: NSNumber(value: fareInt)) ?? "\(fareInt)"
                 self.latestFareString = fareStr
-
+                
                 // 알람 등록 전 + 서비스 가능: 항상 분리 풍선으로 고정/갱신
                 if self.isPreAlarmBalloonActive(), self.latestIsServiceRegion == true {
                     self.showOrUpdatePreBalloon(
                         .separation(gray: "여기서 막차 놓치면 택시비 ", white: "약 \(fareStr)원")
                     )
                 }
-
+                
                 // 등록 후 회전 메시지의 마지막(택시비)도 유지
                 if !self.postAlarmMessages.isEmpty {
                     self.postAlarmMessages[self.postAlarmMessages.count - 1] =
@@ -633,7 +633,7 @@ extension MainViewController {
                 guard let self else { return }
                 let previous = self.latestIsServiceRegion
                 self.latestIsServiceRegion = ok
-
+                
                 switch ok {
                 case .some(true):
                     self.lastTrainSearchView.updateSearchEnabled(true)
@@ -654,7 +654,7 @@ extension MainViewController {
                             )
                         }
                     }
-
+                    
                 case .some(false):
                     self.lastTrainSearchView.updateSearchEnabled(false)
                     if previous == nil {
@@ -665,7 +665,7 @@ extension MainViewController {
                                   bottom: "서울, 경기, 인천 내에서만 사용할 수 있어요")
                         )
                     }
-
+                    
                 case .none:
                     self.lastTrainSearchView.updateSearchEnabled(false)
                 }
@@ -783,28 +783,26 @@ extension MainViewController {
         atchaImageView.stop()
         atchaImageView.start()
         
-        let isAlarmRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
-        if isAlarmRegistered {
-            AmplitudeManager.shared.track(AmplitudeEvent.character_clicked_after_alarm.rawValue, ["clicked": 1])
-        } else {
-            AmplitudeManager.shared.track(AmplitudeEvent.character_clicked_before_alarm.rawValue, ["clicked": 1])
-        }
-        
-        guard let last = lastShownBalloon, let scope = lastShownScope else { return }
+        let scope = lastShownScope
         
         switch scope {
         case .pre:
-            // 등록 전에서만 재생
-            if isPreAlarmBalloonActive() { enqueuePreAlarmBalloon(last) }
+            AmplitudeManager.shared.track(AmplitudeEvent.character_clicked_after_alarm.rawValue, ["clicked": 1])
         case .next:
             guard !postAlarmMessages.isEmpty else { return }
-            // 안전하게 1..n-1 순환
+            
             if postAlarmIndex < 1 { postAlarmIndex = 1 }
             let content = postAlarmMessages[postAlarmIndex]
-            enqueueNextBalloon(content)
             
-            let cycleCount = postAlarmMessages.count - 1 // 1..n-1 개수
+            // 기존 큐 무시하고 바로 표시
+            showOrUpdateImmediateBalloon(content)
+            
+            let cycleCount = postAlarmMessages.count - 1
             postAlarmIndex = 1 + ((postAlarmIndex - 1 + 1) % cycleCount)
+            
+            AmplitudeManager.shared.track(AmplitudeEvent.character_clicked_before_alarm.rawValue, ["clicked": 1])
+        case .none:
+            break
         }
     }
     
@@ -885,18 +883,18 @@ extension MainViewController {
                                         delay: TimeInterval = 0,
                                         animated: Bool = true) {
         guard isPreAlarmBalloonActive() else { return }
-
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
             guard let self else { return }
-
+            
             // 동일 콘텐츠면 불필요 업데이트 방지 (원하면 지워도 됨)
             if self.pinnedPreBalloon == content, self.lastShownScope == .pre {
                 return
             }
-
+            
             self.ballonView.layer.removeAllAnimations()
             self.view.bringSubviewToFront(self.ballonView)
-
+            
             switch content {
             case .text(let top, let bottom):
                 if let top = top {
@@ -907,7 +905,7 @@ extension MainViewController {
             case .separation(let gray, let white):
                 self.ballonView.separationTitle(grayMessage: gray, whiteMessage: white)
             }
-
+            
             if self.ballonView.isHidden {
                 self.ballonView.alpha = 0
                 self.ballonView.isHidden = false
@@ -917,7 +915,7 @@ extension MainViewController {
             } else {
                 // 이미 떠있을 때는 자연스럽게 내용만 갈아끼우고 알파는 유지
             }
-
+            
             // 마지막/고정 상태 갱신
             self.lastShownBalloon = content
             self.lastShownScope = .pre
@@ -928,9 +926,9 @@ extension MainViewController {
     private func showInitialPreAlarmBalloons(force: Bool = false) {
         guard force || !hasShownInitialBalloon,
               let isService = latestIsServiceRegion else { return }
-
+        
         let d1 = balloonInitialDelayFirst
-
+        
         if isService {
             if let fare = latestFareString {
                 // 금액 있으면 바로 분리 풍선
@@ -954,12 +952,57 @@ extension MainViewController {
                 delay: d1
             )
         }
-
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
             self?.atchaImageView.stop()
             self?.atchaImageView.start()
         }
         hasShownInitialBalloon = true
+    }
+    
+    private func showOrUpdateImmediateBalloon(_ content: BalloonContent) {
+        // 기존 애니메이션 & 예약 취소
+        balloonQueue.removeAll()
+        ballonView.layer.removeAllAnimations()
+        NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(hideImmediateBalloon), object: nil)
+        
+        // 말풍선 내용 업데이트
+        switch content {
+        case .text(let top, let bottom):
+            if let top = top {
+                ballonView.setupTitle(topMessage: top, bottomMessage: bottom)
+            } else {
+                ballonView.setupTitle(bottomMessage: bottom)
+            }
+        case .separation(let gray, let white):
+            ballonView.separationTitle(grayMessage: gray, whiteMessage: white)
+        }
+        
+        // 즉시 표시 (페이드인)
+        ballonView.isHidden = false
+        ballonView.alpha = 0
+        view.bringSubviewToFront(ballonView)
+        
+        UIView.animate(withDuration: 0.25) {
+            self.ballonView.alpha = 1
+        }
+        
+        // 마지막 터치 기준으로 3초 뒤 페이드아웃 예약
+        perform(#selector(hideImmediateBalloon), with: nil, afterDelay: 3.0)
+        
+        // 상태 저장
+        lastShownBalloon = content
+        lastShownScope = .next
+        pinnedPreBalloon = content
+    }
+
+    
+    @objc private func hideImmediateBalloon() {
+        UIView.animate(withDuration: 0.25, animations: {
+            self.ballonView.alpha = 0
+        }) { _ in
+            self.ballonView.isHidden = true
+        }
     }
     
     private func isPreAlarmBalloonActive() -> Bool {
@@ -972,7 +1015,7 @@ extension MainViewController {
         ballonView.isHidden = true
         ballonView.alpha = 0
         isBalloonShowing = false
-
+        
         // 프리 고정말풍선 상태도 리셋
         pinnedPreBalloon = nil
         if lastShownScope == .pre { lastShownBalloon = nil }
