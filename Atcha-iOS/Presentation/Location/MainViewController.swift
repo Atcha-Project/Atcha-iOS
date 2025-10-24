@@ -182,10 +182,10 @@ extension MainViewController {
         }
         ballonView.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(8)
-            make.bottom.equalTo(atchaImageView.snp.top).inset(-10)
+            make.bottom.equalTo(atchaImageView.snp.top)
         }
         atchaImageView.snp.makeConstraints { make in
-            make.width.height.equalTo(64)
+            make.width.height.equalTo(74)
             make.leading.equalToSuperview().inset(8)
             make.bottom.equalTo(lastTrainSearchView.snp.top).inset(22)
         }
@@ -682,9 +682,9 @@ extension MainViewController {
         }
         
         atchaImageView.snp.remakeConstraints { make in
-            make.width.height.equalTo(64)
-            make.leading.equalToSuperview().inset(8)
-            make.bottom.equalTo(view.snp.top).inset(24)
+            make.width.height.equalTo(74)
+            make.leading.equalToSuperview()
+            make.bottom.equalTo(view.snp.top).inset(26)
         }
     }
 }
