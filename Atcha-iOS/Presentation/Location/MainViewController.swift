@@ -50,33 +50,33 @@ final class MainViewController: BaseViewController<MainViewModel>,
     private let balloonInitialDelaySecond: TimeInterval = 1.5  // (2개일 때) 두 번째 1500ms
     private let balloonHold: TimeInterval = 2.5                // 유지 2500ms
     private let balloonFade: TimeInterval = 0.25               // 페이드 250ms
-
+    
     // MARK: - 말풍선 타입
     private enum BalloonContent: Equatable {
         case text(top: String?, bottom: String)
         case separation(gray: String, white: String) // (택시비: 회색+흰색 분리용)
     }
-
+    
     private enum BalloonScope {
         case pre      // 알람 등록 전
         case next     // 알람 등록 후
     }
-
+    
     // MARK: - 말풍선 큐 & 상태
     private var balloonQueue: [(content: BalloonContent, delay: TimeInterval, scope: BalloonScope)] = []
     private var isBalloonShowing = false
     private var hasShownInitialBalloon = false
     private var lastShownBalloon: BalloonContent?
     private var lastShownScope: BalloonScope?
-
+    
     // MARK: - 최신 값 캐시(비동기 병합용)
     private var latestIsServiceRegion: Bool?
     private var latestFareString: String?
-
+    
     // MARK: - 알람 등록 후 메시지(순환)
     private var postAlarmMessages: [BalloonContent] = []
     private var postAlarmIndex = 0
-
+    
     // MARK: - 방문 플래그 & 표시 규칙
     private var isRevisit: Bool {
         UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.reVisit.rawValue) ?? false
@@ -88,10 +88,10 @@ final class MainViewController: BaseViewController<MainViewModel>,
     private var lastAppliedBottomType: MapBottomType?
     private var setupGen = 0
     private var firstBalloonWork: DispatchWorkItem?
-
+    
     // MARK: - 네트워크/조회 상태
     private var isFetchingFare = false
-
+    
     // MARK: - 점프 애니메이션 스로틀링
     private var lastJumpTime: CFTimeInterval = 0
     private let minJumpInterval: CFTimeInterval = 1.0
@@ -430,6 +430,7 @@ extension MainViewController {
         viewModel.bottomType = .search
         
         mapContainerView.clearMapView()
+        mapContainerView.hideUserMarker()
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
             guard let self else { return }
@@ -575,6 +576,7 @@ extension MainViewController {
             if !isSame { cancelBalloonQueueAndHide() }
             lastTrainDepartView.isHidden = false
             viewModel.startAlarmTimer()
+            mapContainerView.showUserMarker()
             
             setupGen &+= 1
             let gen = setupGen
@@ -585,7 +587,7 @@ extension MainViewController {
             let delay: TimeInterval = isSame ? 0.7 : 0.2
             self.scheduleFirstBalloon(gen: gen, delay: delay)
             preSessionShowTopLine = nil
-    
+            
         case .search:
             if !isSame { cancelBalloonQueueAndHide() }
             viewModel.stopAlarmTimer()
@@ -593,6 +595,7 @@ extension MainViewController {
             lastTrainSearchView.isHidden = false
             flagImageView.isHidden = false
             mapContainerView.clearMapView()
+            mapContainerView.hideUserMarker()
             updateAtchaImageConstraint(relativeTo: lastTrainSearchView)
             hasShownInitialBalloon = false
             showInitialPreAlarmBalloons(force: true)
@@ -801,6 +804,11 @@ extension MainViewController {
                 self.viewModel.drawRoute(address: address, info: legInfo)
                 return
             }
+            
+            let isAlarmRegistered = wrapper.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
+            if !isAlarmRegistered {
+                self.mapContainerView.hideUserMarker()
+            }
         }
     }
     
@@ -825,18 +833,18 @@ extension MainViewController {
     @objc private func handleBallonTap() {
         atchaImageView.stop()
         atchaImageView.start()
-
+        
         let scope = lastShownScope
-
+        
         switch scope {
         case .pre:
             AmplitudeManager.shared.track(AmplitudeEvent.character_clicked_after_alarm.rawValue, ["clicked": 1])
-
+            
         case .next:
             // 알람 등록 이후 캐릭터 탭 시 — 항상 요금 재조회
             guard !isFetchingFare else { return }
             isFetchingFare = true
-
+            
             let vm = viewModel
             Task(priority: .userInitiated) {
                 defer {
@@ -846,17 +854,17 @@ extension MainViewController {
                     let fare = try await vm.fetchFareForRegisteredStart()
                     let fareInt = Int(fare)
                     let fareStr = self.decimalFormatter.string(from: NSNumber(value: fareInt)) ?? "\(fareInt)"
-
+                    
                     await MainActor.run {
                         // 최신 요금 반영
                         self.latestFareString = fareStr
                         self.setupPostAlarmMessages()
-
+                        
                         // 바로 요금 메시지 보여주기
                         self.showOrUpdateImmediateBalloon(
                             .separation(gray: "막차 놓치면 택시비 ", white: "약 \(fareStr)원")
                         )
-
+                        
                         // 이후 순환은 기존대로
                         self.postAlarmIndex = 2
                     }
@@ -867,19 +875,19 @@ extension MainViewController {
                 }
             }
             return
-
+            
             // 이미 요금이 있거나, 현재 조회 중이면 기존 순환 로직
             guard !postAlarmMessages.isEmpty else { return }
             if postAlarmIndex < 1 { postAlarmIndex = 1 }
             let content = postAlarmMessages[postAlarmIndex]
-
+            
             showOrUpdateImmediateBalloon(content)
-
+            
             let cycleCount = postAlarmMessages.count - 1
             postAlarmIndex = 1 + ((postAlarmIndex - 1 + 1) % cycleCount)
-
+            
             AmplitudeManager.shared.track(AmplitudeEvent.character_clicked_before_alarm.rawValue, ["clicked": 1])
-
+            
         case .none:
             break
         }
@@ -1005,10 +1013,10 @@ extension MainViewController {
         guard isPreAlarmBalloonActive() else { return }
         
         if preSessionShowTopLine == nil {
-                preSessionShowTopLine = !isRevisit
-            }
-            let showTopLine = preSessionShowTopLine ?? true
-             let d1 = balloonInitialDelayFirst
+            preSessionShowTopLine = !isRevisit
+        }
+        let showTopLine = preSessionShowTopLine ?? true
+        let d1 = balloonInitialDelayFirst
         
         if isService {
             if let fare = latestFareString {
