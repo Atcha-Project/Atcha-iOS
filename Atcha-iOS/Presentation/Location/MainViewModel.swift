@@ -70,12 +70,55 @@ final class MainViewModel: BaseViewModel {
     
     func bind() {
         $currentLocation
+            .compactMap { $0 }
             .removeDuplicates()
             .debounce(for: .seconds(0.3), scheduler: RunLoop.main)
-            .sink { [weak self] location in
-                self?.handleLocationUpdate(location)
+            .sink { [weak self] _ in
+                guard let self, let loc = self.currentLocation else { return }
+                Task { await self.updateAddressOnly(for: loc) }
             }
             .store(in: &cancellables)
+
+        $address
+            .compactMap { $0 }
+            .removeDuplicates()
+            .sink { [weak self] _ in
+                Task { await self?.refreshRegionAndFareForCurrentAddress() }
+            }
+            .store(in: &cancellables)
+    }
+    
+    private func updateAddressOnly(for location: CLLocationCoordinate2D) async {
+        do {
+            let info = try await fetchCurrentAddress(lat: location.latitude, lon: location.longitude)
+            self.lastReverseGeocode = info
+            self.address = info?.name?.isEmpty == false ? info?.name : info?.address
+        } catch { print("❌ 역지오코딩 실패: \(error)") }
+    }
+
+    private func refreshRegionAndFareForCurrentAddress() async {
+        guard let lat = lastReverseGeocode?.lat,
+              let lon = lastReverseGeocode?.lon else { return }
+
+        // 서비스지역 먼저
+        do {
+            let okReq = CheckServiceRegionRequest(lat: lat, lon: lon)
+            let ok = try await searchAddressUseCase.checkServiceRegion(okReq)
+            await MainActor.run { self.isServiceRegion = ok }
+        } catch { print("서비스 지역 확인 실패: \(error)") }
+
+        // 택시비는 서비스지역 O일 때만
+        guard self.isServiceRegion == true else { return }
+        let req = FetchTaxiFareRequest(
+            originLat: lastReverseGeocode?.lat,
+            originLon: lastReverseGeocode?.lon,
+            destinationLat: UserDefaultsWrapper.shared.double(forKey: UserDefaultsWrapper.Key.homeLat.rawValue),
+            destinationLon: UserDefaultsWrapper.shared.double(forKey: UserDefaultsWrapper.Key.homeLon.rawValue)
+        )
+        do {
+            let fare = try await fetchTaxiFare(request: req)
+            await MainActor.run { self.taxiFare = fare }
+        } catch { print("택시비 조회 실패: \(error)") }
     }
     
     func drawRoute(address: String?, info: LegInfo?) {

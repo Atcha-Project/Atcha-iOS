@@ -17,7 +17,8 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
     private let backButton: UIButton = UIButton()
     private var activityIndicator: UIActivityIndicatorView?
     private lazy var bottomSheet: DetailRouteInfoBottomView = DetailRouteInfoBottomView()
-    private let relaodButton: UIButton = UIButton()
+//    private let relaodButton: UIButton = UIButton()
+    private let refreshButton: RefreshView = RefreshView(background: .default)
     private var allCoordinates: [CLLocationCoordinate2D] = []
     private let registerContainer: UIView = UIView()
     private var registerGradient = CAGradientLayer()
@@ -50,7 +51,7 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
     
     // MARK: 알림 등록 이전 UI
     private func setupBeforeUI() {
-        relaodButton.isHidden = true
+        refreshButton.isHidden = true
         registerContainer.addSubview(alarmRegisterButton)
         registerContainer.backgroundColor = .clear
         view.addSubview(registerContainer)
@@ -89,11 +90,11 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
     
     // MARK: 알림 등록 이후 UI
     private func setupAfterUI() {
-        relaodButton.isHidden = false
+        refreshButton.isHidden = false
     }
     
     private func setupUI() {
-        view.addSubViews(mapContainerView, loactionButton, bottomSheet, backButton, relaodButton)
+        view.addSubViews(mapContainerView, loactionButton, bottomSheet, backButton, refreshButton)
         mapContainerView.delegate = self
         
         backButton.setImage(UIImage.chevronLeft, for: .normal)
@@ -103,12 +104,16 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         backButton.setCornerRadius(18)
         backButton.addTarget(self, action: #selector(didTapClose), for: .touchUpInside)
         
-        relaodButton.setImage(UIImage.refreshOutlined, for: .normal)
-        relaodButton.tintColor = .white
-        relaodButton.backgroundColor = .gray600
-        relaodButton.clipsToBounds = true
-        relaodButton.setCornerRadius(24)
-        relaodButton.addTarget(self, action: #selector(didTapReload), for: .touchUpInside)
+//        relaodButton.setImage(UIImage.refreshOutlined, for: .normal)
+//        relaodButton.tintColor = .white
+//        relaodButton.backgroundColor = .gray600
+//        relaodButton.clipsToBounds = true
+//        relaodButton.setCornerRadius(24)
+//        relaodButton.addTarget(self, action: #selector(didTapReload), for: .touchUpInside)
+        
+        refreshButton.isUserInteractionEnabled = true
+        let tap = UITapGestureRecognizer(target: self, action: #selector(didTapReload))
+        refreshButton.addGestureRecognizer(tap)
         
         configureButton(loactionButton,
                         imageName: "mylocation-filled",
@@ -142,7 +147,7 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             make.trailing.equalToSuperview().inset(16)
             make.width.height.equalTo(40)
         }
-        relaodButton.snp.makeConstraints { make in
+        refreshButton.snp.makeConstraints { make in
             make.size.equalTo(48)
             make.trailing.equalToSuperview().inset(16)
             make.bottom.equalTo(view.snp.bottom).inset(40)
@@ -301,6 +306,7 @@ extension DetailRouteViewController {
     }
     
     @objc private func didTapReload() {
+        refreshButton.start()
         viewModel.fetchInfo()
     }
 }

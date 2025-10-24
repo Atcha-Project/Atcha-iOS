@@ -22,7 +22,7 @@ final class LastTrainDepartBottomView: UIView {
     private let titleView: UIView = UIView()
     private let trainTimeLabel: UILabel = UILabel()
     private let trainRigtImageView: UIImageView = UIImageView()
-    private let reloadImageView: UIImageView = UIImageView()
+//    private let reloadImageView: UIImageView = UIImageView()
     
     private let timeView: UIView = UIView()
     private let hourTimeLabel: UILabel = UILabel()
@@ -66,7 +66,7 @@ final class LastTrainDepartBottomView: UIView {
     private func setupUI() {
         backgroundColor = .gray950
         layer.cornerRadius = 20
-        titleView.addSubViews(trainTimeLabel, trainRigtImageView, reloadImageView)
+        titleView.addSubViews(trainTimeLabel, trainRigtImageView)
         timeView.addSubViews(hourLabel, hourTimeLabel, miniuteLabel, minuteTimeLabel)
         addSubViews(titleView, timeView, locationLabel, buttonStackView)
         
@@ -75,10 +75,10 @@ final class LastTrainDepartBottomView: UIView {
         trainRigtImageView.contentMode = .scaleAspectFit
         trainRigtImageView.tintColor = .gray500
         
-        reloadImageView.image = UIImage.refreshOutlined
-        reloadImageView.contentMode = .scaleAspectFit
-        reloadImageView.tintColor = .white
-        reloadImageView.setContentHuggingPriority(.required, for: .horizontal)
+//        reloadImageView.image = UIImage.refreshOutlined
+//        reloadImageView.contentMode = .scaleAspectFit
+//        reloadImageView.tintColor = .white
+//        reloadImageView.setContentHuggingPriority(.required, for: .horizontal)
 
         hourTimeLabel.attributedText = AtchaFont.D2_EB_48("--", color: .white)
         minuteTimeLabel.attributedText = AtchaFont.D2_EB_48("--", color: .white)
@@ -111,11 +111,11 @@ final class LastTrainDepartBottomView: UIView {
             make.size.equalTo(14)
         }
         
-        reloadImageView.snp.makeConstraints { make in
-            make.centerY.equalToSuperview()
-            make.trailing.equalToSuperview()
-            make.size.equalTo(28)
-        }
+//        reloadImageView.snp.makeConstraints { make in
+//            make.centerY.equalToSuperview()
+//            make.trailing.equalToSuperview()
+//            make.size.equalTo(28)
+//        }
         
         timeView.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(16)
@@ -161,8 +161,8 @@ final class LastTrainDepartBottomView: UIView {
     private func setupActions() {
         exitButton.addTarget(self, action: #selector(handleExitTapped), for: .touchUpInside)
         detailRoadMapButton.addTarget(self, action: #selector(handleDetailRoadTapped), for: .touchUpInside)
-        reloadImageView.isUserInteractionEnabled = true
-        reloadImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleReloadTapped)))
+//        reloadImageView.isUserInteractionEnabled = true
+//        reloadImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleReloadTapped)))
         hourTimeLabel.isUserInteractionEnabled = true
         hourTimeLabel.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleTimeTapped)))
         locationLabel.isUserInteractionEnabled = true

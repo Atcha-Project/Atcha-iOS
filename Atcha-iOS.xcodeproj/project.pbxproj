@@ -74,6 +74,8 @@
 		6D73EBE62E1B51E000F8DF8B /* CourseUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D73EBE52E1B51E000F8DF8B /* CourseUseCase.swift */; };
 		6D73EBE82E1B54A500F8DF8B /* CourseRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D73EBE72E1B54A500F8DF8B /* CourseRepository.swift */; };
 		6D73EBEA2E1B551600F8DF8B /* CourseRepositoryImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D73EBE92E1B551600F8DF8B /* CourseRepositoryImpl.swift */; };
+		6D74AE3C2EAA123E00FB8D52 /* Character_Jump.json in Resources */ = {isa = PBXBuildFile; fileRef = 6D74AE3B2EAA123E00FB8D52 /* Character_Jump.json */; };
+		6D74AE3E2EAA126200FB8D52 /* CharacterJumpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D74AE3D2EAA126200FB8D52 /* CharacterJumpView.swift */; };
 		6D79F9AD2E6D75EC00BD8BC8 /* Alarm.json in Resources */ = {isa = PBXBuildFile; fileRef = 6D79F9AC2E6D75EC00BD8BC8 /* Alarm.json */; };
 		6D7CB4112E6810BD003AB799 /* ScrollView+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D7CB4102E6810BD003AB799 /* ScrollView+Ext.swift */; };
 		6D8157422E126C3A003688A6 /* LockViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D8157412E126C3A003688A6 /* LockViewModel.swift */; };
@@ -384,6 +386,8 @@
 		6D73EBE52E1B51E000F8DF8B /* CourseUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseUseCase.swift; sourceTree = "<group>"; };
 		6D73EBE72E1B54A500F8DF8B /* CourseRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseRepository.swift; sourceTree = "<group>"; };
 		6D73EBE92E1B551600F8DF8B /* CourseRepositoryImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseRepositoryImpl.swift; sourceTree = "<group>"; };
+		6D74AE3B2EAA123E00FB8D52 /* Character_Jump.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = Character_Jump.json; sourceTree = "<group>"; };
+		6D74AE3D2EAA126200FB8D52 /* CharacterJumpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterJumpView.swift; sourceTree = "<group>"; };
 		6D79F9AC2E6D75EC00BD8BC8 /* Alarm.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = Alarm.json; sourceTree = "<group>"; };
 		6D7CB4102E6810BD003AB799 /* ScrollView+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ScrollView+Ext.swift"; sourceTree = "<group>"; };
 		6D8157412E126C3A003688A6 /* LockViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockViewModel.swift; sourceTree = "<group>"; };
@@ -863,11 +867,13 @@
 		6D81574A2E129B46003688A6 /* AtchaLottie */ = {
 			isa = PBXGroup;
 			children = (
+				6D74AE3B2EAA123E00FB8D52 /* Character_Jump.json */,
 				6D79F9AC2E6D75EC00BD8BC8 /* Alarm.json */,
 				6D6879BD2E4067B400E59C55 /* Refresh.json */,
 				6D91A8FE2E33E2FA0081BAFC /* Loading.json */,
 				6D91A9002E33E3620081BAFC /* LoadingView.swift */,
 				6D6879BF2E40684C00E59C55 /* RefreshView.swift */,
+				6D74AE3D2EAA126200FB8D52 /* CharacterJumpView.swift */,
 			);
 			path = AtchaLottie;
 			sourceTree = "<group>";
@@ -1935,6 +1941,7 @@
 				6D8157462E127BDB003688A6 /* GoogleService-Info.plist in Resources */,
 				B68730D02E46539F00BFB1F6 /* siren.mp3 in Resources */,
 				B683095D2E005A3600E2D029 /* Pretendard-SemiBold.otf in Resources */,
+				6D74AE3C2EAA123E00FB8D52 /* Character_Jump.json in Resources */,
 				6D79F9AD2E6D75EC00BD8BC8 /* Alarm.json in Resources */,
 				B683095E2E005A3600E2D029 /* Icon.xcassets in Resources */,
 				B683095F2E005A3600E2D029 /* Assets.xcassets in Resources */,
@@ -2040,6 +2047,7 @@
 				B6AC8BD52E2A819200410ECD /* MyAccountItem.swift in Sources */,
 				6D73EB5D2E1611F800F8DF8B /* CourseSearchViewController.swift in Sources */,
 				B65C13102E057D800016D2F0 /* TokenInterceptor.swift in Sources */,
+				6D74AE3E2EAA126200FB8D52 /* CharacterJumpView.swift in Sources */,
 				B6AC8BE52E2BC39900410ECD /* AlarmSettingItem.swift in Sources */,
 				6D2B8CB02E39AAFA00608104 /* BusRealTimeInfoResponse.swift in Sources */,
 				6D81574E2E13EC0F003688A6 /* Int+Ext.swift in Sources */,
