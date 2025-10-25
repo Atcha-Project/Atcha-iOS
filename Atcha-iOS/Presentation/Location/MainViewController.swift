@@ -388,7 +388,9 @@ extension MainViewController {
                 ]
             )
         case .locationTapped:
-            enqueueNextBalloon(.text(top: nil, bottom: "위치를 변경하려면 알람을 종료해야 해요"))
+            self.showOrUpdateImmediateBalloon(
+                .text(top: nil, bottom: "위치를 변경하려면 알람을 종료해야 해요")
+            )
             AmplitudeManager.shared.track(
                 AmplitudeEvent.home_route_clicked.rawValue,
                 [
@@ -398,7 +400,9 @@ extension MainViewController {
         case .reloadTapped:
             viewModel.refreshDepatrueTime()
         case .timeTapped:
-            enqueueNextBalloon(.text(top: "이때쯤 자리에서 출발하면 돼요", bottom: "현재 교통 상황 기준으로,\n출발 시간이 가까워질수록 더 정확해져요"))
+            self.showOrUpdateImmediateBalloon(
+                .text(top: "이때 자리에서 출발하면 돼요", bottom: "교통 상황에 따라 시간이 달라질 수 있어요")
+            )
         }
     }
     
