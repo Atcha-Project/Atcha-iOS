@@ -646,8 +646,11 @@ extension MainViewController {
             guard let self else { return }
             guard gen == self.setupGen, self.viewModel.bottomType == .departure else { return }
             guard let first = self.postAlarmMessages.first else { return }
-            self.showOrUpdateImmediateBalloon(first)
-            self.safeStartJump()
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                self.showOrUpdateImmediateBalloon(first)
+                self.safeStartJump()
+            }
         }
         firstBalloonWork = work
         DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
