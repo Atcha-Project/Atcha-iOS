@@ -595,7 +595,8 @@ extension MainViewController {
 
             setupGen &+= 1
             let gen = setupGen
-
+            cancelBalloonQueueAndHide()
+            atchaImageView.stop()
             self.setupPostAlarmMessages()
 
             // 두 번 연속 호출일 때만 0.7초, 아니면 0.2초 (기존 로직 유지)
@@ -625,6 +626,9 @@ extension MainViewController {
                viewModel.stopFinishAlarmTimer()
                lastTrainSearchView.isHidden = false
                flagImageView.isHidden = false
+                cancelBalloonQueueAndHide()
+                atchaImageView.stop()
+            
                mapContainerView.clearMapView()
                mapContainerView.hideUserMarker()
                updateAtchaImageConstraint(relativeTo: lastTrainSearchView)
