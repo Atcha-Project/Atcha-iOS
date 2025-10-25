@@ -478,6 +478,24 @@ extension MainViewModel {
         }
     }
     
+    func fetchFareForRegisteredStart() async throws -> Double {
+        let w = UserDefaultsWrapper.shared
+        let latStr: String = w.string(forKey: UserDefaultsWrapper.Key.startLat.rawValue) ?? ""
+        let lonStr: String = w.string(forKey: UserDefaultsWrapper.Key.startLon.rawValue) ?? ""
+
+        guard let lat = Double(latStr), let lon = Double(lonStr) else {
+            throw NSError(domain: "StartCoord", code: -1, userInfo: [NSLocalizedDescriptionKey: "저장된 출발 좌표가 유효하지 않습니다."])
+        }
+
+        let req = FetchTaxiFareRequest(
+            originLat: lat,
+            originLon: lon,
+            destinationLat: w.double(forKey: UserDefaultsWrapper.Key.homeLat.rawValue),
+            destinationLon: w.double(forKey: UserDefaultsWrapper.Key.homeLon.rawValue)
+        )
+        return try await fetchTaxiFare(request: req)
+    }
+    
     // MARK: - 서비즈 지역 확인
     private func checkServiceRegion(currentLocation: CLLocationCoordinate2D) async {
         let req = CheckServiceRegionRequest(lat: currentLocation.latitude, lon: currentLocation.longitude)

@@ -45,11 +45,25 @@ final class TMapWrapper: NSObject, MapRendering {
             guard let self else { return }
             if let marker = userMarker {
                 marker.position = coordinate
+                if marker.map == nil { marker.map = mapView } // ← 숨겨져 있던 마커 다시 보이게
             } else {
                 userMarker = TMapMarker(position: coordinate)
                 userMarker?.icon = UIImage.currentLocationMark
                 userMarker?.map = mapView
             }
+        }
+    }
+    
+    func showUserMarker() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self, let marker = self.userMarker else { return }
+            marker.map = self.mapView
+        }
+    }
+
+    func hideUserMarker() {
+        DispatchQueue.main.async { [weak self] in
+            self?.userMarker?.map = nil
         }
     }
     

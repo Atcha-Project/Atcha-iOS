@@ -39,7 +39,7 @@ final class CharacterJumpView: UIView {
     private func setupAutoLayout() {
         animationView.snp.makeConstraints { make in
             make.center.equalToSuperview()
-            make.size.equalTo(64)
+            make.size.equalTo(74)
         }
     }
 

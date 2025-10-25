@@ -70,28 +70,117 @@ final class AtchaBallon: UIView {
     func setupTitle(topMessage: String? = nil, bottomMessage: String) {
         bottomLabel.attributedText = AtchaFont.B7_M_13(bottomMessage, color: .white)
         
-        guard let topMessage else {
+        if let topMessage {
+            topLabel.attributedText = AtchaFont.B7_M_13(topMessage, color: .white)
+            topLabel.isHidden = false
+        } else {
             topLabel.isHidden = true
-            return
         }
-        topLabel.attributedText = AtchaFont.B7_M_13(topMessage, color: .white)
-        topLabel.isHidden = false
     }
     
-    func separationTitle(grayMessage: String, whiteMessage: String) {
+    func separationTitle(grayMessage: String, whiteMessage: String, showTopLine: Bool) {
+        if showTopLine {
+            // 알람 등록 전: 위 줄 보이게 (고정 문구)
+            topLabel.isHidden = false
+            topLabel.attributedText = AtchaFont.B7_M_13("지도를 움직여 출발지를 설정해 봐요", color: .white)
+            topLabel.alpha = 1
+        } else {
+            // 알람 등록 후: 위 줄 숨김
+            topLabel.isHidden = true
+            topLabel.attributedText = nil
+            topLabel.alpha = 0
+        }
+
+        // 아래줄 구성 (택시비)
         let gray = NSMutableAttributedString(attributedString: AtchaFont.B7_M_13(grayMessage))
         gray.addAttributes([.foregroundColor: UIColor.gray100],
                            range: NSRange(location: 0, length: gray.length))
-        
         let white = NSMutableAttributedString(attributedString: AtchaFont.B7_M_13(whiteMessage))
         white.addAttributes([.foregroundColor: UIColor.white],
                             range: NSRange(location: 0, length: white.length))
-        
+
         let composed = NSMutableAttributedString()
         composed.append(gray)
         composed.append(white)
-        
         bottomLabel.attributedText = composed
     }
+    
+    func animateStaggered(secondaryDelay: TimeInterval = 0.8, fade: TimeInterval = 0.25) {
+        // 기존 애니메이션 정리
+        layer.removeAllAnimations()
+        topLabel.layer.removeAllAnimations()
+        bottomLabel.layer.removeAllAnimations()
+        triangeImageView.layer.removeAllAnimations()   // 삼각형도 초기화
+
+        // 시작 상태
+        if topLabel.isHidden {
+            // 한 줄만 사용하는 경우: 아래줄 + 삼각형 같이 페이드인
+            bottomLabel.alpha = 0
+            triangeImageView.alpha = 0
+            UIView.animate(withDuration: fade) {
+                self.bottomLabel.alpha = 1
+                self.triangeImageView.alpha = 1
+            }
+        } else {
+            // 두 줄 사용하는 경우: 위 줄 먼저 -> (secondaryDelay) -> 아래줄 + 삼각형
+            topLabel.alpha = 0
+            bottomLabel.alpha = 0
+            triangeImageView.alpha = 0
+
+            UIView.animate(withDuration: fade) {
+                self.topLabel.alpha = 1
+            }
+
+            UIView.animate(withDuration: fade, delay: secondaryDelay, options: .curveEaseInOut) {
+                self.bottomLabel.alpha = 1
+                self.triangeImageView.alpha = 1
+            }
+        }
+    }
+    
+    func animateHideStaggered(secondaryDelay: TimeInterval = 0.6,
+                              fade: TimeInterval = 0.25,
+                              completion: (() -> Void)? = nil) {
+        // 기존 애니메이션 제거
+        layer.removeAllAnimations()
+        topLabel.layer.removeAllAnimations()
+        bottomLabel.layer.removeAllAnimations()
+        triangeImageView.layer.removeAllAnimations()
+
+        if topLabel.isHidden {
+            // 한 줄: 아래줄+삼각형만 페이드아웃
+            UIView.animate(withDuration: fade, animations: {
+                self.bottomLabel.alpha = 0
+                self.triangeImageView.alpha = 0
+            }, completion: { _ in
+                self.isHidden = true
+                self.alpha = 0
+                completion?()
+            })
+        } else {
+            // 두 줄: (1) 위줄 먼저 사라짐 -> (2) 아래줄+삼각형 사라짐
+            UIView.animate(withDuration: fade, animations: {
+                self.topLabel.alpha = 0
+            }, completion: { _ in
+                UIView.animate(withDuration: fade,
+                               delay: secondaryDelay,
+                               options: .curveEaseInOut,
+                               animations: {
+                    self.bottomLabel.alpha = 0
+                    self.triangeImageView.alpha = 0
+                }, completion: { _ in
+                    self.isHidden = true
+                    self.alpha = 0
+                    completion?()
+                })
+            })
+        }
+    }
+    
+    func revealImmediately() {
+            topLabel.alpha = 1
+            bottomLabel.alpha = 1
+            triangeImageView.alpha = 1
+        }
 }
 
