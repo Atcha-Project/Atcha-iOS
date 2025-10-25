@@ -84,6 +84,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
     private var showTopLineForPre: Bool { !isRevisit } // 신규 = true, 재방문 = false
     private var preSessionShowTopLine: Bool?
     private var deferPreBalloonOnce = false
+    private var wasAlarmRegisteredOnLaunch = false
     
     // MARK: - 화면 하단 타입 / 설정 상태
     private var lastAppliedBottomType: MapBottomType?
@@ -103,16 +104,21 @@ final class MainViewController: BaseViewController<MainViewModel>,
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        let isAlarmRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
+        let isAlarmRegistered = UserDefaultsWrapper.shared.bool(
+            forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue
+        ) ?? false
         
         if !isAlarmRegistered {
             AmplitudeManager.shared.timerStart("notification_registration_duration")
         }
-        
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        wasAlarmRegisteredOnLaunch = UserDefaultsWrapper.shared.bool(
+               forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue
+           ) ?? false
         
         self.onNetworkReconnect = { [weak self] in
             self?.mapContainerView.reloadMapView()
@@ -241,7 +247,6 @@ extension MainViewController {
         bindTaxiFareUpdates()
         bindServiceRegionUpdates()
         bindLockView()
-        bindToastEvent()
     }
     
     // MARK: - bind Lock View
@@ -274,21 +279,6 @@ extension MainViewController {
         //            .sink { [weak self] in self?.handleArrivalViewAction($0) }
         //            .store(in: &cancellables)
     }
-    
-    private func bindToastEvent() {
-        viewModel.$pendingToast
-            .compactMap { $0 }
-            .receive(on: RunLoop.main)
-            .sink { [weak self] message in
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-                    guard let self else { return }
-                    view.showToast(message: message)
-                }
-                self?.viewModel.pendingToast = nil
-            }
-            .store(in: &cancellables)
-    }
-    
     
     private func handleSearchViewAction(_ action: LastTrainSearchBottomView.Action) {
         switch action {
@@ -444,7 +434,8 @@ extension MainViewController {
         // 이번 한 번은 프리 말풍선 자동 표시를 건너뛰도록 플래그 세팅
         deferPreBalloonOnce = true
         viewModel.bottomType = .search
-        
+        cancelBalloonQueueAndHide()
+        atchaImageView.stop()
         mapContainerView.clearMapView()
         mapContainerView.hideUserMarker()
         
@@ -601,15 +592,31 @@ extension MainViewController {
             lastTrainDepartView.isHidden = false
             viewModel.startAlarmTimer()
             mapContainerView.showUserMarker()
-            
+
             setupGen &+= 1
             let gen = setupGen
-            
+
             self.setupPostAlarmMessages()
+
+            // 두 번 연속 호출일 때만 0.7초, 아니면 0.2초 (기존 로직 유지)
+            let delayBeforeScheduling: TimeInterval = isSame ? 0.7 : 0.2
+
+            let popRegister = UserDefaultsWrapper.shared.bool(
+                forKey: UserDefaultsWrapper.Key.popRegister.rawValue
+            ) ?? false
+
+            let popToastDelay: Double = popRegister ? 0.3 : 0.0
+            let popBallonDelay: TimeInterval = popRegister ? 2.7 : 2.4
             
-            // 두 번 연속 호출일 때만 0.5초, 아니면 0.2초
-            let delay: TimeInterval = isSame ? 0.7 : 0.2
-            self.scheduleFirstBalloon(gen: gen, delay: delay)
+            // 앱을 켤 때부터 알람이 이미 등록되어 있었다면, post-delay(기존 2.0초)를 0으로
+            
+            let postRevealDelay: TimeInterval = wasAlarmRegisteredOnLaunch ? 0.0 : popBallonDelay
+
+            self.scheduleFirstBalloon(gen: gen,
+                                      delay: delayBeforeScheduling,
+                                      postRevealDelay: postRevealDelay,
+                                      popToastDelay: popToastDelay)
+
             preSessionShowTopLine = nil
             
         case .search:
@@ -636,20 +643,29 @@ extension MainViewController {
         default: break
         }
         
-        lastAppliedBottomType = type // ⬅️ 마지막에 한 번만 세팅
+        lastAppliedBottomType = type
     }
     
-    private func scheduleFirstBalloon(gen: Int, delay: TimeInterval) {
-        firstBalloonWork?.cancel() // 이전 예약 취소
-        
+    private func scheduleFirstBalloon(gen: Int,
+                                      delay: TimeInterval,
+                                      postRevealDelay: TimeInterval,
+                                      popToastDelay: TimeInterval) {
+        firstBalloonWork?.cancel()
+
         let work = DispatchWorkItem { [weak self] in
             guard let self else { return }
             guard gen == self.setupGen, self.viewModel.bottomType == .departure else { return }
             guard let first = self.postAlarmMessages.first else { return }
             
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            if !wasAlarmRegisteredOnLaunch {
+                DispatchQueue.main.asyncAfter(deadline: .now() + popToastDelay) {
+                    self.view.showToast(message: "알람이 등록되었습니다.")
+                    UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.popRegister.rawValue)
+                }
+            }
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + postRevealDelay) {
                 self.showOrUpdateImmediateBalloon(first)
-                self.safeStartJump()
             }
         }
         firstBalloonWork = work
@@ -1094,6 +1110,7 @@ extension MainViewController {
     private func showOrUpdateImmediateBalloon(_ content: BalloonContent) {
         balloonQueue.removeAll()
         ballonView.layer.removeAllAnimations()
+        self.safeStartJump()
         NSObject.cancelPreviousPerformRequests(withTarget: self,
                                                selector: #selector(hideImmediateBalloon),
                                                object: nil)
@@ -1106,6 +1123,8 @@ extension MainViewController {
         lastShownBalloon = content
         lastShownScope = .next
         pinnedPreBalloon = content
+        
+        wasAlarmRegisteredOnLaunch = false
     }
     
     @objc private func hideImmediateBalloon() {

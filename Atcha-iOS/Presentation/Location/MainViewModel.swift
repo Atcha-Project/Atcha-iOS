@@ -29,7 +29,6 @@ final class MainViewModel: BaseViewModel {
     
     @Published var bottomType: MapBottomType?
     @Published var showLockView: Bool = false
-    @Published var pendingToast: String?
     
     private let searchAddressUseCase: SearchAddressUseCase
     private let authorizationUseCase: RequestLocationAuthorizationUseCase
@@ -215,10 +214,6 @@ final class MainViewModel: BaseViewModel {
                 print("도착 시간 실시간 조회 실패")
             }
         }
-    }
-    
-    func enqueueToast(_ message: String) {
-        pendingToast = message
     }
     
     override func handleRefreshNotification(_ notification: Notification) {

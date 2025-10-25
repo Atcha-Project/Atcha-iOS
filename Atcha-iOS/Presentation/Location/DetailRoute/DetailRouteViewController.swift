@@ -340,6 +340,7 @@ extension DetailRouteViewController {
             
             self.viewModel.getAlarmTapped?(self.viewModel.address, self.viewModel.infos)
             self.amplitudeActions()
+            UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.popRegister.rawValue)
         }, for: .touchUpInside)
         
         popupVC.cancelButton.addAction(UIAction { [weak self, weak popupVC] _ in
@@ -361,6 +362,7 @@ extension DetailRouteViewController {
             
             self.viewModel.getAlarmTapped?(self.viewModel.address, self.viewModel.infos)
             self.amplitudeActions()
+            UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.popRegister.rawValue)
             AmplitudeManager.shared.track(
                 AmplitudeEvent.alert_end_popup_2.rawValue,
                 [

@@ -69,9 +69,9 @@ final class MainCoordinator {
             vm.getAlarmTapped = { [weak self] address, infos in
                 guard let self else { return }
                 self.mainViewModel?.courseSearchResultHandler?(address, infos)
-                self.mainViewModel?.enqueueToast("알림이 등록되었습니다.")
                 UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue)
-                navigationController.popViewController(animated: true)
+
+                self.navigationController.popToMainViewControllerNoAnimation()
             }
             vm.getDetailTapped = { [weak self] address, infos in
                 guard let self else { return }
@@ -99,7 +99,6 @@ final class MainCoordinator {
                     searchVM.getAlarmTapped = { [weak self] address, infos in
                         guard let self else { return }
                         self.mainViewModel?.courseSearchResultHandler?(address, infos)
-                        self.mainViewModel?.enqueueToast("알림이 등록되었습니다.")
                         UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue)
                         self.navigationController.popToMainViewControllerNoAnimation()
                     }
@@ -127,7 +126,6 @@ final class MainCoordinator {
                 searchVM.getAlarmTapped = { [weak self] address, infos in
                     guard let self else { return }
                     self.mainViewModel?.courseSearchResultHandler?(address, infos)
-                    self.mainViewModel?.enqueueToast("알림이 등록되었습니다.")
                     UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue)
                     self.navigationController.popToMainViewControllerNoAnimation()
                 }
@@ -162,7 +160,6 @@ final class MainCoordinator {
             vm.getAlarmTapped = { [weak self] address, infos in
                 guard let self else { return }
                 mainViewModel?.courseSearchResultHandler?(address, infos)
-                self.mainViewModel?.enqueueToast("알림이 등록되었습니다.")
                 UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue)
                 self.navigationController.popToMainViewControllerNoAnimation()
             }
