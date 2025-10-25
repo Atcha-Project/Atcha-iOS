@@ -83,6 +83,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
     }
     private var showTopLineForPre: Bool { !isRevisit } // 신규 = true, 재방문 = false
     private var preSessionShowTopLine: Bool?
+    private var deferPreBalloonOnce = false
     
     // MARK: - 화면 하단 타입 / 설정 상태
     private var lastAppliedBottomType: MapBottomType?
@@ -435,6 +436,9 @@ extension MainViewController {
         AlarmManager.shared.stopAlarm()
         viewModel.requestPermissionAndStartTracking()
         viewModel.removeLegInfoAndAddress()
+
+        // 이번 한 번은 프리 말풍선 자동 표시를 건너뛰도록 플래그 세팅
+        deferPreBalloonOnce = true
         viewModel.bottomType = .search
         
         mapContainerView.clearMapView()
@@ -442,7 +446,15 @@ extension MainViewController {
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
             guard let self else { return }
+
             view.showToast(message: "알람이 종료되었어요")
+
+            // 2초 뒤 수동으로 말풍선 표시 (이때 플래그 해제)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                self.deferPreBalloonOnce = false
+                self.showInitialPreAlarmBalloons(force: true)
+            }
+
             UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue)
             AmplitudeManager.shared.timerEndSeconds("notification_registration_duration")
             AmplitudeManager.shared.timerStart("notification_registration_duration")
@@ -597,17 +609,22 @@ extension MainViewController {
             preSessionShowTopLine = nil
             
         case .search:
-            if !isSame { cancelBalloonQueueAndHide() }
-            viewModel.stopAlarmTimer()
-            viewModel.stopFinishAlarmTimer()
-            lastTrainSearchView.isHidden = false
-            flagImageView.isHidden = false
-            mapContainerView.clearMapView()
-            mapContainerView.hideUserMarker()
-            updateAtchaImageConstraint(relativeTo: lastTrainSearchView)
-            hasShownInitialBalloon = false
-            showInitialPreAlarmBalloons(force: true)
-            preSessionShowTopLine = nil
+               if !isSame { cancelBalloonQueueAndHide() }
+               viewModel.stopAlarmTimer()
+               viewModel.stopFinishAlarmTimer()
+               lastTrainSearchView.isHidden = false
+               flagImageView.isHidden = false
+               mapContainerView.clearMapView()
+               mapContainerView.hideUserMarker()
+               updateAtchaImageConstraint(relativeTo: lastTrainSearchView)
+
+               hasShownInitialBalloon = false
+               preSessionShowTopLine = nil
+
+               // exit 흐름에서 지연 표시 예정이면 여기서는 자동 호출 안 함
+               if !deferPreBalloonOnce {
+                   showInitialPreAlarmBalloons(force: true)
+               }
             
         case .detail:
             lastTrainDepartView.isHidden = false
