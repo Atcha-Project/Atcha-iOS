@@ -372,9 +372,8 @@ extension CourseSearchViewController {
             
             self.viewModel.alarmRegister(alarmRequest)
             self.viewModel.getAlarmTapped?(alarmTapped.0, alarmTapped.1)
-            
             self.amplitudeActions(rank)
-            self.navigationController?.popToRootViewController(animated: true)
+            UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.popRegister.rawValue)
             
         }, for: .touchUpInside)
         
@@ -397,8 +396,9 @@ extension CourseSearchViewController {
             
             self.viewModel.alarmRegister(alarmRequest)
             self.viewModel.getAlarmTapped?(alarmTapped.0, alarmTapped.1)
-            
             self.amplitudeActions(rank)
+            UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.popRegister.rawValue)
+            
             AmplitudeManager.shared.track(
                 AmplitudeEvent.alert_end_popup_2.rawValue,
                 [
@@ -406,7 +406,6 @@ extension CourseSearchViewController {
                     "clicked": 1
                 ]
             )
-            self.navigationController?.popToRootViewController(animated: true)
             
         }, for: .touchUpInside)
         

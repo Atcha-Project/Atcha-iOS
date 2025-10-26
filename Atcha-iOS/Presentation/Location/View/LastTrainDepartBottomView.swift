@@ -163,8 +163,8 @@ final class LastTrainDepartBottomView: UIView {
         detailRoadMapButton.addTarget(self, action: #selector(handleDetailRoadTapped), for: .touchUpInside)
 //        reloadImageView.isUserInteractionEnabled = true
 //        reloadImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleReloadTapped)))
-        hourTimeLabel.isUserInteractionEnabled = true
-        hourTimeLabel.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleTimeTapped)))
+        timeView.isUserInteractionEnabled = true
+        timeView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleTimeTapped)))
         locationLabel.isUserInteractionEnabled = true
         locationLabel.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleLocationTapped)))
         titleView.isUserInteractionEnabled = true
@@ -230,6 +230,7 @@ extension LastTrainDepartBottomView {
     }
     
     @objc private func handleDepartTimeTap() {
+        actionPublisher.send(.timeTapped)
         AmplitudeManager.shared.track(
             AmplitudeEvent.home_departure_time_clicked.rawValue,
             [

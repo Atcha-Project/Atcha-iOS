@@ -83,6 +83,8 @@ final class MainViewController: BaseViewController<MainViewModel>,
     }
     private var showTopLineForPre: Bool { !isRevisit } // 신규 = true, 재방문 = false
     private var preSessionShowTopLine: Bool?
+    private var deferPreBalloonOnce = false
+    private var wasAlarmRegisteredOnLaunch = false
     
     // MARK: - 화면 하단 타입 / 설정 상태
     private var lastAppliedBottomType: MapBottomType?
@@ -102,16 +104,21 @@ final class MainViewController: BaseViewController<MainViewModel>,
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        let isAlarmRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
+        let isAlarmRegistered = UserDefaultsWrapper.shared.bool(
+            forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue
+        ) ?? false
         
         if !isAlarmRegistered {
             AmplitudeManager.shared.timerStart("notification_registration_duration")
         }
-        
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        wasAlarmRegisteredOnLaunch = UserDefaultsWrapper.shared.bool(
+               forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue
+           ) ?? false
         
         self.onNetworkReconnect = { [weak self] in
             self?.mapContainerView.reloadMapView()
@@ -240,7 +247,6 @@ extension MainViewController {
         bindTaxiFareUpdates()
         bindServiceRegionUpdates()
         bindLockView()
-        bindToastEvent()
     }
     
     // MARK: - bind Lock View
@@ -273,21 +279,6 @@ extension MainViewController {
         //            .sink { [weak self] in self?.handleArrivalViewAction($0) }
         //            .store(in: &cancellables)
     }
-    
-    private func bindToastEvent() {
-        viewModel.$pendingToast
-            .compactMap { $0 }
-            .receive(on: RunLoop.main)
-            .sink { [weak self] message in
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-                    guard let self else { return }
-                    view.showToast(message: message)
-                }
-                self?.viewModel.pendingToast = nil
-            }
-            .store(in: &cancellables)
-    }
-    
     
     private func handleSearchViewAction(_ action: LastTrainSearchBottomView.Action) {
         switch action {
@@ -387,7 +378,9 @@ extension MainViewController {
                 ]
             )
         case .locationTapped:
-            enqueueNextBalloon(.text(top: nil, bottom: "위치를 변경하려면 알람을 종료해야 해요"))
+            self.showOrUpdateImmediateBalloon(
+                .text(top: nil, bottom: "위치를 변경하려면 알람을 종료해야 해요")
+            )
             AmplitudeManager.shared.track(
                 AmplitudeEvent.home_route_clicked.rawValue,
                 [
@@ -397,7 +390,9 @@ extension MainViewController {
         case .reloadTapped:
             viewModel.refreshDepatrueTime()
         case .timeTapped:
-            enqueueNextBalloon(.text(top: "이때쯤 자리에서 출발하면 돼요", bottom: "현재 교통 상황 기준으로,\n출발 시간이 가까워질수록 더 정확해져요"))
+            self.showOrUpdateImmediateBalloon(
+                .text(top: "이때 자리에서 출발하면 돼요", bottom: "교통 상황에 따라 시간이 달라질 수 있어요")
+            )
         }
     }
     
@@ -435,14 +430,26 @@ extension MainViewController {
         AlarmManager.shared.stopAlarm()
         viewModel.requestPermissionAndStartTracking()
         viewModel.removeLegInfoAndAddress()
+
+        // 이번 한 번은 프리 말풍선 자동 표시를 건너뛰도록 플래그 세팅
+        deferPreBalloonOnce = true
         viewModel.bottomType = .search
-        
+        cancelBalloonQueueAndHide()
+        atchaImageView.stop()
         mapContainerView.clearMapView()
         mapContainerView.hideUserMarker()
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
             guard let self else { return }
+
             view.showToast(message: "알람이 종료되었어요")
+
+            // 2초 뒤 수동으로 말풍선 표시 (이때 플래그 해제)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                self.deferPreBalloonOnce = false
+                self.showInitialPreAlarmBalloons(force: true)
+            }
+
             UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue)
             AmplitudeManager.shared.timerEndSeconds("notification_registration_duration")
             AmplitudeManager.shared.timerStart("notification_registration_duration")
@@ -585,29 +592,54 @@ extension MainViewController {
             lastTrainDepartView.isHidden = false
             viewModel.startAlarmTimer()
             mapContainerView.showUserMarker()
-            
+
             setupGen &+= 1
             let gen = setupGen
-            
+            cancelBalloonQueueAndHide()
+            atchaImageView.stop()
             self.setupPostAlarmMessages()
+
+            // 두 번 연속 호출일 때만 0.7초, 아니면 0.2초 (기존 로직 유지)
+            let delayBeforeScheduling: TimeInterval = isSame ? 0.7 : 0.2
+
+            let popRegister = UserDefaultsWrapper.shared.bool(
+                forKey: UserDefaultsWrapper.Key.popRegister.rawValue
+            ) ?? false
+
+            let popToastDelay: Double = popRegister ? 0.3 : 0.0
+            let popBallonDelay: TimeInterval = popRegister ? 2.7 : 2.4
             
-            // 두 번 연속 호출일 때만 0.5초, 아니면 0.2초
-            let delay: TimeInterval = isSame ? 0.7 : 0.2
-            self.scheduleFirstBalloon(gen: gen, delay: delay)
+            // 앱을 켤 때부터 알람이 이미 등록되어 있었다면, post-delay(기존 2.0초)를 0으로
+            
+            let postRevealDelay: TimeInterval = wasAlarmRegisteredOnLaunch ? 0.0 : popBallonDelay
+
+            self.scheduleFirstBalloon(gen: gen,
+                                      delay: delayBeforeScheduling,
+                                      postRevealDelay: postRevealDelay,
+                                      popToastDelay: popToastDelay)
+
             preSessionShowTopLine = nil
             
         case .search:
-            if !isSame { cancelBalloonQueueAndHide() }
-            viewModel.stopAlarmTimer()
-            viewModel.stopFinishAlarmTimer()
-            lastTrainSearchView.isHidden = false
-            flagImageView.isHidden = false
-            mapContainerView.clearMapView()
-            mapContainerView.hideUserMarker()
-            updateAtchaImageConstraint(relativeTo: lastTrainSearchView)
-            hasShownInitialBalloon = false
-            showInitialPreAlarmBalloons(force: true)
-            preSessionShowTopLine = nil
+               if !isSame { cancelBalloonQueueAndHide() }
+               viewModel.stopAlarmTimer()
+               viewModel.stopFinishAlarmTimer()
+               lastTrainSearchView.isHidden = false
+               flagImageView.isHidden = false
+                cancelBalloonQueueAndHide()
+                atchaImageView.stop()
+            
+               mapContainerView.clearMapView()
+               mapContainerView.hideUserMarker()
+               updateAtchaImageConstraint(relativeTo: lastTrainSearchView)
+
+               hasShownInitialBalloon = false
+               preSessionShowTopLine = nil
+
+               // exit 흐름에서 지연 표시 예정이면 여기서는 자동 호출 안 함
+               if !deferPreBalloonOnce {
+                   showInitialPreAlarmBalloons(force: true)
+               }
             
         case .detail:
             lastTrainDepartView.isHidden = false
@@ -615,18 +647,30 @@ extension MainViewController {
         default: break
         }
         
-        lastAppliedBottomType = type // ⬅️ 마지막에 한 번만 세팅
+        lastAppliedBottomType = type
     }
     
-    private func scheduleFirstBalloon(gen: Int, delay: TimeInterval) {
-        firstBalloonWork?.cancel() // 이전 예약 취소
-        
+    private func scheduleFirstBalloon(gen: Int,
+                                      delay: TimeInterval,
+                                      postRevealDelay: TimeInterval,
+                                      popToastDelay: TimeInterval) {
+        firstBalloonWork?.cancel()
+
         let work = DispatchWorkItem { [weak self] in
             guard let self else { return }
             guard gen == self.setupGen, self.viewModel.bottomType == .departure else { return }
             guard let first = self.postAlarmMessages.first else { return }
-            self.showOrUpdateImmediateBalloon(first)
-            self.safeStartJump()
+            
+            if !wasAlarmRegisteredOnLaunch {
+                DispatchQueue.main.asyncAfter(deadline: .now() + popToastDelay) {
+                    self.view.showToast(message: "알람이 등록되었습니다.")
+                    UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.popRegister.rawValue)
+                }
+            }
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + postRevealDelay) {
+                self.showOrUpdateImmediateBalloon(first)
+            }
         }
         firstBalloonWork = work
         DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
@@ -672,14 +716,17 @@ extension MainViewController {
                 guard let self else { return }
                 let previous = self.latestIsServiceRegion
                 self.latestIsServiceRegion = ok
-                
+
                 switch ok {
                 case .some(true):
                     self.lastTrainSearchView.updateSearchEnabled(true)
+
                     if previous == nil {
+                        // 초기 표시 로직은 함수 쪽에서 요금 없으면 no-op
                         self.showInitialPreAlarmBalloons(force: true)
                     } else if self.isPreAlarmBalloonActive() {
                         if let fare = self.latestFareString {
+                            // 요금 있으면 택시비만 표시/업데이트
                             let content: BalloonContent =
                                 .separation(gray: "여기서 막차 놓치면 택시비 ", white: "약 \(fare)원")
                             if self.ballonView.isHidden {
@@ -688,16 +735,9 @@ extension MainViewController {
                                 self.updatePreBalloonContent(content, showTopLine: self.preSessionShowTopLine ?? true)
                             }
                         } else {
-                            let content: BalloonContent =
-                                .text(top: (self.preSessionShowTopLine ?? true) ? "지도를 움직여 출발지를 설정해 봐요" : nil,
-                                      bottom: "택시비를 불러오는 중이에요")
-                            if self.ballonView.isHidden { self.showOrUpdatePreBalloon(content, showTopLine: self.preSessionShowTopLine ?? true) }
-                            else {
-                                self.updatePreBalloonContent(content, showTopLine: self.preSessionShowTopLine ?? true)
-                            }
                         }
                     }
-                    
+
                 case .some(false):
                     self.lastTrainSearchView.updateSearchEnabled(false)
                     if previous == nil {
@@ -706,12 +746,13 @@ extension MainViewController {
                         let content: BalloonContent =
                             .text(top: (self.preSessionShowTopLine ?? true) ? "지도를 움직여 출발지를 설정해 봐요" : nil,
                                   bottom: "서울, 경기, 인천 내에서만 사용할 수 있어요")
-                        if self.ballonView.isHidden { self.showOrUpdatePreBalloon(content, showTopLine: self.preSessionShowTopLine ?? true) }
-                        else {
+                        if self.ballonView.isHidden {
+                            self.showOrUpdatePreBalloon(content, showTopLine: self.preSessionShowTopLine ?? true)
+                        } else {
                             self.updatePreBalloonContent(content, showTopLine: self.preSessionShowTopLine ?? true)
                         }
                     }
-                    
+
                 case .none:
                     self.lastTrainSearchView.updateSearchEnabled(false)
                 }
@@ -1025,36 +1066,43 @@ extension MainViewController {
     private func showInitialPreAlarmBalloons(force: Bool = false) {
         guard let isService = latestIsServiceRegion else { return }
         guard isPreAlarmBalloonActive() else { return }
-        
+
         if preSessionShowTopLine == nil {
             preSessionShowTopLine = !isRevisit
         }
         let showTopLine = preSessionShowTopLine ?? true
         let d1 = balloonInitialDelayFirst
-        
+
         if isService {
-            if let fare = latestFareString {
-                showOrUpdatePreBalloon(
-                    .separation(gray: "여기서 막차 놓치면 택시비 ", white: "약 \(fare)원"),
-                    delay: d1, animated: true, showTopLine: showTopLine
-                )
-            } else {
-                showOrUpdatePreBalloon(
-                    .text(top: showTopLine ? "지도를 움직여 출발지를 설정해 봐요" : nil,
-                          bottom: "택시비를 불러오는 중이에요"),
-                    delay: d1
-                )
+            // 서비스 지역인데 아직 요금이 없으면 말풍선은 띄우지 않지만,
+            // 재방문 처리(상단 라인 억제용)는 반드시 해두고 return
+            guard let fare = latestFareString else {
+                if !isRevisit {
+                    UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.reVisit.rawValue)
+                }
+                hasShownInitialBalloon = true
+                return
             }
+
+            // 요금 있으면 택시비 말풍선만 페이드인
+            showOrUpdatePreBalloon(
+                .separation(gray: "여기서 막차 놓치면 택시비 ", white: "약 \(fare)원"),
+                delay: d1, animated: true, showTopLine: showTopLine
+            )
         } else {
+            // 비서비스 지역은 기존 안내 문구
             showOrUpdatePreBalloon(
                 .text(top: showTopLine ? "지도를 움직여 출발지를 설정해 봐요" : nil,
                       bottom: "서울, 경기, 인천 내에서만 사용할 수 있어요"),
                 delay: d1
             )
         }
-        
-        if !isRevisit { UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.reVisit.rawValue) }
-        
+
+        // 여기까지 도달했을 때도 초기 방문이면 reVisit 저장
+        if !isRevisit {
+            UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.reVisit.rawValue)
+        }
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
             self?.atchaImageView.stop()
             self?.atchaImageView.start()
@@ -1066,6 +1114,7 @@ extension MainViewController {
     private func showOrUpdateImmediateBalloon(_ content: BalloonContent) {
         balloonQueue.removeAll()
         ballonView.layer.removeAllAnimations()
+        self.safeStartJump()
         NSObject.cancelPreviousPerformRequests(withTarget: self,
                                                selector: #selector(hideImmediateBalloon),
                                                object: nil)
@@ -1078,6 +1127,8 @@ extension MainViewController {
         lastShownBalloon = content
         lastShownScope = .next
         pinnedPreBalloon = content
+        
+        wasAlarmRegisteredOnLaunch = false
     }
     
     @objc private func hideImmediateBalloon() {

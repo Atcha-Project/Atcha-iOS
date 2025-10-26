@@ -29,7 +29,6 @@ final class MainViewModel: BaseViewModel {
     
     @Published var bottomType: MapBottomType?
     @Published var showLockView: Bool = false
-    @Published var pendingToast: String?
     
     private let searchAddressUseCase: SearchAddressUseCase
     private let authorizationUseCase: RequestLocationAuthorizationUseCase
@@ -215,10 +214,6 @@ final class MainViewModel: BaseViewModel {
                 print("도착 시간 실시간 조회 실패")
             }
         }
-    }
-    
-    func enqueueToast(_ message: String) {
-        pendingToast = message
     }
     
     override func handleRefreshNotification(_ notification: Notification) {
@@ -522,5 +517,16 @@ extension MainViewModel {
     private func realodDepartureTime() async throws -> AlarmRefresh {
         return try await alarmUseCase.alarmRefresh()
     }
+    
+//    func setCurrentToSeoulStation() {
+//            let seoulStation = CLLocationCoordinate2D(latitude: 37.554722, longitude: 126.970833)
+//            // 위치 상태 갱신
+//            self.currentLocation = seoulStation
+//            self.selectedLocation = seoulStation
+//            // 주소/서비스지역/택시비 갱신 트리거
+//            Task { await self.updateAddressOnly(for: seoulStation) }
+//            // address 퍼블리셔가 이미 region+fare 리프레시를 타도록 bind()에 연결돼 있음
+//        }
 }
+
 
