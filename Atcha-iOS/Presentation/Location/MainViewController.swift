@@ -139,9 +139,9 @@ final class MainViewController: BaseViewController<MainViewModel>,
             self?.hideLoading()
             let isAlarmRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
             if !isAlarmRegistered {
-                self?.mapContainerView.hideUserMarker()
+                self?.mapContainerView.beforeUserMarker()
             } else {
-                self?.mapContainerView.showUserMarker()
+                self?.mapContainerView.afterUserMarker()
             }
         }
     }
@@ -437,7 +437,7 @@ extension MainViewController {
         cancelBalloonQueueAndHide()
         atchaImageView.stop()
         mapContainerView.clearMapView()
-        mapContainerView.hideUserMarker()
+        mapContainerView.beforeUserMarker()
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
             guard let self else { return }
@@ -591,7 +591,7 @@ extension MainViewController {
             if !isSame { cancelBalloonQueueAndHide() }
             lastTrainDepartView.isHidden = false
             viewModel.startAlarmTimer()
-            mapContainerView.showUserMarker()
+            mapContainerView.afterUserMarker()
 
             setupGen &+= 1
             let gen = setupGen
@@ -630,7 +630,7 @@ extension MainViewController {
                 atchaImageView.stop()
             
                mapContainerView.clearMapView()
-               mapContainerView.hideUserMarker()
+               mapContainerView.beforeUserMarker()
                updateAtchaImageConstraint(relativeTo: lastTrainSearchView)
 
                hasShownInitialBalloon = false
@@ -856,9 +856,9 @@ extension MainViewController {
             
             let isAlarmRegistered = wrapper.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
             if !isAlarmRegistered {
-                self.mapContainerView.hideUserMarker()
+                self.mapContainerView.beforeUserMarker()
             } else {
-                self.mapContainerView.showUserMarker()
+                self.mapContainerView.afterUserMarker()
             }
         }
     }

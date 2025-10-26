@@ -54,16 +54,30 @@ final class TMapWrapper: NSObject, MapRendering {
         }
     }
     
-    func showUserMarker() {
+    func afterUserMarker() {
         DispatchQueue.main.async { [weak self] in
             guard let self, let marker = self.userMarker else { return }
-            marker.map = self.mapView
+            marker.icon = UIImage.currentLocationMark
+            
+            if marker.map == nil { marker.map = self.mapView }
+            else {
+                marker.map = nil
+                marker.map = self.mapView
+            }
         }
     }
-
-    func hideUserMarker() {
+    
+    /// 상태 전환: 이전(비활성/대기) 마커
+    func beforeUserMarker() {
         DispatchQueue.main.async { [weak self] in
-            self?.userMarker?.map = nil
+            guard let self, let marker = self.userMarker else { return }
+            marker.icon = UIImage.beforeCurrentLocation
+            
+            if marker.map == nil { marker.map = self.mapView }
+            else {
+                marker.map = nil
+                marker.map = self.mapView
+            }
         }
     }
     
