@@ -11,8 +11,14 @@ import Alamofire
 final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
     private var tokenStorage: TokenStorage
     
-    init(tokenStorage: TokenStorage) {
+    private let syncQueue = DispatchQueue(label: "io.atcha.tokenInterceptor.sync")
+    private var isRefreshing = false
+    private var waitingCompletions: [((RetryResult) -> Void)] = []
+    private let refreshSession: Session
+    
+    init(tokenStorage: TokenStorage, refreshSession: Session = AF) {
         self.tokenStorage = tokenStorage
+        self.refreshSession = refreshSession
     }
     
     func adapt(_ urlRequest: URLRequest,
@@ -22,9 +28,9 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
         var request = urlRequest
         let path = request.url?.path ?? ""
         
-        if request.value(forHTTPHeaderField: "Authorization") != nil {
-            completion(.success(request)); return
-        }
+        //        if request.value(forHTTPHeaderField: "Authorization") != nil {
+        //            completion(.success(request)); return
+        //        }
         
         if path.contains("/auth/logout") {
             if let refreshToken = tokenStorage.refreshToken {
@@ -43,30 +49,66 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
                for session: Session,
                dueTo error: Error,
                completion: @escaping (RetryResult) -> Void) {
-        guard let response = request.task?.response as? HTTPURLResponse, response.statusCode == 401 else {
+        
+        guard request.retryCount == 0 else {
+            completion(.doNotRetry)
+            return
+        }
+        
+        
+        let path = request.request?.url?.path ?? "unknown"
+        
+        if path.contains("/auth/reissue") {
+            completion(.doNotRetry); return
+        }
+        
+        guard let response = request.task?.response as? HTTPURLResponse,
+              response.statusCode == 401 else {
             completion(.doNotRetry)
             return
         }
         
         guard let refreshToken = tokenStorage.refreshToken else {
+            SessionController.shared.expireAndRouteToLogin()
             completion(.doNotRetry)
             return
         }
         
-        refreshAccessToken(refreshToken: refreshToken) { [weak self] result in
-            switch result {
-            case .success(let payload):
-                guard let p = payload else {
-                    completion(.doNotRetry)
-                    return
-                }
-                self?.tokenStorage.accessToken = p.accessToken
-                self?.tokenStorage.refreshToken = p.refreshToken
-                completion(.retry)
+        syncQueue.async {
+            if self.isRefreshing {
+                self.waitingCompletions.append(completion)
+                return
+            }
+            
+            self.isRefreshing = true
+            self.waitingCompletions.append(completion)
+            
+            self.refreshAccessToken(refreshToken: refreshToken) { [weak self] result in
+                guard let self = self else { return }
                 
-            case .failure:
-                SessionController.shared.expireAndRouteToLogin()
-                completion(.doNotRetry)
+                self.syncQueue.async {
+                    let waiters = self.waitingCompletions
+                    self.waitingCompletions.removeAll()
+                    self.isRefreshing = false
+                    
+                    switch result {
+                    case .success(let payload):
+                        guard let p = payload else {
+                            SessionController.shared.expireAndRouteToLogin()
+                            waiters.forEach { $0(.doNotRetry) }
+                            return
+                        }
+                        
+                        self.tokenStorage.accessToken = p.accessToken
+                        self.tokenStorage.refreshToken = p.refreshToken
+                        
+                        waiters.forEach { $0(.retry) }
+                        
+                    case .failure(let error):
+                        SessionController.shared.expireAndRouteToLogin()
+                        waiters.forEach { $0(.doNotRetry) }
+                    }
+                }
             }
         }
     }
@@ -79,20 +121,15 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
             "Authorization": "Bearer \(refreshToken)"
         ]
         
-        AF.request(
-            url,
-            method: .get,
-            headers: headers
-        )
-        //        .validate()
-        .responseDecodable(of: APIResponse<RefreshTokenResponse>.self) { response in
-            switch response.result {
-            case .success(let refreshResponse):
-                print("refreshResponse : \(refreshResponse)")
-                completion(.success(refreshResponse.result))
-            case .failure(let error):
-                print("error123 : ", error.localizedDescription)
+        refreshSession
+            .request(url, method: .get, headers: headers)
+            .responseDecodable(of: APIResponse<RefreshTokenResponse>.self) { response in
+                switch response.result {
+                case .success(let apiResponse):
+                    completion(.success(apiResponse.result))
+                case .failure(let error):
+                    completion(.failure(error))
+                }
             }
-        }
     }
 }

@@ -2264,7 +2264,7 @@
 				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Atcha-iOS/Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "앗차!";
+				INFOPLIST_KEY_CFBundleDisplayName = "앗차";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "정확한 막차 경로를 제공하기 위해 권한이 필요합니다";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "정확한 막차 경로를 제공하기 위해 권한이 필요합니다";
@@ -2312,7 +2312,7 @@
 				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Atcha-iOS/Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "앗차!";
+				INFOPLIST_KEY_CFBundleDisplayName = "앗차";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "정확한 막차 경로를 제공하기 위해 권한이 필요합니다";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "정확한 막차 경로를 제공하기 위해 권한이 필요합니다";
