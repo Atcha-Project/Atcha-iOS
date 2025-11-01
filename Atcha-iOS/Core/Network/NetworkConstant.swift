@@ -8,6 +8,13 @@
 import Foundation
 
 struct NetworkConstant {
+    #if DEBUG
     static let baseURL = ""
+    #else
+    static let baseURL = "https://atcha.p-e.kr/api"
+    #endif
     static let timeoutInterval: TimeInterval = 30
 }
+
+
+

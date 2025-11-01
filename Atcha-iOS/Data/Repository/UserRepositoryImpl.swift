@@ -17,7 +17,7 @@ final class UserRepositoryImpl: UserRepository {
     
     func fetchUser() async throws -> UserInfoResponse {
         return try await apiService.request(
-            Endpoint(path: "https://atcha.p-e.kr/api/members/me",
+            Endpoint(path: "\(NetworkConstant.baseURL)/members/me",
                      method: .get,
                      headers: ["X-Platform" : "iOS"])
         )
@@ -31,7 +31,7 @@ final class UserRepositoryImpl: UserRepository {
         
         return try await apiService.request(
             Endpoint(
-                path: "https://atcha.p-e.kr/api/auth/sign-up",
+                path: "\(NetworkConstant.baseURL)/auth/sign-up",
                 method: .post,
                 encoding: JSONEncoding.default,
                 headers: ["Authorization": "Bearer \(providerToken)"]),
@@ -41,7 +41,7 @@ final class UserRepositoryImpl: UserRepository {
     func signOut(_ request: WithdrawRequest) async throws -> APIEmptyResponse {
         return try await apiService.request(
             Endpoint(
-                path: "https://atcha.p-e.kr/api/members/me",
+                path: "\(NetworkConstant.baseURL)/members/me",
                 method: .delete,
                 encoding: JSONEncoding.default),
             body: request)
@@ -50,7 +50,7 @@ final class UserRepositoryImpl: UserRepository {
     func login(_ request: LoginRequest) async throws -> LoginResponse {
         return try await apiService.request(
             Endpoint(
-                path: "https://atcha.p-e.kr/api/auth/login",
+                path: "\(NetworkConstant.baseURL)/auth/login",
                 method: .get,
                 parameters: [
                     "provider": "\(request.provider)",
@@ -64,7 +64,7 @@ final class UserRepositoryImpl: UserRepository {
     func logout() async throws -> APIEmptyResponse {
         return try await apiService.request(
             Endpoint(
-                path: "https://atcha.p-e.kr/api/auth/logout",
+                path: "\(NetworkConstant.baseURL)/auth/logout",
                 method: .post
             )
         )
@@ -73,7 +73,7 @@ final class UserRepositoryImpl: UserRepository {
     func checkRegistration(_ request: AuthCheckRequest) async throws -> AuthCheckResponse {
         return try await apiService.request(
             Endpoint(
-                path: "https://atcha.p-e.kr/api/auth/check",
+                path: "\(NetworkConstant.baseURL)/auth/check",
                 method: .get,
                 parameters: ["provider": "\(request.provider)"],
                 headers: ["Authorization": "Bearer \(request.accessToken)"]
@@ -84,7 +84,7 @@ final class UserRepositoryImpl: UserRepository {
     func homePatch(_ request: HomePatchRequest) async throws -> UserInfoPatchResponse {
         return try await apiService.request(
             Endpoint(
-                path: "https://atcha.p-e.kr/api/members/me/home-address",
+                path: "\(NetworkConstant.baseURL)/members/me/home-address",
                 method: .patch,
                 encoding: JSONEncoding.default),
             body: request)
@@ -93,7 +93,7 @@ final class UserRepositoryImpl: UserRepository {
     func pushAlarmPatch(_ request: PushAlarmPatchRequest) async throws -> UserInfoPatchResponse {
         return try await apiService.request(
             Endpoint(
-                path: "https://atcha.p-e.kr/api/members/me/alert-frequency",
+                path: "\(NetworkConstant.baseURL)/members/me/alert-frequency",
                 method: .patch,
                 encoding: JSONEncoding.default),
             body: request)

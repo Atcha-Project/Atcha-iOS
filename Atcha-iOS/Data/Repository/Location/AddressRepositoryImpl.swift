@@ -18,7 +18,7 @@ final class AddressRepositoryImpl: AddressRepository {
     func fetchCurrentLocation(request: ReverseGeocodeLocationRequest) async throws -> ReverseGeocodeLocationResponse {
         return try await apiService.request(
             Endpoint(
-                path: "https://atcha.p-e.kr/api/locations/rgeo",
+                path: "\(NetworkConstant.baseURL)/locations/rgeo",
                 method: .get,
                 parameters: [
                     "lat": "\(request.lat)",
@@ -29,7 +29,7 @@ final class AddressRepositoryImpl: AddressRepository {
     func searchLoaction(request: SearchLocationRequest) async throws -> [SearchLocationResponse] {
         return try await apiService.request(
             Endpoint(
-                path: "https://atcha.p-e.kr/api/locations",
+                path: "\(NetworkConstant.baseURL)/locations",
                 method: .get,
                 parameters: [
                     "keyword": "\(request.keyword ?? "")",
@@ -42,7 +42,7 @@ final class AddressRepositoryImpl: AddressRepository {
     func fetchRecentSearchHistories(request: FetchRecentSearchRequest) async throws -> [FetchRecentSearchResponse] {
         return try await apiService.request(
             Endpoint(
-                path: "https://atcha.p-e.kr/api/locations/histories",
+                path: "\(NetworkConstant.baseURL)/locations/histories",
                 method: .get,
                 parameters: [
                     "lat": "\(request.lat ?? 0.0)",
@@ -55,7 +55,7 @@ final class AddressRepositoryImpl: AddressRepository {
     func addRecentSearchHistory(request: RecentSearchRequest) async throws -> APIEmptyResponse {
         return try await apiService.request(
             Endpoint(
-                path: "https://atcha.p-e.kr/api/locations/histories", 
+                path: "\(NetworkConstant.baseURL)/locations/histories", 
                 method: .post,
                 encoding: JSONEncoding.default
             ),
@@ -65,7 +65,7 @@ final class AddressRepositoryImpl: AddressRepository {
     func clearAllSearchHistories() async throws -> APIEmptyResponse {
         return try await apiService.request(
             Endpoint(
-                path: "https://atcha.p-e.kr/api/locations/histories",
+                path: "\(NetworkConstant.baseURL)/locations/histories",
                 method: .delete
             )
         )
@@ -74,7 +74,7 @@ final class AddressRepositoryImpl: AddressRepository {
     func deleteSearchHistory(request: RecentSearchRequest) async throws -> APIEmptyResponse {
         return try await apiService.request(
             Endpoint(
-                path: "https://atcha.p-e.kr/api/locations/history",
+                path: "\(NetworkConstant.baseURL)/locations/history",
                 method: .delete,
                 parameters: [
                     "name": "\(request.name ?? "")",
@@ -90,7 +90,7 @@ final class AddressRepositoryImpl: AddressRepository {
     func checkServiceRegion(request: CheckServiceRegionRequest) async throws -> Bool {
         return try await apiService.request(
             Endpoint(
-                path: "https://atcha.p-e.kr/api/locations/is-service-region",
+                path: "\(NetworkConstant.baseURL)/locations/is-service-region",
                 method: .get,
                 parameters: [
                     "lat": "\(request.lat ?? 0.0)",
