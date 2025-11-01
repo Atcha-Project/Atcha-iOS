@@ -26,7 +26,7 @@ final class CourseRepositoryImpl: CourseRepository {
         
         return try await apiService.request(
             Endpoint(
-                path: "https://atcha.p-e.kr/api/routes/last-routes/\(routeId)",
+                path: "\(NetworkConstant.baseURL)/routes/last-routes/\(routeId)",
                 method: .get,
                 headers: headers
             )
@@ -44,7 +44,7 @@ final class CourseRepositoryImpl: CourseRepository {
         
         return try await apiService.request(
             Endpoint(
-                path: "https://atcha.p-e.kr/api/routes/last-routes",
+                path: "\(NetworkConstant.baseURL)/routes/last-routes",
                 method: .get,
                 parameters: [
                     "startLat": request.startLat,
@@ -74,7 +74,7 @@ final class CourseRepositoryImpl: CourseRepository {
             return
         }
         
-        var urlComponents = URLComponents(string: "https://atcha.p-e.kr/api/routes/v3/last-routes/stream")!
+        var urlComponents = URLComponents(string: "\(NetworkConstant.baseURL)/routes/v3/last-routes/stream")!
         urlComponents.queryItems = [
             URLQueryItem(name: "startLat", value: "\(request.startLat)"),
             URLQueryItem(name: "startLon", value: "\(request.startLon)"),
@@ -157,7 +157,7 @@ final class CourseRepositoryImpl: CourseRepository {
             SessionController.shared.expireAndRouteToLogin()
             return nil
         }
-        let url = URL(string: "https://atcha.p-e.kr/api/auth/reissue")!
+        let url = URL(string: "\(NetworkConstant.baseURL)/auth/reissue")!
         
         var request = URLRequest(url: url)
         request.httpMethod = "GET"

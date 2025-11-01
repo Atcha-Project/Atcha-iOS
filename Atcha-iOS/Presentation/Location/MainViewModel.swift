@@ -224,6 +224,7 @@ final class MainViewModel: BaseViewModel {
         }
         
         fetchDetailRoute()
+        startAlarmTimer()
         //        wrapper.remove(forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
         //
         //        let routeId = legInfo?.pathInfo.first?.routeId ?? ""
@@ -234,7 +235,7 @@ final class MainViewModel: BaseViewModel {
         //                let trafficInfo = info.toLegTrafficInfos()
         //                let busInfo = info.toBusInfos()
         //
-        //                let legInfo: LegInfo = LegInfo(pathInfo: pathinfo,
+        //                let legInfo: LegInfo 저ㅏㅁ사미= LegInfo(pathInfo: pathinfo,
         //                                               trafficInfo: trafficInfo,
         //                                               busInfo: busInfo)
         //                wrapper.set(legInfo, forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
@@ -246,9 +247,9 @@ final class MainViewModel: BaseViewModel {
         //
         //        wrapper.remove(forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
         UserDefaultsWrapper.shared.set(body, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
-        AlarmManager.shared.startAlarm(after: body,
-                                       title: "눌러서 출발 알람 끄기",
-                                       body: "자리에서 일어나야 할 시간이에요!")
+//        AlarmManager.shared.startAlarm(after: body,
+//                                       title: "눌러서 출발 알람 끄기",
+//                                       body: "자리에서 일어나야 할 시간이에요!")
         
         departureTime = body
     }
@@ -385,7 +386,7 @@ extension MainViewModel {
             }
     }
     
-    func stopAlarmTimer() {
+    private func stopAlarmTimer() {
         alarmTimerCancellable?.cancel()
         alarmTimerCancellable = nil
     }

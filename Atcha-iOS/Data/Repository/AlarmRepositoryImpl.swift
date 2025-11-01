@@ -18,7 +18,7 @@ final class AlarmRepositoryImpl: AlarmRepository {
     func alarmRegister(_ request: AlarmRequest) async throws -> APIEmptyResponse {
         return try await apiService.request(
             Endpoint(
-                path: "https://atcha.p-e.kr/api/routes/user-routes",
+                path: "\(NetworkConstant.baseURL)/routes/user-routes",
                 method: .post,
                 encoding: JSONEncoding.default),
             body: request)
@@ -27,7 +27,7 @@ final class AlarmRepositoryImpl: AlarmRepository {
     func alarmDelete(_ request: AlarmRequest) async throws -> APIEmptyResponse {
         return try await apiService.request(
             Endpoint(
-                path: "https://atcha.p-e.kr/api/routes/user-routes",
+                path: "\(NetworkConstant.baseURL)/routes/user-routes",
                 method: .delete,
                 parameters: [
                     "lastRouteId": request.lastRouteId
@@ -38,7 +38,7 @@ final class AlarmRepositoryImpl: AlarmRepository {
     func alarmRefresh() async throws -> AlarmRefreshResponse {
         return try await apiService.request(
             Endpoint(
-                path: "https://atcha.p-e.kr/api/routes/user-routes/refresh",
+                path: "\(NetworkConstant.baseURL)/routes/user-routes/refresh",
                 method: .get)
         )
     }

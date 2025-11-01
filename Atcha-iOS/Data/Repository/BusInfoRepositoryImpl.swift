@@ -19,7 +19,7 @@ final class BusInfoRepositoryImpl: BusInfoRepository {
     func busRealTimeInfo(_ request: BusRealTimeInfoRequest) async throws -> BusRealTimeInfoResponse {
         return try await apiService.request(
             Endpoint(
-                path: "https://atcha.p-e.kr/api/transits/bus-arrival",
+                path: "\(NetworkConstant.baseURL)/transits/bus-arrival",
                 method: .post,
                 encoding: JSONEncoding.default
             ),
@@ -30,7 +30,7 @@ final class BusInfoRepositoryImpl: BusInfoRepository {
     func getBusRealTimeInfo(_ request: String) async throws -> [RealTimeBusArrival] {
         return try await apiService.request(
             Endpoint(
-                path: "https://atcha.p-e.kr/api/routes/user-routes/bus-arrival",
+                path: "\(NetworkConstant.baseURL)/routes/user-routes/bus-arrival",
                 method: .get,
                 parameters: ["routeName" : request],
                 headers: ["Authorization": "Bearer \(AppDIContainer.shared.tokenStorage.accessToken ?? "")"]
@@ -42,7 +42,7 @@ final class BusInfoRepositoryImpl: BusInfoRepository {
     func busOperationInfo(_ request: BusOperationInfoRequest) async throws -> BusOperationInfoResponse {
         return try await apiService.request(
             Endpoint(
-                path: "https://atcha.p-e.kr/api/transits/bus-routes/operation-info",
+                path: "\(NetworkConstant.baseURL)/bus-routes/operation-info",
                 method: .get,
                 parameters: [
                     "busRouteId": request.busRouteId ?? "",
@@ -57,7 +57,7 @@ final class BusInfoRepositoryImpl: BusInfoRepository {
     func busPositionInfo(_ request: BusPositionInfoRequest) async throws -> BusPositionInfoResponse {
         return try await apiService.request(
             Endpoint(
-                path: "https://atcha.p-e.kr/api/transits/bus-routes/positions",
+                path: "\(NetworkConstant.baseURL)/transits/bus-routes/positions",
                 method: .get,
                 parameters: [
                     "busRouteId": request.busRouteId ?? "",

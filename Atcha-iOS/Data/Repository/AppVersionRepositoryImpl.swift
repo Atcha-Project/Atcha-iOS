@@ -17,7 +17,7 @@ final class AppVersionRepositoryImpl: AppVersionRepository {
     
     func fetchAppVersion() async throws -> String {
         return try await apiService.request(
-            Endpoint(path: "http://atcha.p-e.kr/api/app/version",
+            Endpoint(path: "\(NetworkConstant.baseURL)/app/version",
                      method: .get,
                      headers: ["X-Platform" : "iOS"])
         )
@@ -25,7 +25,7 @@ final class AppVersionRepositoryImpl: AppVersionRepository {
     
     func updateAppVersion(version: AppVersionRequest) async throws -> APIEmptyResponse {
         return try await apiService.request(
-            Endpoint(path: "https://atcha.p-e.kr/api/app/version",
+            Endpoint(path: "\(NetworkConstant.baseURL)/app/version",
                      method: .post,
                      encoding: JSONEncoding.default,
                      headers: ["X-Platform" : "iOS"]),

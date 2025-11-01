@@ -622,7 +622,7 @@ extension MainViewController {
             
         case .search:
                if !isSame { cancelBalloonQueueAndHide() }
-               viewModel.stopAlarmTimer()
+//               viewModel.stopAlarmTimer()
                viewModel.stopFinishAlarmTimer()
                lastTrainSearchView.isHidden = false
                flagImageView.isHidden = false

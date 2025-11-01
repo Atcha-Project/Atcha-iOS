@@ -18,7 +18,7 @@ final class FetchTaxiFareRepositoryImpl: FetchTaxiFareRepository {
     func fetchTaxiFare(request: FetchTaxiFareRequest) async throws -> Double {
         return try await apiService.request(
             Endpoint(
-                path: "https://atcha.p-e.kr/api/transits/taxi-fare",
+                path: "\(NetworkConstant.baseURL)/transits/taxi-fare",
                 method: .get,
                 parameters: request.toDictionary()
             )
