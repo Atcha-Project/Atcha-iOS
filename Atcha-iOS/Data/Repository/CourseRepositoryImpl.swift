@@ -26,7 +26,7 @@ final class CourseRepositoryImpl: CourseRepository {
         
         return try await apiService.request(
             Endpoint(
-                path: "\(NetworkConstant.baseURL)/routes/last-routes/\(routeId)",
+                path: "/routes/last-routes/\(routeId)",
                 method: .get,
                 headers: headers
             )
@@ -44,7 +44,7 @@ final class CourseRepositoryImpl: CourseRepository {
         
         return try await apiService.request(
             Endpoint(
-                path: "\(NetworkConstant.baseURL)/routes/last-routes",
+                path: "/routes/last-routes",
                 method: .get,
                 parameters: [
                     "startLat": request.startLat,

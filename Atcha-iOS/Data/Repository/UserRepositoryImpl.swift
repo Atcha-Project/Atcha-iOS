@@ -17,7 +17,7 @@ final class UserRepositoryImpl: UserRepository {
     
     func fetchUser() async throws -> UserInfoResponse {
         return try await apiService.request(
-            Endpoint(path: "\(NetworkConstant.baseURL)/members/me",
+            Endpoint(path: "/members/me",
                      method: .get,
                      headers: ["X-Platform" : "iOS"])
         )
@@ -31,7 +31,7 @@ final class UserRepositoryImpl: UserRepository {
         
         return try await apiService.request(
             Endpoint(
-                path: "\(NetworkConstant.baseURL)/auth/sign-up",
+                path: "/auth/sign-up",
                 method: .post,
                 encoding: JSONEncoding.default,
                 headers: ["Authorization": "Bearer \(providerToken)"]),
@@ -41,7 +41,7 @@ final class UserRepositoryImpl: UserRepository {
     func signOut(_ request: WithdrawRequest) async throws -> APIEmptyResponse {
         return try await apiService.request(
             Endpoint(
-                path: "\(NetworkConstant.baseURL)/members/me",
+                path: "/members/me",
                 method: .delete,
                 encoding: JSONEncoding.default),
             body: request)
@@ -50,7 +50,7 @@ final class UserRepositoryImpl: UserRepository {
     func login(_ request: LoginRequest) async throws -> LoginResponse {
         return try await apiService.request(
             Endpoint(
-                path: "\(NetworkConstant.baseURL)/auth/login",
+                path: "/auth/login",
                 method: .get,
                 parameters: [
                     "provider": "\(request.provider)",
@@ -64,7 +64,7 @@ final class UserRepositoryImpl: UserRepository {
     func logout() async throws -> APIEmptyResponse {
         return try await apiService.request(
             Endpoint(
-                path: "\(NetworkConstant.baseURL)/auth/logout",
+                path: "/auth/logout",
                 method: .post
             )
         )
@@ -73,7 +73,7 @@ final class UserRepositoryImpl: UserRepository {
     func checkRegistration(_ request: AuthCheckRequest) async throws -> AuthCheckResponse {
         return try await apiService.request(
             Endpoint(
-                path: "\(NetworkConstant.baseURL)/auth/check",
+                path: "/auth/check",
                 method: .get,
                 parameters: ["provider": "\(request.provider)"],
                 headers: ["Authorization": "Bearer \(request.accessToken)"]
@@ -84,7 +84,7 @@ final class UserRepositoryImpl: UserRepository {
     func homePatch(_ request: HomePatchRequest) async throws -> UserInfoPatchResponse {
         return try await apiService.request(
             Endpoint(
-                path: "\(NetworkConstant.baseURL)/members/me/home-address",
+                path: "/members/me/home-address",
                 method: .patch,
                 encoding: JSONEncoding.default),
             body: request)
@@ -93,7 +93,7 @@ final class UserRepositoryImpl: UserRepository {
     func pushAlarmPatch(_ request: PushAlarmPatchRequest) async throws -> UserInfoPatchResponse {
         return try await apiService.request(
             Endpoint(
-                path: "\(NetworkConstant.baseURL)/members/me/alert-frequency",
+                path: "/members/me/alert-frequency",
                 method: .patch,
                 encoding: JSONEncoding.default),
             body: request)
