@@ -15,6 +15,3 @@ struct NetworkConstant {
     #endif
     static let timeoutInterval: TimeInterval = 30
 }
-
-
-

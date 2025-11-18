@@ -30,6 +30,8 @@ final class MainViewModel: BaseViewModel {
     @Published var bottomType: MapBottomType?
     @Published var showLockView: Bool = false
     
+    @Published var departureStr: String?
+    
     private let searchAddressUseCase: SearchAddressUseCase
     private let authorizationUseCase: RequestLocationAuthorizationUseCase
     private let fetchTaxiFareUseCase: FetchTaxiFareUseCase
@@ -138,6 +140,8 @@ final class MainViewModel: BaseViewModel {
         guard let info, let departureStr = info.pathInfo.first?.departureDateTime,
               let totalTime = info.trafficInfo.first?.totalTime else { return }
         
+        self.departureStr = departureStr
+        
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
         formatter.locale = .current
@@ -179,6 +183,9 @@ final class MainViewModel: BaseViewModel {
         wrapper.remove(forKey: UserDefaultsWrapper.Key.startAddress.rawValue)
         wrapper.remove(forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
         wrapper.remove(forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue)
+        wrapper.remove(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue)
+        
+        
         //        wrapper.remove(forKey: UserDefaultsWrapper.Key.trainRealTime.rawValue)
     }
     
@@ -216,43 +223,65 @@ final class MainViewModel: BaseViewModel {
         }
     }
     
+//    override func handleRefreshNotification(_ notification: Notification) {
+//        guard let userInfo = notification.userInfo,
+//              let body = userInfo["body"] as? String,
+//              let _ = userInfo["updatedAt"] as? String else {
+//            return
+//        }
+//
+//        fetchDetailRoute()
+//        startAlarmTimer()
+//        //        wrapper.remove(forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
+//        //
+//        //        let routeId = legInfo?.pathInfo.first?.routeId ?? ""
+//        //        Task {
+//        //            do {
+//        //                let info = try await courseUseCase.courseSearch(routeId)
+//        //                let pathinfo = info.toLegPathInfos()
+//        //                let trafficInfo = info.toLegTrafficInfos()
+//        //                let busInfo = info.toBusInfos()
+//        //
+//        //                let legInfo: LegInfo 저ㅏㅁ사미= LegInfo(pathInfo: pathinfo,
+//        //                                               trafficInfo: trafficInfo,
+//        //                                               busInfo: busInfo)
+//        //                wrapper.set(legInfo, forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
+//        //                drawRoute(address: addressDesc, info: legInfo)
+//        //            } catch {
+//        //                print("routeId 조회 대실패 ㅠㅠ!!")
+//        //            }
+//        //        }
+//        //
+//        //        wrapper.remove(forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
+//        UserDefaultsWrapper.shared.set(body, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
+////        AlarmManager.shared.startAlarm(after: body,
+////                                       title: "눌러서 출발 알람 끄기",
+////                                       body: "자리에서 일어나야 할 시간이에요!")
+//
+//        departureTime = body
+//    }
+    
     override func handleRefreshNotification(_ notification: Notification) {
-        guard let userInfo = notification.userInfo,
-              let body = userInfo["body"] as? String,
-              let _ = userInfo["updatedAt"] as? String else {
-            return
+            guard let userInfo = notification.userInfo,
+                  let body = userInfo["body"] as? String,
+                  let _ = userInfo["updatedAt"] as? String else {
+                return
+            }
+            
+            
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+            formatter.locale = .current
+            
+            guard let departureStr = self.departureStr else { return }
+            guard let departureDate = formatter.date(from: departureStr) else { return }
+            
+            UserDefaultsWrapper.shared.set(departureDate, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
+            
+            fetchDetailRoute()
+            startAlarmTimer()
+            departureTime = body
         }
-        
-        fetchDetailRoute()
-        startAlarmTimer()
-        //        wrapper.remove(forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
-        //
-        //        let routeId = legInfo?.pathInfo.first?.routeId ?? ""
-        //        Task {
-        //            do {
-        //                let info = try await courseUseCase.courseSearch(routeId)
-        //                let pathinfo = info.toLegPathInfos()
-        //                let trafficInfo = info.toLegTrafficInfos()
-        //                let busInfo = info.toBusInfos()
-        //
-        //                let legInfo: LegInfo 저ㅏㅁ사미= LegInfo(pathInfo: pathinfo,
-        //                                               trafficInfo: trafficInfo,
-        //                                               busInfo: busInfo)
-        //                wrapper.set(legInfo, forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
-        //                drawRoute(address: addressDesc, info: legInfo)
-        //            } catch {
-        //                print("routeId 조회 대실패 ㅠㅠ!!")
-        //            }
-        //        }
-        //
-        //        wrapper.remove(forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
-        UserDefaultsWrapper.shared.set(body, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
-//        AlarmManager.shared.startAlarm(after: body,
-//                                       title: "눌러서 출발 알람 끄기",
-//                                       body: "자리에서 일어나야 할 시간이에요!")
-        
-        departureTime = body
-    }
     
     private func fetchDetailRoute() {
         let wrapper = UserDefaultsWrapper.shared
@@ -529,5 +558,6 @@ extension MainViewModel {
 //            // address 퍼블리셔가 이미 region+fare 리프레시를 타도록 bind()에 연결돼 있음
 //        }
 }
+
 
 

@@ -135,7 +135,7 @@ final class CourseSearchViewModel: BaseViewModel {
             courses = []
             return
         }
-//        
+       
         courseStreamTask?.cancel()
         setLoading(true)
         anchorDate = Date()
