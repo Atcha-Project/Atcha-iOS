@@ -146,6 +146,14 @@ final class MainViewController: BaseViewController<MainViewModel>,
         }
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+
+        view.subviews
+            .compactMap { $0 as? AtchaToast }
+            .forEach { $0.hideImmediately() }
+    }
+    
     private func setupUI() {
         view.addSubViews(
             mapContainerView,

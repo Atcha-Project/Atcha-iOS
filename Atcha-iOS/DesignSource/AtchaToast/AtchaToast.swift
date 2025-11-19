@@ -87,4 +87,9 @@ extension AtchaToast {
             })
         })
     }
+    
+    func hideImmediately() {
+        layer.removeAllAnimations()
+        removeFromSuperview()
+    }
 }
