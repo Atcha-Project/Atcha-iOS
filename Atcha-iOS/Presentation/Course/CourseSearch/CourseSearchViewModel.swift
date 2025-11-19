@@ -49,6 +49,8 @@ final class CourseSearchViewModel: BaseViewModel {
     var getAlarmTapped: ((String, LegInfo) -> Void)?
     var getDetailTapped: ((String, LegInfo) -> Void)?
     
+    var onTapRouteLabelStack: ((Location) -> Void)?
+    
     private let kst = TimeZone(identifier: "Asia/Seoul")!
     private let cutoffHour = 3 // 새벽 3시까지 검색
     private var anchorDate: Date? // 검색 시작 시 고정
@@ -276,6 +278,17 @@ final class CourseSearchViewModel: BaseViewModel {
         let hour = cal.component(.hour, from: Date())
         // 00:00 <= now < 05:00
         return hour >= 0 && hour < 5
+    }
+    
+    func didTapRouteLabelStack() {
+        let location = Location(name: "",
+                                lat: Double(startLat) ?? 0.0 ,
+                                lon: Double(startLon) ?? 0.0,
+                                businessCategory: nil,
+                                address: startAddress,
+                                radius: nil)
+        
+        onTapRouteLabelStack?(location)
     }
 }
 

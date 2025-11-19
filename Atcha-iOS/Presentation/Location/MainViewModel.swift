@@ -11,6 +11,11 @@ import Combine
 import UIKit
 import TMapSDK
 
+enum LastTrainState {
+    case beforeDeparture
+    case afterDeparture
+}
+
 final class MainViewModel: BaseViewModel {
     private var alarmTimerCancellable: AnyCancellable?
     private var alarmFinishCancellable: AnyCancellable?
@@ -31,6 +36,8 @@ final class MainViewModel: BaseViewModel {
     @Published var showLockView: Bool = false
     
     @Published var departureStr: String?
+    
+    @Published var state: LastTrainState = .beforeDeparture
     
     private let searchAddressUseCase: SearchAddressUseCase
     private let authorizationUseCase: RequestLocationAuthorizationUseCase
@@ -352,7 +359,7 @@ extension MainViewModel {
             print("departureTime : \(departureTime)")
             //            if !checkFutureTimeOver(dateString: departureTime) {
             if isInAlarmRange(dateString: departureTime) {
-                
+                state = .afterDeparture
                 // TODO: 알림 이후 등록이 되는지확인
                 showLockView = true
                 AlarmManager.shared.startAlarm(after: departureTime,

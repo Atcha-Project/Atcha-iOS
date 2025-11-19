@@ -187,7 +187,7 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
                     longitude: location.longitude
                 )
     
-                mapContainerView.setupCenter(location: offsetLocation)
+                mapContainerView.setupZoomCenter(location: offsetLocation)
             }
             .store(in: &cancellables)
         
