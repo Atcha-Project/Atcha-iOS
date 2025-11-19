@@ -66,6 +66,7 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
         NoSearchCourseUI()
         bind()
         setupAutoLayout()
+        viewModel.updateTabIndex(0)
         viewModel.startCourseStream()
     }
     
@@ -350,7 +351,7 @@ extension CourseSearchViewController: UICollectionViewDelegate, UICollectionView
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if collectionView == tabCollectionView {
             selectedIndex = indexPath.item
-            viewModel.fetchCourses(for: selectedIndex)
+            viewModel.updateTabIndex(selectedIndex)
             collectionView.reloadData()
         }
     }

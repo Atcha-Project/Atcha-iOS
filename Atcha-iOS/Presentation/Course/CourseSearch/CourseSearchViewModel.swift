@@ -44,6 +44,7 @@ final class CourseSearchViewModel: BaseViewModel {
     private let startLon: String
     public private(set) var startAddress: String
     private var courseStreamTask: Task<Void, Never>?
+    private(set) var currentTabIndex: Int = 0
     
     var getAlarmTapped: ((String, LegInfo) -> Void)?
     var getDetailTapped: ((String, LegInfo) -> Void)?
@@ -74,30 +75,37 @@ final class CourseSearchViewModel: BaseViewModel {
         let base: [CourseUIModel]
         switch tabIndex {
         case 0:
+            // 전체
             base = allCourses
+            
         case 1:
-            // BUS만 포함
             base = allCourses.filter { m in
                 let modes = m.course.legs.compactMap { $0.mode }
-                return !modes.contains(.subway) && modes.contains(.bus)
+                let hasBusOnly = modes.contains(.bus) && !modes.contains(.subway)
+                return hasBusOnly
             }
+            
         case 2:
-            // SUBWAY만 포함
             base = allCourses.filter { m in
                 let modes = m.course.legs.compactMap { $0.mode }
-                return !modes.contains(.bus) && modes.contains(.subway)
+                let hasSubwayOnly = modes.contains(.subway) && !modes.contains(.bus)
+                return hasSubwayOnly
             }
+            
         default:
             base = []
         }
         
-        // 2) 정렬: totalTime ↑, 같으면 departureDateTime ↑
         let sorted = base.sorted(by: isLess(_:_:))
         
-        // 3) 변경이 있을 때만 갱신 (불필요한 리렌더 방지)
         if courses != sorted {
             self.courses = sorted
         }
+    }
+    
+    func updateTabIndex(_ index: Int) {
+        currentTabIndex = index
+        fetchCourses(for: index)
     }
     
     // MARK: - 코스 검색
@@ -117,7 +125,7 @@ final class CourseSearchViewModel: BaseViewModel {
                 }
                 
                 self.allCourses = uiModels
-                self.fetchCourses(for: 0)
+                self.fetchCourses(for: self.currentTabIndex)
             } catch {
                 print("탭별 코스 가져오기 실패: \(error)")
                 self.isServerError = true
@@ -135,7 +143,7 @@ final class CourseSearchViewModel: BaseViewModel {
             courses = []
             return
         }
-       
+        
         courseStreamTask?.cancel()
         setLoading(true)
         anchorDate = Date()
@@ -164,7 +172,7 @@ final class CourseSearchViewModel: BaseViewModel {
                     if !self.allCourses.contains(where: { $0.id == uiModel.id }) {
                         self.allCourses.append(uiModel)
                         self.allCourses.sort(by: isLess(_:_:))
-                        self.fetchCourses(for: 0)
+                        self.fetchCourses(for: self.currentTabIndex)
                     }
                 }
                 
@@ -272,26 +280,26 @@ final class CourseSearchViewModel: BaseViewModel {
 }
 
 extension CourseSearchViewModel {
-
+    
     // 걷는 시간 측정
     private func walkMetric(of course: Course) -> Int {
         let walks = course.totalWalkTime ?? 0
         return walks
     }
-
+    
     private func departureDate(of course: Course) -> Date {
         (course.departureDateTime.flatMap { parseServerDate($0) }) ?? .distantPast
     }
-
+    
     private func totalTime(of course: Course) -> Int {
         course.totalTime ?? Int.max
     }
-
+    
     private func transferCount(of course: Course) -> Int {
         let count = course.legs.filter { $0.mode == .bus || $0.mode == .subway }.count
         return max(0, count - 1)
     }
-
+    
     private func rankIndex<T: Comparable>(
         value: T,
         in values: [T],
@@ -302,23 +310,23 @@ extension CourseSearchViewModel {
         guard let firstIdx = sorted.firstIndex(of: value) else { return values.count }
         return firstIdx + 1
     }
-
+    
     enum SortOrder { case forward, reverse }
-
+    
     // 외부에서 호출: 선택된 코스의 순위 계산
     func ranks(for selected: Course) -> RouteRanks {
         // 현재 탭 정렬과 무관하게 “전체 후보(allCourses)” 기준으로 순위 산정
         let courses = allCourses.map { $0.course }
-
+        
         let depValues   = courses.map { departureDate(of: $0) }   // 늦을수록 1위 ⇒ 내림차순
         let walkValues  = courses.map { walkMetric(of: $0) }       // 적을수록 1위 ⇒ 오름차순
         let timeValues  = courses.map { totalTime(of: $0) }        // 짧을수록 1위 ⇒ 오름차순
-
+        
         let laterDepRank  = rankIndex(value: departureDate(of: selected), in: depValues,  order: .reverse)
         let minWalkRank   = rankIndex(value: walkMetric(of: selected),   in: walkValues, order: .forward)
         let minTimeRank   = rankIndex(value: totalTime(of: selected),    in: timeValues, order: .forward)
         let transfers     = transferCount(of: selected)
-
+        
         return RouteRanks(
             laterDepartureTimeRank: laterDepRank,
             minimalWalkRank:        minWalkRank,
