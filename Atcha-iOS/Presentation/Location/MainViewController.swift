@@ -100,7 +100,8 @@ final class MainViewController: BaseViewController<MainViewModel>,
     private var lastJumpTime: CFTimeInterval = 0
     private let minJumpInterval: CFTimeInterval = 1.0
     
-    
+    private var routeStartCoordinate: CLLocationCoordinate2D?
+    private var shouldCenterToCurrentLocationOnce = false
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -117,8 +118,8 @@ final class MainViewController: BaseViewController<MainViewModel>,
         super.viewDidLoad()
         
         wasAlarmRegisteredOnLaunch = UserDefaultsWrapper.shared.bool(
-               forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue
-           ) ?? false
+            forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue
+        ) ?? false
         
         self.onNetworkReconnect = { [weak self] in
             self?.mapContainerView.reloadMapView()
@@ -144,6 +145,19 @@ final class MainViewController: BaseViewController<MainViewModel>,
                 self?.mapContainerView.afterUserMarker()
             }
         }
+        
+        if viewModel.state == .beforeDeparture,
+           let startCoord = routeStartCoordinate {
+            mapContainerView.setupZoomCenter(location: startCoord)
+        }
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        
+        view.subviews
+            .compactMap { $0 as? AtchaToast }
+            .forEach { $0.hideImmediately() }
     }
     
     private func setupUI() {
@@ -430,26 +444,36 @@ extension MainViewController {
         AlarmManager.shared.stopAlarm()
         viewModel.requestPermissionAndStartTracking()
         viewModel.removeLegInfoAndAddress()
-
+        
         // 이번 한 번은 프리 말풍선 자동 표시를 건너뛰도록 플래그 세팅
         deferPreBalloonOnce = true
         viewModel.bottomType = .search
+        viewModel.state = .beforeDeparture
+        routeStartCoordinate = nil
         cancelBalloonQueueAndHide()
         atchaImageView.stop()
         mapContainerView.clearMapView()
         mapContainerView.beforeUserMarker()
         
+        if let coord = viewModel.currentLocation {
+            mapContainerView.setupCenter(location: coord)
+        } else {
+            // 위치 아직 없으면 한 번은 센터 이동 허용 + 위치 요청
+            shouldCenterToCurrentLocationOnce = true
+            viewModel.setupLocation()
+        }
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
             guard let self else { return }
-
+            
             view.showToast(message: "알람이 종료되었어요")
-
+            
             // 2초 뒤 수동으로 말풍선 표시 (이때 플래그 해제)
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                 self.deferPreBalloonOnce = false
                 self.showInitialPreAlarmBalloons(force: true)
             }
-
+            
             UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue)
             AmplitudeManager.shared.timerEndSeconds("notification_registration_duration")
             AmplitudeManager.shared.timerStart("notification_registration_duration")
@@ -462,7 +486,25 @@ extension MainViewController {
             .removeDuplicates()
             .compactMap { $0 }
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] in self?.mapContainerView.setupCenter(location: $0) }
+            .sink { [weak self] coord in
+                guard let self = self else { return }
+                
+                // 1) 알람 등록된 상태(경로 있음) + 출발 전이면 원래는 출발지 고정
+                //    다만, 현위치 버튼 눌러서 강제 이동하고 싶을 수 있으니까 예외 플래그 둠
+                if self.viewModel.state == .beforeDeparture,
+                   self.viewModel.legInfo != nil,
+                   self.shouldCenterToCurrentLocationOnce == false {
+                    return
+                }
+                
+                // 2) 현위치 버튼 눌러서 한 번만 강제로 센터 이동하는 경우
+                if self.shouldCenterToCurrentLocationOnce {
+                    self.shouldCenterToCurrentLocationOnce = false
+                }
+                
+                // 3) 나머지 케이스(경로 없음 or 출발 이후)는 항상 현위치 따라가기
+                self.mapContainerView.setupCenter(location: coord)
+            }
             .store(in: &cancellables)
     }
     
@@ -592,54 +634,54 @@ extension MainViewController {
             lastTrainDepartView.isHidden = false
             viewModel.startAlarmTimer()
             mapContainerView.afterUserMarker()
-
+            
             setupGen &+= 1
             let gen = setupGen
             cancelBalloonQueueAndHide()
             atchaImageView.stop()
             self.setupPostAlarmMessages()
-
+            
             // 두 번 연속 호출일 때만 0.7초, 아니면 0.2초 (기존 로직 유지)
             let delayBeforeScheduling: TimeInterval = isSame ? 0.7 : 0.2
-
+            
             let popRegister = UserDefaultsWrapper.shared.bool(
                 forKey: UserDefaultsWrapper.Key.popRegister.rawValue
             ) ?? false
-
+            
             let popToastDelay: Double = popRegister ? 0.3 : 0.0
             let popBallonDelay: TimeInterval = popRegister ? 2.7 : 2.4
             
             // 앱을 켤 때부터 알람이 이미 등록되어 있었다면, post-delay(기존 2.0초)를 0으로
             
             let postRevealDelay: TimeInterval = wasAlarmRegisteredOnLaunch ? 0.0 : popBallonDelay
-
+            
             self.scheduleFirstBalloon(gen: gen,
                                       delay: delayBeforeScheduling,
                                       postRevealDelay: postRevealDelay,
                                       popToastDelay: popToastDelay)
-
+            
             preSessionShowTopLine = nil
             
         case .search:
-               if !isSame { cancelBalloonQueueAndHide() }
-//               viewModel.stopAlarmTimer()
-               viewModel.stopFinishAlarmTimer()
-               lastTrainSearchView.isHidden = false
-               flagImageView.isHidden = false
-                cancelBalloonQueueAndHide()
-                atchaImageView.stop()
+            if !isSame { cancelBalloonQueueAndHide() }
+            //               viewModel.stopAlarmTimer()
+            viewModel.stopFinishAlarmTimer()
+            lastTrainSearchView.isHidden = false
+            flagImageView.isHidden = false
+            cancelBalloonQueueAndHide()
+            atchaImageView.stop()
             
-               mapContainerView.clearMapView()
-               mapContainerView.beforeUserMarker()
-               updateAtchaImageConstraint(relativeTo: lastTrainSearchView)
-
-               hasShownInitialBalloon = false
-               preSessionShowTopLine = nil
-
-               // exit 흐름에서 지연 표시 예정이면 여기서는 자동 호출 안 함
-               if !deferPreBalloonOnce {
-                   showInitialPreAlarmBalloons(force: true)
-               }
+            mapContainerView.clearMapView()
+            mapContainerView.beforeUserMarker()
+            updateAtchaImageConstraint(relativeTo: lastTrainSearchView)
+            
+            hasShownInitialBalloon = false
+            preSessionShowTopLine = nil
+            
+            // exit 흐름에서 지연 표시 예정이면 여기서는 자동 호출 안 함
+            if !deferPreBalloonOnce {
+                showInitialPreAlarmBalloons(force: true)
+            }
             
         case .detail:
             lastTrainDepartView.isHidden = false
@@ -655,7 +697,7 @@ extension MainViewController {
                                       postRevealDelay: TimeInterval,
                                       popToastDelay: TimeInterval) {
         firstBalloonWork?.cancel()
-
+        
         let work = DispatchWorkItem { [weak self] in
             guard let self else { return }
             guard gen == self.setupGen, self.viewModel.bottomType == .departure else { return }
@@ -716,11 +758,11 @@ extension MainViewController {
                 guard let self else { return }
                 let previous = self.latestIsServiceRegion
                 self.latestIsServiceRegion = ok
-
+                
                 switch ok {
                 case .some(true):
                     self.lastTrainSearchView.updateSearchEnabled(true)
-
+                    
                     if previous == nil {
                         // 초기 표시 로직은 함수 쪽에서 요금 없으면 no-op
                         self.showInitialPreAlarmBalloons(force: true)
@@ -737,7 +779,7 @@ extension MainViewController {
                         } else {
                         }
                     }
-
+                    
                 case .some(false):
                     self.lastTrainSearchView.updateSearchEnabled(false)
                     if previous == nil {
@@ -752,7 +794,7 @@ extension MainViewController {
                             self.updatePreBalloonContent(content, showTopLine: self.preSessionShowTopLine ?? true)
                         }
                     }
-
+                    
                 case .none:
                     self.lastTrainSearchView.updateSearchEnabled(false)
                 }
@@ -823,6 +865,14 @@ extension MainViewController {
             let isLast = index == shapeStrings.count - 1
             mapContainerView.addTrafficLine(passShape: shape, color: color, markerImage: image, isFirst: isFirst, isLast: isLast)
         }
+        
+        if let startCoordinate = allCoordinates.first {
+            self.routeStartCoordinate = startCoordinate
+            
+            if viewModel.state == .beforeDeparture {
+                mapContainerView.setupZoomCenter(location: startCoordinate)
+            }
+        }
     }
     
     private func convertShapeToCoords(_ shape: String) -> [CLLocationCoordinate2D] {
@@ -868,7 +918,14 @@ extension MainViewController {
     }
     
     @objc private func didTapLocationButton() {
-        viewModel.setupLocation()
+        // 다음 currentLocation 업데이트 한 번은 무조건 센터 이동 허용
+        shouldCenterToCurrentLocationOnce = true
+        
+        if let coord = viewModel.currentLocation {
+            mapContainerView.setupCenter(location: coord)
+        } else {
+            viewModel.setupLocation()
+        }
         
         didTapCurrentLocation += 1
     }
@@ -894,7 +951,7 @@ extension MainViewController {
         case .next:
             let now = CACurrentMediaTime()
             let shouldRefreshFare = (now - lastFareRefreshTime) > fareRefreshInterval
-
+            
             if shouldRefreshFare && !isFetchingFare {
                 isFetchingFare = true
                 let vm = viewModel
@@ -925,13 +982,13 @@ extension MainViewController {
                 }
                 return  // 이번 탭은 요금만 보여주고 종료
             }
-
+            
             // ===== 재조회 주기가 아닐 땐 순환 메시지 =====
             guard !postAlarmMessages.isEmpty else { return }
             if postAlarmIndex < 1 { postAlarmIndex = 1 } // 1..N-1 범위에서 순환
             let content = postAlarmMessages[postAlarmIndex]
             showOrUpdateImmediateBalloon(content)
-
+            
             let cycleCount = postAlarmMessages.count - 1
             postAlarmIndex = 1 + ((postAlarmIndex - 1 + 1) % cycleCount)
             
@@ -1066,13 +1123,13 @@ extension MainViewController {
     private func showInitialPreAlarmBalloons(force: Bool = false) {
         guard let isService = latestIsServiceRegion else { return }
         guard isPreAlarmBalloonActive() else { return }
-
+        
         if preSessionShowTopLine == nil {
             preSessionShowTopLine = !isRevisit
         }
         let showTopLine = preSessionShowTopLine ?? true
         let d1 = balloonInitialDelayFirst
-
+        
         if isService {
             // 서비스 지역인데 아직 요금이 없으면 말풍선은 띄우지 않지만,
             // 재방문 처리(상단 라인 억제용)는 반드시 해두고 return
@@ -1083,7 +1140,7 @@ extension MainViewController {
                 hasShownInitialBalloon = true
                 return
             }
-
+            
             // 요금 있으면 택시비 말풍선만 페이드인
             showOrUpdatePreBalloon(
                 .separation(gray: "여기서 막차 놓치면 택시비 ", white: "약 \(fare)원"),
@@ -1097,12 +1154,12 @@ extension MainViewController {
                 delay: d1
             )
         }
-
+        
         // 여기까지 도달했을 때도 초기 방문이면 reVisit 저장
         if !isRevisit {
             UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.reVisit.rawValue)
         }
-
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
             self?.atchaImageView.stop()
             self?.atchaImageView.start()

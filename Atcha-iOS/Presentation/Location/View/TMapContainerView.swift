@@ -42,6 +42,11 @@ final class TMapContainerView: UIView {
         tMapWrapper.mapView.setCenter(location)
     }
     
+    func setupZoomCenter(location: CLLocationCoordinate2D) {
+        tMapWrapper.mapView.setCenter(location)
+        tMapWrapper.mapView.setZoom(18)
+    }
+    
     func updateUserMarker(location: CLLocationCoordinate2D) {
         tMapWrapper.updateUserMarker(coordinate: location)
     }

@@ -63,9 +63,11 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
         super.viewDidLoad()
         
         setupUI()
+        setupGesture()
         NoSearchCourseUI()
         bind()
         setupAutoLayout()
+        viewModel.updateTabIndex(0)
         viewModel.startCourseStream()
     }
     
@@ -77,7 +79,7 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-
+        
         let seconds = AmplitudeManager.shared.timerEndSeconds("coursesearch_view_duration")
         AmplitudeManager.shared.track(
             AmplitudeEvent.coursesearch_view_duration.rawValue,
@@ -108,7 +110,7 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
             .receive(on: RunLoop.main)
             .sink { [weak self] (isError, isLoading) in
                 guard let self = self else { return }
-
+                
                 if isError && !isLoading {
                     if viewModel.isBlackoutNow() {
                         self.noSearchLabel.attributedText = AtchaFont.B4_R_15("24:00 - 05:00\n막차 검색을 할 수 없어요", color: AtchaColor.gray400, alignment: .center)
@@ -250,11 +252,11 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
             let busCount = busLegs.count
             let hasSubway = trafficInfo.contains { $0.mode == .subway }
             let hasLongWaitBus = busLegs.contains { ($0.targetBusTerm ?? 0) >= 40 }
-
+            
             let isException = (busCount == 1) && (hasSubway == false)
-
+            
             let shouldShowPopup = hasLongWaitBus && !isException
-
+            
             let isAlarmRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
             
             if isAlarmRegistered {
@@ -330,6 +332,18 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
             make.center.equalTo(courseCollectionView)
         }
     }
+    
+    private func setupGesture() {
+        courseView.isUserInteractionEnabled = true
+        
+        let tap = UITapGestureRecognizer(target: self, action: #selector(didTapRouteStack))
+        courseView.addGestureRecognizer(tap)
+    }
+    
+    
+    @objc private func didTapRouteStack() {
+        viewModel.didTapRouteLabelStack()
+    }
 }
 
 extension CourseSearchViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
@@ -350,7 +364,7 @@ extension CourseSearchViewController: UICollectionViewDelegate, UICollectionView
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if collectionView == tabCollectionView {
             selectedIndex = indexPath.item
-            viewModel.fetchCourses(for: selectedIndex)
+            viewModel.updateTabIndex(selectedIndex)
             collectionView.reloadData()
         }
     }
@@ -421,7 +435,7 @@ extension CourseSearchViewController {
     
     private func amplitudeActions(_ rank: RouteRanks) {
         let second = AmplitudeManager.shared.timerEndSeconds("notification_registration_duration")
-
+        
         AmplitudeManager.shared.track(
             AmplitudeEvent.notification_registration_duration.rawValue ,
             [

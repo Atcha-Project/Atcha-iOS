@@ -50,6 +50,6 @@ final class DetailRouteSummaryView: UIView {
     }
     
     func configure(duration: String, stops: Int) {
-        summaryLabel.attributedText = AtchaFont.B7_M_13("\(duration), \(stops)개 정류장 이동", color: .white)
+        summaryLabel.attributedText = AtchaFont.B7_M_13("\(duration), \(stops - 1)개 정류장 이동", color: .white)
     }
 }

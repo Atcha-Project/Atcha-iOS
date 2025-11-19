@@ -315,22 +315,39 @@ extension DetailRouteInfoBottomView {
         self.addGestureRecognizer(panGestureRecognizer)
     }
     
+//    @objc private func handlePan(_ recognizer: UIPanGestureRecognizer) {
+//        guard let superview = self.superview else { return }
+//        let translation = recognizer.translation(in: superview)
+//        
+//        switch recognizer.state {
+//        case .changed:
+//            let newY = max(parentViewHeight - expandedHeight,
+//                           min(self.frame.origin.y + translation.y, parentViewHeight - collapsedHeight))
+//            self.frame.origin.y = newY
+//            recognizer.setTranslation(.zero, in: superview)
+//            
+//        case .ended:
+//            let velocity = recognizer.velocity(in: superview).y
+//            let shouldExpand = velocity < 0
+//            animateTransition(shouldExpand: shouldExpand)
+//            
+//        default:
+//            break
+//        }
+//    }
     @objc private func handlePan(_ recognizer: UIPanGestureRecognizer) {
         guard let superview = self.superview else { return }
         let translation = recognizer.translation(in: superview)
         
         switch recognizer.state {
         case .changed:
-            let newY = max(parentViewHeight - expandedHeight,
-                           min(self.frame.origin.y + translation.y, parentViewHeight - collapsedHeight))
-            self.frame.origin.y = newY
-            recognizer.setTranslation(.zero, in: superview)
-            
+            let velocity = recognizer.velocity(in: superview).y
+            let shouldExpand = velocity < 0
+            animateTransition(shouldExpand: shouldExpand)
         case .ended:
             let velocity = recognizer.velocity(in: superview).y
             let shouldExpand = velocity < 0
             animateTransition(shouldExpand: shouldExpand)
-            
         default:
             break
         }

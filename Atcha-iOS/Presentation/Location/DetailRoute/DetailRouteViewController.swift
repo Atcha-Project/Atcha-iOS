@@ -17,7 +17,7 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
     private let backButton: UIButton = UIButton()
     private var activityIndicator: UIActivityIndicatorView?
     private lazy var bottomSheet: DetailRouteInfoBottomView = DetailRouteInfoBottomView()
-//    private let relaodButton: UIButton = UIButton()
+    //    private let relaodButton: UIButton = UIButton()
     private let refreshButton: RefreshView = RefreshView(background: .default)
     private var allCoordinates: [CLLocationCoordinate2D] = []
     private let registerContainer: UIView = UIView()
@@ -104,12 +104,12 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         backButton.setCornerRadius(18)
         backButton.addTarget(self, action: #selector(didTapClose), for: .touchUpInside)
         
-//        relaodButton.setImage(UIImage.refreshOutlined, for: .normal)
-//        relaodButton.tintColor = .white
-//        relaodButton.backgroundColor = .gray600
-//        relaodButton.clipsToBounds = true
-//        relaodButton.setCornerRadius(24)
-//        relaodButton.addTarget(self, action: #selector(didTapReload), for: .touchUpInside)
+        //        relaodButton.setImage(UIImage.refreshOutlined, for: .normal)
+        //        relaodButton.tintColor = .white
+        //        relaodButton.backgroundColor = .gray600
+        //        relaodButton.clipsToBounds = true
+        //        relaodButton.setCornerRadius(24)
+        //        relaodButton.addTarget(self, action: #selector(didTapReload), for: .touchUpInside)
         
         refreshButton.isUserInteractionEnabled = true
         let tap = UITapGestureRecognizer(target: self, action: #selector(didTapReload))
@@ -181,6 +181,13 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             .sink { [weak self] location in
                 guard let self else { return }
                 mapContainerView.updateUserMarker(location: location)
+                let offsetLatitude = location.latitude - 0.0003
+                let offsetLocation = CLLocationCoordinate2D(
+                    latitude: offsetLatitude,
+                    longitude: location.longitude
+                )
+    
+                mapContainerView.setupZoomCenter(location: offsetLocation)
             }
             .store(in: &cancellables)
         
