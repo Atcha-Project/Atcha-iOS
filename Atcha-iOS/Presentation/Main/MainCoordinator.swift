@@ -201,7 +201,6 @@ final class MainCoordinator {
             vm.routerHandler = { [weak self] router in
                 switch router {
                 case .lockScreen(let info, let address):
-//                    self?.lockScreenConfrim?(info, address)
                     guard let info, let address else { return }
                     self?.navigationController.dismiss(animated: false) {
                         self?.handle(route: .detailRoute(address: address,

@@ -123,6 +123,7 @@ class BaseViewController<VM: BaseViewModel>: UIViewController {
         ])
         
         loadingView = loading
+        loadingView?.layer.zPosition = 100
     }
     
     // MARK: - 로딩 뷰 숨기기

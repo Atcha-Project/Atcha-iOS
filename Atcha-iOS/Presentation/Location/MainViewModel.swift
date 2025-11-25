@@ -65,8 +65,16 @@ final class MainViewModel: BaseViewModel {
         self.courseUseCase = courseUseCase
         
         super.init()
+        
+        NotificationCenter.default.addObserver(
+                forName: .alarmPushTapped,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                self?.showLockView = true
+            }
+        
         self.bind()
-        //        self.startAlarmTimer()
     }
     
     func bind() {
@@ -79,7 +87,7 @@ final class MainViewModel: BaseViewModel {
                 Task { await self.updateAddressOnly(for: loc) }
             }
             .store(in: &cancellables)
-
+        
         $address
             .compactMap { $0 }
             .removeDuplicates()
@@ -96,18 +104,18 @@ final class MainViewModel: BaseViewModel {
             self.address = info?.name?.isEmpty == false ? info?.name : info?.address
         } catch { print("❌ 역지오코딩 실패: \(error)") }
     }
-
+    
     private func refreshRegionAndFareForCurrentAddress() async {
         guard let lat = lastReverseGeocode?.lat,
               let lon = lastReverseGeocode?.lon else { return }
-
+        
         // 서비스지역 먼저
         do {
             let okReq = CheckServiceRegionRequest(lat: lat, lon: lon)
             let ok = try await searchAddressUseCase.checkServiceRegion(okReq)
             await MainActor.run { self.isServiceRegion = ok }
         } catch { print("서비스 지역 확인 실패: \(error)") }
-
+        
         // 택시비는 서비스지역 O일 때만
         guard self.isServiceRegion == true else { return }
         let req = FetchTaxiFareRequest(
@@ -156,6 +164,12 @@ final class MainViewModel: BaseViewModel {
         let wrapper = UserDefaultsWrapper.shared
         wrapper.set(departureStr, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
         wrapper.set(arrivalDate, forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue)
+        
+        AlarmManager.shared.startAlarm1MinuteBefore(
+            departureDateTime: departureStr,
+            title: "출발 시간 알림",
+            body: "조금 있으면 출발해야 해요!"
+        )
     }
     
     private func parseTotalTimeToMinutes(_ time: String) -> Int {
@@ -223,65 +237,65 @@ final class MainViewModel: BaseViewModel {
         }
     }
     
-//    override func handleRefreshNotification(_ notification: Notification) {
-//        guard let userInfo = notification.userInfo,
-//              let body = userInfo["body"] as? String,
-//              let _ = userInfo["updatedAt"] as? String else {
-//            return
-//        }
-//
-//        fetchDetailRoute()
-//        startAlarmTimer()
-//        //        wrapper.remove(forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
-//        //
-//        //        let routeId = legInfo?.pathInfo.first?.routeId ?? ""
-//        //        Task {
-//        //            do {
-//        //                let info = try await courseUseCase.courseSearch(routeId)
-//        //                let pathinfo = info.toLegPathInfos()
-//        //                let trafficInfo = info.toLegTrafficInfos()
-//        //                let busInfo = info.toBusInfos()
-//        //
-//        //                let legInfo: LegInfo 저ㅏㅁ사미= LegInfo(pathInfo: pathinfo,
-//        //                                               trafficInfo: trafficInfo,
-//        //                                               busInfo: busInfo)
-//        //                wrapper.set(legInfo, forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
-//        //                drawRoute(address: addressDesc, info: legInfo)
-//        //            } catch {
-//        //                print("routeId 조회 대실패 ㅠㅠ!!")
-//        //            }
-//        //        }
-//        //
-//        //        wrapper.remove(forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
-//        UserDefaultsWrapper.shared.set(body, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
-////        AlarmManager.shared.startAlarm(after: body,
-////                                       title: "눌러서 출발 알람 끄기",
-////                                       body: "자리에서 일어나야 할 시간이에요!")
-//
-//        departureTime = body
-//    }
+    //    override func handleRefreshNotification(_ notification: Notification) {
+    //        guard let userInfo = notification.userInfo,
+    //              let body = userInfo["body"] as? String,
+    //              let _ = userInfo["updatedAt"] as? String else {
+    //            return
+    //        }
+    //
+    //        fetchDetailRoute()
+    //        startAlarmTimer()
+    //        //        wrapper.remove(forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
+    //        //
+    //        //        let routeId = legInfo?.pathInfo.first?.routeId ?? ""
+    //        //        Task {
+    //        //            do {
+    //        //                let info = try await courseUseCase.courseSearch(routeId)
+    //        //                let pathinfo = info.toLegPathInfos()
+    //        //                let trafficInfo = info.toLegTrafficInfos()
+    //        //                let busInfo = info.toBusInfos()
+    //        //
+    //        //                let legInfo: LegInfo 저ㅏㅁ사미= LegInfo(pathInfo: pathinfo,
+    //        //                                               trafficInfo: trafficInfo,
+    //        //                                               busInfo: busInfo)
+    //        //                wrapper.set(legInfo, forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
+    //        //                drawRoute(address: addressDesc, info: legInfo)
+    //        //            } catch {
+    //        //                print("routeId 조회 대실패 ㅠㅠ!!")
+    //        //            }
+    //        //        }
+    //        //
+    //        //        wrapper.remove(forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
+    //        UserDefaultsWrapper.shared.set(body, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
+    ////        AlarmManager.shared.startAlarm(after: body,
+    ////                                       title: "눌러서 출발 알람 끄기",
+    ////                                       body: "자리에서 일어나야 할 시간이에요!")
+    //
+    //        departureTime = body
+    //    }
     
     override func handleRefreshNotification(_ notification: Notification) {
-            guard let userInfo = notification.userInfo,
-                  let body = userInfo["body"] as? String,
-                  let _ = userInfo["updatedAt"] as? String else {
-                return
-            }
-            
-            
-            let formatter = DateFormatter()
-            formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-            formatter.locale = .current
-            
-            guard let departureStr = self.departureStr else { return }
-            guard let departureDate = formatter.date(from: departureStr) else { return }
-            
-            UserDefaultsWrapper.shared.set(departureDate, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
-            
-            fetchDetailRoute()
-            startAlarmTimer()
-            departureTime = body
+        guard let userInfo = notification.userInfo,
+              let body = userInfo["body"] as? String,
+              let _ = userInfo["updatedAt"] as? String else {
+            return
         }
+        
+        
+        let wrapper = UserDefaultsWrapper.shared
+        wrapper.set(body, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
+        
+        fetchDetailRoute()
+        startAlarmTimer()
+        AlarmManager.shared.startAlarm1MinuteBefore(
+                departureDateTime: body,
+                title: "눌러서 출발 알람 끄기",
+                body: "자리에서 일어나야 할 시간이에요!"
+            )
+
+            departureTime = body
+    }
     
     private func fetchDetailRoute() {
         let wrapper = UserDefaultsWrapper.shared
@@ -350,36 +364,55 @@ extension MainViewModel {
         let wrapper = UserDefaultsWrapper.shared
         if let departureTime: String = wrapper.string(forKey: UserDefaultsWrapper.Key.departureTime.rawValue) {
             print("departureTime : \(departureTime)")
-            //            if !checkFutureTimeOver(dateString: departureTime) {
-            if isInAlarmRange(dateString: departureTime) {
-                // TODO: 알림 이후 등록이 되는지확인
-                showLockView = true
-                AlarmManager.shared.startAlarm(after: departureTime,
-                                               title: "눌러서 출발 알람 끄기",
-                                               body: "자리에서 일어나야 할 시간이에요!")
-                stopAlarmTimer()
-            } else {
-                print("미래")
-            }
+            
+//            if isInAlarmRange(dateString: departureTime) {
+//                showLockView = true
+//                stopAlarmTimer()
+//            }
         } else {
             print("값 없음")
         }
     }
     
+    //    private func isInAlarmRange(dateString: String) -> Bool {
+    //        let formatter = DateFormatter()
+    //        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+    //        formatter.timeZone = .current
+    //
+    //        guard let alarmDate = formatter.date(from: dateString) else {
+    //            print("날짜 파싱 실패")
+    //            return false
+    //        }
+    //
+    //        let now = Date()
+    //        let oneMinuteBefore = alarmDate.addingTimeInterval(-60) // 60초 전
+    //
+    //        // 현재가 60초 전과 알람 시간 사이인지 확인
+    //        return now >= oneMinuteBefore && now <= alarmDate
+    //    }
     private func isInAlarmRange(dateString: String) -> Bool {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-        formatter.timeZone = .current
+        formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
         
         guard let alarmDate = formatter.date(from: dateString) else {
             print("날짜 파싱 실패")
             return false
         }
-        
+
+        let calendar = Calendar.current
         let now = Date()
-        let oneMinuteBefore = alarmDate.addingTimeInterval(-60) // 60초 전
-        
-        // 현재가 60초 전과 알람 시간 사이인지 확인
+
+        // 1) 알람시간에서 초 버리고 "분만" 사용
+        var alarmMinus1Min = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: alarmDate)
+        guard let alarmMinuteDate = calendar.date(from: alarmMinus1Min) else { return false }
+
+        //2) 1분 전 계산 (초는 항상 00)
+        guard let oneMinuteBefore = calendar.date(byAdding: .minute, value: -1, to: alarmMinuteDate) else {
+            return false
+        }
+
+        // 최종 조건: 1분 전(초00) ≤ now ≤ 알람시간(초 포함)
         return now >= oneMinuteBefore && now <= alarmDate
     }
     
@@ -422,6 +455,8 @@ extension MainViewModel {
     func stopFinishAlarmTimer() {
         alarmFinishCancellable?.cancel()
         alarmFinishCancellable = nil
+        UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+        UNUserNotificationCenter.current().removeAllDeliveredNotifications()
     }
 }
 
@@ -506,11 +541,11 @@ extension MainViewModel {
         let w = UserDefaultsWrapper.shared
         let latStr: String = w.string(forKey: UserDefaultsWrapper.Key.startLat.rawValue) ?? ""
         let lonStr: String = w.string(forKey: UserDefaultsWrapper.Key.startLon.rawValue) ?? ""
-
+        
         guard let lat = Double(latStr), let lon = Double(lonStr) else {
             throw NSError(domain: "StartCoord", code: -1, userInfo: [NSLocalizedDescriptionKey: "저장된 출발 좌표가 유효하지 않습니다."])
         }
-
+        
         let req = FetchTaxiFareRequest(
             originLat: lat,
             originLon: lon,
@@ -546,17 +581,30 @@ extension MainViewModel {
     private func realodDepartureTime() async throws -> AlarmRefresh {
         return try await alarmUseCase.alarmRefresh()
     }
-    
-//    func setCurrentToSeoulStation() {
-//            let seoulStation = CLLocationCoordinate2D(latitude: 37.554722, longitude: 126.970833)
-//            // 위치 상태 갱신
-//            self.currentLocation = seoulStation
-//            self.selectedLocation = seoulStation
-//            // 주소/서비스지역/택시비 갱신 트리거
-//            Task { await self.updateAddressOnly(for: seoulStation) }
-//            // address 퍼블리셔가 이미 region+fare 리프레시를 타도록 bind()에 연결돼 있음
-//        }
 }
 
 
-
+extension MainViewModel {
+    /// 앱 들어갔을 때 호출하면,
+    /// 약 30초 후에 AlarmManager 알람이 울리는 테스트용 메서드
+    func scheduleTestAlarmUsingAlarmTimer() {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        formatter.timeZone = .current
+        
+        let now = Date()
+        // 🔥 departureTime = 지금 + 90초
+        // -> checkAlarmTime은 departure - 60초(= 30초 후)에 startAlarm을 호출하게 됨
+        let departureDate = now.addingTimeInterval(90) // 90초 뒤
+        let departureStr = formatter.string(from: departureDate)
+        
+        let wrapper = UserDefaultsWrapper.shared
+        wrapper.set(departureStr, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
+        
+        print("🧪 [TEST] Timer 기반 테스트 departureTime =", departureStr)
+        
+        // 이제 5초마다 checkAlarmTime() 돌면서,
+        // 30초쯤 지나면 AlarmManager.startAlarm() 호출됨
+        startAlarmTimer()
+    }
+}

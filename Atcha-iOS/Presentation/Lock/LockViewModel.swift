@@ -17,7 +17,7 @@ final class LockViewModel: BaseViewModel {
     init(taxiFare: Int) {
         self.taxiFare = taxiFare
         super.init()
-        scheduleLockScreen()
+//        scheduleLockScreen()
     }
     
     // MARK: - 택시 요금 업데이트
@@ -25,15 +25,15 @@ final class LockViewModel: BaseViewModel {
         taxiFare = newFare
     }
     
-    // MARK: - 120초 후 실행 예약
-    private func scheduleLockScreen() {
-        let workItem = DispatchWorkItem { [weak self] in
-            AlarmManager.shared.stopAlarm()
-            self?.executeAfterTwoMinutes()
-        }
-        lockScreenWorkItem = workItem
-        DispatchQueue.main.asyncAfter(deadline: .now() + 120, execute: workItem)
-    }
+//    // MARK: - 120초 후 실행 예약
+//    private func scheduleLockScreen() {
+//        let workItem = DispatchWorkItem { [weak self] in
+//            AlarmManager.shared.stopAlarm()
+//            self?.executeAfterTwoMinutes()
+//        }
+//        lockScreenWorkItem = workItem
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 120, execute: workItem)
+//    }
     
     // MARK: - 타이머 취소
     func cancelLockScreenTimer() {

@@ -137,9 +137,8 @@ final class MainViewController: BaseViewController<MainViewModel>,
         
         let isAlarmRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+        DispatchQueue.main.asyncAfter(deadline: .now()) { [weak self] in
             self?.viewModel.setupLocation()
-            self?.hideLoading()
 
             if !isAlarmRegistered {
                 self?.mapContainerView.beforeUserMarker()
@@ -488,8 +487,6 @@ extension MainViewController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] coord in
                 guard let self = self else { return }
-                
-                print("여기니기니")
                 
                 // UserDefaults 기준으로 실제 알람 등록 여부
                 let isAlarmRegistered = UserDefaultsWrapper.shared.bool(
