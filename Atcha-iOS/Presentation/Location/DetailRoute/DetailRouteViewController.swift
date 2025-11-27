@@ -279,18 +279,22 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         
         let shouldShowPopup = hasLongWaitBus && !isException
         
+        let routeId = viewModel.infos.pathInfo.first?.routeId
+        
+        let alarmRequest = AlarmRequest(lastRouteId: routeId)
         let isAlarmRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
         
         if isAlarmRegistered {
             if shouldShowPopup {
-                showCoursePopup()
+                showCoursePopup(alarmRequest)
             } else {
-                showRe_RegisterPopup()
+                showRe_RegisterPopup(alarmRequest)
             }
         } else {
             if shouldShowPopup {
-                showCoursePopup()
+                showCoursePopup(alarmRequest)
             } else {
+                viewModel.alarmRegister(alarmRequest)
                 viewModel.getAlarmTapped?(viewModel.address, viewModel.infos)
                 amplitudeActions()
             }
@@ -338,13 +342,13 @@ extension DetailRouteViewController {
 }
 
 extension DetailRouteViewController {
-    private func showCoursePopup() {
+    private func showCoursePopup(_ alarmRequest: AlarmRequest) {
         let popupVM = AtchaPopupViewModel(info: .course)
         let popupVC = AtchaPopupViewController(viewModel: popupVM)
         
         popupVC.confirmButton.addAction(UIAction { [weak popupVC] _ in
             popupVC?.dismiss(animated: false)
-            
+            self.viewModel.alarmRegister(alarmRequest)
             self.viewModel.getAlarmTapped?(self.viewModel.address, self.viewModel.infos)
             self.amplitudeActions()
             UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.popRegister.rawValue)
@@ -360,13 +364,13 @@ extension DetailRouteViewController {
         present(popupVC, animated: false)
     }
     
-    private func showRe_RegisterPopup() {
+    private func showRe_RegisterPopup(_ alarmRequest: AlarmRequest) {
         let popupVM = AtchaPopupViewModel(info: .re_register)
         let popupVC = AtchaPopupViewController(viewModel: popupVM)
         
         popupVC.confirmButton.addAction(UIAction { [weak popupVC] _ in
             popupVC?.dismiss(animated: false)
-            
+            self.viewModel.alarmRegister(alarmRequest)
             self.viewModel.getAlarmTapped?(self.viewModel.address, self.viewModel.infos)
             self.amplitudeActions()
             UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.popRegister.rawValue)

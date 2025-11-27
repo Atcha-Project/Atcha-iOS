@@ -285,7 +285,7 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
             let tafficInfo: [LegTrafficInfo] = model.course.toLegTrafficInfos()
             let busInfo: [BusDetailInfo] = model.course.toBusInfos()
             viewModel.getDetailTapped?(viewModel.startAddress, LegInfo(pathInfo: pathInfo, trafficInfo: tafficInfo, busInfo: busInfo))
-            viewModel.saveStartInfo("")
+            viewModel.saveStartInfo(model.course.routeId ?? "")
         }
         
         // 버튼 탭 시 확장/축소 상태 변경 핸들러 연결

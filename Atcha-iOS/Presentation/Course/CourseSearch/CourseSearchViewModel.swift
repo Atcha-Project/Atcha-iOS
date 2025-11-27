@@ -204,7 +204,6 @@ final class CourseSearchViewModel: BaseViewModel {
                     false,
                     forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue
                 )
-                
             } catch {
                 print("알람 등록 실패: \(error)")
             }
