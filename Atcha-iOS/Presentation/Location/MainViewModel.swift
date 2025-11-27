@@ -12,7 +12,6 @@ import UIKit
 import TMapSDK
 
 final class MainViewModel: BaseViewModel {
-    private var alarmTimerCancellable: AnyCancellable?
     private var alarmFinishCancellable: AnyCancellable?
     
     @Published var currentLocation: CLLocationCoordinate2D?
@@ -67,12 +66,12 @@ final class MainViewModel: BaseViewModel {
         super.init()
         
         NotificationCenter.default.addObserver(
-                forName: .alarmPushTapped,
-                object: nil,
-                queue: .main
-            ) { [weak self] _ in
-                self?.showLockView = true
-            }
+            forName: .alarmPushTapped,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.showLockView = true
+        }
         
         self.bind()
     }
@@ -237,44 +236,6 @@ final class MainViewModel: BaseViewModel {
         }
     }
     
-    //    override func handleRefreshNotification(_ notification: Notification) {
-    //        guard let userInfo = notification.userInfo,
-    //              let body = userInfo["body"] as? String,
-    //              let _ = userInfo["updatedAt"] as? String else {
-    //            return
-    //        }
-    //
-    //        fetchDetailRoute()
-    //        startAlarmTimer()
-    //        //        wrapper.remove(forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
-    //        //
-    //        //        let routeId = legInfo?.pathInfo.first?.routeId ?? ""
-    //        //        Task {
-    //        //            do {
-    //        //                let info = try await courseUseCase.courseSearch(routeId)
-    //        //                let pathinfo = info.toLegPathInfos()
-    //        //                let trafficInfo = info.toLegTrafficInfos()
-    //        //                let busInfo = info.toBusInfos()
-    //        //
-    //        //                let legInfo: LegInfo 저ㅏㅁ사미= LegInfo(pathInfo: pathinfo,
-    //        //                                               trafficInfo: trafficInfo,
-    //        //                                               busInfo: busInfo)
-    //        //                wrapper.set(legInfo, forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
-    //        //                drawRoute(address: addressDesc, info: legInfo)
-    //        //            } catch {
-    //        //                print("routeId 조회 대실패 ㅠㅠ!!")
-    //        //            }
-    //        //        }
-    //        //
-    //        //        wrapper.remove(forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
-    //        UserDefaultsWrapper.shared.set(body, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
-    ////        AlarmManager.shared.startAlarm(after: body,
-    ////                                       title: "눌러서 출발 알람 끄기",
-    ////                                       body: "자리에서 일어나야 할 시간이에요!")
-    //
-    //        departureTime = body
-    //    }
-    
     override func handleRefreshNotification(_ notification: Notification) {
         guard let userInfo = notification.userInfo,
               let body = userInfo["body"] as? String,
@@ -289,12 +250,12 @@ final class MainViewModel: BaseViewModel {
         fetchDetailRoute()
         startAlarmTimer()
         AlarmManager.shared.startAlarm1MinuteBefore(
-                departureDateTime: body,
-                title: "눌러서 출발 알람 끄기",
-                body: "자리에서 일어나야 할 시간이에요!"
-            )
-
-            departureTime = body
+            departureDateTime: body,
+            title: "눌러서 출발 알람 끄기",
+            body: "자리에서 일어나야 할 시간이에요!"
+        )
+        
+        departureTime = body
     }
     
     private func fetchDetailRoute() {
@@ -342,6 +303,11 @@ final class MainViewModel: BaseViewModel {
                 print("알람 취소 실패: \(error)")
             }
         }
+        
+        UserDefaultsWrapper.shared.set(
+            false,
+            forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue
+        )
     }
     
     func setupLocation() {
@@ -360,70 +326,7 @@ final class MainViewModel: BaseViewModel {
 
 // MARK: - Alarm
 extension MainViewModel {
-    private func checkAlarmTime() {
-        let wrapper = UserDefaultsWrapper.shared
-        if let departureTime: String = wrapper.string(forKey: UserDefaultsWrapper.Key.departureTime.rawValue) {
-            print("departureTime : \(departureTime)")
-            
-//            if isInAlarmRange(dateString: departureTime) {
-//                showLockView = true
-//                stopAlarmTimer()
-//            }
-        } else {
-            print("값 없음")
-        }
-    }
-    
-    //    private func isInAlarmRange(dateString: String) -> Bool {
-    //        let formatter = DateFormatter()
-    //        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-    //        formatter.timeZone = .current
-    //
-    //        guard let alarmDate = formatter.date(from: dateString) else {
-    //            print("날짜 파싱 실패")
-    //            return false
-    //        }
-    //
-    //        let now = Date()
-    //        let oneMinuteBefore = alarmDate.addingTimeInterval(-60) // 60초 전
-    //
-    //        // 현재가 60초 전과 알람 시간 사이인지 확인
-    //        return now >= oneMinuteBefore && now <= alarmDate
-    //    }
-    private func isInAlarmRange(dateString: String) -> Bool {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-        formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
-        
-        guard let alarmDate = formatter.date(from: dateString) else {
-            print("날짜 파싱 실패")
-            return false
-        }
-
-        let calendar = Calendar.current
-        let now = Date()
-
-        // 1) 알람시간에서 초 버리고 "분만" 사용
-        var alarmMinus1Min = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: alarmDate)
-        guard let alarmMinuteDate = calendar.date(from: alarmMinus1Min) else { return false }
-
-        //2) 1분 전 계산 (초는 항상 00)
-        guard let oneMinuteBefore = calendar.date(byAdding: .minute, value: -1, to: alarmMinuteDate) else {
-            return false
-        }
-
-        // 최종 조건: 1분 전(초00) ≤ now ≤ 알람시간(초 포함)
-        return now >= oneMinuteBefore && now <= alarmDate
-    }
-    
     func startAlarmTimer() {
-        alarmTimerCancellable = Timer
-            .publish(every: 5.0, on: .main, in: .common)
-            .autoconnect()
-            .sink { [weak self] _ in
-                self?.checkAlarmTime()
-            }
-        
         alarmFinishCancellable = Timer
             .publish(every: 60.0, on: .main, in: .common)
             .autoconnect()
@@ -445,11 +348,6 @@ extension MainViewModel {
                     }
                 }
             }
-    }
-    
-    private func stopAlarmTimer() {
-        alarmTimerCancellable?.cancel()
-        alarmTimerCancellable = nil
     }
     
     func stopFinishAlarmTimer() {
@@ -507,7 +405,7 @@ extension MainViewModel {
 extension MainViewModel {
     private func handleLocationUpdate(_ location: CLLocationCoordinate2D?) {
         guard let location else {
-            print("⛔️ 위치 무효 또는 경로 이미 존재")
+            print("위치 무효 또는 경로 이미 존재")
             return
         }
         
@@ -533,7 +431,7 @@ extension MainViewModel {
             
             taxiFare = try? await fetchTaxiFare(request: request)
         } catch {
-            print("❌ 주소 또는 요금 정보 업데이트 실패: \(error)")
+            print("주소 또는 요금 정보 업데이트 실패: \(error)")
         }
     }
     
@@ -580,31 +478,5 @@ extension MainViewModel {
     
     private func realodDepartureTime() async throws -> AlarmRefresh {
         return try await alarmUseCase.alarmRefresh()
-    }
-}
-
-
-extension MainViewModel {
-    /// 앱 들어갔을 때 호출하면,
-    /// 약 30초 후에 AlarmManager 알람이 울리는 테스트용 메서드
-    func scheduleTestAlarmUsingAlarmTimer() {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-        formatter.timeZone = .current
-        
-        let now = Date()
-        // 🔥 departureTime = 지금 + 90초
-        // -> checkAlarmTime은 departure - 60초(= 30초 후)에 startAlarm을 호출하게 됨
-        let departureDate = now.addingTimeInterval(90) // 90초 뒤
-        let departureStr = formatter.string(from: departureDate)
-        
-        let wrapper = UserDefaultsWrapper.shared
-        wrapper.set(departureStr, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
-        
-        print("🧪 [TEST] Timer 기반 테스트 departureTime =", departureStr)
-        
-        // 이제 5초마다 checkAlarmTime() 돌면서,
-        // 30초쯤 지나면 AlarmManager.startAlarm() 호출됨
-        startAlarmTimer()
     }
 }
