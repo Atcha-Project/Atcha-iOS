@@ -149,6 +149,12 @@ final class MainViewModel: BaseViewModel {
         
         self.departureStr = departureStr
         
+        AlarmManager.shared.startAlarm1MinuteBefore(
+            departureDateTime: departureStr,
+            title: "눌러서 출발 알림 끄기",
+            body: "자리에서 일어나야 할 시간이에요!"
+        )
+        
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
         formatter.locale = .current
@@ -163,12 +169,6 @@ final class MainViewModel: BaseViewModel {
         let wrapper = UserDefaultsWrapper.shared
         wrapper.set(departureStr, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
         wrapper.set(arrivalDate, forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue)
-        
-        AlarmManager.shared.startAlarm1MinuteBefore(
-            departureDateTime: departureStr,
-            title: "출발 시간 알림",
-            body: "조금 있으면 출발해야 해요!"
-        )
     }
     
     private func parseTotalTimeToMinutes(_ time: String) -> Int {
@@ -248,12 +248,9 @@ final class MainViewModel: BaseViewModel {
         wrapper.set(body, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
         
         fetchDetailRoute()
+        stopFinishAlarmTimer()
         startAlarmTimer()
-        AlarmManager.shared.startAlarm1MinuteBefore(
-            departureDateTime: body,
-            title: "눌러서 출발 알람 끄기",
-            body: "자리에서 일어나야 할 시간이에요!"
-        )
+        
         
         departureTime = body
     }
@@ -277,15 +274,6 @@ final class MainViewModel: BaseViewModel {
                 print("routeId 조회 대실패 ㅠㅠ!!")
             }
         }
-        
-        //        wrapper.remove(forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
-        //        wrapper.set(body, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
-        //
-        //        AlarmManager.shared.startAlarm(after: body,
-        //                                       title: "눌러서 출발 알람 끄기",
-        //                                       body: "자리에서 일어나야 할 시간이에요!")
-        //
-        //        departureTime = body
     }
     
     // MARK: - 알림 취소

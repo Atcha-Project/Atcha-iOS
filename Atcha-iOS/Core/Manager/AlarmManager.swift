@@ -131,8 +131,9 @@ extension AlarmManager {
         title: String,
         body: String
     ) {
-        UNUserNotificationCenter.current()
-            .removePendingNotificationRequests(withIdentifiers: ["DEPARTURE_ALARM"])
+        let center = UNUserNotificationCenter.current()
+        center.removeAllPendingNotificationRequests()
+        center.removeAllDeliveredNotifications()
         
         if let didFire = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue) {
             if didFire {
