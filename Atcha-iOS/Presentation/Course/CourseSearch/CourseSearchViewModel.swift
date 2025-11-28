@@ -215,7 +215,9 @@ final class CourseSearchViewModel: BaseViewModel {
         wrapper.set(startLat, forKey: UserDefaultsWrapper.Key.startLat.rawValue)
         wrapper.set(startLon, forKey: UserDefaultsWrapper.Key.startLon.rawValue)
         wrapper.set(startAddress, forKey: UserDefaultsWrapper.Key.startAddress.rawValue)
-        wrapper.set(lastRouteId, forKey: UserDefaultsWrapper.Key.lastRouteId.rawValue)
+        if let lastRouteId {
+            wrapper.set(lastRouteId, forKey: UserDefaultsWrapper.Key.lastRouteId.rawValue)
+        }
     }
     
     func stopCourseStream() {

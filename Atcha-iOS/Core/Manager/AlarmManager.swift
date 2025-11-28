@@ -135,11 +135,16 @@ extension AlarmManager {
         center.removeAllPendingNotificationRequests()
         center.removeAllDeliveredNotifications()
         
-        if let didFire = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue) {
+        if let didFire = UserDefaultsWrapper.shared.bool(
+            forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue
+        ) {
+            print("🔍 departureAlarmDidFire =", didFire)
             if didFire {
                 print("이미 출발 알람이 울린 상태라 재예약하지 않습니다.")
                 return
             }
+        } else {
+            print("🔍 departureAlarmDidFire 값 없음(처음 호출)")
         }
                 
         
@@ -192,9 +197,7 @@ extension AlarmManager {
         let end = start.addingTimeInterval(duration)
         var current = start
         
-        let firstGap: TimeInterval = 8
         let nextGap: TimeInterval = 7
-        var isFirstStep = true
         
         while current <= end {
             let comps = Calendar.current.dateComponents(
@@ -223,8 +226,7 @@ extension AlarmManager {
             
             requests.append(request)
             
-            let gap = isFirstStep ? firstGap : nextGap
-            isFirstStep = false
+            let gap = nextGap
             current = current.addingTimeInterval(gap)
         }
         

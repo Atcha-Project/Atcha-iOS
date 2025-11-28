@@ -142,7 +142,6 @@ final class MainViewModel: BaseViewModel {
     
     private func setupLegInfo(info: LegInfo?) {
         let routeId = info?.pathInfo.first?.routeId
-        print("routeId : \(routeId)")
         
         guard let info, let departureStr = info.pathInfo.first?.departureDateTime,
               let totalTime = info.trafficInfo.first?.totalTime else { return }
@@ -197,9 +196,6 @@ final class MainViewModel: BaseViewModel {
         wrapper.remove(forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
         wrapper.remove(forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue)
         wrapper.remove(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue)
-        
-        
-        //        wrapper.remove(forKey: UserDefaultsWrapper.Key.trainRealTime.rawValue)
     }
     
     func requestPermissionAndStartTracking() {
@@ -250,14 +246,15 @@ final class MainViewModel: BaseViewModel {
         fetchDetailRoute()
         stopFinishAlarmTimer()
         startAlarmTimer()
-        
+
         
         departureTime = body
     }
     
     private func fetchDetailRoute() {
         let wrapper = UserDefaultsWrapper.shared
-        let routeId = legInfo?.pathInfo.first?.routeId ?? ""
+        let routeId = wrapper.string(forKey: UserDefaultsWrapper.Key.lastRouteId.rawValue) ?? ""
+        print("라우트 야이디: \(routeId)")
         Task {
             do {
                 let info = try await courseUseCase.courseSearch(routeId)
