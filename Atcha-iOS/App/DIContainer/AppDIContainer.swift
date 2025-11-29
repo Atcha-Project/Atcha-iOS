@@ -35,6 +35,6 @@ final class AppDIContainer {
                                                            locationStateHolder: locationStateHolder)
         self.mainDIContainer = MainDIContainer(apiService: apiServce,
                                                locationStateHolder: locationStateHolder)
-        self.lockScreenDIContainer = LockScreenDIContainer()
+        self.lockScreenDIContainer = LockScreenDIContainer(apiService: apiServce)
     }
 }

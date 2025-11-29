@@ -131,7 +131,6 @@ extension AppDelegate {
             
             AlarmManager.shared.startImmediateAlarm()
         }
-        
         completionHandler()
     }
 }

@@ -41,7 +41,7 @@ final class MainDIContainer {
     }()
     
     private lazy var lockScreenDI: LockScreenDIContainer = {
-        LockScreenDIContainer()
+        LockScreenDIContainer(apiService: apiService)
     }()
     
     init(apiService: APIService, locationStateHolder: LocationStateHolder) {

@@ -37,6 +37,8 @@ final class LockViewController: BaseViewController<LockViewModel> {
         lottieAnimationView.clipsToBounds = true
         lottieAnimationView.loopMode = .loop
         lottieAnimationView.play()
+        
+        viewModel.refreshTaxiFare()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -67,10 +69,17 @@ final class LockViewController: BaseViewController<LockViewModel> {
     // MARK: - ViewModel 바인딩
     private func bind() {
         viewModel.$taxiFare
-            .map { $0.formattedWithComma }
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] stringFare in
-                self?.taxiFareLabel.attributedText = AtchaFont.D1_EB_56("-\(stringFare)", color: AtchaColor.Bus.widearea)
+            .sink { [weak self] fare in
+                guard let self = self else { return }
+
+                if fare == 0 {
+                    self.taxiFareLabel.attributedText =
+                        AtchaFont.D1_EB_56("계산 중...", color: AtchaColor.Bus.widearea)
+                } else {
+                    self.taxiFareLabel.attributedText =
+                        AtchaFont.D1_EB_56("-\(fare.formattedWithComma)", color: AtchaColor.Bus.widearea)
+                }
             }
             .store(in: &cancellables)
     }
