@@ -267,10 +267,12 @@ extension MainViewController {
     // MARK: - bind Lock View
     private func bindLockView() {
         viewModel.$showLockView
-            .filter { $0 }
             .receive(on: RunLoop.main)
-            .removeDuplicates()
-            .sink { [weak self] _ in self?.viewModel.handleRoute(route: .lockScreen(info: nil, address: nil)) }
+            .sink { [weak self] show in
+                guard let self, show else { return }
+                self.viewModel.handleRoute(route: .lockScreen(info: nil, address: nil))
+                self.viewModel.showLockView = false
+            }
             .store(in: &cancellables)
     }
     

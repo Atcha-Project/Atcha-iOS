@@ -138,13 +138,12 @@ extension AlarmManager {
         if let didFire = UserDefaultsWrapper.shared.bool(
             forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue
         ) {
-            print("🔍 departureAlarmDidFire =", didFire)
             if didFire {
                 print("이미 출발 알람이 울린 상태라 재예약하지 않습니다.")
                 return
             }
         } else {
-            print("🔍 departureAlarmDidFire 값 없음(처음 호출)")
+            print("departureAlarmDidFire 값 없음")
         }
                 
         

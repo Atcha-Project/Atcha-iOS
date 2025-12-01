@@ -13,6 +13,7 @@ import TMapSDK
 
 final class MainViewModel: BaseViewModel {
     private var alarmFinishCancellable: AnyCancellable?
+    private var alarmObserver: NSObjectProtocol?
     
     @Published var currentLocation: CLLocationCoordinate2D?
     @Published var selectedLocation: CLLocationCoordinate2D?
@@ -65,7 +66,7 @@ final class MainViewModel: BaseViewModel {
         
         super.init()
         
-        NotificationCenter.default.addObserver(
+        alarmObserver = NotificationCenter.default.addObserver(
             forName: .alarmPushTapped,
             object: nil,
             queue: .main
@@ -246,7 +247,7 @@ final class MainViewModel: BaseViewModel {
         fetchDetailRoute()
         stopFinishAlarmTimer()
         startAlarmTimer()
-
+        
         
         departureTime = body
     }
@@ -254,7 +255,7 @@ final class MainViewModel: BaseViewModel {
     private func fetchDetailRoute() {
         let wrapper = UserDefaultsWrapper.shared
         let routeId = wrapper.string(forKey: UserDefaultsWrapper.Key.lastRouteId.rawValue) ?? ""
-        print("라우트 야이디: \(routeId)")
+
         Task {
             do {
                 let info = try await courseUseCase.courseSearch(routeId)
@@ -306,6 +307,9 @@ final class MainViewModel: BaseViewModel {
     
     deinit {
         stopTracking()
+        if let alarmObserver {
+            NotificationCenter.default.removeObserver(alarmObserver)
+        }
     }
 }
 
