@@ -18,6 +18,7 @@ final class DetailRouteViewModel: BaseViewModel {
     private let busInfoUseCase: BusInfoUseCase
     private let authorizationUseCase: RequestLocationAuthorizationUseCase
     private let streamUseCase: ObserveLocationStreamUseCase
+    private let alarmUseCase: AlarmUseCase
     private var streamTask: Task<Void, Never>?
     
     let infos: LegInfo
@@ -40,13 +41,15 @@ final class DetailRouteViewModel: BaseViewModel {
          context: DetailRouteContext,
          busInfoUseCase: BusInfoUseCase,
          authorizationUseCase: RequestLocationAuthorizationUseCase,
-         streamUseCase: ObserveLocationStreamUseCase) {
+         streamUseCase: ObserveLocationStreamUseCase,
+         alarmUseCase: AlarmUseCase) {
         self.infos = infos
         self.address = address
         self.context = context
         self.busInfoUseCase = busInfoUseCase
         self.authorizationUseCase = authorizationUseCase
         self.streamUseCase = streamUseCase
+        self.alarmUseCase = alarmUseCase
         
         super.init()
         self.fetchInfo()
@@ -101,5 +104,22 @@ final class DetailRouteViewModel: BaseViewModel {
     
     func setupLocation() {
         requestPermissionAndStartTracking()
+    }
+    
+    func alarmRegister(_ request: AlarmRequest) {
+        Task {
+            do {
+                let _ = try await alarmUseCase.alarmRegister(request)
+                
+                UserDefaultsWrapper.shared.set(
+                    false,
+                    forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue
+                )
+                
+                print("알람 등록")
+            } catch {
+                print("알람 등록 실패: \(error)")
+            }
+        }
     }
 }

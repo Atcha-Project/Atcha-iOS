@@ -8,8 +8,17 @@
 import UIKit
 
 final class LockScreenDIContainer {
+    private let apiService: APIService
+    
+    init(apiService: APIService) {
+        self.apiService = apiService
+    }
+    
+    private lazy var fetchTaxiFareUseCase = FetchTaxiFareUseCaseImpl(repository: FetchTaxiFareRepositoryImpl(apiService: apiService, ))
+    
     func makeLockScreenViewModel() -> LockViewModel {
-        return LockViewModel(taxiFare: 30000)
+        return LockViewModel(taxiFare: 0,
+                             fetchTaxiFareUseCase: fetchTaxiFareUseCase)
     }
     
     func makeLockScreenViewController(viewModel: LockViewModel) -> LockViewController {

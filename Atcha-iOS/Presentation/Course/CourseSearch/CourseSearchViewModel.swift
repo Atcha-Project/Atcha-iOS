@@ -139,12 +139,12 @@ final class CourseSearchViewModel: BaseViewModel {
     // MARK: - 코스 검색 스트리밍용
     func startCourseStream() {
         
-        if isBlackoutNow() {
-            setLoading(false)
-            isServerError = true
-            courses = []
-            return
-        }
+        //        if isBlackoutNow() {
+        //            setLoading(false)
+        //            isServerError = true
+        //            courses = []
+        //            return
+        //        }
         
         courseStreamTask?.cancel()
         setLoading(true)
@@ -199,6 +199,11 @@ final class CourseSearchViewModel: BaseViewModel {
             do {
                 let _ = try await alarmUseCase.alarmRegister(request)
                 saveStartInfo(request.lastRouteId)
+                
+                UserDefaultsWrapper.shared.set(
+                    false,
+                    forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue
+                )
             } catch {
                 print("알람 등록 실패: \(error)")
             }
@@ -210,7 +215,9 @@ final class CourseSearchViewModel: BaseViewModel {
         wrapper.set(startLat, forKey: UserDefaultsWrapper.Key.startLat.rawValue)
         wrapper.set(startLon, forKey: UserDefaultsWrapper.Key.startLon.rawValue)
         wrapper.set(startAddress, forKey: UserDefaultsWrapper.Key.startAddress.rawValue)
-        wrapper.set(lastRouteId, forKey: UserDefaultsWrapper.Key.lastRouteId.rawValue)
+        if let lastRouteId {
+            wrapper.set(lastRouteId, forKey: UserDefaultsWrapper.Key.lastRouteId.rawValue)
+        }
     }
     
     func stopCourseStream() {

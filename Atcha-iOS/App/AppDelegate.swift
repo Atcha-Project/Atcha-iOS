@@ -13,8 +13,11 @@ import Firebase
 import UserNotifications
 
 @main
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        
+        UNUserNotificationCenter.current().delegate = self
+        
         // MARK: - Kakao
         print("Bundle.main.kakaoInitKey : \(Bundle.main.kakaoApiKey)")
         KakaoSDK.initSDK(appKey: Bundle.main.kakaoApiKey)
@@ -40,7 +43,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if let savedId = UserDefaultsWrapper.shared.integer(forKey: UserDefaultsWrapper.Key.userId.rawValue) {
             AmplitudeManager.shared.bindUser(id: String(savedId))
         }
-        
         
         return true
     }
@@ -98,3 +100,38 @@ extension AppDelegate: MessagingDelegate {
         }
     }
 }
+
+extension AppDelegate {
+    // MARK: - 포그라운드에서 알람 수신
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                willPresent notification: UNNotification,
+                                withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        
+        let userInfo = notification.request.content.userInfo
+        if let alarmType = userInfo["alarmType"] as? String,
+           alarmType == "DEPARTURE_ALARM" {
+            
+            AlarmManager.shared.startImmediateAlarm()
+            
+            completionHandler([])
+        } else {
+            completionHandler([.banner, .sound, .badge])
+        }
+    }
+    
+    // MARK: - 푸쉬로 진입시 알람 수신
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                didReceive response: UNNotificationResponse,
+                                withCompletionHandler completionHandler: @escaping () -> Void) {
+        
+        print("푸쉬로 오픈")
+        let userInfo = response.notification.request.content.userInfo
+        if let alarmType = userInfo["alarmType"] as? String,
+           alarmType == "DEPARTURE_ALARM" {
+            
+            AlarmManager.shared.startImmediateAlarm()
+        }
+        completionHandler()
+    }
+}
+

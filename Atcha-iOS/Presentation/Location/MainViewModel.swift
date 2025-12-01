@@ -11,14 +11,9 @@ import Combine
 import UIKit
 import TMapSDK
 
-enum LastTrainState {
-    case beforeDeparture
-    case afterDeparture
-}
-
 final class MainViewModel: BaseViewModel {
-    private var alarmTimerCancellable: AnyCancellable?
     private var alarmFinishCancellable: AnyCancellable?
+    private var alarmObserver: NSObjectProtocol?
     
     @Published var currentLocation: CLLocationCoordinate2D?
     @Published var selectedLocation: CLLocationCoordinate2D?
@@ -36,8 +31,6 @@ final class MainViewModel: BaseViewModel {
     @Published var showLockView: Bool = false
     
     @Published var departureStr: String?
-    
-    @Published var state: LastTrainState = .beforeDeparture
     
     private let searchAddressUseCase: SearchAddressUseCase
     private let authorizationUseCase: RequestLocationAuthorizationUseCase
@@ -72,8 +65,16 @@ final class MainViewModel: BaseViewModel {
         self.courseUseCase = courseUseCase
         
         super.init()
+        
+        alarmObserver = NotificationCenter.default.addObserver(
+            forName: .alarmPushTapped,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.showLockView = true
+        }
+        
         self.bind()
-        //        self.startAlarmTimer()
     }
     
     func bind() {
@@ -86,7 +87,7 @@ final class MainViewModel: BaseViewModel {
                 Task { await self.updateAddressOnly(for: loc) }
             }
             .store(in: &cancellables)
-
+        
         $address
             .compactMap { $0 }
             .removeDuplicates()
@@ -103,18 +104,18 @@ final class MainViewModel: BaseViewModel {
             self.address = info?.name?.isEmpty == false ? info?.name : info?.address
         } catch { print("❌ 역지오코딩 실패: \(error)") }
     }
-
+    
     private func refreshRegionAndFareForCurrentAddress() async {
         guard let lat = lastReverseGeocode?.lat,
               let lon = lastReverseGeocode?.lon else { return }
-
+        
         // 서비스지역 먼저
         do {
             let okReq = CheckServiceRegionRequest(lat: lat, lon: lon)
             let ok = try await searchAddressUseCase.checkServiceRegion(okReq)
             await MainActor.run { self.isServiceRegion = ok }
         } catch { print("서비스 지역 확인 실패: \(error)") }
-
+        
         // 택시비는 서비스지역 O일 때만
         guard self.isServiceRegion == true else { return }
         let req = FetchTaxiFareRequest(
@@ -142,12 +143,17 @@ final class MainViewModel: BaseViewModel {
     
     private func setupLegInfo(info: LegInfo?) {
         let routeId = info?.pathInfo.first?.routeId
-        print("routeId : \(routeId)")
         
         guard let info, let departureStr = info.pathInfo.first?.departureDateTime,
               let totalTime = info.trafficInfo.first?.totalTime else { return }
         
         self.departureStr = departureStr
+        
+        AlarmManager.shared.startAlarm1MinuteBefore(
+            departureDateTime: departureStr,
+            title: "눌러서 출발 알림 끄기",
+            body: "자리에서 일어나야 할 시간이에요!"
+        )
         
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
@@ -191,9 +197,6 @@ final class MainViewModel: BaseViewModel {
         wrapper.remove(forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
         wrapper.remove(forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue)
         wrapper.remove(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue)
-        
-        
-        //        wrapper.remove(forKey: UserDefaultsWrapper.Key.trainRealTime.rawValue)
     }
     
     func requestPermissionAndStartTracking() {
@@ -230,69 +233,29 @@ final class MainViewModel: BaseViewModel {
         }
     }
     
-//    override func handleRefreshNotification(_ notification: Notification) {
-//        guard let userInfo = notification.userInfo,
-//              let body = userInfo["body"] as? String,
-//              let _ = userInfo["updatedAt"] as? String else {
-//            return
-//        }
-//
-//        fetchDetailRoute()
-//        startAlarmTimer()
-//        //        wrapper.remove(forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
-//        //
-//        //        let routeId = legInfo?.pathInfo.first?.routeId ?? ""
-//        //        Task {
-//        //            do {
-//        //                let info = try await courseUseCase.courseSearch(routeId)
-//        //                let pathinfo = info.toLegPathInfos()
-//        //                let trafficInfo = info.toLegTrafficInfos()
-//        //                let busInfo = info.toBusInfos()
-//        //
-//        //                let legInfo: LegInfo 저ㅏㅁ사미= LegInfo(pathInfo: pathinfo,
-//        //                                               trafficInfo: trafficInfo,
-//        //                                               busInfo: busInfo)
-//        //                wrapper.set(legInfo, forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
-//        //                drawRoute(address: addressDesc, info: legInfo)
-//        //            } catch {
-//        //                print("routeId 조회 대실패 ㅠㅠ!!")
-//        //            }
-//        //        }
-//        //
-//        //        wrapper.remove(forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
-//        UserDefaultsWrapper.shared.set(body, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
-////        AlarmManager.shared.startAlarm(after: body,
-////                                       title: "눌러서 출발 알람 끄기",
-////                                       body: "자리에서 일어나야 할 시간이에요!")
-//
-//        departureTime = body
-//    }
-    
     override func handleRefreshNotification(_ notification: Notification) {
-            guard let userInfo = notification.userInfo,
-                  let body = userInfo["body"] as? String,
-                  let _ = userInfo["updatedAt"] as? String else {
-                return
-            }
-            
-            
-            let formatter = DateFormatter()
-            formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-            formatter.locale = .current
-            
-            guard let departureStr = self.departureStr else { return }
-            guard let departureDate = formatter.date(from: departureStr) else { return }
-            
-            UserDefaultsWrapper.shared.set(departureDate, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
-            
-            fetchDetailRoute()
-            startAlarmTimer()
-            departureTime = body
+        guard let userInfo = notification.userInfo,
+              let body = userInfo["body"] as? String,
+              let _ = userInfo["updatedAt"] as? String else {
+            return
         }
+        
+        
+        let wrapper = UserDefaultsWrapper.shared
+        wrapper.set(body, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
+        
+        fetchDetailRoute()
+        stopFinishAlarmTimer()
+        startAlarmTimer()
+        
+        
+        departureTime = body
+    }
     
     private func fetchDetailRoute() {
         let wrapper = UserDefaultsWrapper.shared
-        let routeId = legInfo?.pathInfo.first?.routeId ?? ""
+        let routeId = wrapper.string(forKey: UserDefaultsWrapper.Key.lastRouteId.rawValue) ?? ""
+
         Task {
             do {
                 let info = try await courseUseCase.courseSearch(routeId)
@@ -309,15 +272,6 @@ final class MainViewModel: BaseViewModel {
                 print("routeId 조회 대실패 ㅠㅠ!!")
             }
         }
-        
-        //        wrapper.remove(forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
-        //        wrapper.set(body, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
-        //
-        //        AlarmManager.shared.startAlarm(after: body,
-        //                                       title: "눌러서 출발 알람 끄기",
-        //                                       body: "자리에서 일어나야 할 시간이에요!")
-        //
-        //        departureTime = body
     }
     
     // MARK: - 알림 취소
@@ -335,6 +289,11 @@ final class MainViewModel: BaseViewModel {
                 print("알람 취소 실패: \(error)")
             }
         }
+        
+        UserDefaultsWrapper.shared.set(
+            false,
+            forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue
+        )
     }
     
     func setupLocation() {
@@ -348,57 +307,15 @@ final class MainViewModel: BaseViewModel {
     
     deinit {
         stopTracking()
+        if let alarmObserver {
+            NotificationCenter.default.removeObserver(alarmObserver)
+        }
     }
 }
 
 // MARK: - Alarm
 extension MainViewModel {
-    private func checkAlarmTime() {
-        let wrapper = UserDefaultsWrapper.shared
-        if let departureTime: String = wrapper.string(forKey: UserDefaultsWrapper.Key.departureTime.rawValue) {
-            print("departureTime : \(departureTime)")
-            //            if !checkFutureTimeOver(dateString: departureTime) {
-            if isInAlarmRange(dateString: departureTime) {
-                state = .afterDeparture
-                // TODO: 알림 이후 등록이 되는지확인
-                showLockView = true
-                AlarmManager.shared.startAlarm(after: departureTime,
-                                               title: "눌러서 출발 알람 끄기",
-                                               body: "자리에서 일어나야 할 시간이에요!")
-                stopAlarmTimer()
-            } else {
-                print("미래")
-            }
-        } else {
-            print("값 없음")
-        }
-    }
-    
-    private func isInAlarmRange(dateString: String) -> Bool {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-        formatter.timeZone = .current
-        
-        guard let alarmDate = formatter.date(from: dateString) else {
-            print("날짜 파싱 실패")
-            return false
-        }
-        
-        let now = Date()
-        let oneMinuteBefore = alarmDate.addingTimeInterval(-60) // 60초 전
-        
-        // 현재가 60초 전과 알람 시간 사이인지 확인
-        return now >= oneMinuteBefore && now <= alarmDate
-    }
-    
     func startAlarmTimer() {
-        alarmTimerCancellable = Timer
-            .publish(every: 5.0, on: .main, in: .common)
-            .autoconnect()
-            .sink { [weak self] _ in
-                self?.checkAlarmTime()
-            }
-        
         alarmFinishCancellable = Timer
             .publish(every: 60.0, on: .main, in: .common)
             .autoconnect()
@@ -422,14 +339,11 @@ extension MainViewModel {
             }
     }
     
-    private func stopAlarmTimer() {
-        alarmTimerCancellable?.cancel()
-        alarmTimerCancellable = nil
-    }
-    
     func stopFinishAlarmTimer() {
         alarmFinishCancellable?.cancel()
         alarmFinishCancellable = nil
+        UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+        UNUserNotificationCenter.current().removeAllDeliveredNotifications()
     }
 }
 
@@ -480,7 +394,7 @@ extension MainViewModel {
 extension MainViewModel {
     private func handleLocationUpdate(_ location: CLLocationCoordinate2D?) {
         guard let location else {
-            print("⛔️ 위치 무효 또는 경로 이미 존재")
+            print("위치 무효 또는 경로 이미 존재")
             return
         }
         
@@ -506,7 +420,7 @@ extension MainViewModel {
             
             taxiFare = try? await fetchTaxiFare(request: request)
         } catch {
-            print("❌ 주소 또는 요금 정보 업데이트 실패: \(error)")
+            print("주소 또는 요금 정보 업데이트 실패: \(error)")
         }
     }
     
@@ -514,11 +428,11 @@ extension MainViewModel {
         let w = UserDefaultsWrapper.shared
         let latStr: String = w.string(forKey: UserDefaultsWrapper.Key.startLat.rawValue) ?? ""
         let lonStr: String = w.string(forKey: UserDefaultsWrapper.Key.startLon.rawValue) ?? ""
-
+        
         guard let lat = Double(latStr), let lon = Double(lonStr) else {
             throw NSError(domain: "StartCoord", code: -1, userInfo: [NSLocalizedDescriptionKey: "저장된 출발 좌표가 유효하지 않습니다."])
         }
-
+        
         let req = FetchTaxiFareRequest(
             originLat: lat,
             originLon: lon,
@@ -554,17 +468,4 @@ extension MainViewModel {
     private func realodDepartureTime() async throws -> AlarmRefresh {
         return try await alarmUseCase.alarmRefresh()
     }
-    
-//    func setCurrentToSeoulStation() {
-//            let seoulStation = CLLocationCoordinate2D(latitude: 37.554722, longitude: 126.970833)
-//            // 위치 상태 갱신
-//            self.currentLocation = seoulStation
-//            self.selectedLocation = seoulStation
-//            // 주소/서비스지역/택시비 갱신 트리거
-//            Task { await self.updateAddressOnly(for: seoulStation) }
-//            // address 퍼블리셔가 이미 region+fare 리프레시를 타도록 bind()에 연결돼 있음
-//        }
 }
-
-
-

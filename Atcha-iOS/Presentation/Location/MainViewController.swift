@@ -135,10 +135,11 @@ final class MainViewController: BaseViewController<MainViewModel>,
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+        let isAlarmRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
+        
+        DispatchQueue.main.asyncAfter(deadline: .now()) { [weak self] in
             self?.viewModel.setupLocation()
-            self?.hideLoading()
-            let isAlarmRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
+
             if !isAlarmRegistered {
                 self?.mapContainerView.beforeUserMarker()
             } else {
@@ -146,7 +147,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
             }
         }
         
-        if viewModel.state == .beforeDeparture,
+        if isAlarmRegistered,
            let startCoord = routeStartCoordinate {
             mapContainerView.setupZoomCenter(location: startCoord)
         }
@@ -266,10 +267,12 @@ extension MainViewController {
     // MARK: - bind Lock View
     private func bindLockView() {
         viewModel.$showLockView
-            .filter { $0 }
             .receive(on: RunLoop.main)
-            .removeDuplicates()
-            .sink { [weak self] _ in self?.viewModel.handleRoute(route: .lockScreen(info: nil, address: nil)) }
+            .sink { [weak self] show in
+                guard let self, show else { return }
+                self.viewModel.handleRoute(route: .lockScreen(info: nil, address: nil))
+                self.viewModel.showLockView = false
+            }
             .store(in: &cancellables)
     }
     
@@ -448,7 +451,6 @@ extension MainViewController {
         // 이번 한 번은 프리 말풍선 자동 표시를 건너뛰도록 플래그 세팅
         deferPreBalloonOnce = true
         viewModel.bottomType = .search
-        viewModel.state = .beforeDeparture
         routeStartCoordinate = nil
         cancelBalloonQueueAndHide()
         atchaImageView.stop()
@@ -459,7 +461,6 @@ extension MainViewController {
             mapContainerView.setupCenter(location: coord)
         } else {
             // 위치 아직 없으면 한 번은 센터 이동 허용 + 위치 요청
-            shouldCenterToCurrentLocationOnce = true
             viewModel.setupLocation()
         }
         
@@ -489,21 +490,23 @@ extension MainViewController {
             .sink { [weak self] coord in
                 guard let self = self else { return }
                 
-                // 1) 알람 등록된 상태(경로 있음) + 출발 전이면 원래는 출발지 고정
-                //    다만, 현위치 버튼 눌러서 강제 이동하고 싶을 수 있으니까 예외 플래그 둠
-                if self.viewModel.state == .beforeDeparture,
-                   self.viewModel.legInfo != nil,
-                   self.shouldCenterToCurrentLocationOnce == false {
-                    return
-                }
+                // UserDefaults 기준으로 실제 알람 등록 여부
+                let isAlarmRegistered = UserDefaultsWrapper.shared.bool(
+                    forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue
+                ) ?? false
                 
-                // 2) 현위치 버튼 눌러서 한 번만 강제로 센터 이동하는 경우
-                if self.shouldCenterToCurrentLocationOnce {
-                    self.shouldCenterToCurrentLocationOnce = false
+                // 알람 등록 + 출발 전 + departure 화면에서는
+                //    자동으로는 절대 현위치 안 따라감
+                if isAlarmRegistered {
+                    if self.shouldCenterToCurrentLocationOnce {
+                        self.mapContainerView.setupCenter(location: coord)
+                        self.shouldCenterToCurrentLocationOnce = false
+                    } else {
+                        return
+                    }
+                } else {
+                    self.mapContainerView.setupCenter(location: coord)
                 }
-                
-                // 3) 나머지 케이스(경로 없음 or 출발 이후)는 항상 현위치 따라가기
-                self.mapContainerView.setupCenter(location: coord)
             }
             .store(in: &cancellables)
     }
@@ -869,7 +872,11 @@ extension MainViewController {
         if let startCoordinate = allCoordinates.first {
             self.routeStartCoordinate = startCoordinate
             
-            if viewModel.state == .beforeDeparture {
+            let isAlarmRegistered = UserDefaultsWrapper.shared.bool(
+                forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue
+            ) ?? false
+            
+            if isAlarmRegistered {
                 mapContainerView.setupZoomCenter(location: startCoordinate)
             }
         }
@@ -918,14 +925,9 @@ extension MainViewController {
     }
     
     @objc private func didTapLocationButton() {
-        // 다음 currentLocation 업데이트 한 번은 무조건 센터 이동 허용
         shouldCenterToCurrentLocationOnce = true
-        
-        if let coord = viewModel.currentLocation {
-            mapContainerView.setupCenter(location: coord)
-        } else {
-            viewModel.setupLocation()
-        }
+        viewModel.currentLocation = nil
+        viewModel.setupLocation()
         
         didTapCurrentLocation += 1
     }
@@ -1237,3 +1239,4 @@ extension MainViewController {
         viewModel.currentLocation = coordinate
     }
 }
+

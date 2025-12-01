@@ -13,6 +13,7 @@ final class RouteDIContainer {
     private lazy var requestUseCase = RequestLocationAuthorizationUseCaseImpl(repository: PermissionRepositoryImpl())
     private lazy var streamUseCase = ObserLocationStreamUseCaseImpl(repository: LocationStreamRepositoryImpl())
     private lazy var busInfoUseCase = BusInfoUseCaseImpl(repository: BusInfoRepositoryImpl(apiService: apiService))
+    private lazy var alarmUseCase = AlarmUseCaseImpl(repository: AlarmRepositoryImpl(apiService: apiService))
     
     init(apiService: APIService) {
         self.apiService = apiService
@@ -24,7 +25,8 @@ final class RouteDIContainer {
                                     context: context,
                                     busInfoUseCase: busInfoUseCase,
                                     authorizationUseCase: requestUseCase,
-                                    streamUseCase: streamUseCase)
+                                    streamUseCase: streamUseCase,
+                                    alarmUseCase: alarmUseCase)
     }
     
     func makeDetailRouteViewController(viewModel: DetailRouteViewModel) -> DetailRouteViewController {

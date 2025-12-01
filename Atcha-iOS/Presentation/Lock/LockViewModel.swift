@@ -13,11 +13,13 @@ final class LockViewModel: BaseViewModel {
     var routerHandler: ((MainRoute) -> Void)?
     
     private var lockScreenWorkItem: DispatchWorkItem?
-
-    init(taxiFare: Int) {
+    private let fetchTaxiFareUseCase: FetchTaxiFareUseCase
+    
+    init(taxiFare: Int = 0,
+         fetchTaxiFareUseCase: FetchTaxiFareUseCase) {
         self.taxiFare = taxiFare
+        self.fetchTaxiFareUseCase = fetchTaxiFareUseCase
         super.init()
-        scheduleLockScreen()
     }
     
     // MARK: - 택시 요금 업데이트
@@ -25,14 +27,40 @@ final class LockViewModel: BaseViewModel {
         taxiFare = newFare
     }
     
-    // MARK: - 120초 후 실행 예약
-    private func scheduleLockScreen() {
-        let workItem = DispatchWorkItem { [weak self] in
-            AlarmManager.shared.stopAlarm()
-            self?.executeAfterTwoMinutes()
+    func refreshTaxiFare() {
+        Task {
+            do {
+                let w = UserDefaultsWrapper.shared
+                
+                // 출발 좌표 (코스 등록할 때 저장해둔 값 사용)
+                let startLatStr = w.string(forKey: UserDefaultsWrapper.Key.startLat.rawValue) ?? ""
+                let startLonStr = w.string(forKey: UserDefaultsWrapper.Key.startLon.rawValue) ?? ""
+                
+                guard let startLat = Double(startLatStr),
+                      let startLon = Double(startLonStr) else {
+                    print("LockViewModel.refreshTaxiFare: 저장된 출발 좌표가 없음")
+                    return
+                }
+                
+                let homeLat = w.double(forKey: UserDefaultsWrapper.Key.homeLat.rawValue) ?? 0
+                let homeLon = w.double(forKey: UserDefaultsWrapper.Key.homeLon.rawValue) ?? 0
+                
+                let request = FetchTaxiFareRequest(
+                    originLat: startLat,
+                    originLon: startLon,
+                    destinationLat: homeLat,
+                    destinationLon: homeLon
+                )
+                
+                let fare = try await fetchTaxiFare(request: request)
+                
+                await MainActor.run {
+                    self.taxiFare = Int(fare)
+                }
+            } catch {
+                print("LockViewModel.refreshTaxiFare 실패: \(error)")
+            }
         }
-        lockScreenWorkItem = workItem
-        DispatchQueue.main.asyncAfter(deadline: .now() + 120, execute: workItem)
     }
     
     // MARK: - 타이머 취소
@@ -43,5 +71,9 @@ final class LockViewModel: BaseViewModel {
     
     private func executeAfterTwoMinutes() {
         routerHandler?(.lockScreen(info: nil, address: nil))
+    }
+    
+    private func fetchTaxiFare(request: FetchTaxiFareRequest) async throws -> Double {
+        return try await fetchTaxiFareUseCase.fetchTaxiFare(request: request)
     }
 }
