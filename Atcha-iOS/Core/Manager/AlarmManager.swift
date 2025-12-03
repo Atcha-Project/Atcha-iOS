@@ -18,12 +18,14 @@ final class AlarmManager {
     
     // MARK: - Audio / Timer
     private var audioPlayer: AVAudioPlayer?
+    private var timerCancellable: AnyCancellable?
     private var repeatingVibrationTimer: Timer?
+    private var pendingStartWorkItem: DispatchWorkItem?
     
     // MARK: - State
     private var alarmVolume: Float = 1.0
     private var currentSoundFile: String?
-    var selectedOption: PushAlarmOption = .onlySound // 기본값
+    var selectedOption: PushAlarmOption = .onlySound
     
     // MARK: - Init
     private init() {
@@ -50,23 +52,47 @@ final class AlarmManager {
         audioPlayer?.volume = volume
     }
     
+    func ensureBackgroundSilentRunning() {
+        if currentSoundFile != "silent" {
+            playLocalMusic(named: "silent", withExtension: "mp3")
+        }
+    }
+    
+    // MARK: - Public: Start / Stop
+    /// 서버에서 받은 출발 시각 기준으로 1분 전에 반복 푸시/사운드/진동을 시작
+    func startAlarm(title: String, body: String) {
+        // 기존 알람 상태만 정리 (silent는 유지 or 다시 켜기)
+        stopAlarm(keepSilent: true)
+        ensureBackgroundSilentRunning()
+        
+        startRepeatingPush(title: title, body: body)
+    }
     
     /// 완전 정지: 예약/타이머/진동/알림/오디오 모두 끊기
-    func stopAlarm() {
+    func stopAlarm(keepSilent: Bool = false) {
+        pendingStartWorkItem?.cancel()
+        pendingStartWorkItem = nil
         
-        // 진동 타이머 취소
+        timerCancellable?.cancel()
+        timerCancellable = nil
+        
         stopRepeatingVibration()
         
-        // 로컬 알림 전체 정리 (대기/표시)
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
         UNUserNotificationCenter.current().removeAllDeliveredNotifications()
         
-        // 오디오 완전 정지
-        audioPlayer?.stop()
-        audioPlayer = nil
-        currentSoundFile = nil
+        if keepSilent {
+            // siren 재생 중이면 silent로 되돌리기
+            if currentSoundFile != "silent" {
+                playLocalMusic(named: "silent", withExtension: "mp3")
+            }
+        } else {
+            audioPlayer?.stop()
+            audioPlayer = nil
+            currentSoundFile = nil
+        }
         
-        print("알람 완전 종료")
+        print("알람 종료 (keepSilent = \(keepSilent))")
     }
     
     // MARK: - Public: Background Push (선택적)
@@ -114,164 +140,64 @@ private extension AlarmManager {
     }
     
     func setupAudioSession() {
+        let session = AVAudioSession.sharedInstance()
         do {
-            try AVAudioSession.sharedInstance().setCategory(.playback, options: [.mixWithOthers])
-            try AVAudioSession.sharedInstance().setActive(true)
+            try session.setCategory(.playback, options: [.mixWithOthers])
+            try session.setActive(true)
             print("AVAudioSession 설정 완료")
-        } catch {
-            print("AVAudioSession 설정 오류: \(error.localizedDescription)")
+        } catch let error as NSError {
+            print("AVAudioSession 설정 오류: \(error.localizedDescription), code: \(error.code)")
         }
     }
 }
 
-// MARK: - 알람 예약
-extension AlarmManager {
-    func startAlarm1MinuteBefore(
-        departureDateTime: String,
-        title: String,
-        body: String
-    ) {
-        let center = UNUserNotificationCenter.current()
-        center.removeAllPendingNotificationRequests()
-        center.removeAllDeliveredNotifications()
+// MARK: - Private: Repeating Push / Push builder
+private extension AlarmManager {
+    /// 2초마다 로컬 푸시 + (사운드/진동) 수행
+    func startRepeatingPush(title: String, body: String) {
+        // 기존 타이머가 있다면 먼저 취소(중복 방지)
+        timerCancellable?.cancel()
+        timerCancellable = nil
         
-        if let didFire = UserDefaultsWrapper.shared.bool(
-            forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue
-        ) {
-            if didFire {
-                print("이미 출발 알람이 울린 상태라 재예약하지 않습니다.")
-                return
-            }
-        } else {
-            print("departureAlarmDidFire 값 없음")
-        }
+        timerCancellable = Timer.publish(every: 2.0, on: .main, in: .common)
+            .autoconnect()
+            .sink { [weak self] _ in
+                guard let self else { return }
                 
-        
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-        formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
-        
-        guard let departure = formatter.date(from: departureDateTime) else { return }
-        
-        // 출발 분 -1, 초 = 0
-        let hour = Calendar.current.component(.hour, from: departure)
-        let minute = Calendar.current.component(.minute, from: departure)
-        
-        var fireDate: Date!
-        if let adjusted = Calendar.current.date(bySettingHour: hour,
-                                                minute: minute - 1,
-                                                second: 0,
-                                                of: departure) {
-            fireDate = adjusted
-        } else {
-            fireDate = departure.addingTimeInterval(-60)
-        }
-        
-        // 이미 지난 경우 처리
-        let now = Date()
-        if fireDate <= now {
-            let startFromNow = now.addingTimeInterval(1)
-            scheduleRepeatedPushes(title: title,
-                                   body: body,
-                                   start: startFromNow,
-                                   duration: 60)
-            return
-        }
-        
-        scheduleRepeatedPushes(title: title,
-                               body: body,
-                               start: fireDate,
-                               duration: 60)
-    }
-    
-    func scheduleRepeatedPushes(
-        title: String,
-        body: String,
-        start: Date,
-        duration: TimeInterval = 60  // 1분간 반복
-    ) {
-        let center = UNUserNotificationCenter.current()
-        var requests: [UNNotificationRequest] = []
-        
-        let end = start.addingTimeInterval(duration)
-        var current = start
-        
-        let nextGap: TimeInterval = 7
-        
-        while current <= end {
-            let comps = Calendar.current.dateComponents(
-                [.year, .month, .day, .hour, .minute, .second],
-                from: current
-            )
-            
-            let content = UNMutableNotificationContent()
-            content.title = title
-            content.body = body
-            content.sound = UNNotificationSound(
-                named: UNNotificationSoundName("siren.mp3")
-            )
-            content.userInfo = ["alarmType": "DEPARTURE_ALARM"]
-            
-            let trigger = UNCalendarNotificationTrigger(
-                dateMatching: comps,
-                repeats: false
-            )
-            
-            let request = UNNotificationRequest(
-                identifier: "REPEATED_PUSH_\(current.timeIntervalSince1970)",
-                content: content,
-                trigger: trigger
-            )
-            
-            requests.append(request)
-            
-            let gap = nextGap
-            current = current.addingTimeInterval(gap)
-        }
-        
-        requests.forEach { req in
-            center.add(req) { error in
-                if let error = error {
-                    print("반복 알람 등록 실패:", error.localizedDescription)
+                switch self.selectedOption {
+                case .onlySound:
+                    self.playLocalMusic(named: "siren", withExtension: "mp3")
+                    
+                case .onlyVibration:
+                    self.startRepeatingVibration()
+                    
+                case .both:
+                    self.playLocalMusic(named: "siren", withExtension: "mp3")
+                    self.startRepeatingVibration()
                 }
+                
+                self.sendImmediateLocalPush(title: title, body: body)
             }
-        }
-        
-        print("\(requests.count)개의 반복 알림 예약 완료")
     }
     
-    func startImmediateAlarm() {
+    func sendImmediateLocalPush(title: String, body: String) {
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = body
+        content.sound = nil // 사운드는 직접 재생 중
         
-        UserDefaultsWrapper.shared.set(
-            true,
-            forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue
+        let request = UNNotificationRequest(
+            identifier: UUID().uuidString,
+            content: content,
+            trigger: nil // 즉시 표시
         )
         
-        
-        NotificationCenter.default.post(
-            name: .alarmPushTapped,
-            object: nil,
-            userInfo: nil
-        )
-        
-        setVolume(alarmVolume)
-        
-        
-        
-        let center = UNUserNotificationCenter.current()
-        center.removeAllPendingNotificationRequests()
-        center.removeAllDeliveredNotifications()
-        
-        switch selectedOption {
-        case .onlySound:
-            playLocalMusic(named: "siren", withExtension: "mp3")
-            
-        case .onlyVibration:
-            startRepeatingVibration()
-            
-        case .both:
-            playLocalMusic(named: "siren", withExtension: "mp3")
-            startRepeatingVibration()
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("푸시 전송 실패: \(error.localizedDescription)")
+            } else {
+                print("푸시 전송됨: \(title) - \(body)")
+            }
         }
     }
 }
@@ -290,13 +216,6 @@ extension AlarmManager {
     }
     
     func playLocalMusic(named fileName: String, withExtension fileExtension: String) {
-        do {
-            let session = AVAudioSession.sharedInstance()
-            try session.setActive(true)
-        } catch {
-            print("오디오 세션 재활성화 실패: \(error.localizedDescription)")
-        }
-        
         // 같은 파일이 이미 재생 중이면 무시
         if let player = audioPlayer,
            player.isPlaying,
