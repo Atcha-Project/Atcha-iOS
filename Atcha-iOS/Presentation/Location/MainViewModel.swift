@@ -318,7 +318,7 @@ extension MainViewModel {
         }
     }
     
-//    private func isInAlarmRange(dateString: String) -> Bool {
+//    private func isInAlarmRange(dateS tring: String) -> Bool {
 //        let formatter = DateFormatter()
 //        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
 //        formatter.timeZone = .current
