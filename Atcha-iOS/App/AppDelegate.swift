@@ -76,7 +76,7 @@ extension AppDelegate: MessagingDelegate {
                      didReceiveRemoteNotification userInfo: [AnyHashable: Any],
                      fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
         
-        print("📩 Silent Push 수신: \(userInfo)")
+        print("Silent Push 수신: \(userInfo)")
         
         guard let type = userInfo["type"] as? String else {
             completionHandler(.noData)
@@ -100,38 +100,3 @@ extension AppDelegate: MessagingDelegate {
         }
     }
 }
-
-extension AppDelegate {
-    // MARK: - 포그라운드에서 알람 수신
-    func userNotificationCenter(_ center: UNUserNotificationCenter,
-                                willPresent notification: UNNotification,
-                                withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        
-        let userInfo = notification.request.content.userInfo
-        if let alarmType = userInfo["alarmType"] as? String,
-           alarmType == "DEPARTURE_ALARM" {
-            
-            AlarmManager.shared.startImmediateAlarm()
-            
-            completionHandler([])
-        } else {
-            completionHandler([.banner, .sound, .badge])
-        }
-    }
-    
-    // MARK: - 푸쉬로 진입시 알람 수신
-    func userNotificationCenter(_ center: UNUserNotificationCenter,
-                                didReceive response: UNNotificationResponse,
-                                withCompletionHandler completionHandler: @escaping () -> Void) {
-        
-        print("푸쉬로 오픈")
-        let userInfo = response.notification.request.content.userInfo
-        if let alarmType = userInfo["alarmType"] as? String,
-           alarmType == "DEPARTURE_ALARM" {
-            
-            AlarmManager.shared.startImmediateAlarm()
-        }
-        completionHandler()
-    }
-}
-

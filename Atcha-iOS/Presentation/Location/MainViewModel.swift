@@ -12,6 +12,7 @@ import UIKit
 import TMapSDK
 
 final class MainViewModel: BaseViewModel {
+    private var alarmTimerCancellable: AnyCancellable?
     private var alarmFinishCancellable: AnyCancellable?
     private var alarmObserver: NSObjectProtocol?
     
@@ -65,15 +66,6 @@ final class MainViewModel: BaseViewModel {
         self.courseUseCase = courseUseCase
         
         super.init()
-        
-        alarmObserver = NotificationCenter.default.addObserver(
-            forName: .alarmPushTapped,
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
-            self?.showLockView = true
-        }
-        
         self.bind()
     }
     
@@ -148,12 +140,6 @@ final class MainViewModel: BaseViewModel {
               let totalTime = info.trafficInfo.first?.totalTime else { return }
         
         self.departureStr = departureStr
-        
-        AlarmManager.shared.startAlarm1MinuteBefore(
-            departureDateTime: departureStr,
-            title: "눌러서 출발 알림 끄기",
-            body: "자리에서 일어나야 할 시간이에요!"
-        )
         
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
@@ -248,14 +234,13 @@ final class MainViewModel: BaseViewModel {
         stopFinishAlarmTimer()
         startAlarmTimer()
         
-        
         departureTime = body
     }
     
     private func fetchDetailRoute() {
         let wrapper = UserDefaultsWrapper.shared
         let routeId = wrapper.string(forKey: UserDefaultsWrapper.Key.lastRouteId.rawValue) ?? ""
-
+        
         Task {
             do {
                 let info = try await courseUseCase.courseSearch(routeId)
@@ -315,7 +300,63 @@ final class MainViewModel: BaseViewModel {
 
 // MARK: - Alarm
 extension MainViewModel {
+    private func checkAlarmTime() {
+        let wrapper = UserDefaultsWrapper.shared
+        if let departureTime: String = wrapper.string(forKey: UserDefaultsWrapper.Key.departureTime.rawValue) {
+            print("departureTime : \(departureTime)")
+            if isInAlarmRange(dateString: departureTime) {
+                // TODO: 알림 이후 등록이 되는지확인
+                showLockView = true
+                AlarmManager.shared.startAlarm(title: "눌러서 출발 알람 끄기",
+                                               body: "자리에서 일어나야 할 시간이에요!")
+                stopAlarmTimer()
+            } else {
+                print("미래")
+            }
+        } else {
+            print("값 없음")
+        }
+    }
+    
+//    private func isInAlarmRange(dateS tring: String) -> Bool {
+//        let formatter = DateFormatter()
+//        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+//        formatter.timeZone = .current
+//        
+//        guard let alarmDate = formatter.date(from: dateString) else {
+//            print("날짜 파싱 실패")
+//            return false
+//        }
+//        
+//        let now = Date()
+//        let oneMinuteBefore = alarmDate.addingTimeInterval(-60) // 60초 전
+//        
+//        return now >= oneMinuteBefore && now <= alarmDate
+//    }
+    private func isInAlarmRange(dateString: String) -> Bool {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        formatter.timeZone = .current
+
+        guard let alarmDate = formatter.date(from: dateString) else {
+            print("날짜 파싱 실패")
+            return false
+        }
+
+        let now = Date()
+        let oneMinuteBefore = alarmDate.addingTimeInterval(-60) // 60초 전
+
+        return now >= oneMinuteBefore
+    }
+    
     func startAlarmTimer() {
+        alarmTimerCancellable = Timer
+            .publish(every: 5.0, on: .main, in: .common)
+            .autoconnect()
+            .sink { [weak self] _ in
+                self?.checkAlarmTime()
+            }
+        
         alarmFinishCancellable = Timer
             .publish(every: 60.0, on: .main, in: .common)
             .autoconnect()
@@ -339,13 +380,17 @@ extension MainViewModel {
             }
     }
     
+    private func stopAlarmTimer() {
+        alarmTimerCancellable?.cancel()
+        alarmTimerCancellable = nil
+    }
+    
     func stopFinishAlarmTimer() {
         alarmFinishCancellable?.cancel()
         alarmFinishCancellable = nil
-        UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
-        UNUserNotificationCenter.current().removeAllDeliveredNotifications()
     }
 }
+
 
 // MARK: - Router
 extension MainViewModel {

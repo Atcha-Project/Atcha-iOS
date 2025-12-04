@@ -115,7 +115,7 @@ final class DetailRouteViewModel: BaseViewModel {
                     false,
                     forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue
                 )
-                
+                AlarmManager.shared.ensureBackgroundSilentRunning()
                 print("알람 등록")
             } catch {
                 print("알람 등록 실패: \(error)")
