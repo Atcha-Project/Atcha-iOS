@@ -181,6 +181,12 @@ final class LockViewController: BaseViewController<LockViewModel> {
                 "duration": second
             ]
         )
+        
+        UserDefaultsWrapper.shared.set(
+            true,
+            forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue
+        )
+
     }
     
     @objc private func detailRouteTapped() {

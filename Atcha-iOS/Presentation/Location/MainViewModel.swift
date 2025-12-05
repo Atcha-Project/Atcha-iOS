@@ -302,6 +302,12 @@ final class MainViewModel: BaseViewModel {
 extension MainViewModel {
     private func checkAlarmTime() {
         let wrapper = UserDefaultsWrapper.shared
+        
+        if wrapper.bool(forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue) ?? false {
+            stopAlarmTimer()
+            return
+        }
+        
         if let departureTime: String = wrapper.string(forKey: UserDefaultsWrapper.Key.departureTime.rawValue) {
             print("departureTime : \(departureTime)")
             if isInAlarmRange(dateString: departureTime) {
@@ -318,38 +324,43 @@ extension MainViewModel {
         }
     }
     
-//    private func isInAlarmRange(dateS tring: String) -> Bool {
-//        let formatter = DateFormatter()
-//        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-//        formatter.timeZone = .current
-//        
-//        guard let alarmDate = formatter.date(from: dateString) else {
-//            print("날짜 파싱 실패")
-//            return false
-//        }
-//        
-//        let now = Date()
-//        let oneMinuteBefore = alarmDate.addingTimeInterval(-60) // 60초 전
-//        
-//        return now >= oneMinuteBefore && now <= alarmDate
-//    }
+    //    private func isInAlarmRange(dateS tring: String) -> Bool {
+    //        let formatter = DateFormatter()
+    //        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+    //        formatter.timeZone = .current
+    //
+    //        guard let alarmDate = formatter.date(from: dateString) else {
+    //            print("날짜 파싱 실패")
+    //            return false
+    //        }
+    //
+    //        let now = Date()
+    //        let oneMinuteBefore = alarmDate.addingTimeInterval(-60) // 60초 전
+    //
+    //        return now >= oneMinuteBefore && now <= alarmDate
+    //    }
     private func isInAlarmRange(dateString: String) -> Bool {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
         formatter.timeZone = .current
-
+        
         guard let alarmDate = formatter.date(from: dateString) else {
             print("날짜 파싱 실패")
             return false
         }
-
+        
         let now = Date()
         let oneMinuteBefore = alarmDate.addingTimeInterval(-60) // 60초 전
-
+        
         return now >= oneMinuteBefore
     }
     
     func startAlarmTimer() {
+        let wrapper = UserDefaultsWrapper.shared
+        if wrapper.bool(forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue) ?? false {
+            return
+        }
+        
         alarmTimerCancellable = Timer
             .publish(every: 5.0, on: .main, in: .common)
             .autoconnect()
