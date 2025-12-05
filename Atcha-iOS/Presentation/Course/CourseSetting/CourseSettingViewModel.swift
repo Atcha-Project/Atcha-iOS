@@ -100,6 +100,9 @@ final class CourseSettingViewModel: BaseViewModel {
     
     func userDidTapSettingButton() {
         guard let location = currentLocation else { return }
+        if locationInfo.name == "" {
+            locationInfo.name = locationInfo.address
+        }
         onTapLocationButton?(locationInfo, location)
     }
     
