@@ -83,7 +83,10 @@ final class MainCoordinator {
                 
                 let modifyVM = courseDI.makeCourseModifyViewModel(location: location)
                 let modifyVC = courseDI.makeCourseModifyViewController(viewModel: modifyVM)
-
+                if let modifyVC = modifyVC as? CourseModifyViewController {
+                    modifyVC.applyNewLocation(location)   
+                }
+                
                 UIView.performWithoutAnimation {
                     var vcs = self.navigationController.viewControllers
                     if let last = vcs.last, last is CourseSearchViewController {
@@ -125,11 +128,13 @@ final class MainCoordinator {
                     
                     searchVM.onTapRouteLabelStack = { [weak self] location in
                         guard let self else { return }
-
-                        guard let modifyVC = self.navigationController.viewControllers.first(where: { $0 is CourseModifyViewController }) else {
+                        guard let modifyVC = self.navigationController.viewControllers
+                            .first(where: { $0 is CourseModifyViewController }) as? CourseModifyViewController else {
                             print("CourseModifyViewController not found in stack")
                             return
                         }
+
+                        modifyVC.applyNewLocation(location)
 
                         UIView.performWithoutAnimation {
                             self.navigationController.popToViewController(modifyVC, animated: false)

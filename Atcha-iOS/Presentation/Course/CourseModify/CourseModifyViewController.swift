@@ -292,6 +292,17 @@ final class CourseModifyViewController: BaseViewController<CourseModifyViewModel
         guard let loc = viewModel.initialLocation else { return }
         viewModel.onLocationSelected?(loc)
     }
+    
+    func applyNewLocation(_ location: Location) {
+        viewModel.updateInitialLocation(location)
+        let text = location.address ?? location.name ?? ""
+        searchTextField.setText(text)
+        
+        DispatchQueue.main.async { [weak self] in
+            self?.searchTextField.focusTextField()
+        }
+        
+    }
 }
 
 extension CourseModifyViewController: UITableViewDataSource, UITableViewDelegate {

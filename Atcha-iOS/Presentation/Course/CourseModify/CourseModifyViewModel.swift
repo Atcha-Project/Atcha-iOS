@@ -188,6 +188,11 @@ final class CourseModifyViewModel: BaseViewModel {
             return false
         }
     }
+    
+    func updateInitialLocation(_ location: Location) {
+        self.initialLocation = location
+    }
+    
 }
 
 extension CourseModifyViewModel {
