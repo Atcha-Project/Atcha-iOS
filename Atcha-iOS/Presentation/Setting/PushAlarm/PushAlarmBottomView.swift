@@ -63,8 +63,14 @@ final class PushAlarmBottomView: UIView {
         volumeSlider.addGestureRecognizer(tapGesture)
         volumeSlider.setValue(0.7, animated: true)
         
+        let savedVolume = UserDefaultsWrapper.shared.float(
+                forKey: UserDefaultsWrapper.Key.alarmVolume.rawValue
+            ) ?? 0.7
+            
+            volumeSlider.setValue(savedVolume, animated: false)
+        
         addSubViews(soundLabelStackView, volumeSlider)
-        setVolume(0.7)
+        setVolume(savedVolume)
     }
     
     private func setupAutoLayout() {
@@ -86,6 +92,7 @@ final class PushAlarmBottomView: UIView {
         sender.setValue(clampedValue, animated: false)
 
         AlarmManager.shared.previewAlarmVolume(clampedValue)
+        AlarmManager.shared.setAlarmVolume(clampedValue)
         setVolume(clampedValue)
     }
     
@@ -97,6 +104,7 @@ final class PushAlarmBottomView: UIView {
 
         newValue = max(newValue, 0.1)
         volumeSlider.setValue(newValue, animated: true)
+        AlarmManager.shared.setAlarmVolume(newValue)
         setVolume(newValue)
     }
     

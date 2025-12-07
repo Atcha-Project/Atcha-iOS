@@ -289,7 +289,7 @@ final class CourseSearchViewModel: BaseViewModel {
     }
     
     func didTapRouteLabelStack() {
-        let location = Location(name: "",
+        let location = Location(name: startAddress,
                                 lat: Double(startLat) ?? 0.0 ,
                                 lon: Double(startLon) ?? 0.0,
                                 businessCategory: nil,

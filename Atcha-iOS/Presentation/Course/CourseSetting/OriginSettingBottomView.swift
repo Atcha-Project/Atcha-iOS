@@ -67,15 +67,14 @@ final class OriginSettingBottomView: UIView {
     }
     
     func setupLocationTitle(_ name: String?, _ address: String?) {
-        if let name, !name.isEmpty {
+        if let name, !name.isEmpty, name != address {
             /// name이 있을 때: name + address 모두 표시
             locationNameLabel.attributedText = AtchaFont.H4_SB_17(name, color: AtchaColor.white)
             locationAdressLabel.attributedText = AtchaFont.B6_R_14(address ?? "", color: AtchaColor.gray400)
-            locationAdressLabel.isHidden = false
         } else {
             /// name이 없을 때: address만 nameLabel에 표시, addressLabel은 숨김
             locationNameLabel.attributedText = AtchaFont.H4_SB_17(address ?? "", color: AtchaColor.white)
-            locationAdressLabel.isHidden = true
+            locationAdressLabel.attributedText = AtchaFont.B6_R_14(" ")
         }
     }
 }

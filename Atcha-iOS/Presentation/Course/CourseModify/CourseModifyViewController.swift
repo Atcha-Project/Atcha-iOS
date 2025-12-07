@@ -292,6 +292,17 @@ final class CourseModifyViewController: BaseViewController<CourseModifyViewModel
         guard let loc = viewModel.initialLocation else { return }
         viewModel.onLocationSelected?(loc)
     }
+    
+    func applyNewLocation(_ location: Location) {
+        viewModel.updateInitialLocation(location)
+        let text = location.address ?? location.name ?? ""
+        searchTextField.setText(text)
+        
+        DispatchQueue.main.async { [weak self] in
+            self?.searchTextField.focusTextField()
+        }
+        
+    }
 }
 
 extension CourseModifyViewController: UITableViewDataSource, UITableViewDelegate {
@@ -326,7 +337,14 @@ extension CourseModifyViewController: UITableViewDataSource, UITableViewDelegate
         case .recent(location: let location):
             titleLabel.attributedText = AtchaFont.B4_R_15(location.name ?? "이름 없음", color: AtchaColor.white)
             
-            let addressText = "\(location.radius ?? "" ) • \(location.address ?? "주소 없음")"
+            var addressText = "\(location.radius ?? "" ) • \(location.address ?? "주소 없음")"
+            
+            if location.name == location.address {
+                addressText = "\(location.radius ?? "" )"
+            } else {
+                addressText = "\(location.radius ?? "" ) • \(location.address ?? "주소 없음")"
+            }
+            
             detailLabel.attributedText = AtchaFont.B6_R_14(addressText, color: AtchaColor.gray200)
             labelStack.addArrangedSubview(detailLabel)
             

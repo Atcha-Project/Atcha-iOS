@@ -64,7 +64,7 @@ final class AlarmManager {
         // 기존 알람 상태만 정리 (silent는 유지 or 다시 켜기)
         stopAlarm(keepSilent: true)
         ensureBackgroundSilentRunning()
-        
+        applySavedVolumeForAlarmStart()
         startRepeatingPush(title: title, body: body)
     }
     
@@ -342,3 +342,21 @@ extension AlarmManager {
 }
 
 
+
+extension AlarmManager {
+    func applySavedVolumeForAlarmStart() {
+        // 1) UserDefaults에서 값 다시 읽기
+        let savedVolume = UserDefaultsWrapper.shared.float(
+            forKey: UserDefaultsWrapper.Key.alarmVolume.rawValue
+        ) ?? 0.7
+
+        // 2) AlarmManager 상태 업데이트
+        alarmVolume = savedVolume
+        audioPlayer?.volume = savedVolume
+
+        // 3) 시스템 볼륨도 최소한 이 값으로 맞추기
+        setVolume(savedVolume)
+
+        print("알람 시작 시 저장된 볼륨 적용: \(savedVolume)")
+    }
+}
