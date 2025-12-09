@@ -158,6 +158,9 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
         ? AlarmManager.shared.selectedOption
         : nil
         
+        let defaultBackgroundColor: UIColor? = nil
+        let selectedBackgroundColor: UIColor = AtchaColor.opacity100
+        
         PushAlarmOption.allCases.enumerated().forEach { index, option in
             let isSelected = (option == preselectOption)
             
@@ -165,11 +168,18 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
                 title: option.rawValue,
                 listType: .radioButton(isOn: isSelected)
             )
+            
+            listView.backgroundColor = isSelected ? selectedBackgroundColor : defaultBackgroundColor
+            
             listView.onSelect = { [weak self] selected in
                 guard let self else { return }
-                
-                self.alarmCheckmarkLists.forEach { $0.setRadio(false) }
+
+                self.alarmCheckmarkLists.forEach {
+                    $0.setRadio(false)
+                    $0.backgroundColor = defaultBackgroundColor
+                }
                 selected.setRadio(true)
+                selected.backgroundColor = selectedBackgroundColor
                 
                 self.selectedOption = option
                 self.nextButton.updateStyle(text: "설정 완료", style: .filled(.primary))
