@@ -23,7 +23,7 @@ final class AtchaPopupViewController: BaseViewController<AtchaPopupViewModel> {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-     
+        
         setupUI()
         setupAutoLayout()
         bindViewModel()
@@ -73,15 +73,32 @@ final class AtchaPopupViewController: BaseViewController<AtchaPopupViewModel> {
     
     private func setupPopup(_ info: AtcahPopuInfo) {
         titleLabel.attributedText = AtchaFont.H4_SB_17(info.title, color: .white, alignment: .center)
-        let cancelAttr  = AtchaFont.B5_SB_14(info.cancelTitle,
-                                             color: info.cancelForegroundColor)
         
-        let confirmAttr = AtchaFont.B5_SB_14(info.confrimTitle,
-                                             color: info.confrimForegroundColor)
+        configureButtonsLayout(for: info)
         
-        cancelButton.setAttributedTitle(cancelAttr,  for: .normal)
+        let confirmAttr = AtchaFont.B5_SB_14(info.confrimTitle, color: info.confrimForegroundColor)
         confirmButton.setAttributedTitle(confirmAttr, for: .normal)
-        cancelButton.backgroundColor = info.cancelBackgroundColor
         confirmButton.backgroundColor = info.confrimBackgroundColor
+        
+        // alarmTimeout에서는 cancel이 없으니, cancel 세팅은 조건부로
+        if info != .alarmTimeout {
+            let cancelAttr = AtchaFont.B5_SB_14(info.cancelTitle, color: info.cancelForegroundColor)
+            cancelButton.setAttributedTitle(cancelAttr, for: .normal)
+            cancelButton.backgroundColor = info.cancelBackgroundColor
+        }
+    }
+    
+    private func configureButtonsLayout(for info: AtcahPopuInfo) {
+        buttonStackView.arrangedSubviews.forEach {
+            buttonStackView.removeArrangedSubview($0)
+            $0.removeFromSuperview()
+        }
+        
+        if info == .alarmTimeout {
+            buttonStackView.addArrangedSubview(confirmButton)
+        } else {
+            buttonStackView.addArrangedSubview(cancelButton)
+            buttonStackView.addArrangedSubview(confirmButton)
+        }
     }
 }

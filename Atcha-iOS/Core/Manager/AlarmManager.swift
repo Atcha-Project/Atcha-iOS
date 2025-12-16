@@ -68,6 +68,26 @@ final class AlarmManager {
         startRepeatingPush(title: title, body: body)
     }
     
+    func removeAllAlarmNotificationsExceptAutoStop() {
+        let center = UNUserNotificationCenter.current()
+        
+        center.getPendingNotificationRequests { requests in
+            let idsToRemove = requests
+                .map { $0.identifier }
+                .filter { $0 != AlarmNotificationID.autoStopInfo }
+            
+            center.removePendingNotificationRequests(withIdentifiers: idsToRemove)
+        }
+        
+        center.getDeliveredNotifications { notifications in
+            let idsToRemove = notifications
+                .map { $0.request.identifier }
+                .filter { $0 != AlarmNotificationID.autoStopInfo }
+            
+            center.removeDeliveredNotifications(withIdentifiers: idsToRemove)
+        }
+    }
+    
     /// 완전 정지: 예약/타이머/진동/알림/오디오 모두 끊기
     func stopAlarm(keepSilent: Bool = false) {
         pendingStartWorkItem?.cancel()
@@ -77,9 +97,7 @@ final class AlarmManager {
         timerCancellable = nil
         
         stopRepeatingVibration()
-        
-        UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
-        UNUserNotificationCenter.current().removeAllDeliveredNotifications()
+        removeAllAlarmNotificationsExceptAutoStop()
         
         if keepSilent {
             // siren 재생 중이면 silent로 되돌리기
@@ -95,6 +113,11 @@ final class AlarmManager {
         print("알람 종료 (keepSilent = \(keepSilent))")
     }
     
+    func alarmInit() {
+        UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+        UNUserNotificationCenter.current().removeAllDeliveredNotifications()
+    }
+    
     // MARK: - Public: Background Push (선택적)
     func sendBackgroundPush(title: String, body: String) {
         let content = UNMutableNotificationContent()
@@ -103,7 +126,7 @@ final class AlarmManager {
         content.sound = .default
         
         let request = UNNotificationRequest(
-            identifier: UUID().uuidString,
+            identifier: AlarmNotificationID.autoStopInfo,
             content: content,
             trigger: UNTimeIntervalNotificationTrigger(timeInterval: 1.0, repeats: false)
         )
@@ -349,14 +372,18 @@ extension AlarmManager {
         let savedVolume = UserDefaultsWrapper.shared.float(
             forKey: UserDefaultsWrapper.Key.alarmVolume.rawValue
         ) ?? 0.7
-
+        
         // 2) AlarmManager 상태 업데이트
         alarmVolume = savedVolume
         audioPlayer?.volume = savedVolume
-
+        
         // 3) 시스템 볼륨도 최소한 이 값으로 맞추기
         setVolume(savedVolume)
-
+        
         print("알람 시작 시 저장된 볼륨 적용: \(savedVolume)")
     }
+}
+
+enum AlarmNotificationID {
+    static let autoStopInfo = "atcha.alarm.autostop"
 }

@@ -70,7 +70,7 @@ final class MainCoordinator {
                 guard let self else { return }
                 self.mainViewModel?.courseSearchResultHandler?(address, infos)
                 UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue)
-
+                
                 self.navigationController.popToMainViewControllerNoAnimation()
             }
             vm.getDetailTapped = { [weak self] address, infos in
@@ -79,12 +79,12 @@ final class MainCoordinator {
             }
             
             vm.onTapRouteLabelStack = { [weak self] location in
-                    guard let self else { return }
+                guard let self else { return }
                 
                 let modifyVM = courseDI.makeCourseModifyViewModel(location: location)
                 let modifyVC = courseDI.makeCourseModifyViewController(viewModel: modifyVM)
                 if let modifyVC = modifyVC as? CourseModifyViewController {
-                    modifyVC.applyNewLocation(location)   
+                    modifyVC.applyNewLocation(location)
                 }
                 
                 UIView.performWithoutAnimation {
@@ -133,9 +133,9 @@ final class MainCoordinator {
                             print("CourseModifyViewController not found in stack")
                             return
                         }
-
+                        
                         modifyVC.applyNewLocation(location)
-
+                        
                         UIView.performWithoutAnimation {
                             self.navigationController.popToViewController(modifyVC, animated: false)
                         }
@@ -204,6 +204,8 @@ final class MainCoordinator {
             let lockScreenDI = diContainer.makeLockScreenDIContainer()
             let vm = lockScreenDI.makeLockScreenViewModel()
             vm.routerHandler = { [weak self] router in
+                self?.mainViewModel?.stopAlarmTimeoutTimer()
+                
                 switch router {
                 case .lockScreen(let info, let address):
                     guard let info, let address else { return }
@@ -215,8 +217,8 @@ final class MainCoordinator {
                 case .courseSearch(let startLat, let startLon, let startAddress):
                     self?.navigationController.dismiss(animated: false) {
                         self?.handle(route: .courseSearch(startLat: startLat,
-                                                         startLon: startLon,
-                                                         startAddress: startAddress))
+                                                          startLon: startLon,
+                                                          startAddress: startAddress))
                     }
                 default: do {}
                 }
@@ -230,9 +232,36 @@ final class MainCoordinator {
             let vc = proximityDI.makeProximityViewController(viewModel: vm)
             
             navigationController.presentPanModal(vc)
+            
+        case .dismissLockScreen:
+            dismissPresentedIfNeeded {
+                    DispatchQueue.global(qos: .utility).async {
+                        self.mainViewModel?.showLockView = false
+                        self.mainViewModel?.showAlarmStopPopUpView = true
+                        
+                        AlarmManager.shared.sendBackgroundPush(
+                            title: "출발 알람이 자동 종료되었어요",
+                            body: "클릭해서 경로 재탐색하기"
+                        )
+                        
+                    }
+                }
         }
         
         routeHandler?(route)
+    }
+    
+    private func dismissPresentedIfNeeded(completion: (() -> Void)? = nil) {
+        var top = navigationController.topViewController
+        while let presented = top?.presentedViewController {
+            top = presented
+        }
+
+        if top !== navigationController.topViewController {
+            top?.dismiss(animated: false, completion: completion)
+        } else {
+            completion?()
+        }
     }
 }
 

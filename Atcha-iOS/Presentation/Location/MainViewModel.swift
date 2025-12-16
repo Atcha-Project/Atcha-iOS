@@ -14,6 +14,7 @@ import TMapSDK
 final class MainViewModel: BaseViewModel {
     private var alarmTimerCancellable: AnyCancellable?
     private var alarmFinishCancellable: AnyCancellable?
+    private var alarmTimeoutCancellable: AnyCancellable?
     private var alarmObserver: NSObjectProtocol?
     
     @Published var currentLocation: CLLocationCoordinate2D?
@@ -30,6 +31,7 @@ final class MainViewModel: BaseViewModel {
     
     @Published var bottomType: MapBottomType?
     @Published var showLockView: Bool = false
+    @Published var showAlarmStopPopUpView: Bool = false
     
     @Published var departureStr: String?
     
@@ -315,6 +317,7 @@ extension MainViewModel {
                 showLockView = true
                 AlarmManager.shared.startAlarm(title: "눌러서 출발 알람 끄기",
                                                body: "자리에서 일어나야 할 시간이에요!")
+                startAlarmTimeoutTimer()
                 stopAlarmTimer()
             } else {
                 print("미래")
@@ -442,6 +445,8 @@ extension MainViewModel {
             routeHandler?(.lockScreen(info: legInfo, address: address))
         case .proximity:
             routeHandler?(.proximity)
+        case .dismissLockScreen:
+            routeHandler?(.dismissLockScreen)
         }
     }
 }
@@ -523,5 +528,35 @@ extension MainViewModel {
     
     private func realodDepartureTime() async throws -> AlarmRefresh {
         return try await alarmUseCase.alarmRefresh()
+    }
+}
+
+// MARK: - 2분 타임아웃
+extension MainViewModel {
+    private func startAlarmTimeoutTimer() {
+        alarmTimeoutCancellable?.cancel()
+
+        let task = Task { [weak self] in
+            guard let self else { return }
+
+            do {
+                try await Task.sleep(nanoseconds: 120 * 1_000_000_000)
+            } catch {
+                return
+            }
+
+            guard !Task.isCancelled else { return }
+
+            await MainActor.run {
+                self.routeHandler?(.dismissLockScreen)
+            }
+        }
+
+        alarmTimeoutCancellable = AnyCancellable { task.cancel() }
+    }
+
+    func stopAlarmTimeoutTimer() {
+        alarmTimeoutCancellable?.cancel()
+        alarmTimeoutCancellable = nil
     }
 }
