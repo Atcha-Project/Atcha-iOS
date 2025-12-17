@@ -1899,10 +1899,10 @@
 				};
 			};
 			buildConfigurationList = 6DE42B882DFDE6360041344C /* Build configuration list for PBXProject "Atcha-iOS" */;
-			developmentRegion = en;
+			developmentRegion = ko;
 			hasScannedForEncodings = 0;
 			knownRegions = (
-				en,
+				ko,
 				Base,
 			);
 			mainGroup = 6DE42B842DFDE6360041344C;
