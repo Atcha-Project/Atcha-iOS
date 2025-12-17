@@ -22,6 +22,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
     //    private let lastTrainArrivalView: LastTrainArrivalBottomView = LastTrainArrivalBottomView() // 알람 등록 이후, 시간 지남
     
     private let flagImageView: UIImageView = UIImageView()
+    private let alarmTimeoutView: UIView = UIView()
     private let myPageButton: UIButton = UIButton()
     private let loactionButton: UIButton = UIButton()
     //    private let atchaImageView: UIImageView = UIImageView()
@@ -262,6 +263,7 @@ extension MainViewController {
         bindTaxiFareUpdates()
         bindServiceRegionUpdates()
         bindLockView()
+        bindAlarmTimeoutView()
     }
     
     // MARK: - bind Lock View
@@ -422,6 +424,20 @@ extension MainViewController {
     //                                                                             context: .afterReigster))
     //        }
     //    }
+    private func showAlarmTimeoutPopup() {
+        let popupVM = AtchaPopupViewModel(info: .alarmTimeout)
+        let popupVC = AtchaPopupViewController(viewModel: popupVM)
+        
+        popupVC.confirmButton.addAction(UIAction { [weak self, weak popupVC] _ in
+            guard let self else { return }
+            popupVC?.dismiss(animated: false)
+            AlarmManager.shared.alarmInit()
+            self.viewModel.showAlarmStopPopUpView = false
+        }, for: .touchUpInside)
+        
+        popupVC.modalPresentationStyle = .overFullScreen
+        present(popupVC, animated: false)
+    }
     
     private func showAlarmExitPopup() {
         let popupVM = AtchaPopupViewModel(info: .alarm)
@@ -614,6 +630,21 @@ extension MainViewController {
             .receive(on: RunLoop.main)
             .sink { [weak self] time in
                 self?.lastTrainDepartView.refreshDepartureTime(departureStr: time)
+            }
+            .store(in: &cancellables)
+    }
+    
+    private func bindAlarmTimeoutView() {
+        viewModel.$showAlarmStopPopUpView
+            .receive(on: RunLoop.main)
+            .sink { [weak self] show in
+                guard let self, show else { return }
+                self.viewModel.alarmDelete()
+                self.exitButtonTapped()
+                
+                guard self.presentedViewController == nil else { return }
+                self.showAlarmTimeoutPopup()
+                self.viewModel.showAlarmStopPopUpView = false
             }
             .store(in: &cancellables)
     }
