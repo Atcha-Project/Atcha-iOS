@@ -142,7 +142,7 @@ final class AlarmManager {
 }
 
 // MARK: - Private: Session / Storage
-private extension AlarmManager {
+extension AlarmManager {
     func loadStoredVolume() {
         let storedVolume = UserDefaultsWrapper.shared.float(forKey: UserDefaultsWrapper.Key.alarmVolume.rawValue) ?? 1.0
         alarmVolume = storedVolume

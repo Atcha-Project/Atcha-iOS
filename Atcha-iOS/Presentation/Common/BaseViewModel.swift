@@ -23,6 +23,13 @@ class BaseViewModel {
             name: .fcmDidReceiveRefresh,
             object: nil
         )
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleAudioSessionInterruption(_:)),
+            name: AVAudioSession.interruptionNotification,
+            object: AVAudioSession.sharedInstance()
+        )
     }
     
     func setLoading(_ loading: Bool) {
@@ -50,6 +57,7 @@ class BaseViewModel {
             guard let optionsValue = userInfo[AVAudioSessionInterruptionOptionKey] as? UInt else { return }
             let options = AVAudioSession.InterruptionOptions(rawValue: optionsValue)
             if options.contains(.shouldResume) {
+                AlarmManager.shared.setupAudioSession()
                 AlarmManager.shared.playLocalMusic(named: "silent", withExtension: "mp3")
             }
             

@@ -38,7 +38,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         )
         AmplitudeManager.shared.flush()
         
-        
+        if let registered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue),registered {
+            AlarmManager.shared.setupAudioSession()
+            AlarmManager.shared.playLocalMusic(named: "silent", withExtension: "mp3")
+        }
         
         if let savedId = UserDefaultsWrapper.shared.integer(forKey: UserDefaultsWrapper.Key.userId.rawValue) {
             AmplitudeManager.shared.bindUser(id: String(savedId))
