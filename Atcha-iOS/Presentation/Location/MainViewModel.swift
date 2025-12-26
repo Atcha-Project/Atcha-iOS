@@ -327,21 +327,6 @@ extension MainViewModel {
         }
     }
     
-    //    private func isInAlarmRange(dateS tring: String) -> Bool {
-    //        let formatter = DateFormatter()
-    //        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-    //        formatter.timeZone = .current
-    //
-    //        guard let alarmDate = formatter.date(from: dateString) else {
-    //            print("날짜 파싱 실패")
-    //            return false
-    //        }
-    //
-    //        let now = Date()
-    //        let oneMinuteBefore = alarmDate.addingTimeInterval(-60) // 60초 전
-    //
-    //        return now >= oneMinuteBefore && now <= alarmDate
-    //    }
     private func isInAlarmRange(dateString: String) -> Bool {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
@@ -353,7 +338,7 @@ extension MainViewModel {
         }
         
         let now = Date()
-        let oneMinuteBefore = alarmDate.addingTimeInterval(-60) // 60초 전
+        let oneMinuteBefore = alarmDate
         
         return now >= oneMinuteBefore
     }
