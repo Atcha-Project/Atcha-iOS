@@ -91,6 +91,7 @@ extension AppDelegate: MessagingDelegate {
                 name: .fcmDidReceiveRefresh,
                 object: nil,
                 userInfo: [
+                    "isReal": userInfo["isReal"] as? Bool ?? false,
                     "updatedAt": userInfo["updatedAt"] as? String ?? "",
                     "body": userInfo["body"] as? String ?? ""
                 ]

@@ -10,5 +10,6 @@ import Foundation
 struct AlarmRefresh: Codable {
     let departureTime: String?
     let updatedAt: String?
+    let isReal: Bool?
     let lastRouteId: String?
 }

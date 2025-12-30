@@ -223,11 +223,14 @@ final class MainViewModel: BaseViewModel {
     
     override func handleRefreshNotification(_ notification: Notification) {
         guard let userInfo = notification.userInfo,
+              let isReal = userInfo["isReal"] as? Bool,
               let body = userInfo["body"] as? String,
               let _ = userInfo["updatedAt"] as? String else {
             return
         }
         
+        
+        if isReal { AlarmManager.shared.sendImmediateLocalPush(title: "출발 약 10분 전 이에요.", body: "") }
         
         let wrapper = UserDefaultsWrapper.shared
         wrapper.set(body, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
