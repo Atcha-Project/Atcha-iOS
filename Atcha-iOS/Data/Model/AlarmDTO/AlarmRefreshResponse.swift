@@ -19,8 +19,8 @@ extension AlarmRefreshResponse {
         return AlarmRefresh(
             departureTime: departureTime,
             updatedAt: updatedAt,
-            lastRouteId: lastRouteId,
-            isReal: isReal
+            isReal: isReal,
+            lastRouteId: lastRouteId
         )
     }
 }
