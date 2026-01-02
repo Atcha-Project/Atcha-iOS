@@ -11,7 +11,7 @@ struct AlarmRefreshResponse: Codable {
     let departureTime: String?
     let updatedAt: String?
     let lastRouteId: String?
-    let isReal: Bool?
+    let isReal: String?
 }
 
 extension AlarmRefreshResponse {
