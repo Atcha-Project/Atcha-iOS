@@ -26,7 +26,7 @@ final class AmplitudeManager {
     func start(
         environment: Environment = .auto,
         userId: Int? = nil,
-        autocapture: AutocaptureOptions = .sessions,
+        autocapture: AutocaptureOptions = [.sessions],
         logLevel: LogLevelEnum = .WARN
     ) {
         let resolvedEnv = environment.resolved()
