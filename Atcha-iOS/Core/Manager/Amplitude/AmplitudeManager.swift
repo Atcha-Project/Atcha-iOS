@@ -20,7 +20,6 @@ final class AmplitudeManager {
     private(set) var environment: Environment = .dev
     
     private var timers: [String: Date] = [:]
-    
     // MARK: Public API
     
     func start(
@@ -60,6 +59,9 @@ final class AmplitudeManager {
         }
     }
     
+    func track(_ event: AmplitudeEvent, _ properties: [String: Any?] = [:]) {
+        track(event.rawValue, properties)
+    }
     
     func track(_ event: String, _ properties: [String: Any?] = [:]) {
         queue.async { [weak self] in
@@ -69,10 +71,10 @@ final class AmplitudeManager {
         }
     }
     
-    func trackScreen(_ name: String, _ properties: [String: Any?] = [:]) {
+    func trackScreen(_ screen: ScreenName, _ properties: [String: Any?] = [:]) {
         var props = properties
-        props["screen_name"] = name
-        track("screen_viewed", props)
+        props[AmplitudePropertyKey.screenName.rawValue] = screen.rawValue  
+        track("screen_view", props)
     }
     
     func identify(set: [String: Any?] = [:],
@@ -157,8 +159,7 @@ private extension AmplitudeManager {
 
 // MARK: - UIKit convenience
 extension UIViewController {
-    func amp_trackScreen(_ name: String? = nil, extra: [String: Any?] = [:]) {
-        let screen = name ?? String(describing: type(of: self))
+    func amp_trackScreen(_ screen: ScreenName, extra: [String: Any?] = [:]) {
         AmplitudeManager.shared.trackScreen(screen, extra)
     }
 }
@@ -187,4 +188,13 @@ extension AmplitudeManager {
             client.identify(identify: identify)
         }
     }
+}
+
+
+typealias AmpProps = [String: Any?]
+
+func props(_ items: (String, Any)... ) -> AmpProps {
+    var dict: AmpProps = [:]
+    items.forEach { dict[$0.0] = $0.1 }
+    return dict
 }

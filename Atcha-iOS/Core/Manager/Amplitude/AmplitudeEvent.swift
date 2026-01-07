@@ -34,11 +34,34 @@ enum AmplitudeEvent: String {
     case logout = "logout"
     case withdraw = "withdraw"
     case alarm_cancel = "alarm_cancel"
-    case screen_view = "screen_view"
+}
+
+enum AmplitudePropertyKey: String {
+    case alertType = "alert_type"
+    case dwellTime = "dwell_time"
+    case screenName = "screen_name"
+    case withdrawReason = "withdraw_reason"
+}
+
+enum AmplitudeProperty {
+    static func alertType(_ type: AlertType) -> (String, Any) {
+        (AmplitudePropertyKey.alertType.rawValue, type.rawValue)
+    }
+    
+    static func dwellTime(seconds: Int) -> (String, Any) {
+        (AmplitudePropertyKey.dwellTime.rawValue, seconds)
+    }
+    
+    static func screenName(_ screen: ScreenName) -> (String, Any) {
+        (AmplitudePropertyKey.screenName.rawValue, screen.rawValue)
+    }
+    
+    static func withdrawReason(_ reason: WithdrawReason) -> (String, Any) {
+        (AmplitudePropertyKey.withdrawReason.rawValue, reason.rawValue)
+    }
 }
 
 enum ScreenName: String {
-    case splash = "스플래쉬"
     case home_register = "우리집 등록"
     case home_search = "우리집 검색"
     case home_setting = "우리집 설정"
@@ -52,4 +75,19 @@ enum ScreenName: String {
     case origin_search = "출발지 검색"
     case origin_setting = "출발지 설정"
     case alarm = "알람"
+}
+
+enum AlertType: String {
+    case soundAndVibration = "소리 및 진동"
+    case onlySound = "소리"
+    case onlyVibration = "진동"
+}
+
+enum WithdrawReason: String {
+    case schedule_not_match = "막차 시간이 안맞아요"
+    case rarely_ride = "막차를 자주 안 타요"
+    case frequent_error = "잦은 에러를 겪었어요"
+    case hard_to_find = "막차를 찾기가 번거로워요"
+    case dont_know_how = "앱 사용법을 모르겠어요"
+    case map_app_enough = "기존에 쓰던 지도 앱으로 충분해요"
 }

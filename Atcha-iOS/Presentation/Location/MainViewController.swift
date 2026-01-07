@@ -108,6 +108,8 @@ final class MainViewController: BaseViewController<MainViewModel>,
         if !isAlarmRegistered {
             
         }
+        
+        AmplitudeManager.shared.trackScreen(.main)
     }
     
     override func viewDidLoad() {

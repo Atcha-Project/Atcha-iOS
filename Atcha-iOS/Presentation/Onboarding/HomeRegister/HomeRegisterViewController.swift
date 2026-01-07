@@ -35,13 +35,15 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
         setupAutoLayout()
         addGesture()
     }
-    
+        
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
         if viewModel.context == .onboarding {
             viewModel.requestAuth()
         }
+        
+        AmplitudeManager.shared.trackScreen(.home_register)
     }
     
     // MARK: - ViewModel 바인딩
@@ -221,11 +223,13 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
     // MARK: - 장소 검색
     @objc private func handleSearchTapped() {
         viewModel.routeHandler?(.searchAdress)
+        AmplitudeManager.shared.track(.search_location_click)
     }
     
     // MARK: - 현위치 찾기
     @objc private func handleCurrentLocationTapped() {
         viewModel.routeHandler?(.homeRegister(useDeviceLocation: true))
+        AmplitudeManager.shared.track(.current_location_click)
     }
     
     // MARK: - UI 렌더링

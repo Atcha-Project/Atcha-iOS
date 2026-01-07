@@ -29,8 +29,16 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
         AlarmManager.shared.stopPreview()
         if let selectedOption = self.selectedOption {
             AlarmManager.shared.setAlarmOption(selectedOption)
+            
+            AmplitudeManager.shared.track(
+                    .alarm_alert_type_setting,
+                    props(
+                        AmplitudeProperty.alertType(self.mapAlertType(selectedOption))
+                    )
+                )
         }
         AlarmManager.shared.setAlarmVolume(settingBottomView.getVolume())
+        
         switch self.viewModel.context {
         case .onboarding:
             self.viewModel.signUp()
@@ -38,6 +46,12 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
             self.onSettingComplete?(true)
             self.navigationController?.popViewController(animated: true)
         }
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        AmplitudeManager.shared.trackScreen(.alarm_setting)
     }
     
     override func viewDidLoad() {
@@ -62,7 +76,7 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
             }
             .store(in: &cancellables)
     }
-
+    
     // 공통 적용 함수로 통합
     private func applyContext(_ context: PushAlarmContext, animated: Bool) {
         let updates = {
@@ -74,7 +88,7 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
             }
             self.view.layoutIfNeeded()
         }
-
+        
         if animated {
             UIView.animate(withDuration: 0.2, animations: updates)
         } else {
@@ -173,7 +187,7 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
             
             listView.onSelect = { [weak self] selected in
                 guard let self else { return }
-
+                
                 self.alarmCheckmarkLists.forEach {
                     $0.setRadio(false)
                     $0.backgroundColor = defaultBackgroundColor
@@ -215,6 +229,14 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
             settingBottomView.isHidden = false
         } else {
             settingBottomView.isHidden = true
+        }
+    }
+    
+    private func mapAlertType(_ option: PushAlarmOption) -> AlertType {
+        switch option {
+        case .onlyVibration: return .onlyVibration
+        case .onlySound:     return .onlySound
+        case .both:          return .soundAndVibration
         }
     }
     
