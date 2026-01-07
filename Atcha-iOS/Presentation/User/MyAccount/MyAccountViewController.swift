@@ -36,6 +36,10 @@ final class MyAccountViewController: BaseViewController<MyAccountViewModel> {
         setupAutoLayout()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        AmplitudeManager.shared.trackScreen(.account)
+    }
+    
     private func setupUI() {
         view.addSubViews(navigationBar,
                          collectionView)

@@ -71,6 +71,11 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
         viewModel.startCourseStream()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        AmplitudeManager.shared.trackScreen(.course_search)
+    }
+    
+    
     // MARK: ViewModel 바인딩
     private func bind() {
         // 1. 로딩 상태에 따라 로딩뷰 제어

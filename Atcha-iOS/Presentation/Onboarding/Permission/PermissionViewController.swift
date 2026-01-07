@@ -156,6 +156,7 @@ extension PermissionViewController {
         viewModel.askLocationPermission()
         
         AmplitudeManager.shared.track(.permission_setting)
+        AmplitudeManager.shared.timerStart("signup_dwell")
     }
 }
 

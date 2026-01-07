@@ -36,6 +36,13 @@ final class AlarmSettingViewController: BaseViewController<AlarmSettingViewModel
 
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        AmplitudeManager.shared.trackScreen(.alarm_setting)
+    }
+    
+    
     private func setupUI() {
         view.addSubViews(navigationBar,
                          collectionView)

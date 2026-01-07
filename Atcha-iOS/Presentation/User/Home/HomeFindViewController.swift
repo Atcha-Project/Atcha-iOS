@@ -21,13 +21,6 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
     
     var routeHandler: ((HomeRouter) -> Void)?
     
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        
-        AmplitudeManager.shared.trackScreen(.home_setting)
-    }
-    
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -35,6 +28,12 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
         setupAutoLayout()
         setupBackButton()
         bindViewModel()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        AmplitudeManager.shared.trackScreen(.home_setting)
     }
     
     override func viewWillDisappear(_ animated: Bool) {

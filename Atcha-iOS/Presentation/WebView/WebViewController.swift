@@ -52,6 +52,12 @@ final class WebViewController: BaseViewController<BaseViewModel> {
         bind()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        if type == .term {
+            AmplitudeManager.shared.trackScreen(.terms)
+        }
+    }
+    
     private func setupUI() {
         view.addSubViews(navigationBar, webView)
         webView.scrollView.contentInsetAdjustmentBehavior = .never

@@ -46,6 +46,10 @@ final class LockViewController: BaseViewController<LockViewModel> {
         gradient.frame = gradientView.bounds
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        AmplitudeManager.shared.trackScreen(.alarm)
+    }
+    
     // MARK: - ViewModel 바인딩
     private func bind() {
         viewModel.$taxiFare

@@ -68,6 +68,7 @@ enum ScreenName: String {
     case alarm_setting = "알람 설정"
     case mypage = "마이페이지"
     case account = "내 계정"
+    case withdraw = "계정 탈퇴"
     case terms = "약관"
     case main = "메인"
     case course_search = "경로 탐색"

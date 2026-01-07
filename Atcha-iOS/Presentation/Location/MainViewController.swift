@@ -299,9 +299,12 @@ extension MainViewController {
     private func handleSearchViewAction(_ action: LastTrainSearchBottomView.Action) {
         switch action {
         case .currentTapped:
+            AmplitudeManager.shared.track(.origin_search_click)
+            
             viewModel.handleRoute(route: .changeCourse(
                 location: Location(name: "", lat: 0.0, lon: 0.0, businessCategory: "", address: "", radius: "")))
         case .searchTapped:
+            AmplitudeManager.shared.track(.course_search_click)
             
             guard let startCoord = viewModel.currentLocation else {
                 view.showToast(message: "현재 위치를 확인 중이에요. 잠시 후 다시 시도해 주세요.")

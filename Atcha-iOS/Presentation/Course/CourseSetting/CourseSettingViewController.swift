@@ -27,6 +27,10 @@ final class CourseSettingViewController: BaseViewController<CourseSettingViewMod
         bindView()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        AmplitudeManager.shared.trackScreen(.origin_setting)
+    }
+    
     private func setupUI() {
         view.addSubViews(
             mapContainerView,

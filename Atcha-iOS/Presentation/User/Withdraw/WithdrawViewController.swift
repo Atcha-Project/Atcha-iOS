@@ -31,6 +31,8 @@ class WithdrawViewController: BaseViewController<WithdrawViewModel> {
         if #available(iOS 16.0, *) {
             view.keyboardLayoutGuide.followsUndockedKeyboard = true
         }
+        
+        AmplitudeManager.shared.trackScreen(.withdraw)
     }
     
     override func viewDidLoad() {

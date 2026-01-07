@@ -40,6 +40,10 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         registerGradient.frame = registerContainer.bounds
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        AmplitudeManager.shared.trackScreen(.course_detail)
+    }
+    
     private func setupUI(context: DetailRouteContext) {
         switch context {
         case .beforeRegister:
