@@ -71,22 +71,6 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
         viewModel.startCourseStream()
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        AmplitudeManager.shared.timerStart("coursesearch_view_duration")
-        
-    }
-    
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        
-        let seconds = AmplitudeManager.shared.timerEndSeconds("coursesearch_view_duration")
-        AmplitudeManager.shared.track(
-            AmplitudeEvent.coursesearch_view_duration.rawValue,
-            ["duration": seconds]
-        )
-    }
-    
     // MARK: ViewModel 바인딩
     private func bind() {
         // 1. 로딩 상태에 따라 로딩뷰 제어
@@ -272,7 +256,6 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
                     viewModel.alarmRegister(alarmRequest)
                     viewModel.getAlarmTapped?(alarmTapped.0, alarmTapped.1)
                     
-                    amplitudeActions(r)
                     navigationController?.popToRootViewController(animated: true)
                 }
             }
@@ -291,13 +274,6 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
         // 버튼 탭 시 확장/축소 상태 변경 핸들러 연결
         cell.onToggleExpanded = { [weak self] in
             self?.viewModel.toggleExpanded(for: model)
-            
-            AmplitudeManager.shared.track(
-                AmplitudeEvent.coursesearch_toggle.rawValue,
-                [
-                    "toggle": 1
-                ]
-            )
         }
         
         return cell
@@ -386,7 +362,6 @@ extension CourseSearchViewController {
             
             self.viewModel.alarmRegister(alarmRequest)
             self.viewModel.getAlarmTapped?(alarmTapped.0, alarmTapped.1)
-            self.amplitudeActions(rank)
             UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.popRegister.rawValue)
             
         }, for: .touchUpInside)
@@ -410,16 +385,7 @@ extension CourseSearchViewController {
             
             self.viewModel.alarmRegister(alarmRequest)
             self.viewModel.getAlarmTapped?(alarmTapped.0, alarmTapped.1)
-            self.amplitudeActions(rank)
             UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.popRegister.rawValue)
-            
-            AmplitudeManager.shared.track(
-                AmplitudeEvent.alert_end_popup_2.rawValue,
-                [
-                    "screen_name": "coursesearch",
-                    "clicked": 1
-                ]
-            )
             
         }, for: .touchUpInside)
         
@@ -431,34 +397,5 @@ extension CourseSearchViewController {
         
         popupVC.modalPresentationStyle = .overFullScreen
         present(popupVC, animated: false)
-    }
-    
-    private func amplitudeActions(_ rank: RouteRanks) {
-        let second = AmplitudeManager.shared.timerEndSeconds("notification_registration_duration")
-        
-        AmplitudeManager.shared.track(
-            AmplitudeEvent.notification_registration_duration.rawValue ,
-            [
-                "duration": second
-            ]
-        )
-        
-        AmplitudeManager.shared.track(
-            AmplitudeEvent.alarm_registered.rawValue,
-            [
-                "later_departure_time_rank": rank.laterDepartureTimeRank,
-                "minimal_walk_rank":        rank.minimalWalkRank,
-                "minimal_total_time_rank":  rank.minimalTotalTimeRank,
-                "transfer_count":           rank.transferCount
-            ]
-        )
-        
-        AmplitudeManager.shared.track(
-            AmplitudeEvent.alert_button.rawValue,
-            [
-                "screen_name": "coursesearch",
-                "clicked": 1
-            ]
-        )
     }
 }

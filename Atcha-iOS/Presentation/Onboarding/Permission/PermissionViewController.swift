@@ -153,13 +153,6 @@ final class PermissionViewController: BaseViewController<PermissionViewModel> {
 
 extension PermissionViewController {
     @objc private func handleRegiTap() {
-        AmplitudeManager.shared.track(
-            AmplitudeEvent.home_register_permission_clicked.rawValue,
-            [
-                "clicked": 1
-            ]
-        )
-        
         viewModel.askLocationPermission()
     }
 }
