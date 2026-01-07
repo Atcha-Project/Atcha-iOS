@@ -59,6 +59,8 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
                 ($0 as? BusRouteCell)?.ensureBusOnTop()
             }
         }
+        
+        AmplitudeManager.shared.trackScreen(.bus_detail)
     }
     
     override func viewDidDisappear(_ animated: Bool) {
@@ -127,6 +129,7 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
     private func bindActions() {
         headerView.onInfoTap = { [weak self] in
             self?.viewModel.didTapInfo()
+            AmplitudeManager.shared.track(.bus_info_click)
         }
     }
     

@@ -27,11 +27,17 @@ final class AlarmManager {
     private var currentSoundFile: String?
     var selectedOption: PushAlarmOption = .onlySound
     
+    private var interruptionObserver: NSObjectProtocol?
+    private var silenceHintObserver: NSObjectProtocol?
+    private var shouldKeepBackgroundAudio = false
+    private var isPreviewing = false
+    
     // MARK: - Init
     private init() {
         loadStoredVolume()
         loadStoredAlarmOption()
         setupAudioSession()
+        startObservingAudioSession()
     }
     
     // MARK: - Public: Volume / Option
@@ -53,7 +59,7 @@ final class AlarmManager {
     }
     
     func ensureBackgroundSilentRunning() {
-        if currentSoundFile != "silent" {
+        if currentSoundFile != "silent" || audioPlayer?.isPlaying != true {
             playLocalMusic(named: "silent", withExtension: "mp3")
         }
     }
@@ -90,6 +96,7 @@ final class AlarmManager {
     
     /// 완전 정지: 예약/타이머/진동/알림/오디오 모두 끊기
     func stopAlarm(keepSilent: Bool = false) {
+        shouldKeepBackgroundAudio = false
         pendingStartWorkItem?.cancel()
         pendingStartWorkItem = nil
         
@@ -225,34 +232,34 @@ extension AlarmManager {
     }
     
     func scheduleLocalNotification(from dateString: String, title: String, body: String) {
-            let formatter = DateFormatter()
-            formatter.locale = .current
-            formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-
-            guard let targetDate = formatter.date(from: dateString) else {
-                return
-            }
-
-            let tenMinutesBefore = Calendar.current.date(byAdding: .minute, value: -10, to: targetDate)!
-
-            let content = UNMutableNotificationContent()
-            content.title = title
-            content.body = body
-            content.sound = .default
-
-            let triggerDate = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: tenMinutesBefore)
-            let trigger = UNCalendarNotificationTrigger(dateMatching: triggerDate, repeats: false)
-
-            let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
-
-            UNUserNotificationCenter.current().add(request) { error in
-                if let error = error {
-                    print("알림 등록 실패: \(error.localizedDescription)")
-                } else {
-                    print("로컬 알림이 성공적으로 예약되었습니다.")
-                }
+        let formatter = DateFormatter()
+        formatter.locale = .current
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        
+        guard let targetDate = formatter.date(from: dateString) else {
+            return
+        }
+        
+        let tenMinutesBefore = Calendar.current.date(byAdding: .minute, value: -10, to: targetDate)!
+        
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = body
+        content.sound = .default
+        
+        let triggerDate = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: tenMinutesBefore)
+        let trigger = UNCalendarNotificationTrigger(dateMatching: triggerDate, repeats: false)
+        
+        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+        
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("알림 등록 실패: \(error.localizedDescription)")
+            } else {
+                print("로컬 알림이 성공적으로 예약되었습니다.")
             }
         }
+    }
 }
 
 // MARK: - Private: Music / Vibration
@@ -357,7 +364,13 @@ private extension AlarmManager {
 
 // MARK: - Public: Preview
 extension AlarmManager {
+    func setAlarmArmed(_ armed: Bool) {
+        shouldKeepBackgroundAudio = armed
+        if armed { ensureBackgroundSilentRunning() }
+    }
+    
     func previewAlarmVolume(_ volume: Float) {
+        isPreviewing = true
         alarmVolume = volume
         
         switch selectedOption {
@@ -387,10 +400,18 @@ extension AlarmManager {
     }
     
     func stopPreview() {
-        audioPlayer?.stop()
-        audioPlayer = nil
+        isPreviewing = false
         stopRepeatingVibration()
-        print("미리듣기 완전 종료")
+        
+        if shouldKeepBackgroundAudio {
+            ensureBackgroundSilentRunning()
+        } else {
+            audioPlayer?.stop()
+            audioPlayer = nil
+            currentSoundFile = nil
+        }
+        
+        print("미리듣기 종료 (keep=\(shouldKeepBackgroundAudio))")
     }
 }
 
@@ -416,4 +437,60 @@ extension AlarmManager {
 
 enum AlarmNotificationID {
     static let autoStopInfo = "atcha.alarm.autostop"
+}
+
+extension AlarmManager {
+    private func startObservingAudioSession() {
+        
+        interruptionObserver = NotificationCenter.default.addObserver(
+            forName: AVAudioSession.interruptionNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] noti in
+            self?.handleAudioSessionInterruption(noti)
+        }
+        
+        silenceHintObserver = NotificationCenter.default.addObserver(
+            forName: AVAudioSession.silenceSecondaryAudioHintNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] noti in
+            self?.handleSilenceSecondaryAudioHint(noti)
+        }        }
+    
+    private func handleAudioSessionInterruption(_ notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let raw = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
+              let type = AVAudioSession.InterruptionType(rawValue: raw) else { return }
+        
+        switch type {
+        case .began:
+            print("오디오 Interruption 시작")
+            pauseMusic()
+            
+        case .ended:
+            print("오디오 Interruption 종료")
+            setupAudioSession()
+            ensureBackgroundSilentRunning()
+        @unknown default:
+            break
+        }
+    }
+    
+    private func handleSilenceSecondaryAudioHint(_ notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let raw = userInfo[AVAudioSessionSilenceSecondaryAudioHintTypeKey] as? UInt,
+              let type = AVAudioSession.SilenceSecondaryAudioHintType(rawValue: raw) else { return }
+        
+        switch type {
+        case .begin:
+            print("오디오 Silence 시작")
+            pauseMusic()
+        case .end:
+            print("오디오 Silence 종료")
+            ensureBackgroundSilentRunning()
+        @unknown default:
+            break
+        }
+    }
 }

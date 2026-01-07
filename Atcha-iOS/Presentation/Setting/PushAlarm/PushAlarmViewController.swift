@@ -26,18 +26,20 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
                                                            size: .h52,
                                                            style: .filled(.disabled)) { [weak self] in
         guard let self else { return }
-        AlarmManager.shared.stopPreview()
         if let selectedOption = self.selectedOption {
             AlarmManager.shared.setAlarmOption(selectedOption)
             
             AmplitudeManager.shared.track(
-                    .alarm_alert_type_setting,
-                    props(
-                        AmplitudeProperty.alertType(self.mapAlertType(selectedOption))
-                    )
+                .alarm_alert_type_setting,
+                props(
+                    AmplitudeProperty.alertType(self.mapAlertType(selectedOption))
                 )
+            )
         }
         AlarmManager.shared.setAlarmVolume(settingBottomView.getVolume())
+        
+        AlarmManager.shared.setAlarmArmed(true)
+        AlarmManager.shared.stopPreview()
         
         switch self.viewModel.context {
         case .onboarding:

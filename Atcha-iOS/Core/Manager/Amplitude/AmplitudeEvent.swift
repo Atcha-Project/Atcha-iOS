@@ -76,6 +76,8 @@ enum ScreenName: String {
     case origin_search = "출발지 검색"
     case origin_setting = "출발지 설정"
     case alarm = "알람"
+    case bus_detail = "버스 경로"
+    case bus_info = "버스 정보"
 }
 
 enum AlertType: String {

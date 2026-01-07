@@ -197,6 +197,7 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         
         bottomSheet.onBusDetail = { [weak self] info in
             self?.viewModel.onBusDetail?(info)
+            AmplitudeManager.shared.track(.bus_detail_click)
         }
         
         bottomSheet.getNewBusRealTime = { [weak self] in

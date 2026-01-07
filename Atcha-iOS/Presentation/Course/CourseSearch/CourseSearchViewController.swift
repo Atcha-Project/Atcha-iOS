@@ -73,6 +73,7 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
     
     override func viewDidAppear(_ animated: Bool) {
         AmplitudeManager.shared.trackScreen(.course_search)
+        AmplitudeManager.shared.timerStart("alarm_dwell")
     }
     
     
@@ -261,6 +262,13 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
                     viewModel.alarmRegister(alarmRequest)
                     viewModel.getAlarmTapped?(alarmTapped.0, alarmTapped.1)
                     
+                    let dwellSeconds = AmplitudeManager.shared.timerEndSeconds("alarm_dwell")
+                    AmplitudeManager.shared.track(
+                        .alarm_register,
+                        props(
+                            AmplitudeProperty.dwellTime(seconds: dwellSeconds)
+                        )
+                    )
                     navigationController?.popToRootViewController(animated: true)
                 }
             }
@@ -274,11 +282,13 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
             let busInfo: [BusDetailInfo] = model.course.toBusInfos()
             viewModel.getDetailTapped?(viewModel.startAddress, LegInfo(pathInfo: pathInfo, trafficInfo: tafficInfo, busInfo: busInfo))
             viewModel.saveStartInfo(model.course.routeId ?? "")
+            AmplitudeManager.shared.track(.course_detail_click)
         }
         
         // 버튼 탭 시 확장/축소 상태 변경 핸들러 연결
         cell.onToggleExpanded = { [weak self] in
             self?.viewModel.toggleExpanded(for: model)
+            AmplitudeManager.shared.track(.course_detail_toggle_click)
         }
         
         return cell
@@ -324,6 +334,7 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
     
     @objc private func didTapRouteStack() {
         viewModel.didTapRouteLabelStack()
+        AmplitudeManager.shared.track(.course_change_click)
     }
 }
 
@@ -369,6 +380,13 @@ extension CourseSearchViewController {
             self.viewModel.getAlarmTapped?(alarmTapped.0, alarmTapped.1)
             UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.popRegister.rawValue)
             
+            let dwellSeconds = AmplitudeManager.shared.timerEndSeconds("alarm_dwell")
+            AmplitudeManager.shared.track(
+                .long_interval_alarm_register,
+                props(
+                    AmplitudeProperty.dwellTime(seconds: dwellSeconds)
+                )
+            )
         }, for: .touchUpInside)
         
         popupVC.cancelButton.addAction(UIAction { [weak self, weak popupVC] _ in
@@ -391,6 +409,14 @@ extension CourseSearchViewController {
             self.viewModel.alarmRegister(alarmRequest)
             self.viewModel.getAlarmTapped?(alarmTapped.0, alarmTapped.1)
             UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.popRegister.rawValue)
+            
+            let dwellSeconds = AmplitudeManager.shared.timerEndSeconds("alarm_dwell")
+            AmplitudeManager.shared.track(
+                .another_alarm_register,
+                props(
+                    AmplitudeProperty.dwellTime(seconds: dwellSeconds)
+                )
+            )
             
         }, for: .touchUpInside)
         
