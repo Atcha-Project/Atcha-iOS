@@ -47,8 +47,10 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
     private func setupUI(context: DetailRouteContext) {
         switch context {
         case .beforeRegister:
+            bottomSheet.bottomPadding(80)
             setupBeforeUI()
         case .afterReigster:
+            bottomSheet.bottomPadding(0)
             setupAfterUI()
         }
     }

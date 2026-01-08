@@ -333,9 +333,9 @@ class BusRouteCell: UICollectionViewCell {
             }
             
             if busType == .광역, let remainSeats = matchedBus.remainSeats {
-                let remainAttr = AtchaFont.B7_M_13(
+                let remainAttr = AtchaFont.M_11(
                     lineHeight: 0,
-                    "(\(remainSeats)석)",
+                    "\(remainSeats)석",
                     color: AtchaColor.Bus.widearea
                 )
                 combined.append(remainAttr)
