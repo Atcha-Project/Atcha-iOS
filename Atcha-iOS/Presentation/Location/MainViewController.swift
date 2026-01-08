@@ -363,13 +363,14 @@ extension MainViewController {
             self.showOrUpdateImmediateBalloon(
                 .text(top: nil, bottom: "위치를 변경하려면 알람을 종료해야 해요")
             )
-        
+            AmplitudeManager.shared.track(.course_click)
         case .reloadTapped:
             viewModel.refreshDepatrueTime()
         case .timeTapped:
             self.showOrUpdateImmediateBalloon(
                 .text(top: "이때 자리에서 출발하면 돼요", bottom: "교통 상황에 따라 시간이 달라질 수 있어요")
             )
+            AmplitudeManager.shared.track(.origin_time_click)
         }
     }
     
@@ -935,6 +936,7 @@ extension MainViewController {
         case .pre:
             print("")
         case .next:
+            AmplitudeManager.shared.track(.character_click)
             let now = CACurrentMediaTime()
             let shouldRefreshFare = (now - lastFareRefreshTime) > fareRefreshInterval
             

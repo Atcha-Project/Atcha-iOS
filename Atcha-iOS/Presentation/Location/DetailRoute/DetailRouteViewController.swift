@@ -301,6 +301,13 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             } else {
                 viewModel.alarmRegister(alarmRequest)
                 viewModel.getAlarmTapped?(viewModel.address, viewModel.infos)
+                let dwellSeconds = AmplitudeManager.shared.timerEndSeconds("alarm_dwell")
+                AmplitudeManager.shared.track(
+                    .another_alarm_register,
+                    props(
+                        AmplitudeProperty.dwellTime(seconds: dwellSeconds)
+                    )
+                )
             }
         }
     }
@@ -323,6 +330,7 @@ extension DetailRouteViewController {
     @objc private func didTapReload() {
         refreshButton.start()
         viewModel.fetchInfo()
+        AmplitudeManager.shared.track(.course_refresh_click)
     }
 }
 
@@ -355,6 +363,14 @@ extension DetailRouteViewController {
             self.viewModel.alarmRegister(alarmRequest)
             self.viewModel.getAlarmTapped?(self.viewModel.address, self.viewModel.infos)
             UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.popRegister.rawValue)
+            
+            let dwellSeconds = AmplitudeManager.shared.timerEndSeconds("alarm_dwell")
+            AmplitudeManager.shared.track(
+                .another_alarm_register,
+                props(
+                    AmplitudeProperty.dwellTime(seconds: dwellSeconds)
+                )
+            )
         }, for: .touchUpInside)
         
         popupVC.cancelButton.addAction(UIAction { [weak self, weak popupVC] _ in
@@ -376,6 +392,14 @@ extension DetailRouteViewController {
             self.viewModel.alarmRegister(alarmRequest)
             self.viewModel.getAlarmTapped?(self.viewModel.address, self.viewModel.infos)
             UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.popRegister.rawValue)
+            
+            let dwellSeconds = AmplitudeManager.shared.timerEndSeconds("alarm_dwell")
+            AmplitudeManager.shared.track(
+                .another_alarm_register,
+                props(
+                    AmplitudeProperty.dwellTime(seconds: dwellSeconds)
+                )
+            )
         }, for: .touchUpInside)
         
         popupVC.cancelButton.addAction(UIAction { [weak self, weak popupVC] _ in

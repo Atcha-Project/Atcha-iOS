@@ -19,6 +19,13 @@ final class WithdrawViewModel: BaseViewModel {
         Task {
             do {
                 let _ = try await signOutUseCase.excute(request)
+                let reason = request.reason?
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                
+                AmplitudeManager.shared.track(
+                    .withdraw,
+                    [AmplitudePropertyKey.withdrawReason.rawValue: reason ?? "unknown"]
+                )
                 AmplitudeManager.shared.reset()
                 
                 AppDIContainer.shared.tokenStorage.clearAllTokens()
