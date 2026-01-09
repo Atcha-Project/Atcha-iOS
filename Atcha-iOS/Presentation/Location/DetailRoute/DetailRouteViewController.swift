@@ -40,11 +40,17 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         registerGradient.frame = registerContainer.bounds
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        AmplitudeManager.shared.trackScreen(.course_detail)
+    }
+    
     private func setupUI(context: DetailRouteContext) {
         switch context {
         case .beforeRegister:
+            bottomSheet.bottomPadding(80)
             setupBeforeUI()
         case .afterReigster:
+            bottomSheet.bottomPadding(0)
             setupAfterUI()
         }
     }
@@ -193,6 +199,7 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         
         bottomSheet.onBusDetail = { [weak self] info in
             self?.viewModel.onBusDetail?(info)
+            AmplitudeManager.shared.track(.bus_detail_click)
         }
         
         bottomSheet.getNewBusRealTime = { [weak self] in
@@ -296,12 +303,19 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             } else {
                 viewModel.alarmRegister(alarmRequest)
                 viewModel.getAlarmTapped?(viewModel.address, viewModel.infos)
-                amplitudeActions()
+                let dwellSeconds = AmplitudeManager.shared.timerEndSeconds("alarm_dwell")
+                AmplitudeManager.shared.track(
+                    .another_alarm_register,
+                    props(
+                        AmplitudeProperty.dwellTime(seconds: dwellSeconds)
+                    )
+                )
             }
         }
     }
     
     deinit {
+        activePermissionToast?.hideImmediately()
         mapContainerView.deinitMapView()
     }
 }
@@ -313,12 +327,14 @@ extension DetailRouteViewController {
     }
     
     @objc private func didTapLocationButton() {
+        ensureLocationPermissionOrShowToast()
         viewModel.setupLocation()
     }
     
     @objc private func didTapReload() {
         refreshButton.start()
         viewModel.fetchInfo()
+        AmplitudeManager.shared.track(.course_refresh_click)
     }
 }
 
@@ -350,8 +366,15 @@ extension DetailRouteViewController {
             popupVC?.dismiss(animated: false)
             self.viewModel.alarmRegister(alarmRequest)
             self.viewModel.getAlarmTapped?(self.viewModel.address, self.viewModel.infos)
-            self.amplitudeActions()
             UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.popRegister.rawValue)
+            
+            let dwellSeconds = AmplitudeManager.shared.timerEndSeconds("alarm_dwell")
+            AmplitudeManager.shared.track(
+                .another_alarm_register,
+                props(
+                    AmplitudeProperty.dwellTime(seconds: dwellSeconds)
+                )
+            )
         }, for: .touchUpInside)
         
         popupVC.cancelButton.addAction(UIAction { [weak self, weak popupVC] _ in
@@ -372,14 +395,14 @@ extension DetailRouteViewController {
             popupVC?.dismiss(animated: false)
             self.viewModel.alarmRegister(alarmRequest)
             self.viewModel.getAlarmTapped?(self.viewModel.address, self.viewModel.infos)
-            self.amplitudeActions()
             UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.popRegister.rawValue)
+            
+            let dwellSeconds = AmplitudeManager.shared.timerEndSeconds("alarm_dwell")
             AmplitudeManager.shared.track(
-                AmplitudeEvent.alert_end_popup_2.rawValue,
-                [
-                    "screen_name": "itinerary",
-                    "clicked": 1
-                ]
+                .another_alarm_register,
+                props(
+                    AmplitudeProperty.dwellTime(seconds: dwellSeconds)
+                )
             )
         }, for: .touchUpInside)
         
@@ -392,24 +415,4 @@ extension DetailRouteViewController {
         popupVC.modalPresentationStyle = .overFullScreen
         present(popupVC, animated: false)
     }
-    
-    private func amplitudeActions() {
-        let second = AmplitudeManager.shared.timerEndSeconds("notification_registration_duration")
-        
-        AmplitudeManager.shared.track(
-            AmplitudeEvent.notification_registration_duration.rawValue ,
-            [
-                "duration": second
-            ]
-        )
-        
-        AmplitudeManager.shared.track(
-            AmplitudeEvent.alert_button.rawValue,
-            [
-                "screen_name": "itinerary",
-                "clicked": 1
-            ]
-        )
-    }
-    
 }

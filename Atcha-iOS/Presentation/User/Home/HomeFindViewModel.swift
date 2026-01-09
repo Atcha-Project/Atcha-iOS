@@ -63,6 +63,8 @@ final class HomeFindViewModel: BaseViewModel {
     }
     
     func handleRegister() {
+        AmplitudeManager.shared.track(.home_register)
+        
         switch context {
         case .onboarding:
             saveCurrentLoaction()
@@ -70,7 +72,7 @@ final class HomeFindViewModel: BaseViewModel {
         case .myPage:
             guard let currentLocation,
                   let address else {
-                print("⚠️ 집주소 변경 불가: 값 없음")
+                print("집주소 변경 불가: 값 없음")
                 return
             }
             

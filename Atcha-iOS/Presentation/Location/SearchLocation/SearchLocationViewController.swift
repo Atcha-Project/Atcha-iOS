@@ -30,6 +30,8 @@ final class SearchLocationViewController: BaseViewController<SearchLocationViewM
         if #available(iOS 16.0, *) {
             view.keyboardLayoutGuide.followsUndockedKeyboard = true
         }
+        
+        AmplitudeManager.shared.trackScreen(.home_search)
     }
     
     override func viewDidLoad() {

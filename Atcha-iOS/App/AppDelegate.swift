@@ -33,7 +33,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         AmplitudeManager.shared.start(
             environment: .auto,
             userId: savedId,
-            autocapture: [],
+            autocapture: [.sessions, .appLifecycles],
             logLevel: .WARN
         )
         AmplitudeManager.shared.flush()
@@ -46,6 +46,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         if let savedId = UserDefaultsWrapper.shared.integer(forKey: UserDefaultsWrapper.Key.userId.rawValue) {
             AmplitudeManager.shared.bindUser(id: String(savedId))
         }
+        
+        _ = RefreshObserver.shared
         
         return true
     }

@@ -433,24 +433,10 @@ final class CourseCell: UICollectionViewCell {
     // MARK: - Course Detail View Handler
     @objc private func detailTapped() {
         onDetailTapped?()
-        AmplitudeManager.shared.track(
-            AmplitudeEvent.coursesearch_card.rawValue,
-            [
-                "card_expand": 1,
-                "card_viewdetails": 0
-            ]
-        )
     }
     
     @objc private func detailLabelTapped() {
         onDetailTapped?()
-        AmplitudeManager.shared.track(
-            AmplitudeEvent.coursesearch_card.rawValue,
-            [
-                "card_expand": 0,
-                "card_viewdetails": 1
-            ]
-        )
     }
     
     // MARK: - Course Detail Toggle Handler

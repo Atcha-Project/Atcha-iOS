@@ -37,6 +37,10 @@ final class MyPageViewController: BaseViewController<MyPageViewModel> {
         bindViewModel()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        AmplitudeManager.shared.trackScreen(.mypage)
+    }
+    
     private func setupUI() {
         view.addSubViews(navigationBar,
                          bannerImageView,

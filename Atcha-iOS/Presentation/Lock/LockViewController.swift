@@ -20,7 +20,6 @@ final class LockViewController: BaseViewController<LockViewModel> {
     private var lottieAnimationView: LottieAnimationView = LottieAnimationView(name: "Alarm")
     private let gradientView: UIView = UIView()
     private let gradient: CAGradientLayer = CAGradientLayer()
-    private var hasAction = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -41,29 +40,14 @@ final class LockViewController: BaseViewController<LockViewModel> {
         viewModel.refreshTaxiFare()
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        AmplitudeManager.shared.timerStart("lock_action_taken")
-        
-    }
-    
-    override func viewDidDisappear(_ animated: Bool){
-        super.viewDidDisappear(animated)
-        if hasAction == false {
-            AmplitudeManager.shared.timerEndSeconds("lock_action_taken")
-            AmplitudeManager.shared.track(
-                AmplitudeEvent.lock_action_taken.rawValue,
-                [
-                    "action": "N",
-                    "duration": Unit.self
-                ]
-            )
-        }
-    }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         gradient.frame = gradientView.bounds
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        AmplitudeManager.shared.trackScreen(.alarm)
     }
     
     // MARK: - ViewModel 바인딩
@@ -155,7 +139,6 @@ final class LockViewController: BaseViewController<LockViewModel> {
     }
     
     @objc private func startTapped() {
-        hasAction = true
         viewModel.cancelLockScreenTimer()
         AlarmManager.shared.stopAlarm()
         
@@ -164,33 +147,16 @@ final class LockViewController: BaseViewController<LockViewModel> {
         let addressDesc = wrapper.string(forKey: UserDefaultsWrapper.Key.addressDesc.rawValue) ?? ""
         viewModel.routerHandler?(.lockScreen(info: legInfo, address: addressDesc))
         
-        AmplitudeManager.shared.track(
-            AmplitudeEvent.lock_button.rawValue,
-            [
-                "start": 1,
-                "later_route": 0
-            ]
-        )
-        
-        let second = AmplitudeManager.shared.timerEndSeconds("lock_action_taken")
-        
-        AmplitudeManager.shared.track(
-            AmplitudeEvent.lock_action_taken.rawValue,
-            [
-                "action": "Y",
-                "duration": second
-            ]
-        )
-        
         UserDefaultsWrapper.shared.set(
             true,
             forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue
         )
 
+        AmplitudeManager.shared.track(.start_click)
     }
     
     @objc private func detailRouteTapped() {
-        hasAction = true
+
         AlarmManager.shared.stopAlarm()
         
         let wrapper = UserDefaultsWrapper.shared
@@ -198,27 +164,7 @@ final class LockViewController: BaseViewController<LockViewModel> {
         let lon = wrapper.string(forKey: UserDefaultsWrapper.Key.startLon.rawValue) ?? ""
         let address = wrapper.string(forKey: UserDefaultsWrapper.Key.startAddress.rawValue) ?? ""
         
+        AmplitudeManager.shared.track(.later_course_click)
         viewModel.routerHandler?(.courseSearch(startLat: lat, startLon: lon, startAddress: address))
-        
-        AmplitudeManager.shared.track(AmplitudeEvent.lock_button.rawValue)
-        
-        let second = AmplitudeManager.shared.timerEndSeconds("lock_action_taken")
-        
-        AmplitudeManager.shared.track(
-            AmplitudeEvent.lock_button.rawValue,
-            [
-                "start": 0,
-                "later_route": 1
-            ]
-        )
-
-        
-        AmplitudeManager.shared.track(
-            AmplitudeEvent.lock_action_taken.rawValue,
-            [
-                "action": "Y",
-                "duration": second
-            ]
-        )
     }
 }

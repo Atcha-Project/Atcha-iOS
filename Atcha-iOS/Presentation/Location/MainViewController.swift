@@ -40,11 +40,6 @@ final class MainViewController: BaseViewController<MainViewModel>,
     
     private var firstAddress: String?
     
-    // 홈 화면 상호작용 추적용 플래그
-    private var didTouchMap: Int = 0          // 지도 드래그/선택 여부
-    private var didTapCurrentLocation: Int = 0// ‘현위치’ 버튼 사용 여부
-    private var didUseTextInput: Int = 0
-    
     // MARK: - 말풍선 기본 설정
     private var pinnedPreBalloon: BalloonContent?
     private let balloonInitialDelayFirst: TimeInterval = 0.7   // 첫 노출 700ms
@@ -111,8 +106,9 @@ final class MainViewController: BaseViewController<MainViewModel>,
         ) ?? false
         
         if !isAlarmRegistered {
-            AmplitudeManager.shared.timerStart("notification_registration_duration")
+            ensureLocationPermissionOrShowToast()
         }
+        AmplitudeManager.shared.trackScreen(.main)
     }
     
     override func viewDidLoad() {
@@ -196,6 +192,10 @@ final class MainViewController: BaseViewController<MainViewModel>,
         button.contentHorizontalAlignment = .fill
         button.contentVerticalAlignment = .fill
         button.addTarget(self, action: action, for: .touchUpInside)
+    }
+    
+    deinit {
+        activePermissionToast?.hideImmediately()
     }
 }
 
@@ -302,10 +302,12 @@ extension MainViewController {
     private func handleSearchViewAction(_ action: LastTrainSearchBottomView.Action) {
         switch action {
         case .currentTapped:
+            AmplitudeManager.shared.track(.origin_search_click)
+            
             viewModel.handleRoute(route: .changeCourse(
                 location: Location(name: "", lat: 0.0, lon: 0.0, businessCategory: "", address: "", radius: "")))
-            didUseTextInput += 1
         case .searchTapped:
+            AmplitudeManager.shared.track(.course_search_click)
             
             guard let startCoord = viewModel.currentLocation else {
                 view.showToast(message: "현재 위치를 확인 중이에요. 잠시 후 다시 시도해 주세요.")
@@ -330,31 +332,6 @@ extension MainViewController {
             viewModel.handleRoute(route: .courseSearch(
                 startLat: "", startLon: "", startAddress: ""
             ))
-            
-            if didTouchMap - 2 == 0 && didTapCurrentLocation == 0 && didUseTextInput == 0 {
-                AmplitudeManager.shared.track(
-                    AmplitudeEvent.home_coursesearch_entered.rawValue,
-                    [
-                        "entered_direct": 1,
-                        "entered_with_map_drag": 0,
-                        "entered_with_current_location": 0,
-                        "entered_with_input": 0
-                        
-                    ]
-                )
-            } else {
-                AmplitudeManager.shared.track(
-                    AmplitudeEvent.home_coursesearch_entered.rawValue,
-                    [
-                        "entered_direct": 0,
-                        "entered_with_map_drag": didTouchMap - 1,
-                        "entered_with_current_location": didTapCurrentLocation,
-                        "entered_with_input": didUseTextInput
-                        
-                    ]
-                )
-            }
-            
         }
     }
     
@@ -378,40 +355,25 @@ extension MainViewController {
         switch action {
         case .exitTapped:
             showAlarmExitPopup()
-            AmplitudeManager.shared.track(
-                AmplitudeEvent.alert_end_popup_1.rawValue,
-                [
-                    "clicked": 1
-                ]
-            )
             
         case .detailRoadMapTapped:
             viewModel.handleRoute(route: .detailRoute(address: "",
                                                       infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: []),
                                                       context: .afterReigster)
             )
-            AmplitudeManager.shared.track(
-                AmplitudeEvent.home_itinerary_clicked.rawValue,
-                [
-                    "clicked": 1
-                ]
-            )
+    
         case .locationTapped:
             self.showOrUpdateImmediateBalloon(
                 .text(top: nil, bottom: "위치를 변경하려면 알람을 종료해야 해요")
             )
-            AmplitudeManager.shared.track(
-                AmplitudeEvent.home_route_clicked.rawValue,
-                [
-                    "clicked": 1
-                ]
-            )
+            AmplitudeManager.shared.track(.course_click)
         case .reloadTapped:
             viewModel.refreshDepatrueTime()
         case .timeTapped:
             self.showOrUpdateImmediateBalloon(
                 .text(top: "이때 자리에서 출발하면 돼요", bottom: "교통 상황에 따라 시간이 달라질 수 있어요")
             )
+            AmplitudeManager.shared.track(.origin_time_click)
         }
     }
     
@@ -492,8 +454,7 @@ extension MainViewController {
             }
             
             UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue)
-            AmplitudeManager.shared.timerEndSeconds("notification_registration_duration")
-            AmplitudeManager.shared.timerStart("notification_registration_duration")
+
         }
     }
     
@@ -559,7 +520,6 @@ extension MainViewController {
         
         let title = (address == firstAddress) ? "현위치: \(address)" : address
         lastTrainSearchView.setupCurrentLocationTitle(title)
-        didTouchMap += 1
     }
     
     private func bindSelectedLocationUpdates() {
@@ -956,11 +916,10 @@ extension MainViewController {
     }
     
     @objc private func didTapLocationButton() {
+        ensureLocationPermissionOrShowToast()
         shouldCenterToCurrentLocationOnce = true
         viewModel.currentLocation = nil
         viewModel.setupLocation()
-        
-        didTapCurrentLocation += 1
     }
     
     private func safeStartJump() {
@@ -979,9 +938,9 @@ extension MainViewController {
         
         switch scope {
         case .pre:
-            AmplitudeManager.shared.track(AmplitudeEvent.character_clicked_after_alarm.rawValue, ["clicked": 1])
-            
+            print("")
         case .next:
+            AmplitudeManager.shared.track(.character_click)
             let now = CACurrentMediaTime()
             let shouldRefreshFare = (now - lastFareRefreshTime) > fareRefreshInterval
             
@@ -1024,8 +983,6 @@ extension MainViewController {
             
             let cycleCount = postAlarmMessages.count - 1
             postAlarmIndex = 1 + ((postAlarmIndex - 1 + 1) % cycleCount)
-            
-            AmplitudeManager.shared.track(AmplitudeEvent.character_clicked_before_alarm.rawValue, ["clicked": 1])
             
         case .none:
             break

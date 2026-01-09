@@ -53,6 +53,8 @@ final class CourseModifyViewController: BaseViewController<CourseModifyViewModel
         if #available(iOS 16.0, *) {
             view.keyboardLayoutGuide.followsUndockedKeyboard = true
         }
+        
+        AmplitudeManager.shared.trackScreen(.origin_search)
     }
     
     override func viewWillAppear(_ animated: Bool) {

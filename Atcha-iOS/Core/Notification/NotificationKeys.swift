@@ -9,5 +9,6 @@ import Foundation
 
 extension Notification.Name {
     static let fcmDidReceiveRefresh = Notification.Name("fcmDidReceiveRefresh")
+    static let refreshDidUpdate = Notification.Name("refreshDidUpdate") 
     static let alarmPushTapped = Notification.Name("alarmPushTapped")
 }

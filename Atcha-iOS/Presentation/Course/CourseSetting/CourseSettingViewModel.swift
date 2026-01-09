@@ -99,6 +99,7 @@ final class CourseSettingViewModel: BaseViewModel {
     }
     
     func userDidTapSettingButton() {
+        AmplitudeManager.shared.track(.origin_setting)
         guard let location = currentLocation else { return }
         if locationInfo.name == "" {
             locationInfo.name = locationInfo.address

@@ -231,12 +231,6 @@ extension LastTrainDepartBottomView {
     
     @objc private func handleDepartTimeTap() {
         actionPublisher.send(.timeTapped)
-        AmplitudeManager.shared.track(
-            AmplitudeEvent.home_departure_time_clicked.rawValue,
-            [
-                "clicked": 1
-            ]
-        )
     }
 }
 

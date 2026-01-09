@@ -61,6 +61,11 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
         bind()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        AmplitudeManager.shared.trackScreen(.bus_info)
+    }
+    
     // MARK: ViewModel 바인딩
     private func bind() {
         viewModel.$operationInfo

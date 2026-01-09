@@ -87,6 +87,53 @@ final class MainCoordinator {
                     modifyVC.applyNewLocation(location)
                 }
                 
+                modifyVM.onLocationSelected = { [weak self] location in
+                    guard let self else { return }
+                    let settingVM = courseDI.makeCourseSettingViewModel(location: location)
+                    
+                    settingVM.onTapLocationButton = { [weak self] locationInfo, coordinate in
+                        guard let self else { return }
+                        
+                        let searchVM = courseDI.makeCourseSearchViewModel(
+                            startLat: "\(coordinate.latitude)",
+                            startLon: "\(coordinate.longitude)",
+                            startAddress: locationInfo.name ?? "주소 없음"
+                        )
+                        
+                        searchVM.getAlarmTapped = { [weak self] address, infos in
+                            guard let self else { return }
+                            self.mainViewModel?.courseSearchResultHandler?(address, infos)
+                            UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue)
+                            self.navigationController.popToMainViewControllerNoAnimation()
+                        }
+                        searchVM.getDetailTapped = { [weak self] address, infos in
+                            guard let self else { return }
+                            self.handle(route: .detailRoute(address: address, infos: infos, context: .beforeRegister))
+                        }
+                        
+                        searchVM.onTapRouteLabelStack = { [weak self] location in
+                            guard let self else { return }
+                            guard let modifyVC = self.navigationController.viewControllers
+                                .first(where: { $0 is CourseModifyViewController }) as? CourseModifyViewController else {
+                                print("CourseModifyViewController not found in stack")
+                                return
+                            }
+                            
+                            modifyVC.applyNewLocation(location)
+                            
+                            UIView.performWithoutAnimation {
+                                self.navigationController.popToViewController(modifyVC, animated: false)
+                            }
+                        }
+                        
+                        let searchVC = courseDI.makeCourseSearchViewController(viewModel: searchVM)
+                        self.navigationController.pushViewController(searchVC, animated: false)
+                    }
+                    
+                    let settingVC = courseDI.makeCourseSettingViewController(viewModel: settingVM)
+                    self.navigationController.pushViewController(settingVC, animated: true)
+                }
+                
                 UIView.performWithoutAnimation {
                     var vcs = self.navigationController.viewControllers
                     if let last = vcs.last, last is CourseSearchViewController {

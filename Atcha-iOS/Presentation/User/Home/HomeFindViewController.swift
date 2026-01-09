@@ -30,6 +30,12 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
         bindViewModel()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        AmplitudeManager.shared.trackScreen(.home_setting)
+    }
+    
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         
@@ -147,6 +153,10 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
             make.bottom.equalToSuperview()
         }
     }
+    
+    deinit {
+        activePermissionToast?.hideImmediately()
+    }
 }
 
 // MARK: - Action
@@ -162,6 +172,7 @@ extension HomeFindViewController {
     }
     
     @objc private func didTapLocationButton() {
+        ensureLocationPermissionOrShowToast()
         viewModel.setupLocation()
     }
 }

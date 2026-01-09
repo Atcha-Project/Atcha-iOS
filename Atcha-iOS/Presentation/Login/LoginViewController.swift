@@ -118,7 +118,7 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
         configureLoginButton(
             button: kakaoLoginButton,
             icon: UIImage.kakao,
-            labelText: "카카오 계정으로 계속하기",
+            labelText: "카카오로 계속하기",
             textColor: AtchaColor.black,
             bgColor: AtchaColor.Etc.kakao,
             iconTint: AtchaColor.Etc.kakaoLogo
@@ -127,7 +127,7 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
         configureLoginButton(
             button: appleLoginButton,
             icon: UIImage.apple,
-            labelText: "Apple 계정으로 계속하기",
+            labelText: "Apple로 계속하기",
             textColor: AtchaColor.white,
             bgColor: AtchaColor.black,
             iconTint: AtchaColor.white
@@ -160,7 +160,7 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
         
         iconView.snp.makeConstraints { make in
             make.width.height.equalTo(24)
-            make.leading.equalToSuperview().inset(22)
+            make.trailing.equalTo(label.snp.leading).offset(-10)
             make.centerY.equalToSuperview()
         }
         

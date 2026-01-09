@@ -34,12 +34,12 @@ final class PushAlarmViewModel: BaseViewModel {
     
     func signUp() {
         guard let provider = UserDefaultsWrapper.shared.integer(forKey: UserDefaultsWrapper.Key.provider.rawValue) else {
-            print("❌ 플랫폼 정보 없음")
+            print("플랫폼 정보 없음")
             return
         }
         
         guard let fcmToken = AppDIContainer.shared.tokenStorage.fcmToken else {
-            print("⚠️ FCM 토큰이 없습니다.")
+            print("FCM 토큰이 없습니다.")
             return
         }
         
@@ -72,8 +72,14 @@ final class PushAlarmViewModel: BaseViewModel {
                         .rawValue)
                     UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.reVisit
                         .rawValue)
-                    AmplitudeManager.shared.track(AmplitudeEvent.onboarding_complete.rawValue)
                     
+                    let dwellSeconds = AmplitudeManager.shared.timerEndSeconds("signup_dwell")
+                    AmplitudeManager.shared.track(
+                        .signup,
+                        props(
+                            AmplitudeProperty.dwellTime(seconds: dwellSeconds)
+                        )
+                    )
                     print("회원가입 lat/lon 저장 완료: \(lat), \(lon)")
                 } else {
                     print("회원가입 응답에 lat/lon 없음")

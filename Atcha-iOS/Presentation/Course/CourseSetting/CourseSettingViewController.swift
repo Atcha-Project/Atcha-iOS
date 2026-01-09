@@ -27,6 +27,10 @@ final class CourseSettingViewController: BaseViewController<CourseSettingViewMod
         bindView()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        AmplitudeManager.shared.trackScreen(.origin_setting)
+    }
+    
     private func setupUI() {
         view.addSubViews(
             mapContainerView,
@@ -137,6 +141,10 @@ final class CourseSettingViewController: BaseViewController<CourseSettingViewMod
             make.width.height.equalTo(36)
         }
     }
+    
+    deinit {
+        activePermissionToast?.hideImmediately()
+    }
 }
 
 extension CourseSettingViewController {
@@ -146,6 +154,7 @@ extension CourseSettingViewController {
     }
     
     @objc private func didTapLocationButton() {
+        ensureLocationPermissionOrShowToast()
         viewModel.setupLocation()
     }
     

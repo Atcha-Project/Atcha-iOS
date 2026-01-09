@@ -7,8 +7,12 @@
 
 import UIKit
 import Combine
+import CoreLocation
 
 class BaseViewController<VM: BaseViewModel>: UIViewController {
+    var activePermissionToast: AtchaActionToast?
+    var activeAlarmPermissionToast: AtchaActionToast?
+    
     let viewModel: VM
     var cancellables = Set<AnyCancellable>()
     
@@ -179,5 +183,79 @@ class BaseViewController<VM: BaseViewModel>: UIViewController {
     func hideReconnectView() {
         reconnectView?.removeFromSuperview()
         reconnectView = nil
+    }
+}
+
+extension BaseViewController {
+    func ensureLocationPermissionOrShowToast() -> Bool {
+        let status = CLLocationManager.authorizationStatus()
+
+        switch status {
+        case .authorizedAlways, .authorizedWhenInUse:
+            activePermissionToast?.hideImmediately()
+            activePermissionToast = nil
+            return true
+
+        case .denied, .restricted, .notDetermined:
+            activePermissionToast?.hideImmediately()
+
+            let toast = AtchaActionToast(
+                message: "위치 권한을 허용해 주세요",
+                actionTitle: "설정하기"
+            ) {
+                guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+                UIApplication.shared.open(url)
+            }
+
+            activePermissionToast = toast
+            toast.show(in: view, duration: 2.0, topOffset: 10)
+
+            return true
+        @unknown default:
+            return true
+        }
+    }
+}
+
+extension BaseViewController {
+    func ensureAlarmPermissionOrShowToast() -> Bool {
+        let center = UNUserNotificationCenter.current()
+        var isAuthorized = false
+        let semaphore = DispatchSemaphore(value: 0)
+
+        center.getNotificationSettings { settings in
+            switch settings.authorizationStatus {
+            case .authorized, .provisional:
+                isAuthorized = true
+            default:
+                isAuthorized = false
+            }
+            semaphore.signal()
+        }
+
+        semaphore.wait()
+
+        if isAuthorized {
+            activeAlarmPermissionToast?.hideImmediately()
+            activeAlarmPermissionToast = nil
+            return true
+        }
+
+        // 권한 없으면: 토스트는 띄우되 진행은 막지 않음
+        activeAlarmPermissionToast?.hideImmediately()
+
+        let toast = AtchaActionToast(
+            message: "알람 권한을 허용해 주세요",
+            actionTitle: "설정하기"
+        ) { [weak self] in
+            guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+            UIApplication.shared.open(url)
+            self?.activeAlarmPermissionToast = nil
+        }
+
+        activeAlarmPermissionToast = toast
+        toast.show(in: view, duration: 5.0, topOffset: 10)
+
+        return true
     }
 }

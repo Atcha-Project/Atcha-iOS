@@ -139,11 +139,5 @@ extension LastTrainSearchBottomView {
     }
     
     @objc private func handleDestinationTap() {
-        AmplitudeManager.shared.track(
-            AmplitudeEvent.home_destination_clicked.rawValue,
-            [
-                "clicked": 1
-            ]
-        )
     }
 }

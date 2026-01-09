@@ -29,12 +29,6 @@ final class MyPageViewModel: BaseViewModel {
     }
     
     func bannerTapped() {
-        AmplitudeManager.shared.track(
-            AmplitudeEvent.mypage_banner_clicked.rawValue,
-            [
-                "clicked": 1
-            ]
-        )
         navigationTarget.send(.banner)
     }
 }

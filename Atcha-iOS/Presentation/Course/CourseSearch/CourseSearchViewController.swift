@@ -72,20 +72,10 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        AmplitudeManager.shared.timerStart("coursesearch_view_duration")
-        
+        AmplitudeManager.shared.trackScreen(.course_search)
+        AmplitudeManager.shared.timerStart("alarm_dwell")
     }
     
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        
-        let seconds = AmplitudeManager.shared.timerEndSeconds("coursesearch_view_duration")
-        AmplitudeManager.shared.track(
-            AmplitudeEvent.coursesearch_view_duration.rawValue,
-            ["duration": seconds]
-        )
-    }
     
     // MARK: ViewModel 바인딩
     private func bind() {
@@ -272,7 +262,13 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
                     viewModel.alarmRegister(alarmRequest)
                     viewModel.getAlarmTapped?(alarmTapped.0, alarmTapped.1)
                     
-                    amplitudeActions(r)
+                    let dwellSeconds = AmplitudeManager.shared.timerEndSeconds("alarm_dwell")
+                    AmplitudeManager.shared.track(
+                        .alarm_register,
+                        props(
+                            AmplitudeProperty.dwellTime(seconds: dwellSeconds)
+                        )
+                    )
                     navigationController?.popToRootViewController(animated: true)
                 }
             }
@@ -286,18 +282,13 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
             let busInfo: [BusDetailInfo] = model.course.toBusInfos()
             viewModel.getDetailTapped?(viewModel.startAddress, LegInfo(pathInfo: pathInfo, trafficInfo: tafficInfo, busInfo: busInfo))
             viewModel.saveStartInfo(model.course.routeId ?? "")
+            AmplitudeManager.shared.track(.course_detail_click)
         }
         
         // 버튼 탭 시 확장/축소 상태 변경 핸들러 연결
         cell.onToggleExpanded = { [weak self] in
             self?.viewModel.toggleExpanded(for: model)
-            
-            AmplitudeManager.shared.track(
-                AmplitudeEvent.coursesearch_toggle.rawValue,
-                [
-                    "toggle": 1
-                ]
-            )
+            AmplitudeManager.shared.track(.course_detail_toggle_click)
         }
         
         return cell
@@ -343,6 +334,7 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
     
     @objc private func didTapRouteStack() {
         viewModel.didTapRouteLabelStack()
+        AmplitudeManager.shared.track(.course_change_click)
     }
 }
 
@@ -386,9 +378,15 @@ extension CourseSearchViewController {
             
             self.viewModel.alarmRegister(alarmRequest)
             self.viewModel.getAlarmTapped?(alarmTapped.0, alarmTapped.1)
-            self.amplitudeActions(rank)
             UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.popRegister.rawValue)
             
+            let dwellSeconds = AmplitudeManager.shared.timerEndSeconds("alarm_dwell")
+            AmplitudeManager.shared.track(
+                .long_interval_alarm_register,
+                props(
+                    AmplitudeProperty.dwellTime(seconds: dwellSeconds)
+                )
+            )
         }, for: .touchUpInside)
         
         popupVC.cancelButton.addAction(UIAction { [weak self, weak popupVC] _ in
@@ -410,15 +408,14 @@ extension CourseSearchViewController {
             
             self.viewModel.alarmRegister(alarmRequest)
             self.viewModel.getAlarmTapped?(alarmTapped.0, alarmTapped.1)
-            self.amplitudeActions(rank)
             UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.popRegister.rawValue)
             
+            let dwellSeconds = AmplitudeManager.shared.timerEndSeconds("alarm_dwell")
             AmplitudeManager.shared.track(
-                AmplitudeEvent.alert_end_popup_2.rawValue,
-                [
-                    "screen_name": "coursesearch",
-                    "clicked": 1
-                ]
+                .another_alarm_register,
+                props(
+                    AmplitudeProperty.dwellTime(seconds: dwellSeconds)
+                )
             )
             
         }, for: .touchUpInside)
@@ -431,34 +428,5 @@ extension CourseSearchViewController {
         
         popupVC.modalPresentationStyle = .overFullScreen
         present(popupVC, animated: false)
-    }
-    
-    private func amplitudeActions(_ rank: RouteRanks) {
-        let second = AmplitudeManager.shared.timerEndSeconds("notification_registration_duration")
-        
-        AmplitudeManager.shared.track(
-            AmplitudeEvent.notification_registration_duration.rawValue ,
-            [
-                "duration": second
-            ]
-        )
-        
-        AmplitudeManager.shared.track(
-            AmplitudeEvent.alarm_registered.rawValue,
-            [
-                "later_departure_time_rank": rank.laterDepartureTimeRank,
-                "minimal_walk_rank":        rank.minimalWalkRank,
-                "minimal_total_time_rank":  rank.minimalTotalTimeRank,
-                "transfer_count":           rank.transferCount
-            ]
-        )
-        
-        AmplitudeManager.shared.track(
-            AmplitudeEvent.alert_button.rawValue,
-            [
-                "screen_name": "coursesearch",
-                "clicked": 1
-            ]
-        )
     }
 }
