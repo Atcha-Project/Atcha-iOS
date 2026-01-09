@@ -39,9 +39,9 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        if viewModel.context == .onboarding {
-            viewModel.requestAuth()
-        }
+//        if viewModel.context == .onboarding {
+//            viewModel.requestAuth()
+//        }
         
         AmplitudeManager.shared.trackScreen(.home_register)
     }
