@@ -50,6 +50,8 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
         }
     }
     
+    private var activeAlarmPermissionToast: AtchaActionToast?
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
@@ -190,6 +192,8 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
             listView.onSelect = { [weak self] selected in
                 guard let self else { return }
                 
+                self.ensureAlarmPermissionOrShowToast()
+                
                 self.alarmCheckmarkLists.forEach {
                     $0.setRadio(false)
                     $0.backgroundColor = defaultBackgroundColor
@@ -243,8 +247,50 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
     }
     
     deinit {
+        activeAlarmPermissionToast?.hideImmediately()
         AlarmManager.shared.stopPreview()
     }
 }
 
+extension PushAlarmViewController {
+    private func ensureAlarmPermissionOrShowToast() -> Bool {
+        let center = UNUserNotificationCenter.current()
+        var isAuthorized = false
+        let semaphore = DispatchSemaphore(value: 0)
 
+        center.getNotificationSettings { settings in
+            switch settings.authorizationStatus {
+            case .authorized, .provisional:
+                isAuthorized = true
+            default:
+                isAuthorized = false
+            }
+            semaphore.signal()
+        }
+
+        semaphore.wait()
+
+        if isAuthorized {
+            activeAlarmPermissionToast?.hideImmediately()
+            activeAlarmPermissionToast = nil
+            return true
+        }
+
+        // 권한 없으면: 토스트는 띄우되 진행은 막지 않음
+        activeAlarmPermissionToast?.hideImmediately()
+
+        let toast = AtchaActionToast(
+            message: "알람 권한을 허용해 주세요",
+            actionTitle: "설정하기"
+        ) { [weak self] in
+            guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+            UIApplication.shared.open(url)
+            self?.activeAlarmPermissionToast = nil
+        }
+
+        activeAlarmPermissionToast = toast
+        toast.show(in: view, duration: 5.0, topOffset: 10)
+
+        return true
+    }
+}
