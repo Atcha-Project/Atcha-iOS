@@ -27,7 +27,8 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
         
         self?.viewModel.routeHandler?(.pushRegister)
     }
-    
+    private var activePermissionToast: AtchaActionToast?
+        
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
@@ -222,12 +223,16 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
     
     // MARK: - 장소 검색
     @objc private func handleSearchTapped() {
+        guard ensureLocationPermissionOrShowToast() else { return }
+        
         viewModel.routeHandler?(.searchAdress)
         AmplitudeManager.shared.track(.search_location_click)
     }
     
     // MARK: - 현위치 찾기
     @objc private func handleCurrentLocationTapped() {
+        guard ensureLocationPermissionOrShowToast() else { return }
+        
         viewModel.routeHandler?(.homeRegister(useDeviceLocation: true))
         AmplitudeManager.shared.track(.current_location_click)
     }
@@ -256,6 +261,40 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
             currentLocationButton.addTarget(self,
                                             action: #selector(handleSearchTapped),
                                             for: .touchUpInside)
+        }
+    }
+}
+
+extension HomeRegisterViewController {
+    private func ensureLocationPermissionOrShowToast() -> Bool {
+        let status = CLLocationManager.authorizationStatus()
+
+        switch status {
+        case .authorizedAlways, .authorizedWhenInUse:
+            // 권한 허용됐으면 토스트 남아있을 수도 있으니 정리(선택)
+            activePermissionToast?.hideImmediately()
+            activePermissionToast = nil
+            return true
+
+        case .denied, .restricted, .notDetermined:
+            // 기존 토스트 제거 후 마지막 것만
+            activePermissionToast?.hideImmediately()
+
+            let toast = AtchaActionToast(
+                message: "위치 권한을 허용해 주세요",
+                actionTitle: "설정하기"
+            ) {
+                print("클릭1")
+                guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+                UIApplication.shared.open(url)
+            }
+
+            activePermissionToast = toast
+            toast.show(in: view, duration: 2.0, topOffset: 10)
+            return false
+
+        @unknown default:
+            return false
         }
     }
 }
