@@ -141,6 +141,10 @@ final class CourseSettingViewController: BaseViewController<CourseSettingViewMod
             make.width.height.equalTo(36)
         }
     }
+    
+    deinit {
+        activePermissionToast?.hideImmediately()
+    }
 }
 
 extension CourseSettingViewController {
@@ -150,6 +154,7 @@ extension CourseSettingViewController {
     }
     
     @objc private func didTapLocationButton() {
+        ensureLocationPermissionOrShowToast()
         viewModel.setupLocation()
     }
     

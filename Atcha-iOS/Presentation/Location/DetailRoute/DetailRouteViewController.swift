@@ -315,6 +315,7 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
     }
     
     deinit {
+        activePermissionToast?.hideImmediately()
         mapContainerView.deinitMapView()
     }
 }
@@ -326,6 +327,7 @@ extension DetailRouteViewController {
     }
     
     @objc private func didTapLocationButton() {
+        ensureLocationPermissionOrShowToast()
         viewModel.setupLocation()
     }
     

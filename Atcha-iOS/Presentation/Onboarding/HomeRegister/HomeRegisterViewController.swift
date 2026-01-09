@@ -27,7 +27,6 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
         
         self?.viewModel.routeHandler?(.pushRegister)
     }
-    private var activePermissionToast: AtchaActionToast?
         
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -266,36 +265,5 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
     
     deinit {
         activePermissionToast?.hideImmediately()
-    }
-}
-
-extension HomeRegisterViewController {
-    private func ensureLocationPermissionOrShowToast() -> Bool {
-        let status = CLLocationManager.authorizationStatus()
-
-        switch status {
-        case .authorizedAlways, .authorizedWhenInUse:
-            activePermissionToast?.hideImmediately()
-            activePermissionToast = nil
-            return true
-
-        case .denied, .restricted, .notDetermined:
-            activePermissionToast?.hideImmediately()
-
-            let toast = AtchaActionToast(
-                message: "위치 권한을 허용해 주세요",
-                actionTitle: "설정하기"
-            ) {
-                guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
-                UIApplication.shared.open(url)
-            }
-
-            activePermissionToast = toast
-            toast.show(in: view, duration: 2.0, topOffset: 10)
-
-            return true
-        @unknown default:
-            return true
-        }
     }
 }

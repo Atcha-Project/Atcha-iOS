@@ -86,7 +86,7 @@ final class AtchaActionToast: UIView {
 
 extension AtchaActionToast {
     func show(in parentView: UIView,
-              duration: TimeInterval = 5.0,
+              duration: TimeInterval = 2.0,
               topOffset: CGFloat = 10) {
 
         if superview != nil {

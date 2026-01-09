@@ -106,9 +106,8 @@ final class MainViewController: BaseViewController<MainViewModel>,
         ) ?? false
         
         if !isAlarmRegistered {
-            
+            ensureLocationPermissionOrShowToast()
         }
-        
         AmplitudeManager.shared.trackScreen(.main)
     }
     
@@ -193,6 +192,10 @@ final class MainViewController: BaseViewController<MainViewModel>,
         button.contentHorizontalAlignment = .fill
         button.contentVerticalAlignment = .fill
         button.addTarget(self, action: action, for: .touchUpInside)
+    }
+    
+    deinit {
+        activePermissionToast?.hideImmediately()
     }
 }
 
@@ -913,6 +916,7 @@ extension MainViewController {
     }
     
     @objc private func didTapLocationButton() {
+        ensureLocationPermissionOrShowToast()
         shouldCenterToCurrentLocationOnce = true
         viewModel.currentLocation = nil
         viewModel.setupLocation()

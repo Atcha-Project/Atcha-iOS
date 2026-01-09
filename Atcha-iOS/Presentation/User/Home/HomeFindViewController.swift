@@ -153,6 +153,10 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
             make.bottom.equalToSuperview()
         }
     }
+    
+    deinit {
+        activePermissionToast?.hideImmediately()
+    }
 }
 
 // MARK: - Action
@@ -168,6 +172,7 @@ extension HomeFindViewController {
     }
     
     @objc private func didTapLocationButton() {
+        ensureLocationPermissionOrShowToast()
         viewModel.setupLocation()
     }
 }
