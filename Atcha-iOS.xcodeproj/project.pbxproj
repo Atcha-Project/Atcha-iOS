@@ -102,6 +102,7 @@
 		6DADA5932EA09B6E00CA9BE2 /* AmplitudeSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 6DADA5922EA09B6E00CA9BE2 /* AmplitudeSwift */; };
 		6DADA5972EA09BA400CA9BE2 /* AmplitudeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DADA5962EA09BA400CA9BE2 /* AmplitudeManager.swift */; };
 		6DADA5992EA09BAC00CA9BE2 /* AmplitudeEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DADA5982EA09BAC00CA9BE2 /* AmplitudeEvent.swift */; };
+		6DB4DE8F2F0FE3B900F2DC4E /* RefreshObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DB4DE8E2F0FE3B900F2DC4E /* RefreshObserver.swift */; };
 		6DB763692E45C53A00D06A49 /* AlarmRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DB763682E45C53A00D06A49 /* AlarmRequest.swift */; };
 		6DB7636B2E45C5EC00D06A49 /* AlarmUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DB7636A2E45C5EC00D06A49 /* AlarmUseCase.swift */; };
 		6DB7636D2E45C69400D06A49 /* AlarmRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DB7636C2E45C69400D06A49 /* AlarmRepository.swift */; };
@@ -410,6 +411,7 @@
 		6D9284412E3C6ADF0090889B /* PaddingLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaddingLabel.swift; sourceTree = "<group>"; };
 		6DADA5962EA09BA400CA9BE2 /* AmplitudeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmplitudeManager.swift; sourceTree = "<group>"; };
 		6DADA5982EA09BAC00CA9BE2 /* AmplitudeEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmplitudeEvent.swift; sourceTree = "<group>"; };
+		6DB4DE8E2F0FE3B900F2DC4E /* RefreshObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshObserver.swift; sourceTree = "<group>"; };
 		6DB763682E45C53A00D06A49 /* AlarmRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmRequest.swift; sourceTree = "<group>"; };
 		6DB7636A2E45C5EC00D06A49 /* AlarmUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmUseCase.swift; sourceTree = "<group>"; };
 		6DB7636C2E45C69400D06A49 /* AlarmRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmRepository.swift; sourceTree = "<group>"; };
@@ -1390,6 +1392,7 @@
 			isa = PBXGroup;
 			children = (
 				B6702C452E629FE600AD2A67 /* NotificationKeys.swift */,
+				6DB4DE8E2F0FE3B900F2DC4E /* RefreshObserver.swift */,
 			);
 			path = Notification;
 			sourceTree = "<group>";
@@ -1977,6 +1980,7 @@
 				6D91A8E42E29F5B30081BAFC /* CourseSettingViewController.swift in Sources */,
 				B65C13282E058D6C0016D2F0 /* BaseViewController.swift in Sources */,
 				B65C13062E057BC80016D2F0 /* Encodable+Ext.swift in Sources */,
+				6DB4DE8F2F0FE3B900F2DC4E /* RefreshObserver.swift in Sources */,
 				6D5E03CD2E2882BB0065AFBE /* CourseSearchRequest.swift in Sources */,
 				6DC3BEDF2E04F32D00831470 /* UserDefaultsWrapper.swift in Sources */,
 				B65C130E2E057D4D0016D2F0 /* NetworkDIContainer.swift in Sources */,

@@ -235,28 +235,35 @@ extension AlarmManager {
         let formatter = DateFormatter()
         formatter.locale = .current
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-        
-        guard let targetDate = formatter.date(from: dateString) else {
-            return
-        }
-        
-        let tenMinutesBefore = Calendar.current.date(byAdding: .minute, value: -10, to: targetDate)!
-        
+
+        guard let targetDate = formatter.date(from: dateString) else { return }
+        guard let tenMinutesBefore = Calendar.current.date(byAdding: .minute, value: -10, to: targetDate) else { return }
+
         let content = UNMutableNotificationContent()
         content.title = title
         content.body = body
         content.sound = .default
-        
-        let triggerDate = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: tenMinutesBefore)
+
+        let triggerDate = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second],
+                                                         from: tenMinutesBefore)
         let trigger = UNCalendarNotificationTrigger(dateMatching: triggerDate, repeats: false)
-        
-        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
-        
-        UNUserNotificationCenter.current().add(request) { error in
+
+        let center = UNUserNotificationCenter.current()
+
+        center.removePendingNotificationRequests(withIdentifiers: [AlarmNotificationID.tenMinutesBefore])
+        center.removeDeliveredNotifications(withIdentifiers: [AlarmNotificationID.tenMinutesBefore])
+
+        let request = UNNotificationRequest(
+            identifier: AlarmNotificationID.tenMinutesBefore,
+            content: content,
+            trigger: trigger
+        )
+
+        center.add(request) { error in
             if let error = error {
                 print("알림 등록 실패: \(error.localizedDescription)")
             } else {
-                print("로컬 알림이 성공적으로 예약되었습니다.")
+                print("10분 전 로컬 알림 재예약 완료: \(tenMinutesBefore)")
             }
         }
     }
@@ -437,6 +444,7 @@ extension AlarmManager {
 
 enum AlarmNotificationID {
     static let autoStopInfo = "atcha.alarm.autostop"
+    static let tenMinutesBefore = "atcha.alarm.tenMinutesBefore"
 }
 
 extension AlarmManager {

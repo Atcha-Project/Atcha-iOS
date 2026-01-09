@@ -13,6 +13,7 @@ enum LoginIntro: CaseIterable {
     case step3
     case step4
     case step5
+    case step6
     
     var title: String {
         switch self {
@@ -21,10 +22,12 @@ enum LoginIntro: CaseIterable {
         case .step2:
             return "우리집 미리 등록 해두고\n출발지만 선택해요"
         case .step3:
-            return "푸시 알람으로\n남은 시간 알려드릴게요"
+            return "알람 등록하면\n출발 시간에 맞춰 울려요"
         case .step4:
-            return "지금 몇시지? 하지 마세요\n출발 알람 받고 막차 타러 출발!"
+            return "푸시 알림으로\n남은 시간 알려드릴게요"
         case .step5:
+            return "지금 몇시지? 하지 마세요\n출발 알림 받고 막차 타러 출발!"
+        case .step6:
             return "이제 경로만 따라가면 돼요\n안전하게 귀가해요"
         }
     }
@@ -36,6 +39,7 @@ enum LoginIntro: CaseIterable {
         case .step3: return UIImage.step3
         case .step4: return UIImage.step4
         case .step5: return UIImage.step5
+        case .step6: return UIImage.step6
         }
     }
 }

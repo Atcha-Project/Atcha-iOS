@@ -47,6 +47,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             AmplitudeManager.shared.bindUser(id: String(savedId))
         }
         
+        _ = RefreshObserver.shared
+        
         return true
     }
     

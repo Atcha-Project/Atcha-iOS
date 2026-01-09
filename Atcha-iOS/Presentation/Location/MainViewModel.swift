@@ -16,6 +16,7 @@ final class MainViewModel: BaseViewModel {
     private var alarmFinishCancellable: AnyCancellable?
     private var alarmTimeoutCancellable: AnyCancellable?
     private var alarmObserver: NSObjectProtocol?
+    private var refreshUpdateToken: NSObjectProtocol?
     
     @Published var currentLocation: CLLocationCoordinate2D?
     @Published var selectedLocation: CLLocationCoordinate2D?
@@ -68,6 +69,7 @@ final class MainViewModel: BaseViewModel {
         self.courseUseCase = courseUseCase
         
         super.init()
+        observeGlobalRefresh()
         self.bind()
     }
     
@@ -221,6 +223,19 @@ final class MainViewModel: BaseViewModel {
         }
     }
     
+    private func observeGlobalRefresh() {
+        guard refreshUpdateToken == nil else { return }
+
+        refreshUpdateToken = NotificationCenter.default.addObserver(
+            forName: .refreshDidUpdate,  
+            object: nil,
+            queue: .main
+        ) { [weak self] noti in
+            guard let self else { return }
+            self.handleRefreshNotification(noti)
+        }
+    }
+    
     override func handleRefreshNotification(_ notification: Notification) {
         
         guard let userInfo = notification.userInfo,
@@ -229,7 +244,7 @@ final class MainViewModel: BaseViewModel {
               let _ = userInfo["updatedAt"] as? String else {
             return
         }
-    
+        
         if isReal == "true" {
             AlarmManager.shared.scheduleLocalNotification(from: body, title: "출발 약 10분 전 이에요.", body: "")
         }
@@ -300,9 +315,8 @@ final class MainViewModel: BaseViewModel {
     
     deinit {
         stopTracking()
-        if let alarmObserver {
-            NotificationCenter.default.removeObserver(alarmObserver)
-        }
+        if let alarmObserver { NotificationCenter.default.removeObserver(alarmObserver) }
+        if let refreshUpdateToken { NotificationCenter.default.removeObserver(refreshUpdateToken) }
     }
 }
 
@@ -526,26 +540,26 @@ extension MainViewModel {
 extension MainViewModel {
     private func startAlarmTimeoutTimer() {
         alarmTimeoutCancellable?.cancel()
-
+        
         let task = Task { [weak self] in
             guard let self else { return }
-
+            
             do {
                 try await Task.sleep(nanoseconds: 120 * 1_000_000_000)
             } catch {
                 return
             }
-
+            
             guard !Task.isCancelled else { return }
-
+            
             await MainActor.run {
                 self.routeHandler?(.dismissLockScreen)
             }
         }
-
+        
         alarmTimeoutCancellable = AnyCancellable { task.cancel() }
     }
-
+    
     func stopAlarmTimeoutTimer() {
         alarmTimeoutCancellable?.cancel()
         alarmTimeoutCancellable = nil
