@@ -12,6 +12,7 @@ import UserNotifications
 import AudioToolbox
 import UIKit
 import MediaPlayer
+import CoreHaptics
 
 final class AlarmManager {
     static let shared = AlarmManager()
@@ -31,6 +32,7 @@ final class AlarmManager {
     private var silenceHintObserver: NSObjectProtocol?
     private var shouldKeepBackgroundAudio = false
     private var isPreviewing = false
+    private var hapticEngine: CHHapticEngine?
     
     // MARK: - Init
     private init() {
@@ -235,30 +237,30 @@ extension AlarmManager {
         let formatter = DateFormatter()
         formatter.locale = .current
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-
+        
         guard let targetDate = formatter.date(from: dateString) else { return }
         guard let tenMinutesBefore = Calendar.current.date(byAdding: .minute, value: -10, to: targetDate) else { return }
-
+        
         let content = UNMutableNotificationContent()
         content.title = title
         content.body = body
         content.sound = .default
-
+        
         let triggerDate = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second],
-                                                         from: tenMinutesBefore)
+                                                          from: tenMinutesBefore)
         let trigger = UNCalendarNotificationTrigger(dateMatching: triggerDate, repeats: false)
-
+        
         let center = UNUserNotificationCenter.current()
-
+        
         center.removePendingNotificationRequests(withIdentifiers: [AlarmNotificationID.tenMinutesBefore])
         center.removeDeliveredNotifications(withIdentifiers: [AlarmNotificationID.tenMinutesBefore])
-
+        
         let request = UNNotificationRequest(
             identifier: AlarmNotificationID.tenMinutesBefore,
             content: content,
             trigger: trigger
         )
-
+        
         center.add(request) { error in
             if let error = error {
                 print("알림 등록 실패: \(error.localizedDescription)")
@@ -322,9 +324,9 @@ extension AlarmManager {
     
     func startRepeatingVibration() {
         stopRepeatingVibration()
-        vibrate()
+        playHaptic()
         repeatingVibrationTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
-            self?.vibrate()
+            self?.playHaptic()
         }
     }
     
@@ -333,7 +335,36 @@ extension AlarmManager {
         repeatingVibrationTimer = nil
     }
     
-    func vibrate() {
+    private func playHaptic() {
+        guard let engine = hapticEngine else {
+            // 햅틱 엔진이 없으면 기존 방식 사용
+            vibrateLegacy()
+            return
+        }
+        
+        do {
+            // 강한 연속 진동 패턴 생성
+            let intensity = CHHapticEventParameter(parameterID: .hapticIntensity, value: 1.0)
+            let sharpness = CHHapticEventParameter(parameterID: .hapticSharpness, value: 1.0)
+            
+            let event = CHHapticEvent(
+                eventType: .hapticContinuous,
+                parameters: [intensity, sharpness],
+                relativeTime: 0,
+                duration: 0.3 // 0.3초 지속
+            )
+            
+            let pattern = try CHHapticPattern(events: [event], parameters: [])
+            let player = try engine.makePlayer(with: pattern)
+            try player.start(atTime: CHHapticTimeImmediate)
+            
+        } catch {
+            print("햅틱 재생 실패: \(error.localizedDescription)")
+            vibrateLegacy() // 실패하면 기존 방식으로 폴백
+        }
+    }
+    
+    private func vibrateLegacy() {
         let impact = UIImpactFeedbackGenerator(style: .heavy)
         impact.prepare()
         impact.impactOccurred()
@@ -374,51 +405,6 @@ extension AlarmManager {
     func setAlarmArmed(_ armed: Bool) {
         shouldKeepBackgroundAudio = armed
         if armed { ensureBackgroundSilentRunning() }
-    }
-    
-    func previewAlarmVolume(_ volume: Float) {
-        isPreviewing = true
-        alarmVolume = volume
-        
-        switch selectedOption {
-        case .onlySound:
-            if currentSoundFile == "siren", let player = audioPlayer, player.isPlaying {
-                player.volume = volume
-                print("사운드 미리듣기 볼륨만 조정: \(volume)")
-            } else {
-                playLocalMusic(named: "siren", withExtension: "mp3")
-                print("사운드 미리듣기 시작 (볼륨: \(volume))")
-            }
-            
-        case .onlyVibration:
-            startRepeatingVibration()
-            print("진동 미리듣기")
-            
-        case .both:
-            if currentSoundFile == "siren", let player = audioPlayer, player.isPlaying {
-                player.volume = volume
-                print("사운드+진동 볼륨만 조정: \(volume)")
-            } else {
-                playLocalMusic(named: "siren", withExtension: "mp3")
-                print("사운드+진동 미리듣기 시작 (볼륨: \(volume))")
-            }
-            startRepeatingVibration()
-        }
-    }
-    
-    func stopPreview() {
-        isPreviewing = false
-        stopRepeatingVibration()
-        
-        if shouldKeepBackgroundAudio {
-            ensureBackgroundSilentRunning()
-        } else {
-            audioPlayer?.stop()
-            audioPlayer = nil
-            currentSoundFile = nil
-        }
-        
-        print("미리듣기 종료 (keep=\(shouldKeepBackgroundAudio))")
     }
 }
 
@@ -500,5 +486,95 @@ extension AlarmManager {
         @unknown default:
             break
         }
+    }
+}
+
+extension AlarmManager{
+    private func setupHapticEngine() {
+        guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else {
+            print("기기가 햅틱을 지원하지 않습니다")
+            return
+        }
+        
+        do {
+            hapticEngine = try CHHapticEngine()
+            try hapticEngine?.start()
+            print("햅틱 엔진 초기화 완료")
+            
+            // 엔진이 중단되면 자동 재시작
+            hapticEngine?.stoppedHandler = { [weak self] reason in
+                print("햅틱 엔진 중단: \(reason)")
+                self?.restartHapticEngine()
+            }
+            
+            hapticEngine?.resetHandler = { [weak self] in
+                print("햅틱 엔진 리셋")
+                self?.restartHapticEngine()
+            }
+        } catch {
+            print("햅틱 엔진 생성 실패: \(error.localizedDescription)")
+        }
+    }
+    
+    private func restartHapticEngine() {
+        do {
+            try hapticEngine?.start()
+            print("햅틱 엔진 재시작 완료")
+        } catch {
+            print("햅틱 엔진 재시작 실패: \(error.localizedDescription)")
+        }
+    }
+}
+
+
+extension AlarmManager {
+    func previewAlarmVolume(_ volume: Float) {
+        isPreviewing = true
+        alarmVolume = volume
+        
+        // 햅틱 엔진이 중단되어 있으면 재시작
+        if selectedOption == .onlyVibration || selectedOption == .both {
+            restartHapticEngine()
+        }
+        
+        switch selectedOption {
+        case .onlySound:
+            if currentSoundFile == "siren", let player = audioPlayer, player.isPlaying {
+                player.volume = volume
+                print("사운드 미리듣기 볼륨만 조정: \(volume)")
+            } else {
+                playLocalMusic(named: "siren", withExtension: "mp3")
+                print("사운드 미리듣기 시작 (볼륨: \(volume))")
+            }
+            
+        case .onlyVibration:
+            startRepeatingVibration()
+            print("진동 미리듣기")
+            
+        case .both:
+            if currentSoundFile == "siren", let player = audioPlayer, player.isPlaying {
+                player.volume = volume
+                print("사운드+진동 볼륨만 조정: \(volume)")
+            } else {
+                playLocalMusic(named: "siren", withExtension: "mp3")
+                print("사운드+진동 미리듣기 시작 (볼륨: \(volume))")
+            }
+            startRepeatingVibration()
+        }
+    }
+    
+    func stopPreview() {
+        isPreviewing = false
+        stopRepeatingVibration()
+        
+        if shouldKeepBackgroundAudio {
+            ensureBackgroundSilentRunning()
+        } else {
+            audioPlayer?.stop()
+            audioPlayer = nil
+            currentSoundFile = nil
+        }
+        
+        print("미리듣기 종료 (keep=\(shouldKeepBackgroundAudio))")
     }
 }

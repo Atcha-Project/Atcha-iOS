@@ -255,6 +255,7 @@ final class MainViewModel: BaseViewModel {
         fetchDetailRoute()
         stopFinishAlarmTimer()
         startAlarmTimer()
+        checkAlarmTime()
         
         departureTime = body
     }
