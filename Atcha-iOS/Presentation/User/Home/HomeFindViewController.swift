@@ -18,7 +18,7 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
     private let backButton: UIButton = UIButton()
     private let loactionButton: UIButton = UIButton()
     private let exitButton: UIButton = UIButton()
-    
+
     var routeHandler: ((HomeRouter) -> Void)?
     
     override func viewDidLoad() {
@@ -28,11 +28,12 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
         setupAutoLayout()
         setupBackButton()
         bindViewModel()
+         
+        handleInitialLocationFlow()
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
         AmplitudeManager.shared.trackScreen(.home_setting)
     }
     
@@ -154,6 +155,34 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
         }
     }
     
+    private func handleInitialLocationFlow() {
+        if viewModel.hasSavedLocation {
+            viewModel.setupLocation()
+            return
+        }
+        
+        let status = CLLocationManager.authorizationStatus()
+        
+        switch status {
+        case .authorizedAlways, .authorizedWhenInUse:
+            Task { @MainActor in
+                viewModel.setupLocation()
+            }
+        case .notDetermined:
+            Task { @MainActor in
+                await viewModel.applyDefaultLocationIfPermissionDenied()
+            }
+            
+        case .denied, .restricted:
+            Task { @MainActor in
+                await viewModel.applyDefaultLocationIfPermissionDenied()
+            }
+            
+        @unknown default:
+            Task {}
+        }
+    }
+    
     deinit {
         activePermissionToast?.hideImmediately()
     }
@@ -180,7 +209,20 @@ extension HomeFindViewController {
 // MARK: - Delegate
 extension HomeFindViewController {
     func didFinishLoadingMap(_ mapView: TMapWrapper) {
-        viewModel.setupLocation()
+        if viewModel.hasSavedLocation {
+            viewModel.setupLocation()
+            return
+        }
+
+        let status = CLLocationManager.authorizationStatus()
+        if status == .authorizedAlways || status == .authorizedWhenInUse {
+            viewModel.forceDeviceLocation = true
+            viewModel.setupLocation()
+        } else {
+            Task { @MainActor in
+                await viewModel.applyDefaultLocationIfPermissionDenied()
+            }
+        }
     }
     
     func mapView(_ mapView: TMapWrapper, didUpdateLocation coordinate: CLLocationCoordinate2D) {

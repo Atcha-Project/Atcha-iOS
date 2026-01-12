@@ -231,7 +231,7 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
     // MARK: - 현위치 찾기
     @objc private func handleCurrentLocationTapped() {
         ensureLocationPermissionOrShowToast()
-        
+        viewModel.locationStateHolder.clear()
         viewModel.routeHandler?(.homeRegister(useDeviceLocation: true))
         AmplitudeManager.shared.track(.current_location_click)
     }

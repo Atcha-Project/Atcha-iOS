@@ -17,6 +17,10 @@ final class HomeFindViewModel: BaseViewModel {
     var routeHandler: ((HomeRouter) -> Void)?
     var isInitialReqeust: Bool = false
     var forceDeviceLocation = false
+    private let defaultCoord = CLLocationCoordinate2D(latitude: 37.56668000000002, longitude: 126.978433)
+    var hasSavedLocation: Bool {
+        locationStateHolder.currentLocation != nil
+    }
     
     private let searchAddressUseCase: SearchAddressUseCase
     private let homePatchUseCase: HomePatchUseCase
@@ -102,26 +106,31 @@ final class HomeFindViewModel: BaseViewModel {
             isInitialReqeust = true
             return
         }
+
         if let saved = locationStateHolder.currentLocation {
             currentLocation = saved
+
+            let hasPresetText = (locationStateHolder.address?.isEmpty == false) ||
+                                (locationStateHolder.buildingName?.isEmpty == false)
+
+            if !hasPresetText {
+                Task { @MainActor in
+                    await refreshAddress()
+                }
+            }
         } else {
             requestMyLocation()
         }
-//
-//        if let savedLocation = locationStateHolder.currentLocation {
-//            currentLocation = savedLocation
-//        } else {
-//            requestMyLocation()
-//        }
     }
     
     private func requestMyLocation() {
-        Task {
+        Task { @MainActor in
             for await location in streamUseCase.startUpdate() {
                 self.currentLocation = CLLocationCoordinate2D(
                     latitude: location.coordinate.latitude,
                     longitude: location.coordinate.longitude
                 )
+                await self.refreshAddress()  
                 break
             }
         }
@@ -170,6 +179,36 @@ final class HomeFindViewModel: BaseViewModel {
         } catch {
             print("서비스 지역 확인 실패:", error)
             return false
+        }
+    }
+    
+    @MainActor
+    func applyDefaultLocationIfPermissionDenied() async {
+        self.currentLocation = defaultCoord
+
+        do {
+            let addr = try await fetchCurrentAddress(
+                lat: defaultCoord.latitude,
+                lon: defaultCoord.longitude
+            )
+            self.address = addr?.address
+            self.buildingName = addr?.name
+        } catch {
+            // 실패 시 최소 fallback(선택)
+            self.address = "서울특별시 중구 세종대로"
+            self.buildingName = "서울특별시청"
+        }
+    }
+    
+    @MainActor
+    func refreshAddress() async {
+        guard let loc = currentLocation else { return }
+        do {
+            let addr = try await fetchCurrentAddress(lat: loc.latitude, lon: loc.longitude)
+            self.address = addr?.address
+            self.buildingName = addr?.name
+        } catch {
+            print("주소 갱신 실패:", error)
         }
     }
 }

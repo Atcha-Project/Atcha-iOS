@@ -104,6 +104,7 @@ final class SearchLocationViewController: BaseViewController<SearchLocationViewM
         }
         
         searchNavigationBar.onTapCurrentLocation = { [weak self] in
+            self?.viewModel.locationStateHolder.clear()
             self?.handleCurrentLocationTapped()
         }
         

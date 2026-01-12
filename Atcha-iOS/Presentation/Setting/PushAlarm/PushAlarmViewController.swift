@@ -26,6 +26,10 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
                                                            size: .h52,
                                                            style: .filled(.disabled)) { [weak self] in
         guard let self else { return }
+        
+        self.activeAlarmPermissionToast?.hideImmediately()
+        self.activeAlarmPermissionToast = nil
+        
         if let selectedOption = self.selectedOption {
             AlarmManager.shared.setAlarmOption(selectedOption)
             
