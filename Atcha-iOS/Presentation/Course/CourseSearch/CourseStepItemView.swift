@@ -15,6 +15,8 @@ final class CourseStepItemView: UIView {
     private let endStationLabel: UILabel = UILabel()
     private let busNumberLabel = PaddingLabel(top: 4, left: 8, bottom: 4, right: 8)
     private let directionLabel: UILabel = UILabel()
+    private let lineView: UIView = UIView()
+    private let endPointView: UIView = UIView()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -29,20 +31,30 @@ final class CourseStepItemView: UIView {
     // MARK: - Course Detail Step UI
     private func setupUI() {
         addSubViews(
+            lineView,
             trafficImageView,
             stationLabel,
             directionLabel,
             busNumberLabel,
-            endStationLabel
+            endStationLabel,
+            endPointView
         )
         
         trafficImageView.contentMode = .scaleAspectFit
+        lineView.backgroundColor = AtchaColor.gray800
     }
     
     private func setupAutoLayout() {
         trafficImageView.snp.makeConstraints { make in
             make.leading.top.equalToSuperview()
             make.size.equalTo(26)
+        }
+        
+        lineView.snp.makeConstraints { make in
+            make.top.equalTo(trafficImageView.snp.top).offset(5)
+            make.centerX.equalTo(trafficImageView)
+            make.width.equalTo(2)
+            make.bottom.equalToSuperview().offset(10 )
         }
         
         stationLabel.snp.makeConstraints { make in
@@ -67,10 +79,12 @@ final class CourseStepItemView: UIView {
         busNumberLabel.isHidden = true
         directionLabel.isHidden = true
         endStationLabel.isHidden = true
+        endPointView.isHidden = true
         
         busNumberLabel.snp.removeConstraints()
         directionLabel.snp.removeConstraints()
         endStationLabel.snp.removeConstraints()
+        endPointView.snp.removeConstraints()
         
         
         switch leg.mode {
@@ -100,13 +114,31 @@ final class CourseStepItemView: UIView {
                 endStationLabel.snp.makeConstraints { make in
                     make.leading.equalTo(stationLabel.snp.leading)
                     make.top.equalTo(busNumberLabel.snp.bottom).offset(8)
-                    make.bottom.equalToSuperview()
+                    make.bottom.equalToSuperview().inset(8)
                 }
+                
+                endPointView.isHidden = false
+                endPointView.layer.cornerRadius = 5
+                endPointView.backgroundColor = AtchaColor.gray800
+                
+                endPointView.snp.makeConstraints { make in
+                    make.centerX.equalTo(lineView)
+                    make.bottom.equalTo(lineView.snp.bottom)
+                    make.size.equalTo(10)
+                }
+                
+                lineView.snp.remakeConstraints { make in
+                    make.top.equalTo(trafficImageView.snp.top).offset(5)
+                    make.centerX.equalTo(trafficImageView)
+                    make.width.equalTo(2)
+                    make.bottom.equalToSuperview().inset(10)
+                }
+                
             } else {
                 busNumberLabel.snp.remakeConstraints { make in
                     make.leading.equalTo(stationLabel.snp.leading)
                     make.top.equalTo(stationLabel.snp.bottom).offset(8)
-                    make.bottom.equalToSuperview()
+                    make.bottom.equalToSuperview().inset(8)
                 }
             }
         case .subway:
@@ -129,13 +161,31 @@ final class CourseStepItemView: UIView {
                 endStationLabel.snp.remakeConstraints { make in
                     make.leading.equalTo(stationLabel.snp.leading)
                     make.top.equalTo(directionLabel.snp.bottom).offset(8)
-                    make.bottom.equalToSuperview()
+                    make.bottom.equalToSuperview().inset(8)
                 }
+                
+                endPointView.isHidden = false
+                endPointView.layer.cornerRadius = 5
+                endPointView.backgroundColor = AtchaColor.gray800
+                
+                endPointView.snp.makeConstraints { make in
+                    make.centerX.equalTo(lineView)
+                    make.bottom.equalTo(lineView.snp.bottom)
+                    make.size.equalTo(10)
+                }
+                
+                lineView.snp.remakeConstraints { make in
+                    make.top.equalTo(trafficImageView.snp.top).offset(5)
+                    make.centerX.equalTo(trafficImageView)
+                    make.width.equalTo(2)
+                    make.bottom.equalToSuperview().inset(10)
+                }
+                
             } else {
                 directionLabel.snp.remakeConstraints { make in
                     make.leading.equalTo(stationLabel.snp.leading)
                     make.top.equalTo(stationLabel.snp.bottom).offset(8)
-                    make.bottom.equalToSuperview()
+                    make.bottom.equalToSuperview().inset(8)
                 }
             }
         default:
@@ -144,7 +194,7 @@ final class CourseStepItemView: UIView {
                 make.leading.equalTo(trafficImageView.snp.trailing).offset(8)
                 make.top.equalTo(trafficImageView.snp.top)
                 make.trailing.lessThanOrEqualToSuperview()
-                make.bottom.equalToSuperview()
+                make.bottom.equalToSuperview().inset(8)
             }
         }
     }

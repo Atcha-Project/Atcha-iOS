@@ -29,7 +29,6 @@ final class CourseStepsStackView: UIStackView {
 
     private func setupUI() {
         axis = .vertical
-        spacing = 8
         alignment = .fill
         distribution = .fill
     }
