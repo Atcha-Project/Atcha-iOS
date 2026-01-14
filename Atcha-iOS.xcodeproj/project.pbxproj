@@ -840,6 +840,7 @@
 		6D73EB582E1611A600F8DF8B /* CourseSearch */ = {
 			isa = PBXGroup;
 			children = (
+				6D7795D32F17692600285230 /* NewCourse */,
 				6D73EB5C2E1611F800F8DF8B /* CourseSearchViewController.swift */,
 				6D73EB5E2E16120200F8DF8B /* CourseSearchViewModel.swift */,
 				6D73EB642E163C4D00F8DF8B /* CourseTabCell.swift */,
@@ -856,6 +857,13 @@
 				6D73EB622E16121700F8DF8B /* CourseModifyViewModel.swift */,
 			);
 			path = CourseModify;
+			sourceTree = "<group>";
+		};
+		6D7795D32F17692600285230 /* NewCourse */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = NewCourse;
 			sourceTree = "<group>";
 		};
 		6D81573E2E126C16003688A6 /* Lock */ = {

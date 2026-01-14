@@ -287,7 +287,6 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
         
         // 버튼 탭 시 확장/축소 상태 변경 핸들러 연결
         cell.onToggleExpanded = { [weak self] in
-            self?.viewModel.toggleExpanded(for: model)
             AmplitudeManager.shared.track(.course_detail_toggle_click)
         }
         

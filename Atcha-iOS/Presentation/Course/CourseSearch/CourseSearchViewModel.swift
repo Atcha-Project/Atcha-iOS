@@ -14,15 +14,13 @@ import Foundation
 struct CourseUIModel: Hashable {
     let id: String
     let course: Course
-    var isExpanded: Bool
     
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
-        hasher.combine(isExpanded)
     }
     
     static func == (lhs: CourseUIModel, rhs: CourseUIModel) -> Bool {
-        return lhs.id == rhs.id && lhs.isExpanded == rhs.isExpanded
+        return lhs.id == rhs.id
     }
 }
 
@@ -123,7 +121,7 @@ final class CourseSearchViewModel: BaseViewModel {
                 let response = try await courseUseCase.courseSearch(request)
                 
                 let uiModels = response.map {
-                    CourseUIModel(id: $0.routeId ?? UUID().uuidString, course: $0, isExpanded: false)
+                    CourseUIModel(id: $0.routeId ?? UUID().uuidString, course: $0)
                 }
                 
                 self.allCourses = uiModels
@@ -170,7 +168,7 @@ final class CourseSearchViewModel: BaseViewModel {
                     hasReceived = true
                     
                     let uiModel = CourseUIModel(id: course.routeId ?? UUID().uuidString,
-                                                course: course, isExpanded: false)
+                                                course: course)
                     if !self.allCourses.contains(where: { $0.id == uiModel.id }) {
                         self.allCourses.append(uiModel)
                         self.allCourses.sort(by: isLess(_:_:))
@@ -229,16 +227,7 @@ final class CourseSearchViewModel: BaseViewModel {
     deinit {
         stopCourseStream()
     }
-    
-    // MARK: UI 확장을 위한 토글 함수
-    func toggleExpanded(for model: CourseUIModel) {
-        guard let index = courses.firstIndex(of: model) else { return }
-        
-        var newModel = courses[index]
-        newModel.isExpanded.toggle()
-        courses[index] = newModel
-    }
-    
+
     
     // MARK: - 서버 ISO 문자열 파싱
     private func parseServerDate(_ iso: String) -> Date? {
