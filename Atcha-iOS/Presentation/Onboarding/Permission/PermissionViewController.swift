@@ -198,7 +198,7 @@ final class PermissionViewController: BaseViewController<PermissionViewModel> {
     private func presentPushDeniedAlert() {
         let alert = UIAlertController(
             title: nil,
-            message: "알림을 허용하지 않으면\n막차 알림이 울리지 못해요.",
+            message: "알림을 허용하지 않으면\n막차 알람이 울리지 못해요.",
             preferredStyle: .alert
         )
 

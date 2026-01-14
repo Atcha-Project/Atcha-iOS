@@ -9,7 +9,7 @@ import Foundation
 import CoreLocation
 import UserNotifications
 
-final class PermissionViewModel: BaseViewModel {
+final class PermissionViewModel : BaseViewModel {
     @Published var checkPermissionFinished: Bool = false
     @Published var showLocationDeniedAlert: Bool = false
     @Published var showPushDeniedAlert: Bool = false
@@ -78,6 +78,7 @@ final class PermissionViewModel: BaseViewModel {
             return
         }
 
+        self.checkPermissionFinished = true
         requestMyLocation()
     }
 
@@ -89,8 +90,7 @@ final class PermissionViewModel: BaseViewModel {
                         latitude: location.coordinate.latitude,
                         longitude: location.coordinate.longitude
                     )
-                    locationStateHolder.currentLocationSubject.send(currentLocation)
-                    await MainActor.run { self.checkPermissionFinished = true }
+                    locationStateHolder.currentLocationSubject.send(currentLocation)    
                     break
                 }
             }

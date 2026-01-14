@@ -20,7 +20,7 @@ final class SearchLocationViewModel: BaseViewModel {
     
     private let searchAddressUseCase: SearchAddressUseCase
     private let authorizationUseCase: RequestLocationAuthorizationUseCase
-    private let locationStateHolder: LocationStateHolder
+    var locationStateHolder: LocationStateHolder
     
     init(searchAddressUseCase: SearchAddressUseCase,
          authorizationUseCase: RequestLocationAuthorizationUseCase,

@@ -17,6 +17,9 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
     
     private let pageControl = UIPageControl()
     private var autoScrollTimer: Timer?
+    private let multiplier = 3 // 실제 아이템 수 * multiplier 만큼 셀 생성
+    private var isInitialSetup = true
+    
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
@@ -50,6 +53,19 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
         setupUI()
         setupLoginButtons()
         setupAutoLayout()
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        
+        // 컬렉션뷰 레이아웃이 완료된 후 중간 위치로 초기화
+        if isInitialSetup {
+            let itemCount = LoginIntro.allCases.count
+            let middleIndex = itemCount * (multiplier / 2)
+            let indexPath = IndexPath(item: middleIndex, section: 0)
+            collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: false)
+            isInitialSetup = false
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -104,14 +120,20 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
     }
     
     @objc private func goToNextPage() {
-        let currentPage = pageControl.currentPage
-        let nextPage = (currentPage + 1) % LoginIntro.allCases.count
-        let indexPath = IndexPath(item: nextPage, section: 0)
+        let itemsPerPage = LoginIntro.allCases.count
+        let currentOffset = collectionView.contentOffset.x
+        let pageWidth = collectionView.bounds.width
+        let currentPage = Int(currentOffset / pageWidth)
+        let nextPage = currentPage + 1
         
+        let indexPath = IndexPath(item: nextPage, section: 0)
         collectionView.scrollToItem(at: indexPath,
                                     at: .centeredHorizontally,
                                     animated: true)
-        pageControl.currentPage = nextPage
+        
+        // 실제 페이지 번호 업데이트 (0-5 범위 내에서)
+        let actualPage = nextPage % itemsPerPage
+        pageControl.currentPage = actualPage
     }
     
     private func setupLoginButtons() {
@@ -201,7 +223,8 @@ extension LoginViewController: ASAuthorizationControllerPresentationContextProvi
 
 extension LoginViewController: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return LoginIntro.allCases.count
+        // 무한 스크롤을 위해 실제 아이템 수의 배수만큼 생성
+        return LoginIntro.allCases.count * multiplier
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -210,7 +233,9 @@ extension LoginViewController: UICollectionViewDataSource, UICollectionViewDeleg
             return UICollectionViewCell()
         }
         
-        cell.configure(info: LoginIntro.allCases[indexPath.item])
+        // 실제 인덱스로 변환 (0-5 범위로 순환)
+        let actualIndex = indexPath.item % LoginIntro.allCases.count
+        cell.configure(info: LoginIntro.allCases[actualIndex])
         return cell
     }
     
@@ -222,7 +247,39 @@ extension LoginViewController: UICollectionViewDataSource, UICollectionViewDeleg
     }
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        let page = Int(scrollView.contentOffset.x / scrollView.frame.width + 0.5)
-        pageControl.currentPage = page
+        let itemsPerPage = LoginIntro.allCases.count
+        let pageWidth = scrollView.frame.width
+        let currentPage = Int(scrollView.contentOffset.x / pageWidth + 0.5)
+        
+        // 실제 페이지 번호 업데이트 (0-5 범위 내에서)
+        let actualPage = currentPage % itemsPerPage
+        pageControl.currentPage = actualPage
+    }
+    
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        resetScrollPositionIfNeeded()
+    }
+    
+    func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
+        resetScrollPositionIfNeeded()
+    }
+    
+    // 스크롤 위치가 끝에 가까워지면 중간으로 재배치
+    private func resetScrollPositionIfNeeded() {
+        let itemsPerPage = LoginIntro.allCases.count
+        let pageWidth = collectionView.bounds.width
+        let currentPage = Int(collectionView.contentOffset.x / pageWidth + 0.5)
+        let totalPages = itemsPerPage * multiplier
+        
+        // 끝 부분에 가까워지면 중간으로 이동
+        if currentPage <= itemsPerPage / 2 {
+            let newPage = currentPage + itemsPerPage
+            let newOffset = CGPoint(x: CGFloat(newPage) * pageWidth, y: 0)
+            collectionView.setContentOffset(newOffset, animated: false)
+        } else if currentPage >= totalPages - itemsPerPage / 2 {
+            let newPage = currentPage - itemsPerPage
+            let newOffset = CGPoint(x: CGFloat(newPage) * pageWidth, y: 0)
+            collectionView.setContentOffset(newOffset, animated: false)
+        }
     }
 }
