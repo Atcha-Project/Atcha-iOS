@@ -18,9 +18,12 @@ final class CourseCell: UICollectionViewCell {
     private let flagView: UIView = UIView()
     private let timeView: UIView = UIView()
     private let progressView: DetailRouteProgressView = DetailRouteProgressView()
-    private let courseSummeryView: UIView = UIView()
+    private let courseStepsStackView: CourseStepsStackView = CourseStepsStackView()
     
     private let alarmRegisterButton: AtchaButton = AtchaButton(text: "막차 알람 받기", size: .h44, style: .filled(.defaultGray), image: UIImage.bellOutlined)
+    
+    
+    private let detailTapGesture = UITapGestureRecognizer()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -42,7 +45,12 @@ final class CourseCell: UICollectionViewCell {
         contentView.addSubview(containerView)
         containerView.addSubViews(
             progressView,
+            courseStepsStackView,
             alarmRegisterButton)
+        
+        detailTapGesture.addTarget(self, action: #selector(detailTapped))
+                containerView.isUserInteractionEnabled = true
+                containerView.addGestureRecognizer(detailTapGesture)
     }
     
     private func setupAutoLayout() {
@@ -60,9 +68,15 @@ final class CourseCell: UICollectionViewCell {
             make.height.equalTo(16)
         }
         
+        courseStepsStackView.snp.makeConstraints { make in
+            make.top.equalTo(progressView.snp.bottom).offset(22)
+            make.leading.equalToSuperview().offset(16)
+            make.trailing.equalToSuperview().inset(16)
+        }
+        
         alarmRegisterButton.snp.makeConstraints { make in
             make.height.equalTo(44).priority(.high)
-            make.top.equalTo(progressView.snp.bottom).offset(22)
+            make.top.equalTo(courseStepsStackView.snp.bottom).offset(22)
             make.leading.equalToSuperview().offset(16)
             make.trailing.equalToSuperview().inset(16)
             make.bottom.equalToSuperview().inset(16)
@@ -74,7 +88,12 @@ final class CourseCell: UICollectionViewCell {
         let course = model.course
         
         progressView.configure(infos: course.toLegTrafficInfos())
+        courseStepsStackView.configure(legs: course.legs)
     }
+    
+    @objc private func detailTapped() {
+            onDetailTapped?()
+        }
 }
 
 extension CourseCell{
