@@ -224,7 +224,10 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
             return UICollectionViewCell()
         }
         
-        cell.configure(with: model)
+        let visibleCourses = viewModel.courses
+        let latestId = viewModel.latestDepartureCourseId(in: visibleCourses)
+        let isLast = (model.id == latestId)
+        cell.configure(with: model, isLast: isLast)
         
         cell.onGetAlarmTapped = { [weak self] in
             guard let self else { return }
@@ -283,11 +286,6 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
             viewModel.getDetailTapped?(viewModel.startAddress, LegInfo(pathInfo: pathInfo, trafficInfo: tafficInfo, busInfo: busInfo))
             viewModel.saveStartInfo(model.course.routeId ?? "")
             AmplitudeManager.shared.track(.course_detail_click)
-        }
-        
-        // 버튼 탭 시 확장/축소 상태 변경 핸들러 연결
-        cell.onToggleExpanded = { [weak self] in
-            AmplitudeManager.shared.track(.course_detail_toggle_click)
         }
         
         return cell

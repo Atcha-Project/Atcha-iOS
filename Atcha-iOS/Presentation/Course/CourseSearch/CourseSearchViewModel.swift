@@ -71,35 +71,37 @@ final class CourseSearchViewModel: BaseViewModel {
     
     // MARK: - 탭별 코스
     func fetchCourses(for tabIndex: Int) {
-        // 1) 탭별 베이스 리스트 만들기
         let base: [CourseUIModel]
         switch tabIndex {
         case 0:
-            // 전체
             base = allCourses
-            
         case 1:
             base = allCourses.filter { m in
                 let modes = m.course.legs.compactMap { $0.mode }
-                let hasBusOnly = modes.contains(.bus) && !modes.contains(.subway)
-                return hasBusOnly
+                return modes.contains(.bus) && !modes.contains(.subway)
             }
-            
         case 2:
             base = allCourses.filter { m in
                 let modes = m.course.legs.compactMap { $0.mode }
-                let hasSubwayOnly = modes.contains(.subway) && !modes.contains(.bus)
-                return hasSubwayOnly
+                return modes.contains(.subway) && !modes.contains(.bus)
             }
-            
         default:
             base = []
         }
-        
-        let sorted = base.sorted(by: isLess(_:_:))
-        
-        if courses != sorted {
-            self.courses = sorted
+
+        let latestId = latestDepartureCourseId(in: base)
+        let reordered: [CourseUIModel]
+        if let latestId, let idx = base.firstIndex(where: { $0.id == latestId }) {
+            var tmp = base
+            let latest = tmp.remove(at: idx)
+            tmp.insert(latest, at: 0)
+            reordered = tmp
+        } else {
+            reordered = base
+        }
+
+        if courses != reordered {
+            self.courses = reordered
         }
     }
     
@@ -171,7 +173,6 @@ final class CourseSearchViewModel: BaseViewModel {
                                                 course: course)
                     if !self.allCourses.contains(where: { $0.id == uiModel.id }) {
                         self.allCourses.append(uiModel)
-                        self.allCourses.sort(by: isLess(_:_:))
                         self.fetchCourses(for: self.currentTabIndex)
                     }
                 }
@@ -343,5 +344,33 @@ extension CourseSearchViewModel {
             minimalTotalTimeRank:   minTimeRank,
             transferCount:          transfers
         )
+    }
+}
+
+extension CourseSearchViewModel {
+    func latestDepartureCourseId(in models: [CourseUIModel]) -> String? {
+        var bestId: String?
+        var bestDate: Date?
+
+        for m in models {
+            guard let iso = m.course.departureDateTime,
+                  let d = parseServerDate(iso) else { continue }
+
+            if let curBest = bestDate {
+                if d > curBest {
+                    bestDate = d
+                    bestId = m.id
+                } else if d == curBest {
+                    // 동률이면 "먼저 온 것" 유지 (아무것도 안 함)
+                } else {
+                    // 더 이르면 무시
+                }
+            } else {
+                bestDate = d
+                bestId = m.id
+            }
+        }
+
+        return bestId
     }
 }

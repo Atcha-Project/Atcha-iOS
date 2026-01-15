@@ -10,7 +10,6 @@ import SnapKit
 
 final class CourseCell: UICollectionViewCell {
     static let reusableId: String = "CourseCell"
-    var onToggleExpanded: (() -> Void)?
     var onDetailTapped: (() -> Void)?
     var onGetAlarmTapped: (() -> Void)?
     
@@ -24,6 +23,7 @@ final class CourseCell: UICollectionViewCell {
     
     
     private let detailTapGesture = UITapGestureRecognizer()
+    private let registerTapGesture = UITapGestureRecognizer()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -49,8 +49,12 @@ final class CourseCell: UICollectionViewCell {
             alarmRegisterButton)
         
         detailTapGesture.addTarget(self, action: #selector(detailTapped))
-                containerView.isUserInteractionEnabled = true
-                containerView.addGestureRecognizer(detailTapGesture)
+        containerView.isUserInteractionEnabled = true
+        containerView.addGestureRecognizer(detailTapGesture)
+        
+        registerTapGesture.addTarget(self, action: #selector(getAlarmTapped))
+        alarmRegisterButton.isUserInteractionEnabled = true
+        alarmRegisterButton.addGestureRecognizer(registerTapGesture)
     }
     
     private func setupAutoLayout() {
@@ -84,7 +88,7 @@ final class CourseCell: UICollectionViewCell {
     }
     
     // MARK: - CourseCell Configure
-    func configure(with model: CourseUIModel) {
+    func configure(with model: CourseUIModel, isLast: Bool) {
         let course = model.course
         
         progressView.configure(infos: course.toLegTrafficInfos())
@@ -92,8 +96,12 @@ final class CourseCell: UICollectionViewCell {
     }
     
     @objc private func detailTapped() {
-            onDetailTapped?()
-        }
+        onDetailTapped?()
+    }
+    
+    @objc private func getAlarmTapped() {
+        onGetAlarmTapped?()
+    }
 }
 
 extension CourseCell{
