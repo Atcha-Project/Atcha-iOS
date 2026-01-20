@@ -61,6 +61,7 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
         super.init(frame: frame)
         setupUI()
         setupConstraints()
+        setupInitialConstraintState()
         setupAction()
     }
     
@@ -105,6 +106,12 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
         stationListStackView.axis = .vertical
         stationListStackView.spacing = 10
         stationListStackView.isHidden = true
+    }
+    
+    private func setupInitialConstraintState() {
+        stationListStackViewTopConstraint?.isActive = false
+        stationListStackViewBottomConstraint?.isActive = false
+        endLabelTopConstraintWithoutStack?.isActive = true // ✅ isExpanded = false 상태
     }
     
     private func setupLineImageView() {
