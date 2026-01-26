@@ -24,11 +24,20 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
     private let arrowImageView: UIImageView = UIImageView()
     private let tabItems = ["전체", "버스", "지하철"]
     private var selectedIndex = 0
+    private let courseSortView: UIStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .horizontal
+        stackView.spacing = 4
+        
+        return stackView
+    }()
+    private let courseSortLabel: UILabel = UILabel()
+    private let courseSortImageView: UIImageView = UIImageView()
     private lazy var tabCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
-        layout.minimumLineSpacing = 0
-        layout.minimumInteritemSpacing = 0
+        layout.minimumLineSpacing = 4
+        layout.minimumInteritemSpacing = 4
         
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = AtchaColor.gray950
@@ -156,7 +165,15 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
         
         courseView.addSubview(routeLabelStack)
         
-        view.addSubViews(topNavigationBar, courseView, tabCollectionView, courseCollectionView)
+        courseSortLabel.attributedText = AtchaFont.B7_M_13("늦은 출발순", color: AtchaColor.white)
+        courseSortImageView.image = .chevronDown
+        courseSortImageView.tintColor = AtchaColor.white
+        courseSortImageView.contentMode = .scaleAspectFit
+        
+        courseSortView.addArrangedSubview(courseSortLabel)
+        courseSortView.addArrangedSubview(courseSortImageView)
+        
+        view.addSubViews(topNavigationBar, courseView, tabCollectionView, courseSortView, courseCollectionView)
     }
     
     // MARK: - 경로탐색 AutoLayout
@@ -182,6 +199,16 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
             make.top.equalTo(courseView.snp.bottom).offset(10)
             make.trailing.leading.equalToSuperview()
             make.height.equalTo(40)
+        }
+        
+        courseSortImageView.snp.makeConstraints { make in
+            make.size.equalTo(8.51)
+        }
+        
+        courseSortView.snp.makeConstraints { make in
+            make.bottom.equalTo(tabCollectionView.snp.bottom).inset(10)
+            make.trailing.equalToSuperview().inset(16)
+            make.height.equalTo(16)
         }
         
         courseCollectionView.snp.makeConstraints { make in
@@ -358,7 +385,7 @@ extension CourseSearchViewController: UICollectionViewDelegate, UICollectionView
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let width = collectionView.frame.width / CGFloat(tabItems.count)
+        let width = 52
         return CGSize(width: width, height: 40)
     }
 }
