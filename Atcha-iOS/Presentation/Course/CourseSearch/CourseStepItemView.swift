@@ -14,7 +14,6 @@ final class CourseStepItemView: UIView {
     private let stationLabel: UILabel = UILabel()
     private let endStationLabel: UILabel = UILabel()
     private let busNumberLabel = PaddingLabel(top: 4, left: 8, bottom: 4, right: 8)
-    private let directionLabel: UILabel = UILabel()
     private let lineView: UIView = UIView()
     private let endPointView: UIView = UIView()
     
@@ -34,7 +33,6 @@ final class CourseStepItemView: UIView {
             lineView,
             trafficImageView,
             stationLabel,
-            directionLabel,
             busNumberLabel,
             endStationLabel,
             endPointView
@@ -77,12 +75,10 @@ final class CourseStepItemView: UIView {
         stationLabel.attributedText = AtchaFont.R_12(leg.start?.name ?? "", color: AtchaColor.white)
         
         busNumberLabel.isHidden = true
-        directionLabel.isHidden = true
         endStationLabel.isHidden = true
         endPointView.isHidden = true
         
         busNumberLabel.snp.removeConstraints()
-        directionLabel.snp.removeConstraints()
         endStationLabel.snp.removeConstraints()
         endPointView.snp.removeConstraints()
         
@@ -146,21 +142,13 @@ final class CourseStepItemView: UIView {
             let imageName = subwayIcon[key] ?? subwayDefaultIcon
             trafficImageView.image = UIImage(named: imageName)
             
-            directionLabel.isHidden = false
-            directionLabel.attributedText = AtchaFont.R_12("\(leg.subwayFinalStation ?? "")행", color: AtchaColor.gray300)
-            
-            directionLabel.snp.remakeConstraints { make in
-                make.leading.equalTo(stationLabel.snp.leading)
-                make.top.equalTo(stationLabel.snp.bottom).offset(8)
-            }
-            
             if isLast {
                 endStationLabel.isHidden = false
                 endStationLabel.attributedText = AtchaFont.R_12(leg.end?.name ?? "", color: AtchaColor.white)
                 
                 endStationLabel.snp.remakeConstraints { make in
                     make.leading.equalTo(stationLabel.snp.leading)
-                    make.top.equalTo(directionLabel.snp.bottom).offset(8)
+                    make.top.equalTo(stationLabel.snp.bottom).offset(8)
                     make.bottom.equalToSuperview().inset(8)
                 }
                 
@@ -182,9 +170,10 @@ final class CourseStepItemView: UIView {
                 }
                 
             } else {
-                directionLabel.snp.remakeConstraints { make in
-                    make.leading.equalTo(stationLabel.snp.leading)
-                    make.top.equalTo(stationLabel.snp.bottom).offset(8)
+                stationLabel.snp.remakeConstraints { make in
+                    make.leading.equalTo(trafficImageView.snp.trailing).offset(8)
+                    make.centerY.equalTo(trafficImageView)
+                    make.trailing.lessThanOrEqualToSuperview()
                     make.bottom.equalToSuperview().inset(8)
                 }
             }

@@ -88,20 +88,11 @@ final class CourseSearchViewModel: BaseViewModel {
         default:
             base = []
         }
-
-        let latestId = latestDepartureCourseId(in: base)
-        let reordered: [CourseUIModel]
-        if let latestId, let idx = base.firstIndex(where: { $0.id == latestId }) {
-            var tmp = base
-            let latest = tmp.remove(at: idx)
-            tmp.insert(latest, at: 0)
-            reordered = tmp
-        } else {
-            reordered = base
-        }
-
-        if courses != reordered {
-            self.courses = reordered
+        
+        let sorted = stableSortByDepartureDesc(base)
+        
+        if courses != sorted {
+            self.courses = sorted
         }
     }
     
@@ -228,7 +219,7 @@ final class CourseSearchViewModel: BaseViewModel {
     deinit {
         stopCourseStream()
     }
-
+    
     
     // MARK: - 서버 ISO 문자열 파싱
     private func parseServerDate(_ iso: String) -> Date? {
@@ -323,54 +314,22 @@ extension CourseSearchViewModel {
     }
     
     enum SortOrder { case forward, reverse }
-    
-    // 외부에서 호출: 선택된 코스의 순위 계산
-    func ranks(for selected: Course) -> RouteRanks {
-        // 현재 탭 정렬과 무관하게 “전체 후보(allCourses)” 기준으로 순위 산정
-        let courses = allCourses.map { $0.course }
-        
-        let depValues   = courses.map { departureDate(of: $0) }   // 늦을수록 1위 ⇒ 내림차순
-        let walkValues  = courses.map { walkMetric(of: $0) }       // 적을수록 1위 ⇒ 오름차순
-        let timeValues  = courses.map { totalTime(of: $0) }        // 짧을수록 1위 ⇒ 오름차순
-        
-        let laterDepRank  = rankIndex(value: departureDate(of: selected), in: depValues,  order: .reverse)
-        let minWalkRank   = rankIndex(value: walkMetric(of: selected),   in: walkValues, order: .forward)
-        let minTimeRank   = rankIndex(value: totalTime(of: selected),    in: timeValues, order: .forward)
-        let transfers     = transferCount(of: selected)
-        
-        return RouteRanks(
-            laterDepartureTimeRank: laterDepRank,
-            minimalWalkRank:        minWalkRank,
-            minimalTotalTimeRank:   minTimeRank,
-            transferCount:          transfers
-        )
-    }
 }
 
 extension CourseSearchViewModel {
+    private func stableSortByDepartureDesc(_ models: [CourseUIModel]) -> [CourseUIModel] {
+        return models.enumerated().sorted { lhs, rhs in
+            let ld = lhs.element.course.departureDateTime
+                .flatMap { parseServerDate($0) } ?? Date.distantPast
+            let rd = rhs.element.course.departureDateTime
+                .flatMap { parseServerDate($0) } ?? Date.distantPast
+            
+            if ld != rd { return ld > rd }
+            return lhs.offset < rhs.offset
+        }.map(\.element)
+    }
+    
     func latestDepartureCourseId(in models: [CourseUIModel]) -> String? {
-        var bestId: String?
-        var bestDate: Date?
-
-        for m in models {
-            guard let iso = m.course.departureDateTime,
-                  let d = parseServerDate(iso) else { continue }
-
-            if let curBest = bestDate {
-                if d > curBest {
-                    bestDate = d
-                    bestId = m.id
-                } else if d == curBest {
-                    // 동률이면 "먼저 온 것" 유지 (아무것도 안 함)
-                } else {
-                    // 더 이르면 무시
-                }
-            } else {
-                bestDate = d
-                bestId = m.id
-            }
-        }
-
-        return bestId
+        return stableSortByDepartureDesc(models).first?.id
     }
 }

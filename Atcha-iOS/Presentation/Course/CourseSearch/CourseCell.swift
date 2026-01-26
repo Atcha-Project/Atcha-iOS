@@ -14,8 +14,10 @@ final class CourseCell: UICollectionViewCell {
     var onGetAlarmTapped: (() -> Void)?
     
     private let containerView: UIView = UIView()
-    private let flagView: UIView = UIView()
-    private let timeView: UIView = UIView()
+    private let flagLabel: UILabel = UILabel()
+    private let timeLabel: UILabel = UILabel()
+    private let departureTimeLabel: PaddingLabel = PaddingLabel(top: 4, left: 6, bottom: 4, right: 6)
+    private let departureLabel: UILabel = UILabel()
     private let progressView: DetailRouteProgressView = DetailRouteProgressView()
     private let courseStepsStackView: CourseStepsStackView = CourseStepsStackView()
     
@@ -39,11 +41,14 @@ final class CourseCell: UICollectionViewCell {
     private func setupUI() {
         contentView.backgroundColor = .clear
         
-        containerView.backgroundColor = AtchaColor.gray940
-        containerView.layer.cornerRadius = 12
+        containerView.backgroundColor = AtchaColor.gray950
         
         contentView.addSubview(containerView)
         containerView.addSubViews(
+            flagLabel,
+            timeLabel,
+            departureTimeLabel,
+            departureLabel,
             progressView,
             courseStepsStackView,
             alarmRegisterButton)
@@ -59,28 +64,48 @@ final class CourseCell: UICollectionViewCell {
     
     private func setupAutoLayout() {
         containerView.snp.makeConstraints { make in
-            make.top.equalTo(contentView.snp.top).offset(14)
-            make.bottom.equalTo(contentView.snp.bottom).inset(14)
-            make.leading.equalTo(contentView.snp.leading).offset(16)
-            make.trailing.equalTo(contentView.snp.trailing).inset(16)
+            make.top.equalTo(contentView.snp.top)
+            make.bottom.equalTo(contentView.snp.bottom)
+            make.leading.equalTo(contentView.snp.leading)
+            make.trailing.equalTo(contentView.snp.trailing)
+        }
+        
+        flagLabel.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(20)
+            make.leading.equalToSuperview().offset(16)
+        }
+        
+        timeLabel.snp.makeConstraints { make in
+            make.top.equalTo(flagLabel.snp.bottom).offset(4)
+            make.leading.equalToSuperview().offset(16)
+        }
+        
+        departureTimeLabel.snp.makeConstraints { make in
+            make.top.equalTo(timeLabel.snp.bottom).offset(6)
+            make.leading.equalToSuperview().offset(16)
+        }
+        
+        departureLabel.snp.makeConstraints { make in
+            make.centerY.equalTo(departureTimeLabel)
+            make.leading.equalTo(departureTimeLabel.snp.trailing).offset(4)
         }
         
         progressView.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(14)
+            make.top.equalTo(departureTimeLabel.snp.bottom).offset(18)
             make.leading.equalToSuperview().offset(16)
             make.trailing.equalToSuperview().inset(16)
-            make.height.equalTo(16)
+            make.height.equalTo(15)
         }
         
         courseStepsStackView.snp.makeConstraints { make in
-            make.top.equalTo(progressView.snp.bottom).offset(22)
+            make.top.equalTo(progressView.snp.bottom).offset(16)
             make.leading.equalToSuperview().offset(16)
             make.trailing.equalToSuperview().inset(16)
         }
         
         alarmRegisterButton.snp.makeConstraints { make in
             make.height.equalTo(44).priority(.high)
-            make.top.equalTo(courseStepsStackView.snp.bottom).offset(22)
+            make.top.equalTo(courseStepsStackView.snp.bottom).offset(18)
             make.leading.equalToSuperview().offset(16)
             make.trailing.equalToSuperview().inset(16)
             make.bottom.equalToSuperview().inset(16)
@@ -89,10 +114,49 @@ final class CourseCell: UICollectionViewCell {
     
     // MARK: - CourseCell Configure
     func configure(with model: CourseUIModel, isLast: Bool) {
+        flagConfigure(isLast: isLast)
         let course = model.course
+        
+        if let totalTime = course.totalTime?.toHourMinuteSecondString {
+            timeLabel.attributedText = AtchaFont.H2_B_22(lineHeight: 28, "\(totalTime)", color: AtchaColor.white)
+        }
+        
+        if let departureTime = course.departureDateTime {
+            departureTimeLabel.attributedText = AtchaFont.B7_M_13(lineHeight: 15, "\(departureTime.convertedToHourMinute)", color: AtchaColor.white)
+            departureTimeLabel.layer.cornerRadius = 8
+            departureTimeLabel.clipsToBounds = true
+            departureTimeLabel.backgroundColor = AtchaColor.gray930
+        }
+        
+        departureLabel.attributedText = AtchaFont.B7_M_13("에 자리에서 출발", color: AtchaColor.gray400)
         
         progressView.configure(infos: course.toLegTrafficInfos())
         courseStepsStackView.configure(legs: course.legs)
+    }
+    
+    private func flagConfigure(isLast: Bool) {
+        if isLast {
+            flagLabel.isHidden = false
+            flagLabel.attributedText = AtchaFont.R_12("가장 늦은 막차", color: AtchaColor.main)
+            
+            flagLabel.snp.remakeConstraints { make in
+                make.top.equalToSuperview().offset(20)
+                make.leading.equalToSuperview().offset(16)
+            }
+            
+            timeLabel.snp.remakeConstraints { make in
+                make.top.equalTo(flagLabel.snp.bottom).offset(4)
+                make.leading.equalToSuperview().offset(16)
+            }
+        } else {
+            flagLabel.isHidden = true
+            flagLabel.snp.removeConstraints()
+            
+            timeLabel.snp.remakeConstraints { make in
+                make.top.equalToSuperview().offset(20)
+                make.leading.equalToSuperview().offset(16)
+            }
+        }
     }
     
     @objc private func detailTapped() {
@@ -115,7 +179,8 @@ extension CourseCell{
         let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
         
         let section = NSCollectionLayoutSection(group: group)
-        section.interGroupSpacing = -10
+        section.interGroupSpacing = 6
+        section.contentInsets = .init(top: 1, leading: 0, bottom: 0, trailing: 0)
         
         return section
     }

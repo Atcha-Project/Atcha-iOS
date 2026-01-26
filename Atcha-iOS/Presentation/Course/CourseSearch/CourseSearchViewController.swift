@@ -41,7 +41,7 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
     private lazy var courseCollectionView: UICollectionView = {
         let layout = layout()
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        cv.backgroundColor = .clear
+        cv.backgroundColor = AtchaColor.black
         cv.delegate = self
         cv.register(CourseCell.self, forCellWithReuseIdentifier: CourseCell.reusableId)
         return cv
@@ -232,7 +232,6 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
         cell.onGetAlarmTapped = { [weak self] in
             guard let self else { return }
             let course = model.course
-            let r = self.viewModel.ranks(for: course)
             
             let pathInfo: [LegPathInfo] = model.course.toLegPathInfos()
             let trafficInfo: [LegTrafficInfo] = model.course.toLegTrafficInfos()
@@ -254,13 +253,13 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
             
             if isAlarmRegistered {
                 if shouldShowPopup {
-                    showCoursePopup(alarmRequest, alarmTapped, r)
+                    showCoursePopup(alarmRequest, alarmTapped)
                 } else {
-                    showRe_RegisterPopup(alarmRequest, alarmTapped, r)
+                    showRe_RegisterPopup(alarmRequest, alarmTapped)
                 }
             } else {
                 if shouldShowPopup {
-                    showCoursePopup(alarmRequest, alarmTapped, r)
+                    showCoursePopup(alarmRequest, alarmTapped)
                 } else {
                     viewModel.alarmRegister(alarmRequest)
                     viewModel.getAlarmTapped?(alarmTapped.0, alarmTapped.1)
@@ -366,7 +365,7 @@ extension CourseSearchViewController: UICollectionViewDelegate, UICollectionView
 
 extension CourseSearchViewController {
     
-    private func showCoursePopup(_ alarmRequest: AlarmRequest, _ alarmTapped: (String, LegInfo), _ rank: RouteRanks) {
+    private func showCoursePopup(_ alarmRequest: AlarmRequest, _ alarmTapped: (String, LegInfo)) {
         let popupVM = AtchaPopupViewModel(info: .course)
         let popupVC = AtchaPopupViewController(viewModel: popupVM)
         
@@ -396,7 +395,7 @@ extension CourseSearchViewController {
         present(popupVC, animated: false)
     }
     
-    private func showRe_RegisterPopup(_ alarmRequest: AlarmRequest, _ alarmTapped: (String, LegInfo), _ rank: RouteRanks) {
+    private func showRe_RegisterPopup(_ alarmRequest: AlarmRequest, _ alarmTapped: (String, LegInfo)) {
         let popupVM = AtchaPopupViewModel(info: .re_register)
         let popupVC = AtchaPopupViewController(viewModel: popupVM)
         
