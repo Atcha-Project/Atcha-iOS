@@ -21,7 +21,7 @@ final class CourseCell: UICollectionViewCell {
     private let progressView: DetailRouteProgressView = DetailRouteProgressView()
     private let courseStepsStackView: CourseStepsStackView = CourseStepsStackView()
     
-    private let alarmRegisterButton: AtchaButton = AtchaButton(text: "막차 알람 받기", size: .h44, style: .filled(.defaultGray), image: UIImage.bellOutlined)
+    private let alarmRegisterButton: AtchaButton = AtchaButton(text: "막차 알람 받기", size: .h44, style: .filled(.defaultGray), image: UIImage.bellFilled)
     
     
     private let detailTapGesture = UITapGestureRecognizer()
@@ -94,7 +94,7 @@ final class CourseCell: UICollectionViewCell {
             make.top.equalTo(departureTimeLabel.snp.bottom).offset(18)
             make.leading.equalToSuperview().offset(16)
             make.trailing.equalToSuperview().inset(16)
-            make.height.equalTo(15)
+            make.height.equalTo(16)
         }
         
         courseStepsStackView.snp.makeConstraints { make in
@@ -126,9 +126,11 @@ final class CourseCell: UICollectionViewCell {
             departureTimeLabel.layer.cornerRadius = 8
             departureTimeLabel.clipsToBounds = true
             departureTimeLabel.backgroundColor = AtchaColor.gray930
+            departureTimeLabel.layer.borderWidth = 1
+            departureTimeLabel.layer.borderColor = AtchaColor.gray500.cgColor
         }
         
-        departureLabel.attributedText = AtchaFont.B7_M_13("에 자리에서 출발", color: AtchaColor.gray400)
+        departureLabel.attributedText = AtchaFont.B7_M_13("에 자리에서 출발", color: AtchaColor.gray200)
         
         progressView.configure(infos: course.toLegTrafficInfos())
         courseStepsStackView.configure(legs: course.legs)

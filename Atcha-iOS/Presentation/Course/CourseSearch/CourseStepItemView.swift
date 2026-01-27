@@ -39,7 +39,7 @@ final class CourseStepItemView: UIView {
         )
         
         trafficImageView.contentMode = .scaleAspectFit
-        lineView.backgroundColor = AtchaColor.gray800
+        lineView.backgroundColor = AtchaColor.gray910
     }
     
     private func setupAutoLayout() {
@@ -115,7 +115,7 @@ final class CourseStepItemView: UIView {
                 
                 endPointView.isHidden = false
                 endPointView.layer.cornerRadius = 5
-                endPointView.backgroundColor = AtchaColor.gray800
+                endPointView.backgroundColor = AtchaColor.gray910
                 
                 endPointView.snp.makeConstraints { make in
                     make.centerX.equalTo(lineView)
