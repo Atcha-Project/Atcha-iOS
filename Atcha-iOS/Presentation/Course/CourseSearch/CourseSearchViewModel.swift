@@ -14,15 +14,13 @@ import Foundation
 struct CourseUIModel: Hashable {
     let id: String
     let course: Course
-    var isExpanded: Bool
     
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
-        hasher.combine(isExpanded)
     }
     
     static func == (lhs: CourseUIModel, rhs: CourseUIModel) -> Bool {
-        return lhs.id == rhs.id && lhs.isExpanded == rhs.isExpanded
+        return lhs.id == rhs.id
     }
 }
 
@@ -73,32 +71,25 @@ final class CourseSearchViewModel: BaseViewModel {
     
     // MARK: - 탭별 코스
     func fetchCourses(for tabIndex: Int) {
-        // 1) 탭별 베이스 리스트 만들기
         let base: [CourseUIModel]
         switch tabIndex {
         case 0:
-            // 전체
             base = allCourses
-            
         case 1:
             base = allCourses.filter { m in
                 let modes = m.course.legs.compactMap { $0.mode }
-                let hasBusOnly = modes.contains(.bus) && !modes.contains(.subway)
-                return hasBusOnly
+                return modes.contains(.bus) && !modes.contains(.subway)
             }
-            
         case 2:
             base = allCourses.filter { m in
                 let modes = m.course.legs.compactMap { $0.mode }
-                let hasSubwayOnly = modes.contains(.subway) && !modes.contains(.bus)
-                return hasSubwayOnly
+                return modes.contains(.subway) && !modes.contains(.bus)
             }
-            
         default:
             base = []
         }
         
-        let sorted = base.sorted(by: isLess(_:_:))
+        let sorted = stableSortByDepartureDesc(base)
         
         if courses != sorted {
             self.courses = sorted
@@ -123,7 +114,7 @@ final class CourseSearchViewModel: BaseViewModel {
                 let response = try await courseUseCase.courseSearch(request)
                 
                 let uiModels = response.map {
-                    CourseUIModel(id: $0.routeId ?? UUID().uuidString, course: $0, isExpanded: false)
+                    CourseUIModel(id: $0.routeId ?? UUID().uuidString, course: $0)
                 }
                 
                 self.allCourses = uiModels
@@ -170,10 +161,9 @@ final class CourseSearchViewModel: BaseViewModel {
                     hasReceived = true
                     
                     let uiModel = CourseUIModel(id: course.routeId ?? UUID().uuidString,
-                                                course: course, isExpanded: false)
+                                                course: course)
                     if !self.allCourses.contains(where: { $0.id == uiModel.id }) {
                         self.allCourses.append(uiModel)
-                        self.allCourses.sort(by: isLess(_:_:))
                         self.fetchCourses(for: self.currentTabIndex)
                     }
                 }
@@ -228,15 +218,6 @@ final class CourseSearchViewModel: BaseViewModel {
     
     deinit {
         stopCourseStream()
-    }
-    
-    // MARK: UI 확장을 위한 토글 함수
-    func toggleExpanded(for model: CourseUIModel) {
-        guard let index = courses.firstIndex(of: model) else { return }
-        
-        var newModel = courses[index]
-        newModel.isExpanded.toggle()
-        courses[index] = newModel
     }
     
     
@@ -333,26 +314,22 @@ extension CourseSearchViewModel {
     }
     
     enum SortOrder { case forward, reverse }
+}
+
+extension CourseSearchViewModel {
+    private func stableSortByDepartureDesc(_ models: [CourseUIModel]) -> [CourseUIModel] {
+        return models.enumerated().sorted { lhs, rhs in
+            let ld = lhs.element.course.departureDateTime
+                .flatMap { parseServerDate($0) } ?? Date.distantPast
+            let rd = rhs.element.course.departureDateTime
+                .flatMap { parseServerDate($0) } ?? Date.distantPast
+            
+            if ld != rd { return ld > rd }
+            return lhs.offset < rhs.offset
+        }.map(\.element)
+    }
     
-    // 외부에서 호출: 선택된 코스의 순위 계산
-    func ranks(for selected: Course) -> RouteRanks {
-        // 현재 탭 정렬과 무관하게 “전체 후보(allCourses)” 기준으로 순위 산정
-        let courses = allCourses.map { $0.course }
-        
-        let depValues   = courses.map { departureDate(of: $0) }   // 늦을수록 1위 ⇒ 내림차순
-        let walkValues  = courses.map { walkMetric(of: $0) }       // 적을수록 1위 ⇒ 오름차순
-        let timeValues  = courses.map { totalTime(of: $0) }        // 짧을수록 1위 ⇒ 오름차순
-        
-        let laterDepRank  = rankIndex(value: departureDate(of: selected), in: depValues,  order: .reverse)
-        let minWalkRank   = rankIndex(value: walkMetric(of: selected),   in: walkValues, order: .forward)
-        let minTimeRank   = rankIndex(value: totalTime(of: selected),    in: timeValues, order: .forward)
-        let transfers     = transferCount(of: selected)
-        
-        return RouteRanks(
-            laterDepartureTimeRank: laterDepRank,
-            minimalWalkRank:        minWalkRank,
-            minimalTotalTimeRank:   minTimeRank,
-            transferCount:          transfers
-        )
+    func latestDepartureCourseId(in models: [CourseUIModel]) -> String? {
+        return stableSortByDepartureDesc(models).first?.id
     }
 }

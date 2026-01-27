@@ -133,6 +133,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
         super.viewWillAppear(animated)
         
         let isAlarmRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
+        let isAlarmFired = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue) ?? false
         
         DispatchQueue.main.asyncAfter(deadline: .now()) { [weak self] in
             self?.viewModel.setupLocation()
@@ -144,7 +145,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
             }
         }
         
-        if isAlarmRegistered,
+        if isAlarmRegistered && !isAlarmFired,
            let startCoord = routeStartCoordinate {
             mapContainerView.setupZoomCenter(location: startCoord)
         }
@@ -472,9 +473,19 @@ extension MainViewController {
                     forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue
                 ) ?? false
                 
+                let isAlarmFired = UserDefaultsWrapper.shared.bool(
+                    forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue
+                ) ?? false
+                
+                
                 // 알람 등록 + 출발 전 + departure 화면에서는
                 //    자동으로는 절대 현위치 안 따라감
                 if isAlarmRegistered {
+                    if isAlarmFired {
+                        self.mapContainerView.setupCenter(location: coord)
+                        return
+                    }
+
                     if self.shouldCenterToCurrentLocationOnce {
                         self.mapContainerView.setupCenter(location: coord)
                         self.shouldCenterToCurrentLocationOnce = false
@@ -527,7 +538,17 @@ extension MainViewController {
             .removeDuplicates()
             .compactMap { $0 }
             .receive(on: RunLoop.main)
-            .sink { [weak self] in self?.mapContainerView.updateUserMarker(location: $0) }
+            .sink { [weak self] in
+                self?.mapContainerView.updateUserMarker(location: $0)
+                
+                let isAlarmFired = UserDefaultsWrapper.shared.bool(
+                    forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue
+                ) ?? false
+                
+                if isAlarmFired {
+                    self?.mapContainerView.setupCenter(location: $0)
+                }
+            }
             .store(in: &cancellables)
     }
     
@@ -867,7 +888,11 @@ extension MainViewController {
                 forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue
             ) ?? false
             
-            if isAlarmRegistered {
+            let isAlarmFired = UserDefaultsWrapper.shared.bool(
+                forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue
+            ) ?? false
+
+            if isAlarmRegistered && !isAlarmFired {
                 mapContainerView.setupZoomCenter(location: startCoordinate)
             }
         }
