@@ -12,6 +12,7 @@ import SnapKit
 
 final class TMapContainerView: UIView {
     private var tMapWrapper: TMapWrapper!
+    var gestureTargetView: UIView { tMapWrapper.mapView }
     
     weak var delegate: TMapWrapperDelegate? {
         didSet {
@@ -68,6 +69,10 @@ final class TMapContainerView: UIView {
     
     func deinitMapView() {
         tMapWrapper.mapView.vsmMapView?.viewWillDisappear()
+    }
+    
+    func setHeading(_ heading: CLLocationDirection) {
+        tMapWrapper.mapView.heading = heading
     }
 }
 

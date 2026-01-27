@@ -65,28 +65,51 @@ final class CourseSettingViewController: BaseViewController<CourseSettingViewMod
                 guard let self else { return }
                 switch action {
                 case .settingTapped:
-                    
                     guard let startCoord = viewModel.currentLocation else {
                         view.showToast(message: "현재 위치를 확인 중이에요. 잠시 후 다시 시도해 주세요.")
                         return
                     }
                     
-                    let wrapper = UserDefaultsWrapper.shared
-                    let endLatStr = wrapper.string(forKey: UserDefaultsWrapper.Key.homeLat.rawValue) ?? "37.554722"
-                    let endLonStr = wrapper.string(forKey: UserDefaultsWrapper.Key.homeLon.rawValue) ?? "126.970833"
-                    
-                    guard let endLat = Double(endLatStr), let endLon = Double(endLonStr) else {
-                        view.showToast(message: "저장된 목적지 좌표가 잘못되었어요.")
-                        return
+                    Task { [weak self] in
+                        guard let self else { return }
+                        
+                        let ok = await viewModel.checkServiceRegion(
+                            lat: startCoord.latitude,
+                            lon: startCoord.longitude
+                        )
+                        
+                        guard ok else {
+                            await MainActor.run {
+                                self.view.showToast(message: "앗차는 현재 서울, 경기, 인천에서만 이용 가능해요")
+                            }
+                            return
+                        }
+                        
+                        let wrapper = UserDefaultsWrapper.shared
+                        let endLatStr = wrapper.string(forKey: UserDefaultsWrapper.Key.homeLat.rawValue) ?? "37.554722"
+                        let endLonStr = wrapper.string(forKey: UserDefaultsWrapper.Key.homeLon.rawValue) ?? "126.970833"
+                        
+                        guard let endLat = Double(endLatStr),
+                              let endLon = Double(endLonStr) else {
+                            await MainActor.run {
+                                self.view.showToast(message: "저장된 목적지 좌표가 잘못되었어요.")
+                            }
+                            return
+                        }
+                        
+                        let endCoord = CLLocationCoordinate2D(latitude: endLat, longitude: endLon)
+                        
+                        guard !ProximityManager.shared.isWithinThreshold(from: startCoord, to: endCoord) else {
+                            await MainActor.run {
+                                self.view.showToast(message: "이동하려는 거리가 매우 가까워요")
+                            }
+                            return
+                        }
+                        
+                        await MainActor.run {
+                            self.viewModel.userDidTapSettingButton()
+                        }
                     }
-                    let endCoord = CLLocationCoordinate2D(latitude: endLat, longitude: endLon)
-                    
-                    if ProximityManager.shared.isWithinThreshold(from: startCoord, to: endCoord) {
-                        view.showToast(message: "이동하려는 거리가 매우 가까워요")
-                        return
-                    }
-                    
-                    viewModel.userDidTapSettingButton()
                 }
             }
             .store(in: &cancellables)

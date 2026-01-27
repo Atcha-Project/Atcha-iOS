@@ -18,6 +18,7 @@
 		6D1EE2F02E0A7F0000F7BBF1 /* OnboardingRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2EF2E0A7F0000F7BBF1 /* OnboardingRepository.swift */; };
 		6D1EE2F22E0A80AA00F7BBF1 /* OnboardingDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2F12E0A80AA00F7BBF1 /* OnboardingDTO.swift */; };
 		6D1EE2F72E0A933000F7BBF1 /* OnboardingCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2F62E0A933000F7BBF1 /* OnboardingCoordinator.swift */; };
+		6D26DFA82F289E64005097A4 /* HeadingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D26DFA72F289E64005097A4 /* HeadingManager.swift */; };
 		6D2B8C942E38A97500608104 /* BusDetailHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2B8C932E38A97500608104 /* BusDetailHeaderView.swift */; };
 		6D2B8C972E38ABF600608104 /* BusInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2B8C962E38ABF600608104 /* BusInfoViewController.swift */; };
 		6D2B8C992E38ABFD00608104 /* BusInfoViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2B8C982E38ABFD00608104 /* BusInfoViewModel.swift */; };
@@ -85,7 +86,6 @@
 		6D8157492E129A7C003688A6 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 6D8157482E129A7C003688A6 /* Lottie */; };
 		6D81574E2E13EC0F003688A6 /* Int+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D81574D2E13EC0F003688A6 /* Int+Ext.swift */; };
 		6D8D8AE02E013819003DABB2 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 6D8D8ADF2E013819003DABB2 /* SnapKit */; };
-		6D8D8AE32E01386D003DABB2 /* PanModal in Frameworks */ = {isa = PBXBuildFile; productRef = 6D8D8AE22E01386D003DABB2 /* PanModal */; };
 		6D8D8B132E01B338003DABB2 /* AtchaButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D8D8B122E01B338003DABB2 /* AtchaButton.swift */; };
 		6D8D8B172E02BBC0003DABB2 /* AtchaNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D8D8B162E02BBC0003DABB2 /* AtchaNavigationBar.swift */; };
 		6D91A8E42E29F5B30081BAFC /* CourseSettingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D91A8E32E29F5B30081BAFC /* CourseSettingViewController.swift */; };
@@ -333,6 +333,7 @@
 		6D1EE2EF2E0A7F0000F7BBF1 /* OnboardingRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingRepository.swift; sourceTree = "<group>"; };
 		6D1EE2F12E0A80AA00F7BBF1 /* OnboardingDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingDTO.swift; sourceTree = "<group>"; };
 		6D1EE2F62E0A933000F7BBF1 /* OnboardingCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingCoordinator.swift; sourceTree = "<group>"; };
+		6D26DFA72F289E64005097A4 /* HeadingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeadingManager.swift; sourceTree = "<group>"; };
 		6D2B8C932E38A97500608104 /* BusDetailHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusDetailHeaderView.swift; sourceTree = "<group>"; };
 		6D2B8C962E38ABF600608104 /* BusInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusInfoViewController.swift; sourceTree = "<group>"; };
 		6D2B8C982E38ABFD00608104 /* BusInfoViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusInfoViewModel.swift; sourceTree = "<group>"; };
@@ -618,7 +619,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				6DC3BEEF2E04FD7B00831470 /* FirebaseMessaging in Frameworks */,
-				6D8D8AE32E01386D003DABB2 /* PanModal in Frameworks */,
 				6DC3BEE92E04FD7B00831470 /* FirebaseAuth in Frameworks */,
 				6D8D8AE02E013819003DABB2 /* SnapKit in Frameworks */,
 				6DADA5932EA09B6E00CA9BE2 /* AmplitudeSwift in Frameworks */,
@@ -691,6 +691,14 @@
 				6D1EE2F62E0A933000F7BBF1 /* OnboardingCoordinator.swift */,
 			);
 			path = Coordinator;
+			sourceTree = "<group>";
+		};
+		6D26DFA62F289E58005097A4 /* HeadingManager */ = {
+			isa = PBXGroup;
+			children = (
+				6D26DFA72F289E64005097A4 /* HeadingManager.swift */,
+			);
+			path = HeadingManager;
 			sourceTree = "<group>";
 		};
 		6D2B8C952E38ABED00608104 /* BusInfo */ = {
@@ -1069,6 +1077,7 @@
 		B61C448A2E3F57A900285A4B /* Manager */ = {
 			isa = PBXGroup;
 			children = (
+				6D26DFA62F289E58005097A4 /* HeadingManager */,
 				6DADA5952EA09B9500CA9BE2 /* Amplitude */,
 				B61C448D2E3F57B600285A4B /* AlarmManager.swift */,
 				6DD632B72E52E8D000C6A66E /* Proximity */,
@@ -1877,7 +1886,6 @@
 			name = "Atcha-iOS";
 			packageProductDependencies = (
 				6D8D8ADF2E013819003DABB2 /* SnapKit */,
-				6D8D8AE22E01386D003DABB2 /* PanModal */,
 				6DC3BEE12E04FD0700831470 /* KakaoSDK */,
 				6DC3BEE32E04FD0700831470 /* KakaoSDKAuth */,
 				6DC3BEE52E04FD0700831470 /* KakaoSDKCommon */,
@@ -1918,7 +1926,6 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				6D8D8ADE2E013819003DABB2 /* XCRemoteSwiftPackageReference "SnapKit" */,
-				6D8D8AE12E01386D003DABB2 /* XCRemoteSwiftPackageReference "PanModal" */,
 				6DC3BEE02E04FD0700831470 /* XCRemoteSwiftPackageReference "kakao-ios-sdk" */,
 				6DC3BEE72E04FD7B00831470 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				6D8157472E129A7C003688A6 /* XCRemoteSwiftPackageReference "lottie-ios" */,
@@ -2070,6 +2077,7 @@
 				B6AC8BF42E2BD3FE00410ECD /* WebViewController.swift in Sources */,
 				6D6879C92E41B43000E59C55 /* UITextView+Ext.swift in Sources */,
 				B6713CC22E129AEC00AF8486 /* RequestLocationAuthorizationRepository.swift in Sources */,
+				6D26DFA82F289E64005097A4 /* HeadingManager.swift in Sources */,
 				6D91A9012E33E3620081BAFC /* LoadingView.swift in Sources */,
 				B664018B2E2277A900A397AE /* PushAlarmOption.swift in Sources */,
 				B65C13082E057C590016D2F0 /* APIService.swift in Sources */,
@@ -2515,14 +2523,6 @@
 				minimumVersion = 5.7.1;
 			};
 		};
-		6D8D8AE12E01386D003DABB2 /* XCRemoteSwiftPackageReference "PanModal" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/slackhq/PanModal.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.2.7;
-			};
-		};
 		6DADA5912EA09B6E00CA9BE2 /* XCRemoteSwiftPackageReference "Amplitude-Swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/amplitude/Amplitude-Swift";
@@ -2559,11 +2559,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 6D8D8ADE2E013819003DABB2 /* XCRemoteSwiftPackageReference "SnapKit" */;
 			productName = SnapKit;
-		};
-		6D8D8AE22E01386D003DABB2 /* PanModal */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 6D8D8AE12E01386D003DABB2 /* XCRemoteSwiftPackageReference "PanModal" */;
-			productName = PanModal;
 		};
 		6DADA5922EA09B6E00CA9BE2 /* AmplitudeSwift */ = {
 			isa = XCSwiftPackageProductDependency;

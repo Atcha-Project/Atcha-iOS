@@ -107,6 +107,17 @@ final class CourseSettingViewModel: BaseViewModel {
         onTapLocationButton?(locationInfo, location)
     }
     
+    func checkServiceRegion(lat: Double, lon: Double) async -> Bool {
+        let req = CheckServiceRegionRequest(lat: lat, lon: lon)
+        do {
+            let ok = try await searchAddressUseCase.checkServiceRegion(req)
+            return ok
+        } catch {
+            print("서비스 지역 확인 실패:", error)
+            return false
+        }
+    }
+    
     deinit {
         stopTracking()
     }

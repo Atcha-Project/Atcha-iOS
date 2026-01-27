@@ -11,7 +11,7 @@ import Combine
 import UIKit
 import TMapSDK
 
-final class MainViewModel: BaseViewModel {
+final class MainViewModel: BaseViewModel{
     private var alarmTimerCancellable: AnyCancellable?
     private var alarmFinishCancellable: AnyCancellable?
     private var alarmTimeoutCancellable: AnyCancellable?
@@ -35,6 +35,9 @@ final class MainViewModel: BaseViewModel {
     @Published var showAlarmStopPopUpView: Bool = false
     
     @Published var departureStr: String?
+//    @Published var currentCourse: CLLocationDirection?
+    @Published var deviceHeading: CLLocationDirection?
+    private let headingManager = HeadingManager()
     
     private let searchAddressUseCase: SearchAddressUseCase
     private let authorizationUseCase: RequestLocationAuthorizationUseCase
@@ -195,6 +198,8 @@ final class MainViewModel: BaseViewModel {
             let _ = await authorizationUseCase.askPushPermission()
             guard status == .authorizedAlways || status == .authorizedWhenInUse else { return }
             
+            self.startHeading()
+            
             streamTask = Task {
                 var didSendInitialLocation = false
                 for await location in streamUseCase.startUpdate() {
@@ -205,7 +210,11 @@ final class MainViewModel: BaseViewModel {
                         didSendInitialLocation = true
                     }
                     
-                    //                    getNearstToast(currentLocation: currentLocation)
+//                    let course = location.course
+//                    if course >= 0 {
+//                        self.currentCourse = course
+//                    }
+                    
                     selectedLocation = currentLocation
                 }
             }
@@ -225,9 +234,9 @@ final class MainViewModel: BaseViewModel {
     
     private func observeGlobalRefresh() {
         guard refreshUpdateToken == nil else { return }
-
+        
         refreshUpdateToken = NotificationCenter.default.addObserver(
-            forName: .refreshDidUpdate,  
+            forName: .refreshDidUpdate,
             object: nil,
             queue: .main
         ) { [weak self] noti in
@@ -309,9 +318,21 @@ final class MainViewModel: BaseViewModel {
         requestPermissionAndStartTracking()
     }
     
+    func stopHeading() {
+        headingManager.stop()
+    }
+    
     func stopTracking() {
         streamTask?.cancel()
         streamUseCase.stopUpdate()
+        headingManager.stop()
+    }
+    
+    func startHeading() {
+        headingManager.onHeading = { [weak self] h in
+            DispatchQueue.main.async { self?.deviceHeading = h }
+        }
+        headingManager.start()
     }
     
     deinit {
