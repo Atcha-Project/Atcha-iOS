@@ -108,10 +108,23 @@ final class MainViewController: BaseViewController<MainViewModel>,
             forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue
         ) ?? false
         
+        let isAlarmFired = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue) ?? false
+        
         if !isAlarmRegistered {
+            isFollowingUser = false
             ensureLocationPermissionOrShowToast()
         }
         AmplitudeManager.shared.trackScreen(.main)
+        
+        if isAlarmRegistered && !isAlarmFired,
+           let startCoord = routeStartCoordinate {
+            isFollowingUser = false
+            mapContainerView.setupZoomCenter(location: startCoord)
+        }
+        
+        if isAlarmRegistered && isAlarmFired {
+            isFollowingUser = true
+        }
     }
     
     override func viewDidLoad() {
@@ -153,6 +166,10 @@ final class MainViewController: BaseViewController<MainViewModel>,
            let startCoord = routeStartCoordinate {
             isFollowingUser = false
             mapContainerView.setupZoomCenter(location: startCoord)
+        }
+        
+        if isAlarmRegistered && isAlarmFired {
+            isFollowingUser = true
         }
     }
     
@@ -679,7 +696,6 @@ extension MainViewController {
                 switch bottomType {
                 case .departure:
                     self?.shouldCenterToCurrentLocationOnce = false
-                    self?.isFollowingUser = false
                     self?.lastTrainDepartView.setupLegInfo(info: info)
                     //                case .detail:
                     //                    self?.viewModel.handleRoute(route: .detailRoute(address: "",

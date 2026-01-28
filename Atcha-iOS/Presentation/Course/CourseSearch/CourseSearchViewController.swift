@@ -97,6 +97,7 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
                 if isLoading {
                     self.showLoading()
                     self.noSearchStack.isHidden = true
+                    self.courseCollectionView.backgroundColor = AtchaColor.black
                 } else {
                     self.hideLoading()
                 }
@@ -115,9 +116,11 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
                         self.noSearchLabel.attributedText = AtchaFont.B4_R_15("24:00 - 05:00\n막차 검색을 할 수 없어요", color: AtchaColor.gray400, alignment: .center)
                         self.noSearchLabel.numberOfLines = 0
                         self.noSearchStack.isHidden = false
+                        self.courseCollectionView.backgroundColor = AtchaColor.gray950
                     } else {
                         self.noSearchLabel.attributedText = AtchaFont.B4_R_15("검색 가능한 막차가 없습니다.", color: AtchaColor.gray400)
                         self.noSearchStack.isHidden = false
+                        self.courseCollectionView.backgroundColor = AtchaColor.gray950
                     }
                 }
             }
@@ -136,8 +139,10 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
                     if courses.isEmpty {
                         self.noSearchLabel.attributedText = AtchaFont.B4_R_15("검색 가능한 막차가 없습니다.", color: AtchaColor.gray400)
                         self.noSearchStack.isHidden = false
+                        self.courseCollectionView.backgroundColor = AtchaColor.gray950
                     } else {
                         self.noSearchStack.isHidden = true
+                        self.courseCollectionView.backgroundColor = AtchaColor.black
                     }
                 }
             }
