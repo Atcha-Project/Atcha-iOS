@@ -8,7 +8,6 @@
 import UIKit
 import Foundation
 import CoreLocation
-import PanModal
 
 final class OnboardingCoordinator {
     private let navigationController: UINavigationController
@@ -65,7 +64,8 @@ final class OnboardingCoordinator {
     private func showPermission() {
         let vm = diContainer.makePermissionViewModel()
         let vc = diContainer.makePermissionViewController(viewModel: vm)
-        navigationController.presentPanModal(vc)
+        vc.modalPresentationStyle = .overFullScreen
+        navigationController.present(vc, animated: false)
     }
     
     private func handle(route: HomeRouter) {

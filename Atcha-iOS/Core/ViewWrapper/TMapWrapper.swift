@@ -160,6 +160,7 @@ extension TMapWrapper: TMapViewDelegate, TmapViewLocationDelegate {
         mapView.setMapType(.Night)
         mapView.setZoom(18)
         mapView.isShowCompass = false
+        mapView.isRotationEnable = true
         delegate?.didFinishLoadingMap(self)
     }
     

@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import PanModal
 
 final class PermissionDIContainer {
     private let authorizationRequestUseCase = RequestLocationAuthorizationUseCaseImpl(repository: PermissionRepositoryImpl())

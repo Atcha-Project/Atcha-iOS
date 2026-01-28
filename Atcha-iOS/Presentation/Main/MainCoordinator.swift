@@ -278,7 +278,8 @@ final class MainCoordinator {
             let vm = proximityDI.makeProximityViewModel()
             let vc = proximityDI.makeProximityViewController(viewModel: vm)
             
-            navigationController.presentPanModal(vc)
+            vc.modalPresentationStyle = .overFullScreen
+            navigationController.present(vc, animated: false)
             
         case .dismissLockScreen:
             dismissPresentedIfNeeded {

@@ -13,7 +13,7 @@ import VSMSDK
 import SnapKit
 
 final class MainViewController: BaseViewController<MainViewModel>,
-                                TMapWrapperDelegate {
+                                TMapWrapperDelegate{
     
     private let mapContainerView: TMapContainerView = TMapContainerView()
     private let lastTrainSearchView: LastTrainSearchBottomView = LastTrainSearchBottomView() // 알람 등록 전
@@ -98,17 +98,33 @@ final class MainViewController: BaseViewController<MainViewModel>,
     
     private var routeStartCoordinate: CLLocationCoordinate2D?
     private var shouldCenterToCurrentLocationOnce = false
+    private var isFollowingUser = false
     
+    private var lastCourseUpdateAt: CFTimeInterval = 0
+    private let courseValidWindow: CFTimeInterval = 1.2
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         let isAlarmRegistered = UserDefaultsWrapper.shared.bool(
             forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue
         ) ?? false
         
+        let isAlarmFired = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue) ?? false
+        
         if !isAlarmRegistered {
+            isFollowingUser = false
             ensureLocationPermissionOrShowToast()
         }
         AmplitudeManager.shared.trackScreen(.main)
+        
+        if isAlarmRegistered && !isAlarmFired,
+           let startCoord = routeStartCoordinate {
+            isFollowingUser = false
+            mapContainerView.setupZoomCenter(location: startCoord)
+        }
+        
+        if isAlarmRegistered && isAlarmFired {
+            isFollowingUser = true
+        }
     }
     
     override func viewDidLoad() {
@@ -126,6 +142,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
         
         setupUI()
         setupAutoLayout()
+        installMapUserGestureDetector()
         bindView()
     }
     
@@ -137,7 +154,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
         
         DispatchQueue.main.asyncAfter(deadline: .now()) { [weak self] in
             self?.viewModel.setupLocation()
-
+            
             if !isAlarmRegistered {
                 self?.mapContainerView.beforeUserMarker()
             } else {
@@ -147,12 +164,19 @@ final class MainViewController: BaseViewController<MainViewModel>,
         
         if isAlarmRegistered && !isAlarmFired,
            let startCoord = routeStartCoordinate {
+            isFollowingUser = false
             mapContainerView.setupZoomCenter(location: startCoord)
+        }
+        
+        if isAlarmRegistered && isAlarmFired {
+            isFollowingUser = true
         }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        shouldCenterToCurrentLocationOnce = false
+        isFollowingUser = false
         
         view.subviews
             .compactMap { $0 as? AtchaToast }
@@ -265,6 +289,7 @@ extension MainViewController {
         bindServiceRegionUpdates()
         bindLockView()
         bindAlarmTimeoutView()
+        bindDeviceHeadingUpdates()
     }
     
     // MARK: - bind Lock View
@@ -362,7 +387,7 @@ extension MainViewController {
                                                       infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: []),
                                                       context: .afterReigster)
             )
-    
+            
         case .locationTapped:
             self.showOrUpdateImmediateBalloon(
                 .text(top: nil, bottom: "위치를 변경하려면 알람을 종료해야 해요")
@@ -426,6 +451,8 @@ extension MainViewController {
         AlarmManager.shared.stopAlarm()
         viewModel.requestPermissionAndStartTracking()
         viewModel.removeLegInfoAndAddress()
+        viewModel.stopHeading()
+        isFollowingUser = false
         
         // 이번 한 번은 프리 말풍선 자동 표시를 건너뛰도록 플래그 세팅
         deferPreBalloonOnce = true
@@ -455,7 +482,7 @@ extension MainViewController {
             }
             
             UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue)
-
+            
         }
     }
     
@@ -477,24 +504,37 @@ extension MainViewController {
                     forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue
                 ) ?? false
                 
+                if !isAlarmRegistered && !isAlarmFired {
+                    self.mapContainerView.setupCenter(location: coord)
+                }
+                
+                if isAlarmRegistered && !isAlarmFired && shouldCenterToCurrentLocationOnce {
+                    self.mapContainerView.setupCenter(location: coord)
+                    shouldCenterToCurrentLocationOnce = false
+                }
+                
+                if isAlarmRegistered && isAlarmFired {
+                    self.mapContainerView.setupCenter(location: coord)
+                }
                 
                 // 알람 등록 + 출발 전 + departure 화면에서는
                 //    자동으로는 절대 현위치 안 따라감
-                if isAlarmRegistered {
-                    if isAlarmFired {
-                        self.mapContainerView.setupCenter(location: coord)
-                        return
-                    }
-
-                    if self.shouldCenterToCurrentLocationOnce {
-                        self.mapContainerView.setupCenter(location: coord)
-                        self.shouldCenterToCurrentLocationOnce = false
-                    } else {
-                        return
-                    }
-                } else {
-                    self.mapContainerView.setupCenter(location: coord)
-                }
+//                if isAlarmRegistered {
+//                    if isAlarmFired {
+//                        viewModel.startHeading()
+//                        self.mapContainerView.setupCenter(location: coord)
+//                        return
+//                    }
+//                    
+//                    if self.shouldCenterToCurrentLocationOnce {
+//                        self.mapContainerView.setupCenter(location: coord)
+//                        self.shouldCenterToCurrentLocationOnce = false
+//                    } else {
+//                        return
+//                    }
+//                } else {
+//                    self.mapContainerView.setupCenter(location: coord)
+//                }
             }
             .store(in: &cancellables)
     }
@@ -524,6 +564,38 @@ extension MainViewController {
             .store(in: &cancellables)
     }
     
+//    private func bindCourseUpdates() {
+//        viewModel.$currentCourse
+//            .compactMap { $0 }
+//            .removeDuplicates(by: { abs($0 - $1) < 3 })
+//            .throttle(for: .milliseconds(250), scheduler: RunLoop.main, latest: true)
+//            .sink { [weak self] course in
+//                guard let self else { return }
+//                guard self.isFollowingUser else { return }
+//                self.lastCourseUpdateAt = CACurrentMediaTime()
+//                self.mapContainerView.setHeading(course)
+//            }
+//            .store(in: &cancellables)
+//    }
+    
+    private func bindDeviceHeadingUpdates() {
+        viewModel.$deviceHeading
+            .compactMap { $0 }
+            .removeDuplicates(by: { abs($0 - $1) < 2 })
+            .receive(on: RunLoop.main)
+            .sink { [weak self] heading in
+                guard let self else { return }
+                guard self.isFollowingUser else { return }
+
+//                let now = CACurrentMediaTime()
+//                let hasRecentCourse = (now - self.lastCourseUpdateAt) < self.courseValidWindow
+//                guard !hasRecentCourse else { return }
+
+                self.mapContainerView.setHeading(heading)
+            }
+            .store(in: &cancellables)
+    }
+    
     private func updateAddress(_ address: String) {
         if firstAddress == nil {
             firstAddress = address
@@ -538,19 +610,69 @@ extension MainViewController {
             .removeDuplicates()
             .compactMap { $0 }
             .receive(on: RunLoop.main)
-            .sink { [weak self] in
-                self?.mapContainerView.updateUserMarker(location: $0)
-                
+            .sink { [weak self] coord in
+                guard let self else { return }
+
+                // 마커는 실시간으로 계속 업데이트
+                self.mapContainerView.updateUserMarker(location: coord)
+
+                // ====== center 이동 정책(기존 currentLocation 로직 이관) ======
+
+                let isAlarmRegistered = UserDefaultsWrapper.shared.bool(
+                    forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue
+                ) ?? false
+
                 let isAlarmFired = UserDefaultsWrapper.shared.bool(
                     forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue
                 ) ?? false
-                
-                if isAlarmFired {
-                    self?.mapContainerView.setupCenter(location: $0)
+
+                // 유저가 "내 위치 따라가기" 모드면 무조건 센터 이동
+                if self.isFollowingUser {
+                    self.mapContainerView.setupCenter(location: coord)
+                    return
+                }
+
+                // 알람 등록 상태에서는 자동 추적을 기본적으로 막는 기존 정책 유지
+                if isAlarmRegistered {
+                    if isAlarmFired {
+                        // 알람 울린 이후에는 따라가도 됨(기존 로직 유지)
+                        self.viewModel.startHeading()
+                        self.mapContainerView.setupCenter(location: coord)
+                        return
+                    }
+                } else {
+                    // 알람 미등록: 기본은 현재 위치로 센터 이동
+                    self.mapContainerView.setupCenter(location: coord)
                 }
             }
             .store(in: &cancellables)
     }
+    
+//    private func bindSelectedLocationUpdates() {
+//        viewModel.$selectedLocation
+//            .removeDuplicates()
+//            .compactMap { $0 }
+//            .receive(on: RunLoop.main)
+//            .sink { [weak self] in
+//                guard let self = self else { return }
+//                self.mapContainerView.updateUserMarker(location: $0)
+//                
+//                if self.isFollowingUser {
+//                    viewModel.startHeading()
+//                    self.mapContainerView.setupCenter(location: $0)
+//                    return
+//                }
+//                
+//                let isAlarmFired = UserDefaultsWrapper.shared.bool(
+//                    forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue
+//                ) ?? false
+//                
+//                if isAlarmFired {
+//                    self.mapContainerView.setupCenter(location: $0)
+//                }
+//            }
+//            .store(in: &cancellables)
+//    }
     
     private func bindAddressDescriptionUpdates() {
         viewModel.$addressDesc
@@ -573,6 +695,7 @@ extension MainViewController {
                 
                 switch bottomType {
                 case .departure:
+                    self?.shouldCenterToCurrentLocationOnce = false
                     self?.lastTrainDepartView.setupLegInfo(info: info)
                     //                case .detail:
                     //                    self?.viewModel.handleRoute(route: .detailRoute(address: "",
@@ -891,7 +1014,7 @@ extension MainViewController {
             let isAlarmFired = UserDefaultsWrapper.shared.bool(
                 forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue
             ) ?? false
-
+            
             if isAlarmRegistered && !isAlarmFired {
                 mapContainerView.setupZoomCenter(location: startCoordinate)
             }
@@ -942,7 +1065,10 @@ extension MainViewController {
     
     @objc private func didTapLocationButton() {
         ensureLocationPermissionOrShowToast()
+        
+        isFollowingUser = true
         shouldCenterToCurrentLocationOnce = true
+        viewModel.startHeading()
         viewModel.currentLocation = nil
         viewModel.setupLocation()
     }
@@ -1253,3 +1379,34 @@ extension MainViewController {
     }
 }
 
+extension MainViewController: UIGestureRecognizerDelegate {
+    private func installMapUserGestureDetector() {
+        let targetView = mapContainerView.gestureTargetView
+        
+        let pan = UIPanGestureRecognizer(target: self, action: #selector(userDidManipulateMap))
+        pan.cancelsTouchesInView = false
+        pan.delegate = self
+        targetView.addGestureRecognizer(pan)
+        
+        let pinch = UIPinchGestureRecognizer(target: self, action: #selector(userDidManipulateMap))
+        pinch.cancelsTouchesInView = false
+        pinch.delegate = self
+        targetView.addGestureRecognizer(pinch)
+        
+        let rotate = UIRotationGestureRecognizer(target: self, action: #selector(userDidManipulateMap))
+        rotate.cancelsTouchesInView = false
+        rotate.delegate = self
+        targetView.addGestureRecognizer(rotate)
+    }
+    
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer,
+                           shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        return true
+    }
+    
+    @objc private func userDidManipulateMap(_ g: UIGestureRecognizer) {
+        if g.state == .began {
+            isFollowingUser = false
+        }
+    }
+}
