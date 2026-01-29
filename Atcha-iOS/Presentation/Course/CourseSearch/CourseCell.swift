@@ -117,7 +117,7 @@ final class CourseCell: UICollectionViewCell {
         flagConfigure(isLast: isLast)
         let course = model.course
         
-        if let totalTime = course.totalTime?.toHourMinuteSecondString {
+        if let totalTime = course.totalTime?.toHourMinuteString {
             timeLabel.attributedText = AtchaFont.H2_B_22(lineHeight: 28, "\(totalTime)", color: AtchaColor.white)
         }
         

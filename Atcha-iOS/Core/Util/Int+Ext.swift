@@ -45,4 +45,17 @@ extension Int {
             return "\(seconds)초"
         }
     }
+    
+    var toHourMinuteString: String {
+        if self <= 0 { return "0분" }
+
+        let hours = self / 3600
+        let minutes = (self % 3600) / 60
+
+        if hours > 0 {
+            return "\(hours)시간 \(minutes)분"
+        } else {
+            return "\(minutes)분"
+        }
+    }
 }
