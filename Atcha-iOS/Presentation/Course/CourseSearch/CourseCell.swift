@@ -81,7 +81,7 @@ final class CourseCell: UICollectionViewCell {
         }
         
         departureTimeLabel.snp.makeConstraints { make in
-            make.top.equalTo(timeLabel.snp.bottom).offset(6)
+            make.top.equalTo(timeLabel.snp.bottom).offset(10)
             make.leading.equalToSuperview().offset(16)
         }
         
