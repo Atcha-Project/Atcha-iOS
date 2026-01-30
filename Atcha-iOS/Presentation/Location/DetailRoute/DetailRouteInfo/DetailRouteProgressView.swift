@@ -19,14 +19,14 @@ final class DetailRouteProgressView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         clipsToBounds = false
-        backgroundColor = .gray800
+        backgroundColor = .gray930
         layer.cornerRadius = cornerRadius
     }
     
     required init?(coder: NSCoder) {
         super.init(coder: coder)
         clipsToBounds = false
-        backgroundColor = .lightGray
+        backgroundColor = .gray930
         layer.cornerRadius = cornerRadius
     }
     
@@ -110,7 +110,7 @@ final class DetailRouteProgressView: UIView {
             label.attributedText = AtchaFont.M_9(timeText)
             label.textAlignment = .center
             label.adjustsFontSizeToFitWidth = true
-            label.textColor = color == .gray800 ? .gray200 : .white
+            label.textColor = color == .gray930 ? .gray400 : .white
             segmentView.addSubview(label)
             
             
