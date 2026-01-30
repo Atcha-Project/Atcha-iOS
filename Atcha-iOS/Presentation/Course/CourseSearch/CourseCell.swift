@@ -21,7 +21,7 @@ final class CourseCell: UICollectionViewCell {
     private let progressView: DetailRouteProgressView = DetailRouteProgressView()
     private let courseStepsStackView: CourseStepsStackView = CourseStepsStackView()
     
-    private let alarmRegisterButton: AtchaButton = AtchaButton(text: "막차 알람 받기", size: .h44, style: .filled(.defaultGray), image: UIImage.bellFilled)
+    private let alarmRegisterButton: AtchaButton = AtchaButton(text: "출발 알람 받기", size: .h44, style: .filled(.defaultGray), image: UIImage.bellFilled)
     
     
     private let detailTapGesture = UITapGestureRecognizer()
@@ -108,7 +108,7 @@ final class CourseCell: UICollectionViewCell {
             make.top.equalTo(courseStepsStackView.snp.bottom).offset(18)
             make.leading.equalToSuperview().offset(16)
             make.trailing.equalToSuperview().inset(16)
-            make.bottom.equalToSuperview().inset(16)
+            make.bottom.equalToSuperview().inset(20)
         }
     }
     
