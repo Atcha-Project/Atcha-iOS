@@ -51,8 +51,8 @@ final class CourseStepItemView: UIView {
         lineView.snp.makeConstraints { make in
             make.top.equalTo(trafficImageView.snp.top).offset(5)
             make.centerX.equalTo(trafficImageView)
-            make.width.equalTo(2)
-            make.bottom.equalToSuperview().offset(10 )
+            make.width.equalTo(1)
+            make.bottom.equalToSuperview().offset(10)
         }
         
         stationLabel.snp.makeConstraints { make in
@@ -100,7 +100,7 @@ final class CourseStepItemView: UIView {
             
             busNumberLabel.snp.remakeConstraints { make in
                 make.leading.equalTo(stationLabel.snp.leading)
-                make.top.equalTo(stationLabel.snp.bottom).offset(8)
+                make.top.equalTo(stationLabel.snp.bottom).offset(10)
             }
             
             if isLast {
@@ -109,7 +109,7 @@ final class CourseStepItemView: UIView {
                 
                 endStationLabel.snp.makeConstraints { make in
                     make.leading.equalTo(stationLabel.snp.leading)
-                    make.top.equalTo(busNumberLabel.snp.bottom).offset(8)
+                    make.top.equalTo(busNumberLabel.snp.bottom).offset(10)
                     make.bottom.equalToSuperview().inset(8)
                 }
                 
@@ -126,15 +126,15 @@ final class CourseStepItemView: UIView {
                 lineView.snp.remakeConstraints { make in
                     make.top.equalTo(trafficImageView.snp.top).offset(5)
                     make.centerX.equalTo(trafficImageView)
-                    make.width.equalTo(2)
+                    make.width.equalTo(1)
                     make.bottom.equalToSuperview().inset(10)
                 }
                 
             } else {
                 busNumberLabel.snp.remakeConstraints { make in
                     make.leading.equalTo(stationLabel.snp.leading)
-                    make.top.equalTo(stationLabel.snp.bottom).offset(8)
-                    make.bottom.equalToSuperview().inset(8)
+                    make.top.equalTo(stationLabel.snp.bottom).offset(10)
+                    make.bottom.equalToSuperview().inset(10)
                 }
             }
         case .subway:
@@ -148,7 +148,7 @@ final class CourseStepItemView: UIView {
                 
                 endStationLabel.snp.remakeConstraints { make in
                     make.leading.equalTo(stationLabel.snp.leading)
-                    make.top.equalTo(stationLabel.snp.bottom).offset(8)
+                    make.top.equalTo(stationLabel.snp.bottom).offset(10)
                     make.bottom.equalToSuperview().inset(8)
                 }
                 
@@ -165,7 +165,7 @@ final class CourseStepItemView: UIView {
                 lineView.snp.remakeConstraints { make in
                     make.top.equalTo(trafficImageView.snp.top).offset(5)
                     make.centerX.equalTo(trafficImageView)
-                    make.width.equalTo(2)
+                    make.width.equalTo(1)
                     make.bottom.equalToSuperview().inset(10)
                 }
                 
@@ -174,7 +174,7 @@ final class CourseStepItemView: UIView {
                     make.leading.equalTo(trafficImageView.snp.trailing).offset(8)
                     make.centerY.equalTo(trafficImageView)
                     make.trailing.lessThanOrEqualToSuperview()
-                    make.bottom.equalToSuperview().inset(8)
+                    make.bottom.equalToSuperview().inset(10)
                 }
             }
         default:
@@ -183,7 +183,7 @@ final class CourseStepItemView: UIView {
                 make.leading.equalTo(trafficImageView.snp.trailing).offset(8)
                 make.top.equalTo(trafficImageView.snp.top)
                 make.trailing.lessThanOrEqualToSuperview()
-                make.bottom.equalToSuperview().inset(8)
+                make.bottom.equalToSuperview().inset(10)
             }
         }
     }
