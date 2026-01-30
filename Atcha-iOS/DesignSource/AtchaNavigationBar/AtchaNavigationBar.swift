@@ -36,6 +36,9 @@ enum AtchaNavigationBar {
         return BackOnlyNavigationBar(onTapBack: onBack, tintColor: tintColor)
     }
     
+    static func CloseOnly(onClose: (() -> Void)? = nil) -> CloseOnlyNavigationBar {
+        return CloseOnlyNavigationBar(onTapClose: onClose)
+    }
     // MARK: - 사용 예시
     //
     // let navi = AtchaNavigationBar.backOnly()

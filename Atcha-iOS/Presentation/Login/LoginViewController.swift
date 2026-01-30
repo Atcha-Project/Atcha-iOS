@@ -169,7 +169,7 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
         let iconView = UIImageView(image: icon)
         iconView.contentMode = .scaleAspectFit
         iconView.tintColor = iconTint
-        
+
         let label = UILabel()
         label.attributedText = AtchaFont.B_15(labelText, color: textColor)
         label.textAlignment = .center
@@ -183,6 +183,11 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
         
         button.layer.cornerRadius = 8
         button.layer.backgroundColor = bgColor.cgColor
+        
+        
+        stackView.isUserInteractionEnabled = false
+        iconView.isUserInteractionEnabled = false
+        label.isUserInteractionEnabled = false
         
         button.addSubview(stackView)
         
