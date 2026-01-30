@@ -176,7 +176,7 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
         courseSortImageView.contentMode = .scaleAspectFit
         
         courseSortView.addArrangedSubview(courseSortLabel)
-        courseSortView.addArrangedSubview(courseSortImageView)
+//        courseSortView.addArrangedSubview(courseSortImageView)
         
         view.addSubViews(topNavigationBar, courseView, tabCollectionView, courseSortView, courseCollectionView)
     }
@@ -202,7 +202,8 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
         
         tabCollectionView.snp.makeConstraints { make in
             make.top.equalTo(courseView.snp.bottom).offset(10)
-            make.trailing.leading.equalToSuperview()
+            make.leading.equalToSuperview().offset(16)
+            make.trailing.equalToSuperview()
             make.height.equalTo(40)
         }
         
