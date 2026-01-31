@@ -169,24 +169,33 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
         let iconView = UIImageView(image: icon)
         iconView.contentMode = .scaleAspectFit
         iconView.tintColor = iconTint
-        
+
         let label = UILabel()
-        label.attributedText = AtchaFont.B2_SB_15(labelText, color: textColor)
+        label.attributedText = AtchaFont.B_15(labelText, color: textColor)
         label.textAlignment = .center
+        
+        let stackView = UIStackView()
+        stackView.axis = .horizontal
+        stackView.spacing = 10
+        
+        stackView.addArrangedSubview(iconView)
+        stackView.addArrangedSubview(label)
         
         button.layer.cornerRadius = 8
         button.layer.backgroundColor = bgColor.cgColor
         
-        button.addSubview(iconView)
-        button.addSubview(label)
+        
+        stackView.isUserInteractionEnabled = false
+        iconView.isUserInteractionEnabled = false
+        label.isUserInteractionEnabled = false
+        
+        button.addSubview(stackView)
         
         iconView.snp.makeConstraints { make in
             make.width.height.equalTo(24)
-            make.trailing.equalTo(label.snp.leading).offset(-10)
-            make.centerY.equalToSuperview()
         }
         
-        label.snp.makeConstraints { make in
+        stackView.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
             make.centerY.equalToSuperview()
         }

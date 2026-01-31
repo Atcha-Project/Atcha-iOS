@@ -136,6 +136,16 @@ enum AtchaFont {
         styled(.Medium, size: 9, lineHeight: lineHeight, text: text, color: color, alignment: alignment)
     }
     
+    // B8_R_13
+    static func R_13(lineHeight: CGFloat = 15, _ text: String, color: UIColor = .label, alignment: NSTextAlignment = .left) -> NSAttributedString {
+        styled(.Regular, size: 13, lineHeight: lineHeight, text: text, color: color, alignment: alignment)
+    }
+    
+    // B_15
+    static func B_15(lineHeight: CGFloat = 20, _ text: String, color: UIColor = .label, alignment: NSTextAlignment = .left) -> NSAttributedString {
+        styled(.Bold, size: 15, lineHeight: lineHeight, text: text, color: color, alignment: alignment)
+    }
+    
     // MARK: - 사용 예시
     //
     // UILabel:

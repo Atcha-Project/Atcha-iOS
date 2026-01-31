@@ -326,7 +326,7 @@ enum TransportMode: String, Codable {
         case .subway:
             return TransportMode.subwayColor[routeType]
         case .walk:
-            return .gray800
+            return .gray930
         default:
             return nil
         }

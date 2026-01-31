@@ -21,7 +21,7 @@ final class CourseCell: UICollectionViewCell {
     private let progressView: DetailRouteProgressView = DetailRouteProgressView()
     private let courseStepsStackView: CourseStepsStackView = CourseStepsStackView()
     
-    private let alarmRegisterButton: AtchaButton = AtchaButton(text: "막차 알람 받기", size: .h44, style: .filled(.defaultGray), image: UIImage.bellFilled)
+    private let alarmRegisterButton: AtchaButton = AtchaButton(text: "출발 알람 받기", size: .h44, style: .filled(.defaultGray), image: UIImage.bellFilled)
     
     
     private let detailTapGesture = UITapGestureRecognizer()
@@ -81,7 +81,7 @@ final class CourseCell: UICollectionViewCell {
         }
         
         departureTimeLabel.snp.makeConstraints { make in
-            make.top.equalTo(timeLabel.snp.bottom).offset(6)
+            make.top.equalTo(timeLabel.snp.bottom).offset(10)
             make.leading.equalToSuperview().offset(16)
         }
         
@@ -108,7 +108,7 @@ final class CourseCell: UICollectionViewCell {
             make.top.equalTo(courseStepsStackView.snp.bottom).offset(18)
             make.leading.equalToSuperview().offset(16)
             make.trailing.equalToSuperview().inset(16)
-            make.bottom.equalToSuperview().inset(16)
+            make.bottom.equalToSuperview().inset(20)
         }
     }
     
@@ -122,7 +122,7 @@ final class CourseCell: UICollectionViewCell {
         }
         
         if let departureTime = course.departureDateTime {
-            departureTimeLabel.attributedText = AtchaFont.B7_M_13(lineHeight: 15, "\(departureTime.convertedToHourMinute)", color: AtchaColor.white)
+            departureTimeLabel.attributedText = AtchaFont.R_13(lineHeight: 15, "\(departureTime.convertedToHourMinute)", color: AtchaColor.white)
             departureTimeLabel.layer.cornerRadius = 8
             departureTimeLabel.clipsToBounds = true
             departureTimeLabel.backgroundColor = AtchaColor.gray930
@@ -130,7 +130,7 @@ final class CourseCell: UICollectionViewCell {
             departureTimeLabel.layer.borderColor = AtchaColor.gray500.cgColor
         }
         
-        departureLabel.attributedText = AtchaFont.B7_M_13("에 자리에서 출발", color: AtchaColor.gray200)
+        departureLabel.attributedText = AtchaFont.R_13("에 자리에서 출발", color: AtchaColor.gray200)
         
         progressView.configure(infos: course.toLegTrafficInfos())
         courseStepsStackView.configure(legs: course.legs)

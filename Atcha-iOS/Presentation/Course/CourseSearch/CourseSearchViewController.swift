@@ -11,12 +11,10 @@ import Combine
 
 final class CourseSearchViewController: BaseViewController<CourseSearchViewModel> {
     
-    private lazy var topNavigationBar: TitleNavigationBar = AtchaNavigationBar.title("") { [weak self] in
-        self?.navigationController?.popViewController(animated: true)
-    } onClose: {
+    private lazy var topNavigationBar: CloseOnlyNavigationBar = AtchaNavigationBar.CloseOnly(onClose: {
         [weak self] in
         self?.navigationController?.popToRootViewController(animated: true)
-    }
+    })
     private let courseView: UIView = UIView()
     private let routeLabelStack: UIStackView = UIStackView()
     private let departLabel: UILabel = UILabel()
@@ -176,7 +174,7 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
         courseSortImageView.contentMode = .scaleAspectFit
         
         courseSortView.addArrangedSubview(courseSortLabel)
-        courseSortView.addArrangedSubview(courseSortImageView)
+//        courseSortView.addArrangedSubview(courseSortImageView)
         
         view.addSubViews(topNavigationBar, courseView, tabCollectionView, courseSortView, courseCollectionView)
     }
@@ -194,15 +192,16 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
         }
         
         courseView.snp.makeConstraints { make in
-            make.top.equalTo(topNavigationBar.snp.bottom).offset(6)
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(8)
             make.leading.equalToSuperview().offset(16)
-            make.trailing.equalToSuperview().inset(16)
-            make.height.equalTo(48)
+            make.trailing.equalToSuperview().inset(52)
+            make.height.equalTo(44)
         }
         
         tabCollectionView.snp.makeConstraints { make in
             make.top.equalTo(courseView.snp.bottom).offset(10)
-            make.trailing.leading.equalToSuperview()
+            make.leading.equalToSuperview().offset(16)
+            make.trailing.equalToSuperview()
             make.height.equalTo(40)
         }
         
