@@ -43,10 +43,15 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         case busRouteList
     }
     
+    private let noSearchStack: UIStackView = UIStackView()
+    private let noSearchImageView: UIImageView = UIImageView()
+    private let noSearchLabel: UILabel = UILabel()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setupUI()
+        setupNoSearchUI()
         setupAutoLayout()
         bind()
         bindActions()
@@ -74,6 +79,9 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
             .compactMap { $0 }
             .receive(on: DispatchQueue.main)
             .sink { [weak self] busInfo in
+                self?.noSearchStack.isHidden = true
+                self?.busRouteCollectionView.isHidden = false
+                
                 self?.applySnapshot(busRoute: busInfo)
                 let busCount = busInfo.busPositions?.count ?? 0
                 self?.headerView.updateBusCount(busCount)
@@ -83,6 +91,22 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
                 }
             }
             .store(in: &cancellables)
+        
+        viewModel.$isServerError
+                .removeDuplicates()
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] isError in
+                    guard let self = self else { return }
+                    guard isError else { return }
+
+                    self.refreshButton.stop()
+                    self.loadingView.stop()
+                    self.loadingView.isHidden = true
+                    self.busRouteCollectionView.isHidden = true
+                    self.noSearchStack.isHidden = false
+
+                }
+                .store(in: &cancellables)
     }
     
     // MARK: - 버스 상세 노선 UI
@@ -295,6 +319,28 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
                 }
             }
             return section
+        }
+    }
+    
+    // MARK: - 검색 결과 없을 경우 UI
+    private func setupNoSearchUI() {
+        noSearchImageView.image = UIImage.atchaGray
+        noSearchImageView.contentMode = .scaleAspectFit
+        noSearchLabel.attributedText = AtchaFont.B4_R_15("버스 정보를 불러오지 못했어요.\n잠시 후 다시 시도해 주세요.", color: AtchaColor.gray400, alignment: .center)
+        noSearchLabel.numberOfLines = 0
+        
+        noSearchStack.addArrangedSubview(noSearchImageView)
+        noSearchStack.addArrangedSubview(noSearchLabel)
+        noSearchStack.axis = .vertical
+        noSearchStack.spacing = 16
+        noSearchStack.alignment = .center
+        
+        view.addSubview(noSearchStack)
+        noSearchStack.isHidden = true
+        
+        noSearchStack.snp.makeConstraints { make in
+            make.centerX.equalTo(busRouteCollectionView)
+            make.centerY.equalTo(busRouteCollectionView).offset(10)
         }
     }
 }

@@ -21,6 +21,7 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
             self?.navigationController?.popViewController(animated: true)
         }
     }()
+    
     private let operationStationTitleLabel: UILabel = UILabel()
     private let stationStack: UIStackView = UIStackView()
     private let stationImageView: UIImageView = UIImageView()
@@ -53,10 +54,15 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
     private let bottomNoticeImageView: UIImageView = UIImageView()
     private let bottomNoticeLabel: UILabel = UILabel()
     
+    private let noSearchStack: UIStackView = UIStackView()
+    private let noSearchImageView: UIImageView = UIImageView()
+    private let noSearchLabel: UILabel = UILabel()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setupUI()
+        setupNoSearchUI()
         setupAutoLayout()
         bind()
     }
@@ -69,6 +75,7 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
     // MARK: ViewModel 바인딩
     private func bind() {
         viewModel.$operationInfo
+            .compactMap { $0 }
             .receive(on: RunLoop.main)
             .sink { [weak self] info in
                 guard let self else { return }
@@ -79,8 +86,17 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
                 
                 startStationLabel.attributedText = AtchaFont.B6_R_14(info?.startStationName ?? "출발지", color: AtchaColor.white)
                 endStationLabel.attributedText = AtchaFont.B6_R_14(info?.endStationName ?? "도착지", color: AtchaColor.white)
+                self.setErrorUI(false)
             }
             .store(in: &cancellables)
+        
+        viewModel.$isServerError
+                .removeDuplicates()
+                .receive(on: RunLoop.main)
+                .sink { [weak self] isError in
+                    self?.setErrorUI(isError)
+                }
+                .store(in: &cancellables)
     }
     
     // MARK: 버스 운영 정보 UI
@@ -176,6 +192,42 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
             make.leading.equalToSuperview().offset(16)
             make.height.equalTo(14)
         }
+    }
+    
+    // MARK: - 검색 결과 없을 경우 UI
+    private func setupNoSearchUI() {
+        noSearchImageView.image = UIImage.atchaGray
+        noSearchImageView.contentMode = .scaleAspectFit
+        noSearchLabel.attributedText = AtchaFont.B4_R_15("버스 정보를 불러오지 못했어요.\n잠시 후 다시 시도해 주세요.", color: AtchaColor.gray400, alignment: .center)
+        noSearchLabel.numberOfLines = 0
+        
+        noSearchStack.addArrangedSubview(noSearchImageView)
+        noSearchStack.addArrangedSubview(noSearchLabel)
+        noSearchStack.axis = .vertical
+        noSearchStack.spacing = 16
+        noSearchStack.alignment = .center
+        
+        view.addSubview(noSearchStack)
+        noSearchStack.isHidden = true
+        
+        noSearchStack.snp.makeConstraints { make in
+            make.centerX.equalToSuperview()
+            make.centerY.equalToSuperview().offset(90)
+        }
+    }
+    
+    private func setErrorUI(_ isError: Bool) {
+        noSearchStack.isHidden = !isError
+
+        // 기존 컨텐츠 숨김/표시
+        operationStationTitleLabel.isHidden = isError
+        stationStack.isHidden = isError
+        operationRegionLabel.isHidden = isError
+        operationTimeTitleLabel.isHidden = isError
+        operationTimeStack.isHidden = isError
+        dispatchTitleLabel.isHidden = isError
+        dispatchStack.isHidden = isError
+        bottomNoticeStack.isHidden = isError
     }
     
     // MARK: - 버스 운행시간 세팅
