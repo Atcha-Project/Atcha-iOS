@@ -77,6 +77,8 @@ final class BusDetailViewModel: BaseViewModel {
                     return
                 }
                 
+                self.isServerError = false
+                
                 let positionRequest = BusPositionInfoRequest(
                     busRouteId: busRouteInfo.busRouteId,
                     routeName: busRouteInfo.routeName,
@@ -86,6 +88,7 @@ final class BusDetailViewModel: BaseViewModel {
                 self.busPositionInfo(request: positionRequest)
                 self.busRealTimeInfo = response
             } catch {
+                self.isServerError = true
                 print("실시간 버스 조회 실패")
             }
         }
@@ -97,8 +100,10 @@ final class BusDetailViewModel: BaseViewModel {
         Task {
             do {
                 let response = try await busInfoUseCase.busPositionInfo(request)
+                self.isServerError = false
                 self.busPositionInfo = response
             } catch {
+                self.isServerError = true
                 print("버스 위치 정보 실패")
             }
         }
