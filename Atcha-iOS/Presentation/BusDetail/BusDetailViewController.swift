@@ -83,6 +83,20 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
                 }
             }
             .store(in: &cancellables)
+        
+        viewModel.$isServerError
+                .removeDuplicates()
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] isError in
+                    guard let self = self else { return }
+                    guard isError else { return }
+
+                    self.refreshButton.stop()
+                    self.loadingView.stop()
+                    self.loadingView.isHidden = true
+
+                }
+                .store(in: &cancellables)
     }
     
     // MARK: - 버스 상세 노선 UI

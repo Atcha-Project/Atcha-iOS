@@ -42,7 +42,7 @@ final class BusDetailHeaderView: UIView {
         infoStack.addArrangedSubview(infoLabel)
         infoStack.addArrangedSubview(infoImageView)
         
-        busCountLabel.attributedText = AtchaFont.B6_R_14(lineHeight: 0, "14", color: AtchaColor.white)
+        busCountLabel.attributedText = AtchaFont.B6_R_14(lineHeight: 0, "0", color: AtchaColor.white)
         busRunningLabel.attributedText = AtchaFont.B6_R_14(lineHeight: 0, "대 운행 중", color: AtchaColor.gray200)
         busRunningStack.axis = .horizontal
         busRunningStack.spacing = 2

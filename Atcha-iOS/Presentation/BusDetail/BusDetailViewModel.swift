@@ -24,6 +24,7 @@ final class BusDetailViewModel: BaseViewModel {
     
     @Published var busPositionInfo: BusPositionInfo?
     @Published var busRealTimeInfo: BusRealTimeInfo?
+    @Published var isServerError: Bool = false
     
     private var refreshTimer: Timer?
     private var lastRequest: BusRealTimeInfoRequest?
@@ -71,11 +72,17 @@ final class BusDetailViewModel: BaseViewModel {
                 let response = try await busInfoUseCase.busRealTimeInfo(request)
                 self.busRouteInfo = response.toBusRouteInfo()
                 
+                guard let routeId = busRouteInfo.busRouteId, !routeId.isEmpty else {
+                    self.isServerError = true
+                    return
+                }
+                
                 let positionRequest = BusPositionInfoRequest(
                     busRouteId: busRouteInfo.busRouteId,
                     routeName: busRouteInfo.routeName,
                     serviceRegion: busRouteInfo.serviceRegion
                 )
+                
                 self.busPositionInfo(request: positionRequest)
                 self.busRealTimeInfo = response
             } catch {
