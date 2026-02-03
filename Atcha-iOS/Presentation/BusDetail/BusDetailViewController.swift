@@ -339,7 +339,8 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         noSearchStack.isHidden = true
         
         noSearchStack.snp.makeConstraints { make in
-            make.center.equalTo(busRouteCollectionView)
+            make.centerX.equalTo(busRouteCollectionView)
+            make.centerY.equalTo(busRouteCollectionView).offset(10)
         }
     }
 }

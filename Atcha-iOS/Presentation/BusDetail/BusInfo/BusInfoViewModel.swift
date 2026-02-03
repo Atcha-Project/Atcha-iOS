@@ -16,6 +16,7 @@ final class BusInfoViewModel: BaseViewModel {
     let busRouteInfo: BusRouteInfo
     
     @Published var operationInfo: BusOperationInfo?
+    @Published var isServerError: Bool = false
     
     init(
         busInfoUseCase: BusInfoUseCase,
@@ -51,12 +52,27 @@ final class BusInfoViewModel: BaseViewModel {
     // MARK: - 버스 운영 정보 조회
     @MainActor
     func busOperationInfo(request: BusOperationInfoRequest) {
+        guard let busRouteId = request.busRouteId, !busRouteId.isEmpty,
+              let routeName = request.routeName, !routeName.isEmpty,
+              let serviceRegion = request.serviceRegion, !serviceRegion.isEmpty else {
+            self.isServerError = true
+            return
+        }
+
         Task {
             do {
                 let response = try await busInfoUseCase.busOperationInfo(request)
+
+                guard let stationName = response.startStationName, !stationName.isEmpty else {
+                    isServerError = true
+                    return
+                }
+                self.isServerError = false
                 self.operationInfo = response
+
             } catch {
-                print("실시간 버스 조회 실패")
+                self.isServerError = true
+                print("버스 운영 정보 조회 실패: \(error)")
             }
         }
     }
