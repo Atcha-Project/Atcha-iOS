@@ -141,7 +141,7 @@ final class DetailRouteInfoBottomView: UIView {
         collectionView.reloadData()
     }
     
-    private func applySnapshot(animatingDifferences: Bool = true) {
+    private func applySnapshot(animatingDifferences: Bool = false) {
         guard collectionView.dataSource != nil else { return }
         dataSource.apply(snapshot, animatingDifferences: animatingDifferences)
     }

@@ -42,14 +42,15 @@ final class DetailRouteSummaryView: UIView {
         }
         
         arrowImageView.snp.makeConstraints { make in
-            make.centerY.equalTo(summaryLabel)
             make.leading.equalTo(summaryLabel.snp.trailing).offset(4)
             make.trailing.equalToSuperview()
-            make.width.height.equalTo(10)
+            make.top.bottom.equalToSuperview()
+            make.width.equalTo(10)
         }
     }
     
     func configure(duration: String, stops: Int) {
         summaryLabel.attributedText = AtchaFont.B7_M_13("\(duration), \(stops - 1)개 정류장 이동", color: .white)
+        arrowImageView.isHidden = false
     }
 }

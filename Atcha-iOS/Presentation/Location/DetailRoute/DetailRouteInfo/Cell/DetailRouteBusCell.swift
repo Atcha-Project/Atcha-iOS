@@ -421,17 +421,16 @@ extension DetailRouteBusCell {
     @objc private func handleSummaryButton() {
         isExpanded.toggle()
         stationListStackView.isHidden = !isExpanded
-        
+
         stationListStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         addStationNameLabel(info: stationInfos)
-        
-        UIView.animate(withDuration: 0.3) { [weak self] in
-            guard let self else { return }
-            stationListStackViewTopConstraint?.isActive = isExpanded
-            stationListStackViewBottomConstraint?.isActive = isExpanded
-            endLabelTopConstraintWithoutStack?.isActive = !isExpanded
-            self.layoutIfNeeded()
-        }
+
+        stationListStackViewTopConstraint?.isActive = isExpanded
+        stationListStackViewBottomConstraint?.isActive = isExpanded
+        endLabelTopConstraintWithoutStack?.isActive = !isExpanded
+
+        self.layoutIfNeeded()
+
         didTapSummary?()
     }
     

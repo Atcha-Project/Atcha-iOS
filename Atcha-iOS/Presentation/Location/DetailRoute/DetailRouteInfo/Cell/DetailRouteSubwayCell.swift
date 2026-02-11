@@ -300,15 +300,15 @@ extension DetailRouteSubwayCell {
     @objc private func handleSummaryButton() {
         isExpanded.toggle()
         stationListStackView.isHidden = !isExpanded
-        
+
         stationListStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         addStationNameLabel(info: stationInfos)
-        
+
         stationListStackViewTopConstraint?.isActive = isExpanded
         stationListStackViewBottomConstraint?.isActive = isExpanded
         endLabelTopConstraintWithoutStack?.isActive = !isExpanded
-        
-        UIView.animate(withDuration: 0.3) { self.layoutIfNeeded() }
+        layoutIfNeeded()
+
         didTapSummary?()
     }
 }
