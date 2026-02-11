@@ -75,6 +75,34 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
         animationView.isHidden = true
         animationView.stopAnimation()
         backgroundColor = .clear
+        
+        isExpanded = false
+        stationListStackView.isHidden = true
+        stationListStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        
+        stationListStackViewTopConstraint?.isActive = false
+        stationListStackViewBottomConstraint?.isActive = false
+        endLabelTopConstraintWithoutStack?.isActive = true
+    }
+    
+    override func preferredLayoutAttributesFitting(
+        _ layoutAttributes: UICollectionViewLayoutAttributes
+    ) -> UICollectionViewLayoutAttributes {
+        setNeedsLayout()
+        layoutIfNeeded()
+        
+        let targetSize = CGSize(
+            width: layoutAttributes.frame.width,
+            height: UIView.layoutFittingCompressedSize.height
+        )
+        let size = contentView.systemLayoutSizeFitting(
+            targetSize,
+            withHorizontalFittingPriority: .required,
+            verticalFittingPriority: .fittingSizeLevel
+        )
+        var newAttributes = layoutAttributes
+        newAttributes.frame.size.height = ceil(size.height)
+        return newAttributes
     }
     
     private func setupUI() {
@@ -169,8 +197,16 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
         
         stationListStackView.snp.makeConstraints {
             $0.leading.equalTo(startLabel)
-            stationListStackViewTopConstraint = $0.top.equalTo(summaryView.snp.bottom).offset(16).constraint
-            stationListStackViewBottomConstraint = $0.bottom.equalTo(endLabel.snp.top).offset(-28).constraint
+            stationListStackViewTopConstraint = $0.top
+                .equalTo(summaryView.snp.bottom)
+                .offset(16)
+                .constraint
+            
+            stationListStackViewBottomConstraint = $0.bottom
+                .equalTo(endStackView.snp.top)
+                .offset(-28)
+                .priority(.high)
+                .constraint
         }
     }
     
@@ -182,11 +218,17 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
             make.edges.equalToSuperview().inset(10)
         }
         endStackView.snp.makeConstraints { make in
-            endLabelTopConstraintWithoutStack = make.top.equalTo(summaryView.snp.bottom).offset(36).constraint
+            endLabelTopConstraintWithoutStack = make.top
+                .equalTo(summaryView.snp.bottom)
+                .offset(36)
+                .priority(.high)  // ✅ high 우선순위
+                .constraint
             make.horizontalEdges.equalToSuperview().offset(16)
-            make.bottom.equalToSuperview()
+            make.bottom.equalToSuperview().priority(.high)  // ✅ high 우선순위
             make.height.equalTo(36)
         }
+        
+        endLabelTopConstraintWithoutStack?.isActive = false
     }
     
     private func setupConstraints() {
@@ -299,16 +341,24 @@ extension DetailRouteSubwayCell {
     
     @objc private func handleSummaryButton() {
         isExpanded.toggle()
+        
+        if isExpanded {
+            endLabelTopConstraintWithoutStack?.isActive = false
+            stationListStackViewTopConstraint?.isActive = true
+            stationListStackViewBottomConstraint?.isActive = true
+        } else {
+            stationListStackViewTopConstraint?.isActive = false
+            stationListStackViewBottomConstraint?.isActive = false
+            endLabelTopConstraintWithoutStack?.isActive = true
+        }
+        
         stationListStackView.isHidden = !isExpanded
-
         stationListStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         addStationNameLabel(info: stationInfos)
-
-        stationListStackViewTopConstraint?.isActive = isExpanded
-        stationListStackViewBottomConstraint?.isActive = isExpanded
-        endLabelTopConstraintWithoutStack?.isActive = !isExpanded
-        layoutIfNeeded()
-
+        
+        contentView.setNeedsLayout()
+        contentView.layoutIfNeeded()
+        
         didTapSummary?()
     }
 }

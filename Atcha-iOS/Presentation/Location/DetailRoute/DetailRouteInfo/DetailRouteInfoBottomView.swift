@@ -202,8 +202,8 @@ extension DetailRouteInfoBottomView {
         case .transport(let transportMode):
             switch transportMode {
             case .walk: height = 74
-            case .bus: height = 175
-            case .subway: height = 154
+            case .bus: height = 200
+            case .subway: height = 200
             case .unknown: height = 38
             }
         case .end: height = 58
@@ -250,7 +250,8 @@ extension DetailRouteInfoBottomView {
                         for: indexPath
                     ) as! DetailRouteBusCell
                     cell.didTapSummary = { [weak self] in
-                        self?.applySnapshot()
+//                        self?.applySnapshot()
+                        self?.collectionView.collectionViewLayout.invalidateLayout()
                     }
                     cell.getNewBusRealTime = { [weak self] in
                         self?.getNewBusRealTime?()
@@ -295,7 +296,8 @@ extension DetailRouteInfoBottomView {
                         for: indexPath
                     ) as! DetailRouteSubwayCell
                     cell.didTapSummary = { [weak self] in
-                        self?.applySnapshot()
+//                        self?.applySnapshot()
+                        self?.collectionView.collectionViewLayout.invalidateLayout()
                     }
                     cell.configure(info: item.info)
                     return cell
