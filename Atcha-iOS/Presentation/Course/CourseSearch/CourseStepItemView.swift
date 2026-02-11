@@ -72,8 +72,6 @@ final class CourseStepItemView: UIView {
         
         isHidden = false
         
-        stationLabel.attributedText = AtchaFont.R_12(leg.start?.name ?? "", color: AtchaColor.white)
-        
         busNumberLabel.isHidden = true
         endStationLabel.isHidden = true
         endPointView.isHidden = true
@@ -85,6 +83,8 @@ final class CourseStepItemView: UIView {
         
         switch leg.mode {
         case .bus:
+            stationLabel.attributedText = AtchaFont.R_12(leg.start?.name ?? "", color: AtchaColor.white)
+            
             let key = leg.type ?? "0"
             let imageName = busIcon[key] ?? busDefaultIcon
             trafficImageView.image = UIImage(named: imageName)
@@ -138,13 +138,18 @@ final class CourseStepItemView: UIView {
                 }
             }
         case .subway:
+            let startText = stationText(leg.start?.name)
+            stationLabel.attributedText = AtchaFont.R_12(startText, color: AtchaColor.white)
+            
             let key = leg.type ?? "0"
             let imageName = subwayIcon[key] ?? subwayDefaultIcon
             trafficImageView.image = UIImage(named: imageName)
             
             if isLast {
                 endStationLabel.isHidden = false
-                endStationLabel.attributedText = AtchaFont.R_12(leg.end?.name ?? "", color: AtchaColor.white)
+                
+                let endText = stationText(leg.end?.name)
+                endStationLabel.attributedText = AtchaFont.R_12(endText, color: AtchaColor.white)
                 
                 endStationLabel.snp.remakeConstraints { make in
                     make.leading.equalTo(stationLabel.snp.leading)
@@ -179,6 +184,7 @@ final class CourseStepItemView: UIView {
             }
         default:
             trafficImageView.image = nil
+            stationLabel.attributedText = AtchaFont.R_12(leg.start?.name ?? "", color: AtchaColor.white)
             stationLabel.snp.remakeConstraints { make in
                 make.leading.equalTo(trafficImageView.snp.trailing).offset(8)
                 make.top.equalTo(trafficImageView.snp.top)
@@ -186,5 +192,11 @@ final class CourseStepItemView: UIView {
                 make.bottom.equalToSuperview().inset(10)
             }
         }
+    }
+    
+    private func stationText(_ name: String?) -> String {
+        let n = (name ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !n.isEmpty else { return "" }
+        return n.hasSuffix("역") ? n : "\(n)역"
     }
 }
