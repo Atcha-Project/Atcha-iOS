@@ -16,6 +16,7 @@ enum DetailRouteContext {
 
 final class DetailRouteViewModel: BaseViewModel {
     private let busInfoUseCase: BusInfoUseCase
+    private let subwayInfoUseCase: SubwayInfoUseCase
     private let authorizationUseCase: RequestLocationAuthorizationUseCase
     private let streamUseCase: ObserveLocationStreamUseCase
     private let alarmUseCase: AlarmUseCase
@@ -33,6 +34,7 @@ final class DetailRouteViewModel: BaseViewModel {
     
     //    @Published var busRealTimeInfo: [RealTimeBusArrival] = []
     @Published var busRealTimeInfos: [[RealTimeBusArrival]] = []
+    @Published var subwayRealTimeInfos: [SubwayRealTimeInfo] = []
     
     @Published private(set) var context: DetailRouteContext
     
@@ -40,6 +42,7 @@ final class DetailRouteViewModel: BaseViewModel {
          infos: LegInfo,
          context: DetailRouteContext,
          busInfoUseCase: BusInfoUseCase,
+         subwayInfoUseCase: SubwayInfoUseCase,
          authorizationUseCase: RequestLocationAuthorizationUseCase,
          streamUseCase: ObserveLocationStreamUseCase,
          alarmUseCase: AlarmUseCase) {
@@ -47,6 +50,7 @@ final class DetailRouteViewModel: BaseViewModel {
         self.address = address
         self.context = context
         self.busInfoUseCase = busInfoUseCase
+        self.subwayInfoUseCase = subwayInfoUseCase
         self.authorizationUseCase = authorizationUseCase
         self.streamUseCase = streamUseCase
         self.alarmUseCase = alarmUseCase
@@ -57,17 +61,30 @@ final class DetailRouteViewModel: BaseViewModel {
     }
     
     func fetchInfo() {
-        self.legtPathInfo = infos.pathInfo
-        self.legTrafficInfo = infos.trafficInfo
+        legtPathInfo = infos.pathInfo
+        legTrafficInfo = infos.trafficInfo
+
+        // 버스
         let busDetailInfo = infos.busInfo.filter { $0.routeName?.isEmpty == false }
-        
         busRealTimeInfos = []
         busDetailInfo.forEach { info in
             if let routeName = info.routeName, routeName.contains(":") {
-                Task {
-                    await getBusRealTimeInfo(request: routeName)
-                }
+                Task { await getBusRealTimeInfo(request: routeName) }
             }
+        }
+        
+        guard context == .afterReigster else { return }
+
+        subwayRealTimeInfos = []
+        let subwayRoutes = Array(Set(
+            infos.trafficInfo
+                .filter { $0.mode == .subway }
+                .compactMap { $0.route }
+                .filter { !$0.isEmpty }
+        ))
+
+        subwayRoutes.forEach { route in
+            Task { await getSubwayRealTimeInfo(routeName: route) }
         }
     }
     
@@ -82,6 +99,18 @@ final class DetailRouteViewModel: BaseViewModel {
             } catch {
                 print("실시간 버스 조회 실패요!")
             }
+        }
+    }
+    
+    @MainActor
+    func getSubwayRealTimeInfo(routeName: String) async {
+        do {
+            let infos = try await subwayInfoUseCase.subwayRealTimeInfo(.init(routeName: routeName))
+            subwayRealTimeInfos.removeAll { $0.routeName == routeName } // 기존 제거
+            subwayRealTimeInfos.append(contentsOf: infos)
+            print("지하철 정보:\(infos)")
+        } catch {
+            print("실시간 지하철 조회 실패: \(error)")
         }
     }
     

@@ -13,6 +13,7 @@ final class RouteDIContainer {
     private lazy var requestUseCase = RequestLocationAuthorizationUseCaseImpl(repository: PermissionRepositoryImpl())
     private lazy var streamUseCase = ObserLocationStreamUseCaseImpl(repository: LocationStreamRepositoryImpl())
     private lazy var busInfoUseCase = BusInfoUseCaseImpl(repository: BusInfoRepositoryImpl(apiService: apiService))
+    private lazy var subwayInfoUseCase = SubwayInfoUseCaseImpl(repository: SubwayInfoRepositoryImpl(apiService: apiService))
     private lazy var alarmUseCase = AlarmUseCaseImpl(repository: AlarmRepositoryImpl(apiService: apiService))
     
     init(apiService: APIService) {
@@ -24,6 +25,7 @@ final class RouteDIContainer {
                                     infos: infos,
                                     context: context,
                                     busInfoUseCase: busInfoUseCase,
+                                    subwayInfoUseCase: subwayInfoUseCase,
                                     authorizationUseCase: requestUseCase,
                                     streamUseCase: streamUseCase,
                                     alarmUseCase: alarmUseCase)

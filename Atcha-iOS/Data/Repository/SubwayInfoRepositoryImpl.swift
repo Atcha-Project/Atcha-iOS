@@ -18,14 +18,14 @@ final class SubwayInfoRepositoryImpl: SubwayInfoRepository {
     
     // 실시간 지하철 정보 조회
     func subwayRealTimeInfo(_ request: SubwayRealTimeInfoRequest) async throws -> [SubwayRealTimeInfoResponse] {
-        let res: APIResponse<[SubwayRealTimeInfoResponse]> = try await apiService.request(
-            Endpoint(
-                path: "/routes/user-routes/subway-arrival",
-                method: .post,
-                encoding: JSONEncoding.default
-            ),
-            body: request
+        let endpoint = Endpoint(
+            path: "/routes/user-routes/subway-arrival",
+            method: .get,
+            parameters: ["routeName": request.routeName],
+            encoding: URLEncoding.queryString
         )
-        return res.result ?? []
+        
+        let result: [SubwayRealTimeInfoResponse] = try await apiService.request(endpoint)
+        return result
     }
 }
