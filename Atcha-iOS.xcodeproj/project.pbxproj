@@ -20,6 +20,12 @@
 		6D1EE2F72E0A933000F7BBF1 /* OnboardingCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1EE2F62E0A933000F7BBF1 /* OnboardingCoordinator.swift */; };
 		6D26DFA82F289E64005097A4 /* HeadingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D26DFA72F289E64005097A4 /* HeadingManager.swift */; };
 		6D26DFAA2F2D3B27005097A4 /* CloseOnlyNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D26DFA92F2D3B27005097A4 /* CloseOnlyNavigationBar.swift */; };
+		6D26DFFC2F3C16FD005097A4 /* SubwayInfoUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D26DFFB2F3C16FD005097A4 /* SubwayInfoUseCase.swift */; };
+		6D26E0002F3C17C3005097A4 /* SubwayRealTimeInfoRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D26DFFF2F3C17C3005097A4 /* SubwayRealTimeInfoRequest.swift */; };
+		6D26E0022F3C17DE005097A4 /* SubwayRealTimeInfoResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D26E0012F3C17DE005097A4 /* SubwayRealTimeInfoResponse.swift */; };
+		6D26E0052F3C18B0005097A4 /* SubwayRealTimeInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D26E0042F3C18B0005097A4 /* SubwayRealTimeInfo.swift */; };
+		6D26E0072F3C197F005097A4 /* SubwayInfoRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D26E0062F3C197F005097A4 /* SubwayInfoRepository.swift */; };
+		6D26E0092F3C1A0C005097A4 /* SubwayInfoRepositoryImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D26E0082F3C1A0C005097A4 /* SubwayInfoRepositoryImpl.swift */; };
 		6D2B8C942E38A97500608104 /* BusDetailHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2B8C932E38A97500608104 /* BusDetailHeaderView.swift */; };
 		6D2B8C972E38ABF600608104 /* BusInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2B8C962E38ABF600608104 /* BusInfoViewController.swift */; };
 		6D2B8C992E38ABFD00608104 /* BusInfoViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2B8C982E38ABFD00608104 /* BusInfoViewModel.swift */; };
@@ -336,6 +342,12 @@
 		6D1EE2F62E0A933000F7BBF1 /* OnboardingCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingCoordinator.swift; sourceTree = "<group>"; };
 		6D26DFA72F289E64005097A4 /* HeadingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeadingManager.swift; sourceTree = "<group>"; };
 		6D26DFA92F2D3B27005097A4 /* CloseOnlyNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloseOnlyNavigationBar.swift; sourceTree = "<group>"; };
+		6D26DFFB2F3C16FD005097A4 /* SubwayInfoUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubwayInfoUseCase.swift; sourceTree = "<group>"; };
+		6D26DFFF2F3C17C3005097A4 /* SubwayRealTimeInfoRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubwayRealTimeInfoRequest.swift; sourceTree = "<group>"; };
+		6D26E0012F3C17DE005097A4 /* SubwayRealTimeInfoResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubwayRealTimeInfoResponse.swift; sourceTree = "<group>"; };
+		6D26E0042F3C18B0005097A4 /* SubwayRealTimeInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubwayRealTimeInfo.swift; sourceTree = "<group>"; };
+		6D26E0062F3C197F005097A4 /* SubwayInfoRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubwayInfoRepository.swift; sourceTree = "<group>"; };
+		6D26E0082F3C1A0C005097A4 /* SubwayInfoRepositoryImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubwayInfoRepositoryImpl.swift; sourceTree = "<group>"; };
 		6D2B8C932E38A97500608104 /* BusDetailHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusDetailHeaderView.swift; sourceTree = "<group>"; };
 		6D2B8C962E38ABF600608104 /* BusInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusInfoViewController.swift; sourceTree = "<group>"; };
 		6D2B8C982E38ABFD00608104 /* BusInfoViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusInfoViewModel.swift; sourceTree = "<group>"; };
@@ -701,6 +713,31 @@
 				6D26DFA72F289E64005097A4 /* HeadingManager.swift */,
 			);
 			path = HeadingManager;
+			sourceTree = "<group>";
+		};
+		6D26DFFD2F3C179D005097A4 /* SubwayInfoDTO */ = {
+			isa = PBXGroup;
+			children = (
+				6D26DFFE2F3C17B3005097A4 /* SubwayRealTimeInfo */,
+			);
+			path = SubwayInfoDTO;
+			sourceTree = "<group>";
+		};
+		6D26DFFE2F3C17B3005097A4 /* SubwayRealTimeInfo */ = {
+			isa = PBXGroup;
+			children = (
+				6D26DFFF2F3C17C3005097A4 /* SubwayRealTimeInfoRequest.swift */,
+				6D26E0012F3C17DE005097A4 /* SubwayRealTimeInfoResponse.swift */,
+			);
+			path = SubwayRealTimeInfo;
+			sourceTree = "<group>";
+		};
+		6D26E0032F3C189D005097A4 /* SubwayInfo */ = {
+			isa = PBXGroup;
+			children = (
+				6D26E0042F3C18B0005097A4 /* SubwayRealTimeInfo.swift */,
+			);
+			path = SubwayInfo;
 			sourceTree = "<group>";
 		};
 		6D2B8C952E38ABED00608104 /* BusInfo */ = {
@@ -1128,6 +1165,7 @@
 		B65C12CF2E04292F0016D2F0 /* Entity */ = {
 			isa = PBXGroup;
 			children = (
+				6D26E0032F3C189D005097A4 /* SubwayInfo */,
 				6D2B8CA02E39A73300608104 /* BusInfo */,
 				B65C12DD2E042CF00016D2F0 /* UserInfo.swift */,
 				B66401842E2244CF00A397AE /* Location.swift */,
@@ -1147,6 +1185,7 @@
 				6DC3BF5F2E071F0900831470 /* LoginUseCase.swift */,
 				6D1EE2ED2E0A7D7300F7BBF1 /* OnboardingUseCase.swift */,
 				6D73EBE52E1B51E000F8DF8B /* CourseUseCase.swift */,
+				6D26DFFB2F3C16FD005097A4 /* SubwayInfoUseCase.swift */,
 				6D2B8CB92E39C8E100608104 /* BusInfoUseCase.swift */,
 				6DB7636A2E45C5EC00D06A49 /* AlarmUseCase.swift */,
 			);
@@ -1162,6 +1201,7 @@
 				6D1EE2EF2E0A7F0000F7BBF1 /* OnboardingRepository.swift */,
 				6D73EBE72E1B54A500F8DF8B /* CourseRepository.swift */,
 				6D2B8CBD2E39C9CB00608104 /* BusInfoRepository.swift */,
+				6D26E0062F3C197F005097A4 /* SubwayInfoRepository.swift */,
 				6DB7636C2E45C69400D06A49 /* AlarmRepository.swift */,
 			);
 			path = Repository;
@@ -1181,6 +1221,7 @@
 			children = (
 				B6C5074B2E129656000AB39F /* Location */,
 				6D2B8CBF2E39CC8800608104 /* BusInfoRepositoryImpl.swift */,
+				6D26E0082F3C1A0C005097A4 /* SubwayInfoRepositoryImpl.swift */,
 				B65C12E32E042D6B0016D2F0 /* UserRepositoryImpl.swift */,
 				B65C131F2E058C360016D2F0 /* AppVersionRepositoryImpl.swift */,
 				6D73EBE92E1B551600F8DF8B /* CourseRepositoryImpl.swift */,
@@ -1265,6 +1306,7 @@
 				6DB763672E45C52600D06A49 /* AlarmDTO */,
 				6D6879CC2E42119500E59C55 /* UserInfoPatchDTO */,
 				6D2B8C9F2E39A70500608104 /* BusInfoDTO */,
+				6D26DFFD2F3C179D005097A4 /* SubwayInfoDTO */,
 				B6AC8BDC2E2BAD6100410ECD /* UserDTO */,
 				6D5E03BA2E24F3D50065AFBE /* SearchHistoryDTO */,
 				B664017E2E2243C800A397AE /* LocationDTO */,
@@ -1988,6 +2030,7 @@
 				6D91A90F2E38A1C60081BAFC /* BusDetailViewModel.swift in Sources */,
 				B6CF46F52E09620100304A85 /* LoginCoordinator.swift in Sources */,
 				B6FB208A2E1BE5200032751B /* FetchTaxiFareRepositoryImpl.swift in Sources */,
+				6D26DFFC2F3C16FD005097A4 /* SubwayInfoUseCase.swift in Sources */,
 				6DB4DE932F114D6A00F2DC4E /* AtchaActionToast.swift in Sources */,
 				B68309532E005A3600E2D029 /* AppDelegate.swift in Sources */,
 				B65402D52E76CACC00AB5862 /* DetailRouteSummaryView.swift in Sources */,
@@ -2042,6 +2085,7 @@
 				B6793D542E386DFE001BE9F5 /* DetailRouteViewController.swift in Sources */,
 				B65C12FE2E057AF90016D2F0 /* NetworkConstant.swift in Sources */,
 				B6AC8BE72E2BC4E300410ECD /* AlarmSettingDIContainer.swift in Sources */,
+				6D26E0092F3C1A0C005097A4 /* SubwayInfoRepositoryImpl.swift in Sources */,
 				6D8D8B132E01B338003DABB2 /* AtchaButton.swift in Sources */,
 				B66401832E22449000A397AE /* SearchLocationResponse.swift in Sources */,
 				6D368BA42E02D5E200144EE7 /* IconTitleNavigationBar.swift in Sources */,
@@ -2084,6 +2128,7 @@
 				6D26DFA82F289E64005097A4 /* HeadingManager.swift in Sources */,
 				6D91A9012E33E3620081BAFC /* LoadingView.swift in Sources */,
 				B664018B2E2277A900A397AE /* PushAlarmOption.swift in Sources */,
+				6D26E0072F3C197F005097A4 /* SubwayInfoRepository.swift in Sources */,
 				B65C13082E057C590016D2F0 /* APIService.swift in Sources */,
 				6D6879D02E4211B800E59C55 /* HomePatchRequest.swift in Sources */,
 				6D9283742E3AFF6A0090889B /* BusRouteCell.swift in Sources */,
@@ -2165,10 +2210,12 @@
 				6DD632C22E544DB500C6A66E /* PushAlarmBottomView.swift in Sources */,
 				6D5E03D02E28853E0065AFBE /* CourseSearchResponse.swift in Sources */,
 				6D91A8E62E29F5BC0081BAFC /* CourseSettingViewModel.swift in Sources */,
+				6D26E0002F3C17C3005097A4 /* SubwayRealTimeInfoRequest.swift in Sources */,
 				B673C4912E0424FD00EE4AD0 /* SplashViewModel.swift in Sources */,
 				6DB763692E45C53A00D06A49 /* AlarmRequest.swift in Sources */,
 				B6C507502E129693000AB39F /* LocationStreamRepositoryImpl.swift in Sources */,
 				B6AC8BD92E2A85D800410ECD /* SignOutUseCase.swift in Sources */,
+				6D26E0022F3C17DE005097A4 /* SubwayRealTimeInfoResponse.swift in Sources */,
 				6D1EE2F02E0A7F0000F7BBF1 /* OnboardingRepository.swift in Sources */,
 				6D1EE2E52E09A42F00F7BBF1 /* PushAlarmViewController.swift in Sources */,
 				B6793D4F2E34972B001BE9F5 /* FetchTaxiFareRequest.swift in Sources */,
@@ -2223,6 +2270,7 @@
 				B69E31AC2E2683B8001040F4 /* PermissionViewController.swift in Sources */,
 				6D1EE2EE2E0A7D7300F7BBF1 /* OnboardingUseCase.swift in Sources */,
 				B6AC8BDB2E2B3AA200410ECD /* LogoutuseCase.swift in Sources */,
+				6D26E0052F3C18B0005097A4 /* SubwayRealTimeInfo.swift in Sources */,
 				6DFF29912E0CBE820039399F /* RegisterLocationViewController.swift in Sources */,
 				B6793D692E3B3FB8001BE9F5 /* DetailRouteSubwayCell.swift in Sources */,
 				B6793D602E3A5E23001BE9F5 /* DetailRouteProgressView.swift in Sources */,
