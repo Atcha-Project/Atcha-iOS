@@ -44,6 +44,7 @@ enum AtchaColor{
         static let town = UIColor(named: "town")!
         static let mainline = UIColor(named: "mainline")!
         static let widearea = UIColor(named: "widearea")!
+        static let general = UIColor(named: "general")!
     }
     
     // MARK: - Transportation/Subway

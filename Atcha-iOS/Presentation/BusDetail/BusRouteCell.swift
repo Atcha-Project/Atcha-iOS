@@ -262,7 +262,17 @@ class BusRouteCell: UICollectionViewCell {
                 isLastStation: isLastStation,
                 color: .mainline
             )
-        case .일반, .외곽, .지선: // regular
+        case .일반: // general
+            realTimeBusImageView.image = UIImage.busGeneral20Px
+            configureRouteLine(
+                isCurrentStation: isCurrentStation,
+                isTurnPoint: isTurnPoint,
+                isAfterTurnPoint: isAfterTurnPoint,
+                isFirstStation: isFirstStation,
+                isLastStation: isLastStation,
+                color: .general
+            )
+        case .외곽, .지선: // regular
             realTimeBusImageView.image = UIImage.busRegular20Px
             configureRouteLine(
                 isCurrentStation: isCurrentStation,
