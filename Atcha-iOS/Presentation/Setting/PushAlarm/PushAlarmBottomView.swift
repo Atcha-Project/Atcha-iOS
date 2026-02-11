@@ -13,7 +13,7 @@ import MediaPlayer
 final class PushAlarmBottomView: UIView {
     private var currentVolume: Float = AVAudioSession.sharedInstance().outputVolume
     private var volumeObservation: NSKeyValueObservation?
-    private var volume: Float = 0.7
+    private var volume: Float = 0.3
     
     private let volumeTitleLabel: UILabel = UILabel()
     private let volumeSubTitleLabel: UILabel = UILabel()
@@ -61,11 +61,11 @@ final class PushAlarmBottomView: UIView {
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(sliderTapped(_:)))
         volumeSlider.addGestureRecognizer(tapGesture)
-        volumeSlider.setValue(0.7, animated: true)
+        volumeSlider.setValue(0.3, animated: true)
         
         let savedVolume = UserDefaultsWrapper.shared.float(
                 forKey: UserDefaultsWrapper.Key.alarmVolume.rawValue
-            ) ?? 0.7
+            ) ?? 0.3
             
             volumeSlider.setValue(savedVolume, animated: false)
         
