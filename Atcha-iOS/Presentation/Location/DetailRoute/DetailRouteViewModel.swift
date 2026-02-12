@@ -39,11 +39,14 @@ final class DetailRouteViewModel: BaseViewModel {
     private var busPollingTask: Task<Void, Never>?
     
     @Published var subwayRealTimeInfos: [SubwayRealTimeInfo] = []
+    private var subwayRoutes: [String] = []
+    private var subwayPollingTask: Task<Void, Never>?
     
     @Published private(set) var context: DetailRouteContext
     
     deinit {
         stopBusPolling()
+        stopSubwayPolling()
     }
     
     init(address: String,
@@ -90,7 +93,6 @@ final class DetailRouteViewModel: BaseViewModel {
         // 15초 폴링 시작
         startBusPolling()
         
-        subwayRealTimeInfos = []
         let subwayRoutes = Array(Set(
             infos.trafficInfo
                 .filter { $0.mode == .subway }
@@ -98,9 +100,15 @@ final class DetailRouteViewModel: BaseViewModel {
                 .filter { !$0.isEmpty }
         ))
         
-        subwayRoutes.forEach { route in
-            Task { await getSubwayRealTimeInfo(routeName: route) }
+        self.subwayRoutes = subwayRoutes
+        // 여기서 removeAll 하면 첫 표시가 비었다가 생길 수 있음.
+        // "최초 진입 때만 비우고", 폴링에서는 기존 유지가 더 안정적.
+        self.subwayRealTimeInfos = []
+        
+        Task { [weak self] in
+            await self?.refreshAllSubwayRealTime()
         }
+        startSubwayPolling()
     }
     
     @MainActor
@@ -188,19 +196,55 @@ final class DetailRouteViewModel: BaseViewModel {
     private func refreshAllBusRealTime() async {
         guard !busRoutes.isEmpty else { return }
         
-        // 병렬로 받아오고 싶으면 TaskGroup, 단순이면 for-await도 OK
         for route in busRoutes {
             do {
                 let response = try await busInfoUseCase.getBusRealTimeInfo(route)
                 busRealTimeMap[route] = response
             } catch {
-                // 실패했을 때 기존 값 유지(중요: 여기서 map 지우면 UI가 "꺼짐")
+                // 실패 시 기존 값 유지
                 print("실시간 버스 조회 실패: \(route), \(error)")
             }
         }
         
-        // UI용 배열 갱신 (순서가 중요하면 busRoutes 순서대로)
         busRealTimeInfos = busRoutes.compactMap { busRealTimeMap[$0] }
     }
     
+    // MARK: - Subway Polling
+    
+    private func startSubwayPolling() {
+        stopSubwayPolling()
+        
+        subwayPollingTask = Task { [weak self] in
+            guard let self else { return }
+            
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 15_000_000_000)
+                if Task.isCancelled { break }
+                await self.refreshAllSubwayRealTime()
+            }
+        }
+    }
+    
+    private func stopSubwayPolling() {
+        subwayPollingTask?.cancel()
+        subwayPollingTask = nil
+    }
+    
+    @MainActor
+    private func refreshAllSubwayRealTime() async {
+        guard !subwayRoutes.isEmpty else { return }
+        
+        for route in subwayRoutes {
+            do {
+                let infos = try await subwayInfoUseCase.subwayRealTimeInfo(.init(routeName: route))
+                
+                // 성공한 route만 교체 (실패하면 기존 유지)
+                subwayRealTimeInfos.removeAll { $0.routeName == route }
+                subwayRealTimeInfos.append(contentsOf: infos)
+            } catch {
+                // 실패 시 기존 유지
+                print("실시간 지하철 조회 실패: \(route), \(error)")
+            }
+        }
+    }
 }

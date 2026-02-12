@@ -178,7 +178,7 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         viewModel.$subwayRealTimeInfos
             .receive(on: RunLoop.main)
             .sink { [weak self] infos in
-                self?.bottomSheet.setupSubwayRealTime(infos)
+                self?.bottomSheet.setupSubwayTimerLabel(infos)
             }
             .store(in: &cancellables)
         

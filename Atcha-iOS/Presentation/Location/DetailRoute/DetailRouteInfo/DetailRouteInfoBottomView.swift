@@ -154,9 +154,16 @@ final class DetailRouteInfoBottomView: UIView {
         }
     }
     
-    func setupSubwayRealTime(_ infos: [SubwayRealTimeInfo]) {
+    func setupSubwayTimerLabel(_ infos: [SubwayRealTimeInfo]) {
         subwayRealTimeInfo = infos
-        collectionView.reloadData()
+
+        for cell in collectionView.visibleCells {
+            guard let subwayCell = cell as? DetailRouteSubwayCell else { continue }
+            guard let route = subwayCell.currentLegTrafficInfo?.route, !route.isEmpty else { continue }
+
+            let matched = subwayRealTimeInfo.filter { $0.routeName == route }
+            subwayCell.setupSubwayRealTime(routeName: route, infos: matched)
+        }
     }
     
     func setupStartAddress(_ address: String) {
@@ -303,6 +310,18 @@ extension DetailRouteInfoBottomView {
                     }
                     cell.configure(info: item.info)
                     
+                    if let route = item.info?.route, !route.isEmpty {
+                        let cellKey = route.components(separatedBy: ":").last ?? route
+                        
+                        let matchedInfo = self.busRealTimeInfo.first(where: { list in
+                            guard let apiRaw = list.first?.routeName else { return false }
+                            let apiKey = apiRaw.components(separatedBy: ":").last ?? apiRaw
+                            return apiKey == cellKey
+                        }) ?? []
+                        
+                        cell.setupBusRealTimeInfo(info: item.info, busInfo: matchedInfo)
+                    }
+                    
                     return cell
                     
                 case .subway:
@@ -316,10 +335,15 @@ extension DetailRouteInfoBottomView {
                     }
                     cell.configure(info: item.info)
                     
-                    if let routeName = item.info?.route {
-                            let matched = self.subwayRealTimeInfo.filter { $0.routeName == routeName }
-                            cell.setupSubwayRealTime(routeName: routeName, infos: matched)
-                        }
+                    if let route = item.info?.route, !route.isEmpty {
+                           let key = route.components(separatedBy: ":").last ?? route
+                           let matched = self.subwayRealTimeInfo.filter { info in
+                               let apiRaw = info.routeName ?? ""
+                               let apiKey = apiRaw.components(separatedBy: ":").last ?? apiRaw
+                               return apiKey == key
+                           }
+                           cell.setupSubwayRealTime(routeName: route, infos: matched)
+                       }
                     return cell
                     
                 default:

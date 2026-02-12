@@ -70,6 +70,9 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
     private var subwayCountdownTimer: Timer?
     private var currentRemainingSec: Int?
     
+    var currentLegTrafficInfo: LegTrafficInfo? = nil
+
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
@@ -268,6 +271,8 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
     }
     
     func configure(info: LegTrafficInfo?) {
+        currentLegTrafficInfo = info
+        
         stationInfos = []
         guard let info = info,
               let passStopList = info.passStopList,
@@ -358,81 +363,6 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
             return todayNow >= todayStart && todayNow < todayEnd
         }
     }
-    
-    func setupSubwayRealTime(routeName: String?, infos: [SubwayRealTimeInfo]) {
-        subwayCountdownTimer?.invalidate()
-        subwayCountdownTimer = nil
-        currentRemainingSec = nil
-
-        subwayTimerLabel.isHidden = false
-        subwayDirectionLabel.attributedText = AtchaFont.B6_R_14("", color: .white)
-
-        guard let routeName, !routeName.isEmpty else { return }
-
-        let key = routeName.components(separatedBy: ":").last ?? routeName
-
-        let matched = infos.first { info in
-            let apiRaw = info.routeName ?? ""
-            let apiKey = apiRaw.components(separatedBy: ":").last ?? apiRaw
-            return apiKey == key
-        }
-
-        let destination = matched?.destination ?? ""
-        subwayDirectionLabel.attributedText = AtchaFont.B6_R_14("\(destination)행", color: .white)
-
-        guard let sec = matched?.remainingTime, sec >= 0 else {
-            return
-        }
-
-        currentRemainingSec = sec
-        updateSubwayTimerLabel()
-        startSubwayCountdownTimer()
-    }
-    
-    private func startSubwayCountdownTimer() {
-        subwayCountdownTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-            guard let self else { return }
-            guard let sec = self.currentRemainingSec else { return }
-
-            self.currentRemainingSec = sec - 1
-            self.updateSubwayTimerLabel()
-        }
-    }
-
-    private func updateSubwayTimerLabel() {
-        guard let sec = currentRemainingSec else {
-            subwayTimerLabel.attributedText = AtchaFont.B6_R_14("불러오는 중", color: .widearea)
-            return
-        }
-
-        if sec < 0 {
-            subwayTimerLabel.attributedText = AtchaFont.B6_R_14("불러오는 중", color: .widearea)
-            return
-        }
-
-        if sec == 0 {
-            subwayTimerLabel.attributedText = AtchaFont.B6_R_14("도착 또는 출발", color: .widearea)
-            subwayCountdownTimer?.invalidate()
-            subwayCountdownTimer = nil
-            return
-        }
-
-        // 2분 이하(<=120초)면 "곧 도착"
-        if sec <= 120 {
-            subwayTimerLabel.attributedText = AtchaFont.B6_R_14("곧 도착", color: .widearea)
-            return
-        }
-
-        // 그 외는 mm:ss
-        subwayTimerLabel.attributedText = AtchaFont.B6_R_14(formatMinSecKorean(sec), color: .widearea)
-    }
-    
-    
-    private func formatMinSecKorean(_ seconds: Int) -> String {
-        let m = seconds / 60
-        let s = seconds % 60
-        return "\(m)분 \(s)초"
-    }
 }
 
 // MARK: Action
@@ -463,5 +393,108 @@ extension DetailRouteSubwayCell {
         contentView.layoutIfNeeded()
         
         didTapSummary?()
+    }
+}
+
+extension DetailRouteSubwayCell {
+
+    func setupSubwayRealTime(routeName: String?, infos: [SubwayRealTimeInfo]) {
+        stopSubwayCountdownTimer()
+        currentRemainingSec = nil
+
+        subwayTimerLabel.isHidden = false
+        subwayDirectionLabel.attributedText = AtchaFont.B6_R_14("", color: .white)
+
+        guard let routeName, !routeName.isEmpty else {
+            subwayTimerLabel.attributedText = AtchaFont.B6_R_14("정보 없음", color: .gray300)
+            return
+        }
+
+        let key = routeName.components(separatedBy: ":").last ?? routeName
+
+        let matched = infos.first { info in
+            let apiRaw = info.routeName ?? ""
+            let apiKey = apiRaw.components(separatedBy: ":").last ?? apiRaw
+            return apiKey == key
+        }
+
+        guard let matched else {
+            subwayDirectionLabel.attributedText = AtchaFont.B6_R_14("정보 없음", color: .gray300)
+            subwayTimerLabel.attributedText = AtchaFont.B6_R_14("정보 없음", color: .gray300)
+            return
+        }
+
+        let destination = matched.destination ?? ""
+        subwayDirectionLabel.attributedText = AtchaFont.B6_R_14("\(destination)행", color: .white)
+
+        guard let sec = matched.remainingTime, sec >= 0 else {
+            subwayTimerLabel.attributedText = AtchaFont.B6_R_14("불러오는 중", color: .widearea)
+            return
+        }
+
+        currentRemainingSec = sec
+        updateSubwayTimerLabel()
+        startSubwayCountdownTimerIfNeeded()
+    }
+
+    private func startSubwayCountdownTimerIfNeeded() {
+        if subwayCountdownTimer != nil { return }
+
+        subwayCountdownTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            self?.decrementSubwayRemainingTime()
+        }
+
+        if let timer = subwayCountdownTimer {
+            RunLoop.main.add(timer, forMode: .common)
+        }
+    }
+
+    private func stopSubwayCountdownTimer() {
+        subwayCountdownTimer?.invalidate()
+        subwayCountdownTimer = nil
+    }
+
+    private func decrementSubwayRemainingTime() {
+        guard let sec = currentRemainingSec else {
+            stopSubwayCountdownTimer()
+            return
+        }
+
+        let next = sec - 1
+        currentRemainingSec = next
+
+        if next <= 0 {
+            currentRemainingSec = 0
+            updateSubwayTimerLabel()
+            stopSubwayCountdownTimer()
+            return
+        }
+
+        updateSubwayTimerLabel()
+    }
+
+    private func updateSubwayTimerLabel() {
+        guard let sec = currentRemainingSec else {
+            subwayTimerLabel.attributedText = AtchaFont.B6_R_14("불러오는 중", color: .widearea)
+            return
+        }
+
+        if sec == 0 {
+            subwayTimerLabel.attributedText = AtchaFont.B6_R_14("도착 또는 출발", color: .widearea)
+            return
+        }
+
+        if sec <= 120 {
+            subwayTimerLabel.attributedText = AtchaFont.B6_R_14("곧 도착", color: .widearea)
+            return
+        }
+
+        subwayTimerLabel.attributedText = AtchaFont.B6_R_14(formatMinSecKorean(sec), color: .widearea)
+    }
+
+    private func formatMinSecKorean(_ seconds: Int) -> String {
+        let m = seconds / 60
+        let s = seconds % 60
+        return "\(m)분 \(s)초"
     }
 }
