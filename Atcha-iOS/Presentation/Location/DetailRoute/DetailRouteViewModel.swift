@@ -45,16 +45,14 @@ final class DetailRouteViewModel: BaseViewModel {
     @Published private(set) var context: DetailRouteContext
     @Published var nearLegIDs: Set<UUID> = []
     
-//    
+    @Published var deviceHeading: CLLocationDirection?
+    private let headingManager = HeadingManager()
+    
+//
 //#if DEBUG
 //@Published var mockLocation: CLLocationCoordinate2D? = nil
 //#endif
-    
-    deinit {
-        stopBusPolling()
-        stopSubwayPolling()
-    }
-    
+
     init(address: String,
          infos: LegInfo,
          context: DetailRouteContext,
@@ -142,21 +140,46 @@ final class DetailRouteViewModel: BaseViewModel {
     }
     
     func requestPermissionAndStartTracking() {
-        Task {
-            let status = await authorizationUseCase.askLocationPermission()
-            guard status == .authorizedAlways || status == .authorizedWhenInUse else { return }
-            
-            streamTask = Task {
-                for await location in streamUseCase.startUpdate() {
-                    let currentLocation = CLLocationCoordinate2D(latitude: location.coordinate.latitude,
-                                                                 longitude: location.coordinate.longitude)
-                    
-                    self.currentLocation = currentLocation
-                    break
+            Task {
+                let status = await authorizationUseCase.askLocationPermission()
+                guard status == .authorizedAlways || status == .authorizedWhenInUse else { return }
+
+                streamTask?.cancel()
+                streamTask = Task {
+                    for await location in streamUseCase.startUpdate() {
+                        let coord = CLLocationCoordinate2D(
+                            latitude: location.coordinate.latitude,
+                            longitude: location.coordinate.longitude
+                        )
+                        await MainActor.run { self.currentLocation = coord }
+                    }
                 }
             }
         }
-    }
+    
+    func startHeading() {
+            headingManager.onHeading = { [weak self] h in
+                DispatchQueue.main.async { self?.deviceHeading = h }
+            }
+            headingManager.start()
+        }
+
+        func stopHeading() {
+            headingManager.stop()
+        }
+
+        func stopTracking() {
+            streamTask?.cancel()
+            streamUseCase.stopUpdate()
+            headingManager.stop()
+        }
+
+        deinit {
+            stopTracking()
+            stopBusPolling()
+            stopSubwayPolling()
+        }
+    
 //    func requestPermissionAndStartTracking() {
 //        Task {
 //            let status = await authorizationUseCase.askLocationPermission()

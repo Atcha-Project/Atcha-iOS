@@ -85,3 +85,9 @@ extension TMapContainerView {
         setupTMap()
     }
 }
+
+extension TMapContainerView {
+    func setupCenterWithRouteInsetOffset(location: CLLocationCoordinate2D, points: CGFloat = 50) {
+        tMapWrapper.centerUserWithRouteInset(location, yOffsetUp: points)
+    }
+}

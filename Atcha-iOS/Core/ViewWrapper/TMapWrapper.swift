@@ -153,6 +153,7 @@ final class TMapWrapper: NSObject, MapRendering {
         trafficMarkers.forEach { $0.map = nil }
         trafficMarkers.removeAll()
     }
+    
 }
 
 extension TMapWrapper: TMapViewDelegate, TmapViewLocationDelegate {
@@ -178,5 +179,23 @@ extension TMapWrapper: TMapViewDelegate, TmapViewLocationDelegate {
                  shouldChangeFrom oldPosition: CLLocationCoordinate2D,
                  to newPosition: CLLocationCoordinate2D) {
         delegate?.mapView(self, didUpdateLocation: newPosition)
+    }
+}
+
+extension TMapWrapper {
+    /// 현위치를 "routeInset 기준"으로 센터링하되, 화면에서 위로 50pt 올라가 보이게
+    func centerUserWithRouteInset(_ location: CLLocationCoordinate2D, yOffsetUp points: CGFloat = 50) {
+        let dLat = 0.00015
+        let dLon = 0.00015
+
+        let box = [
+            CLLocationCoordinate2D(latitude: location.latitude - dLat, longitude: location.longitude - dLon),
+            CLLocationCoordinate2D(latitude: location.latitude + dLat, longitude: location.longitude + dLon)
+        ]
+
+        // 기존 route inset 그대로 + bottom만 50 증가 = 화면에서 더 위로 보임
+        let inset = UIEdgeInsets(top: 110, left: 30, bottom: 160 + points, right: 30)
+
+        mapView.fitMapBoundsWithPolygons([TMapPolygon(coordinates: box)], inset: inset)
     }
 }
