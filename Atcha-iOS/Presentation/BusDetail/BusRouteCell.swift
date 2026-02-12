@@ -222,7 +222,7 @@ class BusRouteCell: UICollectionViewCell {
                                 "\(updated.toHourMinuteSecondString) (\(remainText))",
                                 color: AtchaColor.Etc.remainTime
                             )
-                        } else if updated > 0 { // 3분 이하 → "곧 도착"
+                        } else if updated > 0 { // 2분 이하 → "곧 도착"
                             let congestionText = congestion?.displayText
                             let remainText: String
                             if let congestionText, !congestionText.isEmpty {

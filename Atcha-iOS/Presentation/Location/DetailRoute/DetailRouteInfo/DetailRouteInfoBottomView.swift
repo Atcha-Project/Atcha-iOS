@@ -250,7 +250,7 @@ extension DetailRouteInfoBottomView {
                         for: indexPath
                     ) as! DetailRouteBusCell
                     cell.didTapSummary = { [weak self] in
-//                        self?.applySnapshot()
+                        //                        self?.applySnapshot()
                         self?.collectionView.collectionViewLayout.invalidateLayout()
                     }
                     cell.getNewBusRealTime = { [weak self] in
@@ -280,11 +280,14 @@ extension DetailRouteInfoBottomView {
                     }
                     cell.configure(info: item.info)
                     
-                    // 이 부분에서 나눠서 값을 넣어줘야 해
-                    
-                    //                    cell.setupBusRealTimeInfo(busInfo: self.busRealTimeInfo)
-                    if let routeName = item.info?.route {
-                        let matchedInfo = self.busRealTimeInfo.first(where: { $0.first?.routeName == routeName }) ?? []
+                    if let raw = item.info?.route {
+                        let cellKey = raw.components(separatedBy: ":").last ?? raw
+                        
+                        let matchedInfo = self.busRealTimeInfo.first(where: { list in
+                            guard let apiRaw = list.first?.routeName else { return false }
+                            let apiKey = apiRaw.components(separatedBy: ":").last ?? apiRaw
+                            return apiKey == cellKey
+                        }) ?? []
                         cell.setupBusRealTimeInfo(info: item.info, busInfo: matchedInfo)
                     }
                     
@@ -296,7 +299,7 @@ extension DetailRouteInfoBottomView {
                         for: indexPath
                     ) as! DetailRouteSubwayCell
                     cell.didTapSummary = { [weak self] in
-//                        self?.applySnapshot()
+                        //                        self?.applySnapshot()
                         self?.collectionView.collectionViewLayout.invalidateLayout()
                     }
                     cell.configure(info: item.info)

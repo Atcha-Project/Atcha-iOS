@@ -126,7 +126,7 @@ final class DetailRouteBusCell: UICollectionViewCell {
             withHorizontalFittingPriority: .required,
             verticalFittingPriority: .fittingSizeLevel
         )
-        var newAttributes = layoutAttributes
+        let newAttributes = layoutAttributes
         newAttributes.frame.size.height = ceil(size.height)
         return newAttributes
     }
@@ -305,10 +305,10 @@ final class DetailRouteBusCell: UICollectionViewCell {
     }
     
     func setupBusRealTimeInfo(info: LegTrafficInfo?, busInfo: [RealTimeBusArrival]) {
-        if !isCurrentTimeBetween(startTime: info?.startTime,
-                                 endTime: info?.endTime) {
-            return
-        }
+//        if !isCurrentTimeBetween(startTime: info?.startTime,
+//                                 endTime: info?.endTime) {
+//            return
+//        }
         
         busTimerStackView.isHidden = false
         
@@ -376,7 +376,7 @@ final class DetailRouteBusCell: UICollectionViewCell {
                 return AtchaFont.B6_R_14("정보 없음", color: .gray)
             }
             
-            if remaining <= 90 {
+            if remaining <= 120 {
                 return AtchaFont.B6_R_14("곧 도착", color: .widearea)
             } else {
                 return AtchaFont.B6_R_14(formatSecondsToMinutesAndSeconds(remaining), color: .widearea)
