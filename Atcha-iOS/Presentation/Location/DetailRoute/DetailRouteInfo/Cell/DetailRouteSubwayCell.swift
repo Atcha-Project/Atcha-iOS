@@ -498,12 +498,32 @@ extension DetailRouteSubwayCell {
             return
         }
 
-        subwayTimerLabel.attributedText = AtchaFont.B6_R_14(formatMinSecKorean(sec), color: .widearea)
+        subwayTimerLabel.attributedText = AtchaFont.B6_R_14(formatSecondsToHMS(sec), color: .widearea)
     }
 
-    private func formatMinSecKorean(_ seconds: Int) -> String {
-        let m = seconds / 60
+    private func formatSecondsToHMS(_ seconds: Int?) -> String {
+        guard let seconds, seconds >= 0 else { return "시간 없음" }
+
+        let h = seconds / 3600
+        let m = (seconds % 3600) / 60
         let s = seconds % 60
-        return "\(m)분 \(s)초"
+
+        if h > 0 {
+            // 시가 있으면 시/분/초
+            // (원하면 "1시간 0분 5초"처럼 0분도 보여줄지 결정 가능)
+            if m > 0 {
+                return "\(h)시간 \(m)분 \(s)초"
+            } else {
+                return "\(h)시간 \(s)초"
+            }
+        }
+
+        if m > 0 {
+            // 시가 없으면 분/초
+            return "\(m)분 \(s)초"
+        }
+
+        // 분도 없으면 초만
+        return "\(s)초"
     }
 }
