@@ -29,7 +29,7 @@ final class TMapWrapper: NSObject, MapRendering {
     private var trafficMarkers: [TMapMarker] = []
     
     public init(frame: CGRect) {
-        self.mapView = TMapView(frame: UIScreen.main.bounds)
+        self.mapView = TMapView(frame: frame)
         super.init()
         configureDefaultSettings()
     }

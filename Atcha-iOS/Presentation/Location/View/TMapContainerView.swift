@@ -30,8 +30,15 @@ final class TMapContainerView: UIView {
         setupTMap()
     }
     
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        // SDK가 초기 frame 기반으로 렌더링 잡는 경우 대비
+        tMapWrapper.mapView.frame = bounds
+    }
+    
+    
     private func setupTMap() {
-        tMapWrapper = TMapWrapper(frame: bounds)
+        tMapWrapper = TMapWrapper(frame: .zero)
         tMapWrapper.delegate = delegate
         addSubview(tMapWrapper.mapView)
         tMapWrapper.mapView.snp.makeConstraints {

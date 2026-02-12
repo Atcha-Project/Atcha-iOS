@@ -54,8 +54,20 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
 
         if !isAlarmFired && !allCoordinates.isEmpty {
             mapContainerView.adjustMapToFit(coordinates: allCoordinates)
+            
+            mapContainerView.snp.remakeConstraints { make in
+                make.horizontalEdges.equalToSuperview()
+                make.top.equalToSuperview()
+                make.height.equalToSuperview().multipliedBy(0.65)
+            }
+        } else if isAlarmFired {
+            mapContainerView.snp.remakeConstraints { make in
+                make.horizontalEdges.equalToSuperview()
+                make.top.equalToSuperview()
+                make.bottom.equalToSuperview().inset(200)
+            }
         }
-
+        
         registerGradient.frame = registerContainer.bounds
     }
     
@@ -158,11 +170,6 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
     }
     
     private func setupAutoLayout() {
-        mapContainerView.snp.makeConstraints { make in
-            make.horizontalEdges.equalToSuperview()
-            make.top.equalToSuperview()
-            make.height.equalToSuperview().multipliedBy(0.65)
-        }
         backButton.snp.makeConstraints { make in
             make.leading.equalToSuperview().offset(16)
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(12)
@@ -181,6 +188,12 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             make.size.equalTo(48)
             make.trailing.equalToSuperview().inset(16)
             make.bottom.equalTo(view.snp.bottom).inset(40)
+        }
+        
+        mapContainerView.snp.makeConstraints { make in
+            make.horizontalEdges.equalToSuperview()
+            make.top.equalToSuperview()
+            make.height.equalToSuperview().multipliedBy(0.65)
         }
     }
     
@@ -293,13 +306,13 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
 
                 if isAlarmFired {
                     // 알람 울린 후엔 계속 따라감
-                    mapContainerView.setupCenter(location: coord)
+                    mapContainerView.setupZoomCenter(location: coord)
                     return
                 }
 
                 // 알람 전: 기본은 fit 고정. 단, 현위치 버튼으로 following 켰다면 이동
                 if isFollowingUser {
-                    mapContainerView.setupCenter(location: coord)
+                    mapContainerView.setupZoomCenter(location: coord)
                     return
                 }
 
@@ -459,6 +472,12 @@ extension DetailRouteViewController {
         viewModel.startHeading()
 
         viewModel.setupLocation()
+        
+        mapContainerView.snp.remakeConstraints { make in
+            make.horizontalEdges.equalToSuperview()
+            make.top.equalToSuperview()
+            make.bottom.equalToSuperview().inset(200)
+        }
     }
     
     @objc private func didTapReload() {
