@@ -57,6 +57,19 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
     private var stationListStackViewBottomConstraint: Constraint?
     private var endLabelTopConstraintWithoutStack: Constraint?
     
+    private let subwayDirectionLabel = UILabel()
+    private let subwayTimerLabel = UILabel()
+    private lazy var subwayRealtimeStackView: UIStackView = {
+        let stack = UIStackView(arrangedSubviews: [subwayDirectionLabel, subwayTimerLabel])
+        stack.axis = .horizontal
+        stack.alignment = .center
+        stack.spacing = 8
+        return stack
+    }()
+    
+    private var subwayCountdownTimer: Timer?
+    private var currentRemainingSec: Int?
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
@@ -83,6 +96,12 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
         stationListStackViewTopConstraint?.isActive = false
         stationListStackViewBottomConstraint?.isActive = false
         endLabelTopConstraintWithoutStack?.isActive = true
+        
+        subwayDirectionLabel.text = nil
+        subwayTimerLabel.text = nil
+        subwayCountdownTimer?.invalidate()
+        subwayCountdownTimer = nil
+        currentRemainingSec = nil
     }
     
     override func preferredLayoutAttributesFitting(
@@ -100,7 +119,7 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
             withHorizontalFittingPriority: .required,
             verticalFittingPriority: .fittingSizeLevel
         )
-        var newAttributes = layoutAttributes
+        let newAttributes = layoutAttributes
         newAttributes.frame.size.height = ceil(size.height)
         return newAttributes
     }
@@ -117,7 +136,7 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
                                 stickContainerView,
                                 startStackView,
                                 endStackView,
-                                subwayBadgeLabel,
+                                subwayRealtimeStackView,
                                 summaryView,
                                 stationListStackView)
         
@@ -134,6 +153,10 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
         stationListStackView.axis = .vertical
         stationListStackView.spacing = 10
         stationListStackView.isHidden = true
+        
+        subwayDirectionLabel.numberOfLines = 1
+        subwayTimerLabel.numberOfLines = 1
+        
     }
     
     private func setupInitialConstraintState() {
@@ -185,14 +208,19 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
     }
     
     private func setupInfoConstrains() {
-        subwayBadgeLabel.snp.makeConstraints { make in
+        //        subwayBadgeLabel.snp.makeConstraints { make in
+        //            make.leading.equalTo(startLabel.snp.leading)
+        //            make.top.equalTo(startStackView.snp.bottom).offset(8)
+        //        }
+        
+        subwayRealtimeStackView.snp.makeConstraints { make in
             make.leading.equalTo(startLabel.snp.leading)
             make.top.equalTo(startStackView.snp.bottom).offset(8)
         }
         
         summaryView.snp.makeConstraints { make in
             make.leading.equalTo(startLabel.snp.leading)
-            make.top.equalTo(subwayBadgeLabel.snp.bottom).offset(16)
+            make.top.equalTo(subwayRealtimeStackView.snp.bottom).offset(16)
         }
         
         stationListStackView.snp.makeConstraints {
@@ -329,6 +357,81 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
         } else {
             return todayNow >= todayStart && todayNow < todayEnd
         }
+    }
+    
+    func setupSubwayRealTime(routeName: String?, infos: [SubwayRealTimeInfo]) {
+        subwayCountdownTimer?.invalidate()
+        subwayCountdownTimer = nil
+        currentRemainingSec = nil
+
+        subwayTimerLabel.isHidden = false
+        subwayDirectionLabel.attributedText = AtchaFont.B6_R_14("", color: .white)
+
+        guard let routeName, !routeName.isEmpty else { return }
+
+        let key = routeName.components(separatedBy: ":").last ?? routeName
+
+        let matched = infos.first { info in
+            let apiRaw = info.routeName ?? ""
+            let apiKey = apiRaw.components(separatedBy: ":").last ?? apiRaw
+            return apiKey == key
+        }
+
+        let destination = matched?.destination ?? ""
+        subwayDirectionLabel.attributedText = AtchaFont.B6_R_14("\(destination)행", color: .white)
+
+        guard let sec = matched?.remainingTime, sec >= 0 else {
+            return
+        }
+
+        currentRemainingSec = sec
+        updateSubwayTimerLabel()
+        startSubwayCountdownTimer()
+    }
+    
+    private func startSubwayCountdownTimer() {
+        subwayCountdownTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            guard let self else { return }
+            guard let sec = self.currentRemainingSec else { return }
+
+            self.currentRemainingSec = sec - 1
+            self.updateSubwayTimerLabel()
+        }
+    }
+
+    private func updateSubwayTimerLabel() {
+        guard let sec = currentRemainingSec else {
+            subwayTimerLabel.attributedText = AtchaFont.B6_R_14("불러오는 중", color: .widearea)
+            return
+        }
+
+        if sec < 0 {
+            subwayTimerLabel.attributedText = AtchaFont.B6_R_14("불러오는 중", color: .widearea)
+            return
+        }
+
+        if sec == 0 {
+            subwayTimerLabel.attributedText = AtchaFont.B6_R_14("도착 또는 출발", color: .widearea)
+            subwayCountdownTimer?.invalidate()
+            subwayCountdownTimer = nil
+            return
+        }
+
+        // 2분 이하(<=120초)면 "곧 도착"
+        if sec <= 120 {
+            subwayTimerLabel.attributedText = AtchaFont.B6_R_14("곧 도착", color: .widearea)
+            return
+        }
+
+        // 그 외는 mm:ss
+        subwayTimerLabel.attributedText = AtchaFont.B6_R_14(formatMinSecKorean(sec), color: .widearea)
+    }
+    
+    
+    private func formatMinSecKorean(_ seconds: Int) -> String {
+        let m = seconds / 60
+        let s = seconds % 60
+        return "\(m)분 \(s)초"
     }
 }
 

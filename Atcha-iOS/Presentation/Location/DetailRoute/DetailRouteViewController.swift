@@ -175,6 +175,13 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             }
             .store(in: &cancellables)
         
+        viewModel.$subwayRealTimeInfos
+            .receive(on: RunLoop.main)
+            .sink { [weak self] infos in
+                self?.bottomSheet.setupSubwayRealTime(infos)
+            }
+            .store(in: &cancellables)
+        
         viewModel.$address
             .receive(on: RunLoop.main)
             .compactMap { $0 }

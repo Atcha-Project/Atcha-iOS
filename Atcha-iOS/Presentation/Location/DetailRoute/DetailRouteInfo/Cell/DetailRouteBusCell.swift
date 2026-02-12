@@ -100,7 +100,6 @@ final class DetailRouteBusCell: UICollectionViewCell {
         animationView.isHidden = true
         animationView.stopAnimation()
         backgroundColor = .clear
-        busTimerStackView.isHidden = true
         
         isExpanded = false
         stationListStackView.isHidden = true
@@ -304,96 +303,6 @@ final class DetailRouteBusCell: UICollectionViewCell {
         endLabel.attributedText = endCombinedLabel
     }
     
-    func setupBusRealTimeInfo(info: LegTrafficInfo?, busInfo: [RealTimeBusArrival]) {
-//        if !isCurrentTimeBetween(startTime: info?.startTime,
-//                                 endTime: info?.endTime) {
-//            return
-//        }
-        
-        busTimerStackView.isHidden = false
-        
-        countdownTimer?.invalidate()
-        reloadTimer?.invalidate()
-        
-        currentBusInfo = busInfo
-        
-        guard !busInfo.isEmpty else {
-            busTimerStackView.isHidden = false
-            busTimerFirstLabel.attributedText = AtchaFont.B6_R_14("정보 없음", color: .gray300)
-            busTimerSecondLabel.text = ""
-            return
-        }
-        
-        currentBusInfo = currentBusInfo.filter { $0.remainingTime ?? 0 > 0 }
-        if currentBusInfo.isEmpty {
-            busTimerStackView.isHidden = false
-            busTimerFirstLabel.attributedText = AtchaFont.B6_R_14("도착 또는 출발", color: .widearea)
-            return
-        }
-        
-        busTimerStackView.isHidden = false
-        updateBusTimerLabels()
-        
-        // 1초마다 시간 감소
-        countdownTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-            self?.decrementRemainingTime()
-        }
-        
-        // 30초마다 재요청
-        reloadTimer = Timer.scheduledTimer(withTimeInterval: 15.0, repeats: true) { [weak self] _ in
-            self?.getNewBusRealTime?()
-        }
-    }
-    
-    private func decrementRemainingTime() {
-        for i in 0..<currentBusInfo.count {
-            guard let time = currentBusInfo[i].remainingTime, time > 0 else { continue }
-            currentBusInfo[i].remainingTime = time - 1
-        }
-        
-        currentBusInfo = currentBusInfo.filter {
-            if let time = $0.remainingTime {
-                return time > 0
-            }
-            return false
-        }
-        
-        if currentBusInfo.isEmpty {
-            busTimerStackView.isHidden = true
-            countdownTimer?.invalidate()
-        } else {
-            updateBusTimerLabels()
-        }
-    }
-    
-    private func updateBusTimerLabels() {
-        func labelText(for info: RealTimeBusArrival) -> NSAttributedString {
-            if info.busStatus == .end {
-                return AtchaFont.B6_R_14("운행 종료", color: .gray)
-            }
-            
-            guard let remaining = info.remainingTime else {
-                return AtchaFont.B6_R_14("정보 없음", color: .gray)
-            }
-            
-            if remaining <= 120 {
-                return AtchaFont.B6_R_14("곧 도착", color: .widearea)
-            } else {
-                return AtchaFont.B6_R_14(formatSecondsToMinutesAndSeconds(remaining), color: .widearea)
-            }
-        }
-        
-        switch currentBusInfo.count {
-        case 2:
-            busTimerFirstLabel.attributedText = labelText(for: currentBusInfo[0])
-            busTimerSecondLabel.attributedText = labelText(for: currentBusInfo[1])
-        case 1:
-            busTimerFirstLabel.attributedText = labelText(for: currentBusInfo[0])
-            busTimerSecondLabel.text = ""
-        default:
-            busTimerStackView.isHidden = true
-        }
-    }
     
     private func isCurrentTimeBetween(startTime: String?, endTime: String?) -> Bool {
         guard let startTime, let endTime else { return false }
@@ -438,15 +347,6 @@ final class DetailRouteBusCell: UICollectionViewCell {
         animationView.isHidden = false
         animationView.startAnimationIfNeeded(forceRestart: true)
         backgroundColor = UIColor.opacity100
-    }
-    
-    private func formatSecondsToMinutesAndSeconds(_ seconds: Int?) -> String {
-        guard let seconds = seconds else { return "시간 없음" }
-        
-        let minutes = seconds / 60
-        let remainingSeconds = seconds % 60
-        
-        return "\(minutes)분 \(remainingSeconds)초"
     }
 }
 
@@ -508,5 +408,117 @@ extension DetailRouteBusCell {
             label.lineBreakMode = .byTruncatingTail
             stationListStackView.addArrangedSubview(label)
         }
+    }
+}
+
+// MARK: - Bus Realtime
+
+extension DetailRouteBusCell {
+    func setupBusRealTimeInfo(info: LegTrafficInfo?, busInfo: [RealTimeBusArrival]) {
+        busTimerStackView.isHidden = false
+
+        let filtered = busInfo
+            .filter { ($0.remainingTime ?? -1) > 0 }
+
+        currentBusInfo = filtered
+
+        guard !busInfo.isEmpty else {
+            stopCountdownTimer()
+            busTimerFirstLabel.attributedText = AtchaFont.B6_R_14("정보 없음", color: .gray300)
+            busTimerSecondLabel.text = ""
+            return
+        }
+
+        guard !currentBusInfo.isEmpty else {
+            stopCountdownTimer()
+            busTimerFirstLabel.attributedText = AtchaFont.B6_R_14("도착 또는 출발", color: .widearea)
+            busTimerSecondLabel.text = ""
+            return
+        }
+
+        updateBusTimerLabels()
+        startCountdownTimerIfNeeded()
+    }
+
+    private func startCountdownTimerIfNeeded() {
+        // 이미 돌고 있으면 유지
+        if countdownTimer != nil { return }
+
+        countdownTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            self?.decrementRemainingTime()
+        }
+
+        // 스크롤 중에도 잘 돌게 common mode 추천
+        if let timer = countdownTimer {
+            RunLoop.main.add(timer, forMode: .common)
+        }
+    }
+
+    private func stopCountdownTimer() {
+        countdownTimer?.invalidate()
+        countdownTimer = nil
+    }
+
+    // 1초마다 감소
+    private func decrementRemainingTime() {
+        guard !currentBusInfo.isEmpty else {
+            stopCountdownTimer()
+            return
+        }
+
+        for i in 0..<currentBusInfo.count {
+            guard let time = currentBusInfo[i].remainingTime else { continue }
+            currentBusInfo[i].remainingTime = time - 1
+        }
+
+        currentBusInfo = currentBusInfo.filter { ($0.remainingTime ?? -1) > 0 }
+
+        if currentBusInfo.isEmpty {
+            stopCountdownTimer()
+            busTimerFirstLabel.attributedText = AtchaFont.B6_R_14("도착 또는 출발", color: .widearea)
+            busTimerSecondLabel.text = ""
+            return
+        }
+
+        updateBusTimerLabels()
+    }
+
+    private func updateBusTimerLabels() {
+
+        func labelText(for info: RealTimeBusArrival) -> NSAttributedString {
+            if info.busStatus == .end {
+                return AtchaFont.B6_R_14("운행 종료", color: .gray)
+            }
+
+            guard let remaining = info.remainingTime else {
+                return AtchaFont.B6_R_14("정보 없음", color: .gray300)
+            }
+
+            if remaining <= 120 {
+                return AtchaFont.B6_R_14("곧 도착", color: .widearea)
+            } else {
+                return AtchaFont.B6_R_14(formatSecondsToMinutesAndSeconds(remaining), color: .widearea)
+            }
+        }
+
+        switch currentBusInfo.count {
+        case 2:
+            busTimerFirstLabel.attributedText = labelText(for: currentBusInfo[0])
+            busTimerSecondLabel.attributedText = labelText(for: currentBusInfo[1])
+        case 1:
+            busTimerFirstLabel.attributedText = labelText(for: currentBusInfo[0])
+            busTimerSecondLabel.text = ""
+        default:
+            // 3개 이상이면 우선 2개만 보여주거나, 숨기지 말고 2개만 보여주자
+            busTimerFirstLabel.attributedText = labelText(for: currentBusInfo[0])
+            busTimerSecondLabel.attributedText = labelText(for: currentBusInfo[1])
+        }
+    }
+
+    private func formatSecondsToMinutesAndSeconds(_ seconds: Int?) -> String {
+        guard let seconds = seconds, seconds >= 0 else { return "시간 없음" }
+        let minutes = seconds / 60
+        let remainingSeconds = seconds % 60
+        return "\(minutes)분 \(remainingSeconds)초"
     }
 }

@@ -40,6 +40,7 @@ final class DetailRouteInfoBottomView: UIView {
     private let handleView: UIView = UIView()
     private var startAddress: String = ""
     private var busRealTimeInfo: [[RealTimeBusArrival]] = []
+    private var subwayRealTimeInfo: [SubwayRealTimeInfo] = []
     var onBusDetail: ((BusDetailInfo) -> Void)?
     var getNewBusRealTime: (() -> Void)?
     
@@ -133,6 +134,28 @@ final class DetailRouteInfoBottomView: UIView {
     // v2
     func setupBusTimerLabel(_ time: [[RealTimeBusArrival]]) {
         busRealTimeInfo = time
+
+        for cell in collectionView.visibleCells {
+            guard let busCell = cell as? DetailRouteBusCell else { continue }
+
+            // 현재 셀이 어떤 route였는지 알아야 다시 매칭 가능
+            guard let route = busCell.currentLegTrafficInfo?.route else { continue }
+            let cellKey = route.components(separatedBy: ":").last ?? route
+
+            let matchedInfo = busRealTimeInfo.first(where: { list in
+                guard let apiRaw = list.first?.routeName else { return false }
+                let apiKey = apiRaw.components(separatedBy: ":").last ?? apiRaw
+                return apiKey == cellKey
+            }) ?? []
+
+            
+            guard !matchedInfo.isEmpty else { continue }
+            busCell.setupBusRealTimeInfo(info: busCell.currentLegTrafficInfo, busInfo: matchedInfo)
+        }
+    }
+    
+    func setupSubwayRealTime(_ infos: [SubwayRealTimeInfo]) {
+        subwayRealTimeInfo = infos
         collectionView.reloadData()
     }
     
@@ -280,17 +303,6 @@ extension DetailRouteInfoBottomView {
                     }
                     cell.configure(info: item.info)
                     
-                    if let raw = item.info?.route {
-                        let cellKey = raw.components(separatedBy: ":").last ?? raw
-                        
-                        let matchedInfo = self.busRealTimeInfo.first(where: { list in
-                            guard let apiRaw = list.first?.routeName else { return false }
-                            let apiKey = apiRaw.components(separatedBy: ":").last ?? apiRaw
-                            return apiKey == cellKey
-                        }) ?? []
-                        cell.setupBusRealTimeInfo(info: item.info, busInfo: matchedInfo)
-                    }
-                    
                     return cell
                     
                 case .subway:
@@ -303,6 +315,11 @@ extension DetailRouteInfoBottomView {
                         self?.collectionView.collectionViewLayout.invalidateLayout()
                     }
                     cell.configure(info: item.info)
+                    
+                    if let routeName = item.info?.route {
+                            let matched = self.subwayRealTimeInfo.filter { $0.routeName == routeName }
+                            cell.setupSubwayRealTime(routeName: routeName, infos: matched)
+                        }
                     return cell
                     
                 default:

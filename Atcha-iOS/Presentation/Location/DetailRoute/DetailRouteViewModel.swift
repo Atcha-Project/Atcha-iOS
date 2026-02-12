@@ -34,9 +34,17 @@ final class DetailRouteViewModel: BaseViewModel {
     
     //    @Published var busRealTimeInfo: [RealTimeBusArrival] = []
     @Published var busRealTimeInfos: [[RealTimeBusArrival]] = []
+    private var busRoutes: [String] = []
+    private var busRealTimeMap: [String: [RealTimeBusArrival]] = [:]
+    private var busPollingTask: Task<Void, Never>?
+    
     @Published var subwayRealTimeInfos: [SubwayRealTimeInfo] = []
     
     @Published private(set) var context: DetailRouteContext
+    
+    deinit {
+        stopBusPolling()
+    }
     
     init(address: String,
          infos: LegInfo,
@@ -63,18 +71,25 @@ final class DetailRouteViewModel: BaseViewModel {
     func fetchInfo() {
         legtPathInfo = infos.pathInfo
         legTrafficInfo = infos.trafficInfo
-
-        // 버스
-        let busDetailInfo = infos.busInfo.filter { $0.routeName?.isEmpty == false }
-        busRealTimeInfos = []
-        busDetailInfo.forEach { info in
-            if let routeName = info.routeName, routeName.contains(":") {
-                Task { await getBusRealTimeInfo(request: routeName) }
-            }
-        }
         
         guard context == .afterReigster else { return }
-
+        // 버스
+        let routes = infos.busInfo
+            .compactMap { $0.routeName }
+            .filter { !$0.isEmpty && $0.contains(":") }
+        
+        busRoutes = Array(Set(routes)) // 중복 제거
+        busRealTimeMap.removeAll()
+        busRealTimeInfos = []
+        
+        // 최초 1회 로드
+        Task { [weak self] in
+            await self?.refreshAllBusRealTime()
+        }
+        
+        // 15초 폴링 시작
+        startBusPolling()
+        
         subwayRealTimeInfos = []
         let subwayRoutes = Array(Set(
             infos.trafficInfo
@@ -82,7 +97,7 @@ final class DetailRouteViewModel: BaseViewModel {
                 .compactMap { $0.route }
                 .filter { !$0.isEmpty }
         ))
-
+        
         subwayRoutes.forEach { route in
             Task { await getSubwayRealTimeInfo(routeName: route) }
         }
@@ -95,7 +110,6 @@ final class DetailRouteViewModel: BaseViewModel {
                 let response = try await busInfoUseCase.getBusRealTimeInfo(request)
                 busRealTimeInfos.append(response)
                 //                busRealTimeInfo = response
-                print("실시간 버스 조회 성공요! : \(busRealTimeInfos)")
             } catch {
                 print("실시간 버스 조회 실패요!")
             }
@@ -108,7 +122,6 @@ final class DetailRouteViewModel: BaseViewModel {
             let infos = try await subwayInfoUseCase.subwayRealTimeInfo(.init(routeName: routeName))
             subwayRealTimeInfos.removeAll { $0.routeName == routeName } // 기존 제거
             subwayRealTimeInfos.append(contentsOf: infos)
-            print("지하철 정보:\(infos)")
         } catch {
             print("실시간 지하철 조회 실패: \(error)")
         }
@@ -151,4 +164,43 @@ final class DetailRouteViewModel: BaseViewModel {
             }
         }
     }
+    
+    private func startBusPolling() {
+        stopBusPolling()
+        
+        busPollingTask = Task { [weak self] in
+            guard let self else { return }
+            
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 15_000_000_000)
+                if Task.isCancelled { break }
+                await self.refreshAllBusRealTime()
+            }
+        }
+    }
+    
+    private func stopBusPolling() {
+        busPollingTask?.cancel()
+        busPollingTask = nil
+    }
+    
+    @MainActor
+    private func refreshAllBusRealTime() async {
+        guard !busRoutes.isEmpty else { return }
+        
+        // 병렬로 받아오고 싶으면 TaskGroup, 단순이면 for-await도 OK
+        for route in busRoutes {
+            do {
+                let response = try await busInfoUseCase.getBusRealTimeInfo(route)
+                busRealTimeMap[route] = response
+            } catch {
+                // 실패했을 때 기존 값 유지(중요: 여기서 map 지우면 UI가 "꺼짐")
+                print("실시간 버스 조회 실패: \(route), \(error)")
+            }
+        }
+        
+        // UI용 배열 갱신 (순서가 중요하면 busRoutes 순서대로)
+        busRealTimeInfos = busRoutes.compactMap { busRealTimeMap[$0] }
+    }
+    
 }
