@@ -48,7 +48,7 @@ final class DetailRouteViewModel: BaseViewModel {
     @Published var deviceHeading: CLLocationDirection?
     private let headingManager = HeadingManager()
     
-//
+
 //#if DEBUG
 //@Published var mockLocation: CLLocationCoordinate2D? = nil
 //#endif
@@ -78,6 +78,7 @@ final class DetailRouteViewModel: BaseViewModel {
     func fetchInfo() {
         legtPathInfo = infos.pathInfo
         legTrafficInfo = infos.trafficInfo
+        print("위치: \(legtPathInfo)")
         
         guard context == .afterReigster else { return }
         // 버스

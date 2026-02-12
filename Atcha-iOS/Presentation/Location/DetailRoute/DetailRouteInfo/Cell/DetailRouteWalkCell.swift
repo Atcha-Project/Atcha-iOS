@@ -18,6 +18,8 @@ final class DetailRouteWalkCell: UICollectionViewCell {
     private let timeLabel: UILabel = UILabel()
     private let distanceLabel: UILabel = UILabel()
     private let summaryLabel: UILabel = UILabel()
+    private var isArrivedEffectOn = false
+    var currentLegTrafficInfo: LegTrafficInfo? = nil
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -32,10 +34,12 @@ final class DetailRouteWalkCell: UICollectionViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         
-        animationView.isHidden = true
-        animationIconImageView.isHidden = true
-        animationView.stopAnimation()
-        backgroundColor = .clear
+        currentLegTrafficInfo = nil
+               stopArrivedEffectIfNeeded()
+//        animationView.isHidden = true
+//        animationIconImageView.isHidden = true
+//        animationView.stopAnimation()
+//        backgroundColor = .clear
     }
     
     private func setupUI() {
@@ -74,6 +78,8 @@ final class DetailRouteWalkCell: UICollectionViewCell {
     }
     
     func configure(info: LegTrafficInfo?) {
+        currentLegTrafficInfo = info
+        
         guard let sectionTime = info?.sectionTime else { return }
         let timeText = AtchaFont.B6_R_14("\(sectionTime) 걷기", color: .gray200)
         let distanceText = AtchaFont.B6_R_14(" \(info?.distance ?? 0)m", color: .gray500)
@@ -82,10 +88,33 @@ final class DetailRouteWalkCell: UICollectionViewCell {
         combined.append(distanceText)
         
         summaryLabel.attributedText = combined
-        if isCurrentTimeBetween(startTime: info?.startTime, endTime: info?.endTime) {
-            isNowUserLocationArrived()
-        }
     }
+    
+    func isNowUserLocationArrived() {
+            if isArrivedEffectOn { return }
+            isArrivedEffectOn = true
+
+            animationIconImageView.isHidden = false
+            animationView.isHidden = false
+            animationView.startAnimationIfNeeded(forceRestart: true)
+            backgroundColor = UIColor.opacity100
+        }
+
+        func stopArrivedEffectIfNeeded() {
+            guard isArrivedEffectOn else {
+                animationView.stopAnimation()
+                animationView.isHidden = true
+                animationIconImageView.isHidden = true
+                backgroundColor = .clear
+                return
+            }
+
+            isArrivedEffectOn = false
+            animationView.stopAnimation()
+            animationView.isHidden = true
+            animationIconImageView.isHidden = true
+            backgroundColor = .clear
+        }
     
     private func isCurrentTimeBetween(startTime: String?, endTime: String?) -> Bool {
         guard let startTime, let endTime else { return false }
@@ -123,12 +152,5 @@ final class DetailRouteWalkCell: UICollectionViewCell {
         } else {
             return todayNow >= todayStart && todayNow < todayEnd
         }
-    }
-    
-    func isNowUserLocationArrived() {
-        animationIconImageView.isHidden = false
-        animationView.isHidden = false
-        animationView.startAnimationIfNeeded(forceRestart: true)
-        backgroundColor = UIColor.opacity100
     }
 }

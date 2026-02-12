@@ -10,6 +10,7 @@ import CoreLocation
 import TMapSDK
 import VSMSDK
 import MapKit
+import Combine
 
 final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
                                        TMapWrapperDelegate {
@@ -31,6 +32,7 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
     private var isAlarmFired: Bool {
         UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue) ?? false
     }
+    private var legPolylineById: [UUID: [CLLocationCoordinate2D]] = [:]
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -41,12 +43,12 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         bindView()
         bindFollowLogic()
         installMapUserGestureDetector()
-//
 //#if DEBUG
-//// ✅ 용산구청(대략) - 필요하면 조금씩 조절
-//viewModel.mockLocation = CLLocationCoordinate2D(latitude: 37.5326, longitude: 126.9909)
+//// ✅ 서울아산병원(대략)
+//viewModel.mockLocation = CLLocationCoordinate2D(latitude:37.566956, longitude: 126.979406)
 //viewModel.currentLocation = viewModel.mockLocation
 //#endif
+        
     }
     
     override func viewDidLayoutSubviews() {
@@ -146,13 +148,6 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         backButton.setCornerRadius(18)
         backButton.addTarget(self, action: #selector(didTapClose), for: .touchUpInside)
         
-        //        relaodButton.setImage(UIImage.refreshOutlined, for: .normal)
-        //        relaodButton.tintColor = .white
-        //        relaodButton.backgroundColor = .gray600
-        //        relaodButton.clipsToBounds = true
-        //        relaodButton.setCornerRadius(24)
-        //        relaodButton.addTarget(self, action: #selector(didTapReload), for: .touchUpInside)
-        
         refreshButton.isUserInteractionEnabled = true
         let tap = UITapGestureRecognizer(target: self, action: #selector(didTapReload))
         refreshButton.addGestureRecognizer(tap)
@@ -201,7 +196,11 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         viewModel.$legTrafficInfo
             .receive(on: RunLoop.main)
             .compactMap { $0 }
-            .sink { [weak self] infos in self?.bottomSheet.setupRouteInfo(infos) }
+            .sink { [weak self] infos in
+                guard let self else { return }
+                self.bottomSheet.setupRouteInfo(infos)
+                self.bottomSheet.updateProximityHighlight(nearLegIDs: self.viewModel.nearLegIDs)
+            }
             .store(in: &cancellables)
         
         viewModel.$busRealTimeInfos
@@ -225,51 +224,6 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             .sink { [weak self] address in self?.bottomSheet.setupStartAddress(address) }
             .store(in: &cancellables)
         
-//        viewModel.$currentLocation
-//            .compactMap { $0 }
-//            .receive(on: DispatchQueue.main)
-//            .sink { [weak self] location in
-//                guard let self else { return }
-//                mapContainerView.updateUserMarker(location: location)
-//                let offsetLatitude = location.latitude - 0.0003
-//                let offsetLocation = CLLocationCoordinate2D(
-//                    latitude: offsetLatitude,
-//                    longitude: location.longitude
-//                )
-//    
-//                mapContainerView.setupZoomCenter(location: offsetLocation)
-//            }
-//            .store(in: &cancellables)
-//        viewModel.$currentLocation
-//            .compactMap { $0 }
-//            .receive(on: DispatchQueue.global(qos: .userInitiated))
-//            .sink { [weak self] loc in
-//                guard let self else { return }
-//
-//                let threshold: CLLocationDistance = 300.0
-//
-//                // trafficInfo와 pathInfo를 같은 leg 순서로 zip 한다는 가정
-//                let pairs = zip(self.viewModel.legTrafficInfo, self.viewModel.legtPathInfo)
-//
-//                var near: Set<UUID> = []
-//
-//                for (traffic, path) in pairs {
-//                    guard traffic.mode == path.mode else { continue }
-//                    guard let shape = path.passShape, !shape.isEmpty else { continue }
-//
-//                    let coords = self.convertShapeToCoords(shape)
-//                    let d = self.distanceToPolylineMeters(point: loc, polyline: coords)
-//                    if d <= threshold {
-//                        near.insert(traffic.id)
-//                    }
-//                }
-//
-//                DispatchQueue.main.async {
-//                    self.viewModel.nearLegIDs = near
-//                }
-//            }
-//            .store(in: &cancellables)
-        
         viewModel.$nearLegIDs
             .receive(on: RunLoop.main)
             .sink { [weak self] near in
@@ -292,6 +246,40 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
                 self?.setupUI(context: ctx)
             }
             .store(in: &cancellables)
+        
+        Publishers.CombineLatest(viewModel.$legTrafficInfo, viewModel.$legtPathInfo)
+                .receive(on: DispatchQueue.global(qos: .userInitiated))
+                .sink { [weak self] trafficInfos, pathInfos in
+                    guard let self else { return }
+                    guard !trafficInfos.isEmpty, !pathInfos.isEmpty else { return }
+
+                    var dict: [UUID: [CLLocationCoordinate2D]] = [:]
+
+                    for (traffic, path) in zip(trafficInfos, pathInfos) {
+                        guard traffic.mode == path.mode else { continue }
+
+                        if let shape = path.passShape, !shape.isEmpty {
+                            dict[traffic.id] = self.convertShapeToCoords(shape)
+                            continue
+                        }
+
+                        if let steps = path.step, !steps.isEmpty {
+                            let merged = steps
+                                .compactMap { $0.linestring }
+                                .filter { !$0.isEmpty }
+                                .joined(separator: " ")
+
+                            if !merged.isEmpty {
+                                dict[traffic.id] = self.convertShapeToCoords(merged)
+                            }
+                        }
+                    }
+
+                    DispatchQueue.main.async { [weak self] in
+                        self?.legPolylineById = dict
+                    }
+                }
+                .store(in: &cancellables)
     }
     
     private func bindFollowLogic() {
@@ -302,21 +290,48 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             .sink { [weak self] coord in
                 guard let self else { return }
 
-                mapContainerView.updateUserMarker(location: coord)
+                // 1) 유저 마커 업데이트 (메인)
+                self.mapContainerView.updateUserMarker(location: coord)
 
-                if isAlarmFired {
+                // 2) 지도 follow 로직 (메인)
+                if self.isAlarmFired {
                     // 알람 울린 후엔 계속 따라감
-                    mapContainerView.setupZoomCenter(location: coord)
-                    return
+                    self.mapContainerView.setupZoomCenter(location: coord)
+                } else if self.isFollowingUser {
+                    // 알람 전: following 켰을 때만 따라감
+                    self.mapContainerView.setupZoomCenter(location: coord)
                 }
+                // else: fit 유지 (건드리지 않음)
 
-                // 알람 전: 기본은 fit 고정. 단, 현위치 버튼으로 following 켰다면 이동
-                if isFollowingUser {
-                    mapContainerView.setupZoomCenter(location: coord)
-                    return
+                // 3) 근처(150m) 지나가면 반짝임 계산 (백그라운드)
+                let threshold: CLLocationDistance = 150
+
+                let polylines = self.legPolylineById
+                let orderedLegs = self.viewModel.legTrafficInfo   // ✅ 화면 표시 순서(위→아래)
+
+                DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                    guard let self else { return }
+
+                    // 1) near 후보들을 Set으로 수집
+                    var nearCandidates = Set<UUID>()
+
+                    for (id, polyline) in polylines {
+                        let d = self.distanceToPolylineMeters(point: coord, polyline: polyline)
+                        if d <= threshold {
+                            nearCandidates.insert(id)
+                        }
+                    }
+
+                    // 2) ✅ "위에 있는 셀 우선" = orderedLegs 순서로 첫 매칭 1개만 남김
+                    var picked: Set<UUID> = []
+                    if let first = orderedLegs.first(where: { nearCandidates.contains($0.id) })?.id {
+                        picked = [first]
+                    }
+
+                    DispatchQueue.main.async { [weak self] in
+                        self?.viewModel.nearLegIDs = picked
+                    }
                 }
-
-                // 알람 전 + following 꺼져있으면 center 건드리지 않음 (사용자가 보는 fit 유지)
             }
             .store(in: &cancellables)
 
