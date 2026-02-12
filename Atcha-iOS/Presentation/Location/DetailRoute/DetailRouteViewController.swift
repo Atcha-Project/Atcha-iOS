@@ -9,6 +9,7 @@ import UIKit
 import CoreLocation
 import TMapSDK
 import VSMSDK
+import MapKit
 
 final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
                                        TMapWrapperDelegate {
@@ -31,6 +32,12 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         setupUI()
         setupAutoLayout()
         bindView()
+//        
+//#if DEBUG
+//// ✅ 용산구청(대략) - 필요하면 조금씩 조절
+//viewModel.mockLocation = CLLocationCoordinate2D(latitude: 37.5326, longitude: 126.9909)
+//viewModel.currentLocation = viewModel.mockLocation
+//#endif
     }
     
     override func viewDidLayoutSubviews() {
@@ -188,19 +195,55 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             .sink { [weak self] address in self?.bottomSheet.setupStartAddress(address) }
             .store(in: &cancellables)
         
+//        viewModel.$currentLocation
+//            .compactMap { $0 }
+//            .receive(on: DispatchQueue.main)
+//            .sink { [weak self] location in
+//                guard let self else { return }
+//                mapContainerView.updateUserMarker(location: location)
+//                let offsetLatitude = location.latitude - 0.0003
+//                let offsetLocation = CLLocationCoordinate2D(
+//                    latitude: offsetLatitude,
+//                    longitude: location.longitude
+//                )
+//    
+//                mapContainerView.setupZoomCenter(location: offsetLocation)
+//            }
+//            .store(in: &cancellables)
         viewModel.$currentLocation
             .compactMap { $0 }
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] location in
+            .receive(on: DispatchQueue.global(qos: .userInitiated))
+            .sink { [weak self] loc in
                 guard let self else { return }
-                mapContainerView.updateUserMarker(location: location)
-                let offsetLatitude = location.latitude - 0.0003
-                let offsetLocation = CLLocationCoordinate2D(
-                    latitude: offsetLatitude,
-                    longitude: location.longitude
-                )
-    
-                mapContainerView.setupZoomCenter(location: offsetLocation)
+
+                let threshold: CLLocationDistance = 300.0
+
+                // trafficInfo와 pathInfo를 같은 leg 순서로 zip 한다는 가정
+                let pairs = zip(self.viewModel.legTrafficInfo, self.viewModel.legtPathInfo)
+
+                var near: Set<UUID> = []
+
+                for (traffic, path) in pairs {
+                    guard traffic.mode == path.mode else { continue }
+                    guard let shape = path.passShape, !shape.isEmpty else { continue }
+
+                    let coords = self.convertShapeToCoords(shape)
+                    let d = self.distanceToPolylineMeters(point: loc, polyline: coords)
+                    if d <= threshold {
+                        near.insert(traffic.id)
+                    }
+                }
+
+                DispatchQueue.main.async {
+                    self.viewModel.nearLegIDs = near
+                }
+            }
+            .store(in: &cancellables)
+        
+        viewModel.$nearLegIDs
+            .receive(on: RunLoop.main)
+            .sink { [weak self] near in
+                self?.bottomSheet.updateProximityHighlight(nearLegIDs: near)
             }
             .store(in: &cancellables)
         
@@ -421,5 +464,42 @@ extension DetailRouteViewController {
         
         popupVC.modalPresentationStyle = .overFullScreen
         present(popupVC, animated: false)
+    }
+}
+
+extension DetailRouteViewController {
+    private func distanceToPolylineMeters(
+        point: CLLocationCoordinate2D,
+        polyline: [CLLocationCoordinate2D]
+    ) -> CLLocationDistance {
+        guard polyline.count >= 2 else { return .greatestFiniteMagnitude }
+
+        let p = MKMapPoint(point)
+        var best = CLLocationDistance.greatestFiniteMagnitude
+
+        for i in 0..<(polyline.count - 1) {
+            let a = MKMapPoint(polyline[i])
+            let b = MKMapPoint(polyline[i + 1])
+
+            let abx = b.x - a.x
+            let aby = b.y - a.y
+            let apx = p.x - a.x
+            let apy = p.y - a.y
+
+            let ab2 = abx*abx + aby*aby
+            if ab2 == 0 { // 같은 점이면 점-점 거리
+                best = min(best, p.distance(to: a))
+                continue
+            }
+
+            // 투영 비율 t를 0~1로 clamp
+            var t = (apx*abx + apy*aby) / ab2
+            t = max(0, min(1, t))
+
+            let closest = MKMapPoint(x: a.x + t*abx, y: a.y + t*aby)
+            best = min(best, p.distance(to: closest))
+        }
+
+        return best
     }
 }

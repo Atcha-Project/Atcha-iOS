@@ -352,6 +352,28 @@ extension DetailRouteInfoBottomView {
             }
         }
     }
+    
+    func updateProximityHighlight(nearLegIDs: Set<UUID>) {
+        for cell in collectionView.visibleCells {
+            if let busCell = cell as? DetailRouteBusCell,
+               let leg = busCell.currentLegTrafficInfo {
+                if nearLegIDs.contains(leg.id) {
+                    busCell.isNowUserLocationArrived()
+                } else {
+                    busCell.stopArrivedEffectIfNeeded()
+                }
+            }
+
+            if let subwayCell = cell as? DetailRouteSubwayCell,
+               let leg = subwayCell.currentLegTrafficInfo {
+                if nearLegIDs.contains(leg.id) {
+                    subwayCell.isNowUserLocationArrived()
+                } else {
+                    subwayCell.stopArrivedEffectIfNeeded()
+                }
+            }
+        }
+    }
 }
 
 // MARK: - Gesture

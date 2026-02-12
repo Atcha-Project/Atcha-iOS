@@ -71,7 +71,7 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
     private var currentRemainingSec: Int?
     
     var currentLegTrafficInfo: LegTrafficInfo? = nil
-
+    private var isArrivedEffectOn = false
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -304,9 +304,9 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
         endCombinedLabel.append(AtchaFont.B3_M_15(" 하차", color: .gray500))
         endLabel.attributedText = endCombinedLabel
         
-        if isCurrentTimeBetween(startTime: info.startTime, endTime: info.endTime) {
-            isNowUserLocationArrived()
-        }
+//        if isCurrentTimeBetween(startTime: info.startTime, endTime: info.endTime) {
+//            isNowUserLocationArrived()
+//        }
     }
     
     private func addStationNameLabel(info: [PassStopList]) {
@@ -320,10 +320,19 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
     }
     
     func isNowUserLocationArrived() {
-        // 해당시간에 들어와야 애니메이션 실행 합니다.
+        if isArrivedEffectOn { return }
+        isArrivedEffectOn = true
         animationView.isHidden = false
         animationView.startAnimationIfNeeded(forceRestart: true)
         backgroundColor = UIColor.opacity100
+    }
+
+    func stopArrivedEffectIfNeeded() {
+        guard isArrivedEffectOn else { return }
+        isArrivedEffectOn = false
+        animationView.stopAnimation()
+        animationView.isHidden = true
+        backgroundColor = .clear
     }
     
     private func isCurrentTimeBetween(startTime: String?, endTime: String?) -> Bool {

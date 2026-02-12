@@ -80,6 +80,8 @@ final class DetailRouteBusCell: UICollectionViewCell {
     var currentLegTrafficInfo: LegTrafficInfo? = nil
     var currentBusInfo: [RealTimeBusArrival] = []
     
+    private var isArrivedEffectOn = false
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
@@ -343,10 +345,19 @@ final class DetailRouteBusCell: UICollectionViewCell {
     }
     
     func isNowUserLocationArrived() {
-        // 해당시간에 들어와야 애니메이션 실행 합니다.
+        if isArrivedEffectOn { return }
+        isArrivedEffectOn = true
         animationView.isHidden = false
         animationView.startAnimationIfNeeded(forceRestart: true)
         backgroundColor = UIColor.opacity100
+    }
+
+    func stopArrivedEffectIfNeeded() {
+        guard isArrivedEffectOn else { return }
+        isArrivedEffectOn = false
+        animationView.stopAnimation()
+        animationView.isHidden = true
+        backgroundColor = .clear
     }
 }
 

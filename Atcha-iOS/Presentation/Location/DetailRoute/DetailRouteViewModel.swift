@@ -43,6 +43,12 @@ final class DetailRouteViewModel: BaseViewModel {
     private var subwayPollingTask: Task<Void, Never>?
     
     @Published private(set) var context: DetailRouteContext
+    @Published var nearLegIDs: Set<UUID> = []
+    
+//    
+//#if DEBUG
+//@Published var mockLocation: CLLocationCoordinate2D? = nil
+//#endif
     
     deinit {
         stopBusPolling()
@@ -151,6 +157,34 @@ final class DetailRouteViewModel: BaseViewModel {
             }
         }
     }
+//    func requestPermissionAndStartTracking() {
+//        Task {
+//            let status = await authorizationUseCase.askLocationPermission()
+//            guard status == .authorizedAlways || status == .authorizedWhenInUse else { return }
+//
+//            streamTask = Task { [weak self] in
+//                guard let self else { return }
+//
+//                for await location in streamUseCase.startUpdate() {
+//                    let real = CLLocationCoordinate2D(
+//                        latitude: location.coordinate.latitude,
+//                        longitude: location.coordinate.longitude
+//                    )
+//
+//                    #if DEBUG
+//                    // ✅ 디버그에선 mock 있으면 그걸로 덮어씀
+//                    if let mock = self.mockLocation {
+//                        self.currentLocation = mock
+//                    } else {
+//                        self.currentLocation = real
+//                    }
+//                    #else
+//                    self.currentLocation = real
+//                    #endif
+//                }
+//            }
+//        }
+//    }
     
     func setupLocation() {
         requestPermissionAndStartTracking()
