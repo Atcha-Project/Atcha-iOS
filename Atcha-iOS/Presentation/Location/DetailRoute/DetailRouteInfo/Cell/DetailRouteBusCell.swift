@@ -49,9 +49,9 @@ final class DetailRouteBusCell: UICollectionViewCell {
     private let stationListStackView = UIStackView()
     
     private let busTimerFirstLabel: UILabel = UILabel()
-    private let busTimerSecondLabel: UILabel = UILabel()
+//    private let busTimerSecondLabel: UILabel = UILabel()
     private lazy var busTimerStackView: UIStackView = {
-        let stack = UIStackView(arrangedSubviews: [busTimerFirstLabel, busTimerSecondLabel])
+        let stack = UIStackView(arrangedSubviews: [busTimerFirstLabel])
         stack.axis = .vertical
         stack.alignment = .leading
         stack.spacing = 4
@@ -435,15 +435,13 @@ extension DetailRouteBusCell {
 
         guard !busInfo.isEmpty else {
             stopCountdownTimer()
-            busTimerFirstLabel.attributedText = AtchaFont.B6_R_14("정보 없음", color: .gray300)
-            busTimerSecondLabel.text = ""
+            busTimerFirstLabel.attributedText = AtchaFont.B6_R_14("", color: .gray300)
             return
         }
 
         guard !currentBusInfo.isEmpty else {
             stopCountdownTimer()
-            busTimerFirstLabel.attributedText = AtchaFont.B6_R_14("도착 또는 출발", color: .widearea)
-            busTimerSecondLabel.text = ""
+            busTimerFirstLabel.attributedText = AtchaFont.B6_R_14("", color: .widearea)
             return
         }
 
@@ -487,7 +485,7 @@ extension DetailRouteBusCell {
         if currentBusInfo.isEmpty {
             stopCountdownTimer()
             busTimerFirstLabel.attributedText = AtchaFont.B6_R_14("도착 또는 출발", color: .widearea)
-            busTimerSecondLabel.text = ""
+//            busTimerSecondLabel.text = ""
             return
         }
 
@@ -502,7 +500,7 @@ extension DetailRouteBusCell {
             }
 
             guard let remaining = info.remainingTime else {
-                return AtchaFont.B6_R_14("정보 없음", color: .gray300)
+                return AtchaFont.B6_R_14("", color: .gray300)
             }
 
             if remaining <= 120 {
@@ -515,19 +513,19 @@ extension DetailRouteBusCell {
         switch currentBusInfo.count {
         case 2:
             busTimerFirstLabel.attributedText = labelText(for: currentBusInfo[0])
-            busTimerSecondLabel.attributedText = labelText(for: currentBusInfo[1])
+//            busTimerSecondLabel.attributedText = labelText(for: currentBusInfo[1])
         case 1:
             busTimerFirstLabel.attributedText = labelText(for: currentBusInfo[0])
-            busTimerSecondLabel.text = ""
+//            busTimerSecondLabel.text = ""
         default:
             // 3개 이상이면 우선 2개만 보여주거나, 숨기지 말고 2개만 보여주자
             busTimerFirstLabel.attributedText = labelText(for: currentBusInfo[0])
-            busTimerSecondLabel.attributedText = labelText(for: currentBusInfo[1])
+//            busTimerSecondLabel.attributedText = labelText(for: currentBusInfo[1])
         }
     }
 
     private func formatSecondsToHMS(_ seconds: Int?) -> String {
-        guard let seconds, seconds >= 0 else { return "시간 없음" }
+        guard let seconds, seconds >= 0 else { return "" }
 
         let h = seconds / 3600
         let m = (seconds % 3600) / 60

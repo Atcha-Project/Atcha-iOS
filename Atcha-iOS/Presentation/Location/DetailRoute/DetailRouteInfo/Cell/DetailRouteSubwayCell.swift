@@ -415,7 +415,7 @@ extension DetailRouteSubwayCell {
         subwayDirectionLabel.attributedText = AtchaFont.B6_R_14("", color: .white)
 
         guard let routeName, !routeName.isEmpty else {
-            subwayTimerLabel.attributedText = AtchaFont.B6_R_14("정보 없음", color: .gray300)
+            subwayTimerLabel.attributedText = AtchaFont.B6_R_14("", color: .gray300)
             return
         }
 
@@ -428,16 +428,19 @@ extension DetailRouteSubwayCell {
         }
 
         guard let matched else {
-            subwayDirectionLabel.attributedText = AtchaFont.B6_R_14("정보 없음", color: .gray300)
-            subwayTimerLabel.attributedText = AtchaFont.B6_R_14("정보 없음", color: .gray300)
+            subwayDirectionLabel.attributedText = AtchaFont.B6_R_14("", color: .gray300)
+            subwayTimerLabel.attributedText = AtchaFont.B6_R_14("", color: .gray300)
             return
         }
 
-        let destination = matched.destination ?? ""
-        subwayDirectionLabel.attributedText = AtchaFont.B6_R_14("\(destination)행", color: .white)
+        if let destination = matched.destination {
+            subwayDirectionLabel.attributedText = AtchaFont.B6_R_14("\(destination)행", color: .white)
+        } else {
+            subwayDirectionLabel.attributedText = AtchaFont.B6_R_14("", color: .white)
+        }
 
         guard let sec = matched.remainingTime, sec >= 0 else {
-            subwayTimerLabel.attributedText = AtchaFont.B6_R_14("불러오는 중", color: .widearea)
+            subwayTimerLabel.attributedText = AtchaFont.B6_R_14("", color: .widearea)
             return
         }
 
@@ -484,7 +487,7 @@ extension DetailRouteSubwayCell {
 
     private func updateSubwayTimerLabel() {
         guard let sec = currentRemainingSec else {
-            subwayTimerLabel.attributedText = AtchaFont.B6_R_14("불러오는 중", color: .widearea)
+            subwayTimerLabel.attributedText = AtchaFont.B6_R_14("", color: .widearea)
             return
         }
 
@@ -502,7 +505,7 @@ extension DetailRouteSubwayCell {
     }
 
     private func formatSecondsToHMS(_ seconds: Int?) -> String {
-        guard let seconds, seconds >= 0 else { return "시간 없음" }
+        guard let seconds, seconds >= 0 else { return "" }
 
         let h = seconds / 3600
         let m = (seconds % 3600) / 60
