@@ -415,7 +415,7 @@ extension AlarmManager {
         // 1) UserDefaults에서 값 다시 읽기
         let savedVolume = UserDefaultsWrapper.shared.float(
             forKey: UserDefaultsWrapper.Key.alarmVolume.rawValue
-        ) ?? 0.7
+        ) ?? 0.3
         
         // 2) AlarmManager 상태 업데이트
         alarmVolume = savedVolume

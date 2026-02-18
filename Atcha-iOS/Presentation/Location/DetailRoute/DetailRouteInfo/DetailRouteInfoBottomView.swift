@@ -40,8 +40,10 @@ final class DetailRouteInfoBottomView: UIView {
     private let handleView: UIView = UIView()
     private var startAddress: String = ""
     private var busRealTimeInfo: [[RealTimeBusArrival]] = []
+    private var subwayRealTimeInfo: [SubwayRealTimeInfo] = []
     var onBusDetail: ((BusDetailInfo) -> Void)?
     var getNewBusRealTime: (() -> Void)?
+    private var currentNearLegIDs: Set<UUID> = []
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -133,7 +135,36 @@ final class DetailRouteInfoBottomView: UIView {
     // v2
     func setupBusTimerLabel(_ time: [[RealTimeBusArrival]]) {
         busRealTimeInfo = time
-        collectionView.reloadData()
+        
+        for cell in collectionView.visibleCells {
+            guard let busCell = cell as? DetailRouteBusCell else { continue }
+            
+            // 현재 셀이 어떤 route였는지 알아야 다시 매칭 가능
+            guard let route = busCell.currentLegTrafficInfo?.route else { continue }
+            let cellKey = route.components(separatedBy: ":").last ?? route
+            
+            let matchedInfo = busRealTimeInfo.first(where: { list in
+                guard let apiRaw = list.first?.routeName else { return false }
+                let apiKey = apiRaw.components(separatedBy: ":").last ?? apiRaw
+                return apiKey == cellKey
+            }) ?? []
+            
+            
+            guard !matchedInfo.isEmpty else { continue }
+            busCell.setupBusRealTimeInfo(info: busCell.currentLegTrafficInfo, busInfo: matchedInfo)
+        }
+    }
+    
+    func setupSubwayTimerLabel(_ infos: [SubwayRealTimeInfo]) {
+        subwayRealTimeInfo = infos
+        
+        for cell in collectionView.visibleCells {
+            guard let subwayCell = cell as? DetailRouteSubwayCell else { continue }
+            guard let route = subwayCell.currentLegTrafficInfo?.route, !route.isEmpty else { continue }
+            
+            let matched = subwayRealTimeInfo.filter { $0.routeName == route }
+            subwayCell.setupSubwayRealTime(routeName: route, infos: matched)
+        }
     }
     
     func setupStartAddress(_ address: String) {
@@ -141,9 +172,13 @@ final class DetailRouteInfoBottomView: UIView {
         collectionView.reloadData()
     }
     
-    private func applySnapshot(animatingDifferences: Bool = true) {
+    private func applySnapshot(animatingDifferences: Bool = false) {
         guard collectionView.dataSource != nil else { return }
-        dataSource.apply(snapshot, animatingDifferences: animatingDifferences)
+        
+        dataSource.apply(snapshot, animatingDifferences: animatingDifferences) { [weak self] in
+            guard let self else { return }
+            self.updateProximityHighlight(nearLegIDs: self.currentNearLegIDs)
+        }
     }
 }
 
@@ -202,8 +237,8 @@ extension DetailRouteInfoBottomView {
         case .transport(let transportMode):
             switch transportMode {
             case .walk: height = 74
-            case .bus: height = 175
-            case .subway: height = 154
+            case .bus: height = 200
+            case .subway: height = 200
             case .unknown: height = 38
             }
         case .end: height = 58
@@ -250,7 +285,8 @@ extension DetailRouteInfoBottomView {
                         for: indexPath
                     ) as! DetailRouteBusCell
                     cell.didTapSummary = { [weak self] in
-                        self?.applySnapshot()
+                        //                        self?.applySnapshot()
+                        self?.collectionView.collectionViewLayout.invalidateLayout()
                     }
                     cell.getNewBusRealTime = { [weak self] in
                         self?.getNewBusRealTime?()
@@ -279,11 +315,15 @@ extension DetailRouteInfoBottomView {
                     }
                     cell.configure(info: item.info)
                     
-                    // 이 부분에서 나눠서 값을 넣어줘야 해
-                    
-                    //                    cell.setupBusRealTimeInfo(busInfo: self.busRealTimeInfo)
-                    if let routeName = item.info?.route {
-                        let matchedInfo = self.busRealTimeInfo.first(where: { $0.first?.routeName == routeName }) ?? []
+                    if let route = item.info?.route, !route.isEmpty {
+                        let cellKey = route.components(separatedBy: ":").last ?? route
+                        
+                        let matchedInfo = self.busRealTimeInfo.first(where: { list in
+                            guard let apiRaw = list.first?.routeName else { return false }
+                            let apiKey = apiRaw.components(separatedBy: ":").last ?? apiRaw
+                            return apiKey == cellKey
+                        }) ?? []
+                        
                         cell.setupBusRealTimeInfo(info: item.info, busInfo: matchedInfo)
                     }
                     
@@ -295,13 +335,56 @@ extension DetailRouteInfoBottomView {
                         for: indexPath
                     ) as! DetailRouteSubwayCell
                     cell.didTapSummary = { [weak self] in
-                        self?.applySnapshot()
+                        //                        self?.applySnapshot()
+                        self?.collectionView.collectionViewLayout.invalidateLayout()
                     }
                     cell.configure(info: item.info)
+                    
+                    if let route = item.info?.route, !route.isEmpty {
+                        let key = route.components(separatedBy: ":").last ?? route
+                        let matched = self.subwayRealTimeInfo.filter { info in
+                            let apiRaw = info.routeName ?? ""
+                            let apiKey = apiRaw.components(separatedBy: ":").last ?? apiRaw
+                            return apiKey == key
+                        }
+                        cell.setupSubwayRealTime(routeName: route, infos: matched)
+                    }
                     return cell
                     
                 default:
                     return nil
+                }
+            }
+        }
+    }
+    
+    func updateProximityHighlight(nearLegIDs: Set<UUID>) {
+        currentNearLegIDs = nearLegIDs
+        for cell in collectionView.visibleCells {
+            if let busCell = cell as? DetailRouteBusCell,
+               let leg = busCell.currentLegTrafficInfo {
+                if nearLegIDs.contains(leg.id) {
+                    busCell.isNowUserLocationArrived()
+                } else {
+                    busCell.stopArrivedEffectIfNeeded()
+                }
+            }
+            
+            if let subwayCell = cell as? DetailRouteSubwayCell,
+               let leg = subwayCell.currentLegTrafficInfo {
+                if nearLegIDs.contains(leg.id) {
+                    subwayCell.isNowUserLocationArrived()
+                } else {
+                    subwayCell.stopArrivedEffectIfNeeded()
+                }
+            }
+            
+            if let walkCell = cell as? DetailRouteWalkCell,
+               let leg = walkCell.currentLegTrafficInfo {
+                if nearLegIDs.contains(leg.id) {
+                    walkCell.isNowUserLocationArrived()
+                } else {
+                    walkCell.stopArrivedEffectIfNeeded()
                 }
             }
         }

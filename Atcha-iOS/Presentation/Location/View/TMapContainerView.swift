@@ -30,8 +30,15 @@ final class TMapContainerView: UIView {
         setupTMap()
     }
     
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        // SDK가 초기 frame 기반으로 렌더링 잡는 경우 대비
+        tMapWrapper.mapView.frame = bounds
+    }
+    
+    
     private func setupTMap() {
-        tMapWrapper = TMapWrapper(frame: bounds)
+        tMapWrapper = TMapWrapper(frame: .zero)
         tMapWrapper.delegate = delegate
         addSubview(tMapWrapper.mapView)
         tMapWrapper.mapView.snp.makeConstraints {
@@ -45,7 +52,7 @@ final class TMapContainerView: UIView {
     
     func setupZoomCenter(location: CLLocationCoordinate2D) {
         tMapWrapper.mapView.setCenter(location)
-        tMapWrapper.mapView.setZoom(18)
+        tMapWrapper.mapView.setZoom(16)
     }
     
     func updateUserMarker(location: CLLocationCoordinate2D) {
@@ -83,5 +90,11 @@ extension TMapContainerView {
 
         // 다시 생성
         setupTMap()
+    }
+}
+
+extension TMapContainerView {
+    func setupCenterWithRouteInsetOffset(location: CLLocationCoordinate2D, points: CGFloat = 50) {
+        tMapWrapper.centerUserWithRouteInset(location, yOffsetUp: points)
     }
 }

@@ -58,7 +58,7 @@ let subwayIcon: [String: String] = [
 ]
 
 let busIcon: [String: String] = [
-    "1": "regular",
+    "1": "general",
     "10": "regular",
     "12": "regular",
     
@@ -131,7 +131,7 @@ let subwayGetOffIcon: [String: String] = [
 ]
 
 let busGetOffIcon: [String: String] = [
-    "1": "regular-getOff",
+    "1": "general-getOff",
     "10": "regular-getOff",
     "12": "regular-getOff",
     
@@ -231,7 +231,7 @@ extension TransportMode {
     ]
     
     static let busIcon: [String: UIImage] = [
-        "1": .regular, "10": .regular, "12": .regular,
+        "1": .general, "10": .regular, "12": .regular,
         "3": .town, "13": .town, "21": .town,
         "2": .mainline, "11": .mainline,
         "4": .widearea, "6": .widearea, "14": .widearea,
@@ -240,7 +240,7 @@ extension TransportMode {
     ]
     
     static let busBorderIcon: [String: UIImage] = [
-        "1": .regularBorder, "10": .regularBorder, "12": .regularBorder,
+        "1": .generalBorder, "10": .regularBorder, "12": .regularBorder,
         "3": .townBorder, "13": .townBorder, "21": .townBorder,
         "2": .mainlineBorder, "11": .mainlineBorder,
         "4": .wideareaBorder, "6": .wideareaBorder, "14": .wideareaBorder,
@@ -249,7 +249,7 @@ extension TransportMode {
     ]
     
     static let busGetOffIcon: [String: String] = [
-        "1": "regular-getOff", "10": "regular-getOff", "12": "regular-getOff",
+        "1": "general-getOff", "10": "regular-getOff", "12": "regular-getOff",
         "3": "town-getOff", "13": "town-getOff", "21": "town-getOff",
         "2": "mainline-getOff", "11": "mainline-getOff",
         "4": "widearea-getOff", "6": "widearea-getOff", "14": "widearea-getOff",
@@ -259,7 +259,7 @@ extension TransportMode {
     ]
     
     static let busColor: [String: UIColor] = [
-        "1": .regular, "10": .regular, "12": .regular,
+        "1": .general, "10": .regular, "12": .regular,
         "3": .town, "13": .town, "21": .town,
         "2": .mainline, "11": .mainline,
         "4": .widearea, "6": .widearea, "14": .widearea,
@@ -303,7 +303,7 @@ enum BusType: String {
     
     var icon: UIImage {
         switch self {
-        case .일반, .외곽, .지선:
+        case .외곽, .지선:
             return UIImage(named: "bus-regular") ?? UIImage(named: "bus-default")!
         case .좌석, .간선:
             return UIImage(named: "bus-mainline") ?? UIImage(named: "bus-default")!
@@ -313,6 +313,8 @@ enum BusType: String {
             return UIImage(named: "bus-widearea") ?? UIImage(named: "bus-default")!
         case .공항, .리무진:
             return UIImage(named: "bus-airport") ?? UIImage(named: "bus-default")!
+        case .일반:
+            return UIImage(named: "bus-general") ?? UIImage(named: "bus-default")!
         case .unknown:
             return UIImage(named: "bus-default")!
         }
