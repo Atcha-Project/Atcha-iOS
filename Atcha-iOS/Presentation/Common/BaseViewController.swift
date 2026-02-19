@@ -25,6 +25,7 @@ class BaseViewController<VM: BaseViewModel>: UIViewController {
     private var reconnectView: NetworkReconnectView?
     var onNetworkReconnect: (() -> Void)?
     
+    open var usesViewModelLoadingBinding: Bool { true }
     private var loadingView: LoadingView?
     
     // MARK: - Init
@@ -71,17 +72,19 @@ class BaseViewController<VM: BaseViewModel>: UIViewController {
     }
     
     private func setupBindings() {
-        viewModel.$isLoading
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] isLoading in
-                guard let self else { return }
-                if isLoading {
-                    showLoading()
-                } else {
-                    hideLoading()
+        if usesViewModelLoadingBinding {
+            viewModel.$isLoading
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] isLoading in
+                    guard let self else { return }
+                    if isLoading {
+                        self.showLoading()
+                    } else {
+                        self.hideLoading()
+                    }
                 }
-            }
-            .store(in: &cancellables)
+                .store(in: &cancellables)
+        }
         
         viewModel.$errorMessage
             .compactMap { $0 }
@@ -128,6 +131,29 @@ class BaseViewController<VM: BaseViewModel>: UIViewController {
         
         loadingView = loading
         loadingView?.layer.zPosition = 100
+    }
+    
+    func showLoadingOnce() {
+        hideLoading()
+        
+        let loading = LoadingView(frame: view.bounds)
+        loading.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(loading)
+        
+        NSLayoutConstraint.activate([
+            loading.topAnchor.constraint(equalTo: view.topAnchor),
+            loading.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            loading.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            loading.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+        
+        loading.layer.zPosition = 100
+        loadingView = loading
+        loading.startOnce()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
+            self?.hideLoading()
+        }
     }
     
     // MARK: - 로딩 뷰 숨기기
@@ -189,16 +215,16 @@ class BaseViewController<VM: BaseViewModel>: UIViewController {
 extension BaseViewController {
     func ensureLocationPermissionOrShowToast() -> Bool {
         let status = CLLocationManager.authorizationStatus()
-
+        
         switch status {
         case .authorizedAlways, .authorizedWhenInUse:
             activePermissionToast?.hideImmediately()
             activePermissionToast = nil
             return true
-
+            
         case .denied, .restricted, .notDetermined:
             activePermissionToast?.hideImmediately()
-
+            
             let toast = AtchaActionToast(
                 message: "위치 권한을 허용해 주세요",
                 actionTitle: "설정하기"
@@ -206,10 +232,10 @@ extension BaseViewController {
                 guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
                 UIApplication.shared.open(url)
             }
-
+            
             activePermissionToast = toast
             toast.show(in: view, duration: 2.0, topOffset: 10)
-
+            
             return true
         @unknown default:
             return true
@@ -222,7 +248,7 @@ extension BaseViewController {
         let center = UNUserNotificationCenter.current()
         var isAuthorized = false
         let semaphore = DispatchSemaphore(value: 0)
-
+        
         center.getNotificationSettings { settings in
             switch settings.authorizationStatus {
             case .authorized, .provisional:
@@ -232,18 +258,18 @@ extension BaseViewController {
             }
             semaphore.signal()
         }
-
+        
         semaphore.wait()
-
+        
         if isAuthorized {
             activeAlarmPermissionToast?.hideImmediately()
             activeAlarmPermissionToast = nil
             return true
         }
-
+        
         // 권한 없으면: 토스트는 띄우되 진행은 막지 않음
         activeAlarmPermissionToast?.hideImmediately()
-
+        
         let toast = AtchaActionToast(
             message: "알람 권한을 허용해 주세요",
             actionTitle: "설정하기"
@@ -252,10 +278,10 @@ extension BaseViewController {
             UIApplication.shared.open(url)
             self?.activeAlarmPermissionToast = nil
         }
-
+        
         activeAlarmPermissionToast = toast
         toast.show(in: view, duration: 5.0, topOffset: 10)
-
+        
         return true
     }
 }

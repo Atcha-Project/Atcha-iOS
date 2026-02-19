@@ -11,6 +11,8 @@ import SnapKit
 
 class BusDetailViewController: BaseViewController<BusDetailViewModel> {
     
+    override var usesViewModelLoadingBinding: Bool { false }
+    
     private lazy var topNavigationBar: IconTitleNavigationBar = {
         AtchaNavigationBar.iconTitle(
             viewModel.busNumber,
@@ -23,7 +25,6 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
     }()
     private let headerView: BusDetailHeaderView = BusDetailHeaderView()
     private let refreshButton: RefreshView = RefreshView(background: .default)
-    private let loadingView: LoadingView = LoadingView()
     private var didScrollToCurrentStation = false
     private lazy var busRouteCollectionView: UICollectionView = {
         let layout = layout()
@@ -47,6 +48,8 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
     private let noSearchImageView: UIImageView = UIImageView()
     private let noSearchLabel: UILabel = UILabel()
     
+    private var didHideInitialLoading = false
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -55,6 +58,10 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         setupAutoLayout()
         bind()
         bindActions()
+        
+        busRouteCollectionView.isHidden = true
+        noSearchStack.isHidden = true
+        showLoading()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -70,7 +77,7 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
     
     override func viewDidDisappear(_ animated: Bool) {
         refreshButton.stop()
-        loadingView.stop()
+        hideLoading()
     }
     
     // MARK: - ViewModel 바인딩
@@ -78,35 +85,28 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         viewModel.$busPositionInfo
             .compactMap { $0 }
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] busInfo in
+            .sink { [weak self] (busInfo: BusPositionInfo) in
                 self?.noSearchStack.isHidden = true
-                self?.busRouteCollectionView.isHidden = false
-                
                 self?.applySnapshot(busRoute: busInfo)
                 let busCount = busInfo.busPositions?.count ?? 0
                 self?.headerView.updateBusCount(busCount)
-                
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                    self?.loadingView.isHidden = true
-                }
             }
             .store(in: &cancellables)
         
         viewModel.$isServerError
-                .removeDuplicates()
-                .receive(on: DispatchQueue.main)
-                .sink { [weak self] isError in
-                    guard let self = self else { return }
-                    guard isError else { return }
-
-                    self.refreshButton.stop()
-                    self.loadingView.stop()
-                    self.loadingView.isHidden = true
-                    self.busRouteCollectionView.isHidden = true
-                    self.noSearchStack.isHidden = false
-
-                }
-                .store(in: &cancellables)
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isError in
+                guard let self = self else { return }
+                guard isError else { return }
+                
+                self.hideLoading()
+                self.refreshButton.stop()
+                self.busRouteCollectionView.isHidden = true
+                self.noSearchStack.isHidden = false
+                
+            }
+            .store(in: &cancellables)
     }
     
     // MARK: - 버스 상세 노선 UI
@@ -116,8 +116,7 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         refreshButton.isUserInteractionEnabled = true
         let tap = UITapGestureRecognizer(target: self, action: #selector(onRefreshTapped))
         refreshButton.addGestureRecognizer(tap)
-        loadingView.isHidden = true
-        view.addSubViews(topNavigationBar, headerView, busRouteCollectionView, refreshButton, loadingView)
+        view.addSubViews(topNavigationBar, headerView, busRouteCollectionView, refreshButton)
     }
     
     // MARK: - 버스 상세 노선 AutoLayout
@@ -142,10 +141,6 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
             make.size.equalTo(48)
             make.trailing.equalToSuperview().inset(16)
             make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).inset(16)
-        }
-        
-        loadingView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
         }
     }
     
@@ -172,17 +167,17 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         return dataSource
     }
     
-//    // MARK: - BusRoute CollectionView Layout
-//    private func layout() -> UICollectionViewCompositionalLayout {
-//        UICollectionViewCompositionalLayout{ [weak self] section, _ in
-//            switch self?.currentSection[section] {
-//            case .busRouteList:
-//                return BusRouteCell.busRouteLayout()
-//            case .none:
-//                return nil
-//            }
-//        }
-//    }
+    //    // MARK: - BusRoute CollectionView Layout
+    //    private func layout() -> UICollectionViewCompositionalLayout {
+    //        UICollectionViewCompositionalLayout{ [weak self] section, _ in
+    //            switch self?.currentSection[section] {
+    //            case .busRouteList:
+    //                return BusRouteCell.busRouteLayout()
+    //            case .none:
+    //                return nil
+    //            }
+    //        }
+    //    }
     
     // MARK: - BusRoute CollectionView Cell 설정
     private func busRouteCell(_ collectionView: UICollectionView, _ indexPath: IndexPath, _ station: BusRouteStationList) -> UICollectionViewCell {
@@ -196,7 +191,6 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         let busType = viewModel.busType
         let busesAtStation = viewModel.busRealTimeInfo?.realTimeBusArrival ?? []
         let busPosition = viewModel.busPositionInfo?.busPositions ?? []
-        
         
         let order = station.order ?? 0
         let turnPoint = viewModel.busPositionInfo?.turnPoint ?? 9999
@@ -243,7 +237,7 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
             snapshot.appendItems(stations, toSection: .busRouteList)
         }
         
-        dataSource.apply(snapshot, animatingDifferences: true) { [weak self] in
+        dataSource.apply(snapshot, animatingDifferences: false) { [weak self] in
             guard let self = self else { return }
             self.busRouteCollectionView.collectionViewLayout.invalidateLayout()
             
@@ -271,14 +265,25 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
                     }
                 }
             }
+            
+            if !self.didHideInitialLoading {
+                self.didHideInitialLoading = true
+                self.busRouteCollectionView.isHidden = false
+                
+                DispatchQueue.main.async {
+                    self.busRouteCollectionView.layoutIfNeeded()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        self.hideLoading()
+                    }
+                }
+            }
         }
     }
     
     // MARK: - 리프레쉬 버튼 함수
     @objc private func onRefreshTapped() {
         refreshButton.start()
-        loadingView.isHidden = false
-        loadingView.startOnce()
+        showLoadingOnce()
         viewModel.refresh()
     }
     
@@ -288,7 +293,7 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         guard indexPath.item < items.count else { return nil }
         return items[indexPath.item]
     }
-
+    
     private func itemHasRealTimeBus(at indexPath: IndexPath) -> Bool {
         guard let station = itemAt(indexPath),
               let order = station.order else { return false }
@@ -300,13 +305,13 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
     private func layout() -> UICollectionViewCompositionalLayout {
         UICollectionViewCompositionalLayout { [weak self] section, _ in
             guard let self = self else { return nil }
-
+            
             let itemSize  = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .estimated(68))
             let item      = NSCollectionLayoutItem(layoutSize: itemSize)
             let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .estimated(68))
             let group     = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
             let section   = NSCollectionLayoutSection(group: group)
-
+            
             section.visibleItemsInvalidationHandler = { [weak self] items, _, _ in
                 guard let self = self else { return }
                 for v in items where v.representedElementCategory == .cell {
@@ -326,7 +331,7 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
     private func setupNoSearchUI() {
         noSearchImageView.image = UIImage.atchaGray
         noSearchImageView.contentMode = .scaleAspectFit
-        noSearchLabel.attributedText = AtchaFont.B4_R_15("버스 정보를 불러오지 못했어요.\n잠시 후 다시 시도해 주세요.", color: AtchaColor.gray400, alignment: .center)
+        noSearchLabel.attributedText = AtchaFont.B4_R_15("버스 정보를 불러오지 못 했어요\n새로고침 해주세요", color: AtchaColor.gray400, alignment: .center)
         noSearchLabel.numberOfLines = 0
         
         noSearchStack.addArrangedSubview(noSearchImageView)

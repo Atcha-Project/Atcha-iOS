@@ -58,6 +58,8 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
     private let noSearchImageView: UIImageView = UIImageView()
     private let noSearchLabel: UILabel = UILabel()
     
+    private let refreshButton: RefreshView = RefreshView(background: .default)
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -70,6 +72,10 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         AmplitudeManager.shared.trackScreen(.bus_info)
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        refreshButton.stop()
     }
     
     // MARK: ViewModel 바인딩
@@ -126,6 +132,10 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
         bottomNoticeStack.addArrangedSubview(bottomNoticeImageView)
         bottomNoticeStack.addArrangedSubview(bottomNoticeLabel)
         
+        refreshButton.isUserInteractionEnabled = true
+        let tap = UITapGestureRecognizer(target: self, action: #selector(onRefreshTapped))
+        refreshButton.addGestureRecognizer(tap)
+        
         view.addSubViews(
             topNavigationBar,
             operationStationTitleLabel,
@@ -135,7 +145,8 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
             operationTimeStack,
             dispatchTitleLabel,
             dispatchStack,
-            bottomNoticeStack
+            bottomNoticeStack,
+            refreshButton
         )
     }
     
@@ -192,13 +203,19 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
             make.leading.equalToSuperview().offset(16)
             make.height.equalTo(14)
         }
+        
+        refreshButton.snp.makeConstraints { make in
+            make.size.equalTo(48)
+            make.trailing.equalToSuperview().inset(16)
+            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).inset(16)
+        }
     }
     
     // MARK: - 검색 결과 없을 경우 UI
     private func setupNoSearchUI() {
         noSearchImageView.image = UIImage.atchaGray
         noSearchImageView.contentMode = .scaleAspectFit
-        noSearchLabel.attributedText = AtchaFont.B4_R_15("버스 정보를 불러오지 못했어요.\n잠시 후 다시 시도해 주세요.", color: AtchaColor.gray400, alignment: .center)
+        noSearchLabel.attributedText = AtchaFont.B4_R_15("버스 정보를 불러오지 못 했어요\n새로고침 해주세요", color: AtchaColor.gray400, alignment: .center)
         noSearchLabel.numberOfLines = 0
         
         noSearchStack.addArrangedSubview(noSearchImageView)
@@ -217,6 +234,7 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
     }
     
     private func setErrorUI(_ isError: Bool) {
+        refreshButton.stop()
         noSearchStack.isHidden = !isError
 
         // 기존 컨텐츠 숨김/표시
@@ -308,5 +326,11 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
             
             dispatchStack.addArrangedSubview(rowStack)
         }
+    }
+    
+    @objc private func onRefreshTapped() {
+        refreshButton.start()
+        showLoadingOnce()
+        viewModel.refresh()
     }
 }
