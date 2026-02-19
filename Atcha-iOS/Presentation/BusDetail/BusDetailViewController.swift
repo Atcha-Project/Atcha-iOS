@@ -326,7 +326,7 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
     private func setupNoSearchUI() {
         noSearchImageView.image = UIImage.atchaGray
         noSearchImageView.contentMode = .scaleAspectFit
-        noSearchLabel.attributedText = AtchaFont.B4_R_15("버스 정보를 불러오지 못했어요.\n잠시 후 다시 시도해 주세요.", color: AtchaColor.gray400, alignment: .center)
+        noSearchLabel.attributedText = AtchaFont.B4_R_15("버스 정보를 불러오지 못 했어요\n새로고침 해주세요", color: AtchaColor.gray400, alignment: .center)
         noSearchLabel.numberOfLines = 0
         
         noSearchStack.addArrangedSubview(noSearchImageView)
