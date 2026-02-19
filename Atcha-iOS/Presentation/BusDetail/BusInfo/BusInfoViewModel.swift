@@ -14,6 +14,7 @@ final class BusInfoViewModel: BaseViewModel {
     private let busInfoUseCase: BusInfoUseCase
     let busDetailInfo: BusDetailInfo
     let busRouteInfo: BusRouteInfo
+    private var lastRequest: BusOperationInfoRequest?
     
     @Published var operationInfo: BusOperationInfo?
     @Published var isServerError: Bool = false
@@ -39,6 +40,8 @@ final class BusInfoViewModel: BaseViewModel {
             busRouteId: busRouteInfo.busRouteId,
             routeName: busRouteInfo.routeName,
             serviceRegion: busRouteInfo.serviceRegion)
+        
+        self.lastRequest = request
         
         Task { [weak self] in
             await self?.busOperationInfo(request: request)
@@ -74,6 +77,15 @@ final class BusInfoViewModel: BaseViewModel {
                 self.isServerError = true
                 print("버스 운영 정보 조회 실패: \(error)")
             }
+        }
+    }
+    
+    // MARK: - 수동 새로고침
+    @MainActor
+    func refresh() {
+        guard let request = lastRequest else { return }
+        Task {
+            self.busOperationInfo(request: request)
         }
     }
 }
