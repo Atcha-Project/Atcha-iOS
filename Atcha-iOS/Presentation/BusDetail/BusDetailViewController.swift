@@ -11,6 +11,8 @@ import SnapKit
 
 class BusDetailViewController: BaseViewController<BusDetailViewModel> {
     
+    override var usesViewModelLoadingBinding: Bool { false }
+    
     private lazy var topNavigationBar: IconTitleNavigationBar = {
         AtchaNavigationBar.iconTitle(
             viewModel.busNumber,
@@ -46,6 +48,8 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
     private let noSearchImageView: UIImageView = UIImageView()
     private let noSearchLabel: UILabel = UILabel()
     
+    private var didHideInitialLoading = false
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -54,6 +58,10 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         setupAutoLayout()
         bind()
         bindActions()
+        
+        busRouteCollectionView.isHidden = true
+        noSearchStack.isHidden = true
+        showLoading()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -63,37 +71,22 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
                 ($0 as? BusRouteCell)?.ensureBusOnTop()
             }
         }
-    
+        
         AmplitudeManager.shared.trackScreen(.bus_detail)
     }
     
     override func viewDidDisappear(_ animated: Bool) {
         refreshButton.stop()
-        self.hideLoading()
+        hideLoading()
     }
     
     // MARK: - ViewModel 바인딩
     private func bind() {
-        viewModel.$isLoading
-            .receive(on: RunLoop.main)
-            .sink { [weak self] isLoading in
-                guard let self = self else { return }
-        
-                if isLoading {
-                    self.showLoading()
-                    self.noSearchStack.isHidden = true
-                } else {
-                    self.hideLoading()
-                }
-            }
-            .store(in: &cancellables)
-        
         viewModel.$busPositionInfo
             .compactMap { $0 }
             .receive(on: DispatchQueue.main)
             .sink { [weak self] (busInfo: BusPositionInfo) in
                 self?.noSearchStack.isHidden = true
-                self?.busRouteCollectionView.isHidden = false
                 self?.applySnapshot(busRoute: busInfo)
                 let busCount = busInfo.busPositions?.count ?? 0
                 self?.headerView.updateBusCount(busCount)
@@ -101,19 +94,19 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
             .store(in: &cancellables)
         
         viewModel.$isServerError
-                .removeDuplicates()
-                .receive(on: DispatchQueue.main)
-                .sink { [weak self] isError in
-                    guard let self = self else { return }
-                    guard isError else { return }
-
-                    self.hideLoading()
-                    self.refreshButton.stop()
-                    self.busRouteCollectionView.isHidden = true
-                    self.noSearchStack.isHidden = false
-
-                }
-                .store(in: &cancellables)
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isError in
+                guard let self = self else { return }
+                guard isError else { return }
+                
+                self.hideLoading()
+                self.refreshButton.stop()
+                self.busRouteCollectionView.isHidden = true
+                self.noSearchStack.isHidden = false
+                
+            }
+            .store(in: &cancellables)
     }
     
     // MARK: - 버스 상세 노선 UI
@@ -174,17 +167,17 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         return dataSource
     }
     
-//    // MARK: - BusRoute CollectionView Layout
-//    private func layout() -> UICollectionViewCompositionalLayout {
-//        UICollectionViewCompositionalLayout{ [weak self] section, _ in
-//            switch self?.currentSection[section] {
-//            case .busRouteList:
-//                return BusRouteCell.busRouteLayout()
-//            case .none:
-//                return nil
-//            }
-//        }
-//    }
+    //    // MARK: - BusRoute CollectionView Layout
+    //    private func layout() -> UICollectionViewCompositionalLayout {
+    //        UICollectionViewCompositionalLayout{ [weak self] section, _ in
+    //            switch self?.currentSection[section] {
+    //            case .busRouteList:
+    //                return BusRouteCell.busRouteLayout()
+    //            case .none:
+    //                return nil
+    //            }
+    //        }
+    //    }
     
     // MARK: - BusRoute CollectionView Cell 설정
     private func busRouteCell(_ collectionView: UICollectionView, _ indexPath: IndexPath, _ station: BusRouteStationList) -> UICollectionViewCell {
@@ -272,6 +265,18 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
                     }
                 }
             }
+            
+            if !self.didHideInitialLoading {
+                self.didHideInitialLoading = true
+                self.busRouteCollectionView.isHidden = false
+                
+                DispatchQueue.main.async {
+                    self.busRouteCollectionView.layoutIfNeeded()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        self.hideLoading()
+                    }
+                }
+            }
         }
     }
     
@@ -288,7 +293,7 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         guard indexPath.item < items.count else { return nil }
         return items[indexPath.item]
     }
-
+    
     private func itemHasRealTimeBus(at indexPath: IndexPath) -> Bool {
         guard let station = itemAt(indexPath),
               let order = station.order else { return false }
@@ -300,13 +305,13 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
     private func layout() -> UICollectionViewCompositionalLayout {
         UICollectionViewCompositionalLayout { [weak self] section, _ in
             guard let self = self else { return nil }
-
+            
             let itemSize  = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .estimated(68))
             let item      = NSCollectionLayoutItem(layoutSize: itemSize)
             let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .estimated(68))
             let group     = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
             let section   = NSCollectionLayoutSection(group: group)
-
+            
             section.visibleItemsInvalidationHandler = { [weak self] items, _, _ in
                 guard let self = self else { return }
                 for v in items where v.representedElementCategory == .cell {

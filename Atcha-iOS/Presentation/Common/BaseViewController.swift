@@ -25,6 +25,7 @@ class BaseViewController<VM: BaseViewModel>: UIViewController {
     private var reconnectView: NetworkReconnectView?
     var onNetworkReconnect: (() -> Void)?
     
+    open var usesViewModelLoadingBinding: Bool { true }
     private var loadingView: LoadingView?
     
     // MARK: - Init
@@ -71,17 +72,19 @@ class BaseViewController<VM: BaseViewModel>: UIViewController {
     }
     
     private func setupBindings() {
-        viewModel.$isLoading
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] isLoading in
-                guard let self else { return }
-                if isLoading {
-                    showLoading()
-                } else {
-                    hideLoading()
+        if usesViewModelLoadingBinding {
+            viewModel.$isLoading
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] isLoading in
+                    guard let self else { return }
+                    if isLoading {
+                        self.showLoading()
+                    } else {
+                        self.hideLoading()
+                    }
                 }
-            }
-            .store(in: &cancellables)
+                .store(in: &cancellables)
+        }
         
         viewModel.$errorMessage
             .compactMap { $0 }
