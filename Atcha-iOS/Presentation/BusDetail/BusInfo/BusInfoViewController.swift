@@ -330,6 +330,7 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
     
     @objc private func onRefreshTapped() {
         refreshButton.start()
+        showLoadingOnce()
         viewModel.refresh()
     }
 }

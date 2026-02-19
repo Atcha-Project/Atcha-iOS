@@ -28,6 +28,9 @@ final class BusDetailViewModel: BaseViewModel {
     
     private var refreshTimer: Timer?
     private var lastRequest: BusRealTimeInfoRequest?
+    private var didInitialLoad = false
+    private var currentTask: Task<Void, Never>?
+    
     
     init(
         busInfoUseCase: BusInfoUseCase,
@@ -51,8 +54,6 @@ final class BusDetailViewModel: BaseViewModel {
             lon: busDetailInfo.start?.lon,
             passStations: busDetailInfo.passStations)
         
-        self.lastRequest = request
-        
         Task { [weak self] in
             await self?.busRealTimeInfo(request: request)
         }
@@ -67,6 +68,18 @@ final class BusDetailViewModel: BaseViewModel {
     // MARK: - 실시간 버스 정보 조회
     @MainActor
     func busRealTimeInfo(request: BusRealTimeInfoRequest) {
+        lastRequest = request
+        
+        cancelInFlight()
+        
+        let shouldShowLoading = !didInitialLoad
+        if shouldShowLoading {
+            didInitialLoad = true
+            setLoading(true)
+        }
+        
+        defer { if shouldShowLoading { setLoading(false) } }
+        
         Task {
             do {
                 let response = try await busInfoUseCase.busRealTimeInfo(request)
@@ -85,8 +98,10 @@ final class BusDetailViewModel: BaseViewModel {
                     serviceRegion: busRouteInfo.serviceRegion
                 )
                 
-                self.busPositionInfo(request: positionRequest)
-                self.busRealTimeInfo = response
+                try Task.checkCancellation()
+                
+                let position = try await busInfoUseCase.busPositionInfo(positionRequest)
+                self.busPositionInfo = position
             } catch {
                 self.isServerError = true
                 print("실시간 버스 조회 실패")
@@ -128,6 +143,13 @@ final class BusDetailViewModel: BaseViewModel {
         Task {
             self.busRealTimeInfo(request: request)
         }
+    }
+    
+    
+    @MainActor
+    private func cancelInFlight() {
+        currentTask?.cancel()
+        currentTask = nil
     }
     
     deinit {

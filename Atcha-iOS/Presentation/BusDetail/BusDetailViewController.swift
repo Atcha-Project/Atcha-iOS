@@ -23,7 +23,6 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
     }()
     private let headerView: BusDetailHeaderView = BusDetailHeaderView()
     private let refreshButton: RefreshView = RefreshView(background: .default)
-    private let loadingView: LoadingView = LoadingView()
     private var didScrollToCurrentStation = false
     private lazy var busRouteCollectionView: UICollectionView = {
         let layout = layout()
@@ -64,31 +63,42 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
                 ($0 as? BusRouteCell)?.ensureBusOnTop()
             }
         }
-        
+    
         AmplitudeManager.shared.trackScreen(.bus_detail)
     }
     
     override func viewDidDisappear(_ animated: Bool) {
         refreshButton.stop()
-        loadingView.stop()
+        self.hideLoading()
     }
     
     // MARK: - ViewModel 바인딩
     private func bind() {
+        viewModel.$isLoading
+            .receive(on: RunLoop.main)
+            .sink { [weak self] isLoading in
+                guard let self = self else { return }
+                
+                if isLoading {
+                    self.showLoading()
+                    self.noSearchStack.isHidden = true
+                } else {
+                    self.hideLoading()
+                }
+            }
+            .store(in: &cancellables)
+        
         viewModel.$busPositionInfo
             .compactMap { $0 }
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] busInfo in
+            .sink { [weak self] (busInfo: BusPositionInfo) in
                 self?.noSearchStack.isHidden = true
                 self?.busRouteCollectionView.isHidden = false
-                
+
                 self?.applySnapshot(busRoute: busInfo)
                 let busCount = busInfo.busPositions?.count ?? 0
                 self?.headerView.updateBusCount(busCount)
-                
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                    self?.loadingView.isHidden = true
-                }
+                self?.hideLoading()
             }
             .store(in: &cancellables)
         
@@ -99,9 +109,8 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
                     guard let self = self else { return }
                     guard isError else { return }
 
+                    self.hideLoading()
                     self.refreshButton.stop()
-                    self.loadingView.stop()
-                    self.loadingView.isHidden = true
                     self.busRouteCollectionView.isHidden = true
                     self.noSearchStack.isHidden = false
 
@@ -116,8 +125,7 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         refreshButton.isUserInteractionEnabled = true
         let tap = UITapGestureRecognizer(target: self, action: #selector(onRefreshTapped))
         refreshButton.addGestureRecognizer(tap)
-        loadingView.isHidden = true
-        view.addSubViews(topNavigationBar, headerView, busRouteCollectionView, refreshButton, loadingView)
+        view.addSubViews(topNavigationBar, headerView, busRouteCollectionView, refreshButton)
     }
     
     // MARK: - 버스 상세 노선 AutoLayout
@@ -142,10 +150,6 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
             make.size.equalTo(48)
             make.trailing.equalToSuperview().inset(16)
             make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).inset(16)
-        }
-        
-        loadingView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
         }
     }
     
@@ -277,8 +281,7 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
     // MARK: - 리프레쉬 버튼 함수
     @objc private func onRefreshTapped() {
         refreshButton.start()
-        loadingView.isHidden = false
-        loadingView.startOnce()
+        showLoadingOnce()
         viewModel.refresh()
     }
     

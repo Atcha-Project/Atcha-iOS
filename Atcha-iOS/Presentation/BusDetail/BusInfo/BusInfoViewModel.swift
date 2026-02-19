@@ -15,6 +15,7 @@ final class BusInfoViewModel: BaseViewModel {
     let busDetailInfo: BusDetailInfo
     let busRouteInfo: BusRouteInfo
     private var lastRequest: BusOperationInfoRequest?
+    private var currentTask: Task<Void, Never>?
     
     @Published var operationInfo: BusOperationInfo?
     @Published var isServerError: Bool = false
@@ -41,8 +42,6 @@ final class BusInfoViewModel: BaseViewModel {
             routeName: busRouteInfo.routeName,
             serviceRegion: busRouteInfo.serviceRegion)
         
-        self.lastRequest = request
-        
         Task { [weak self] in
             await self?.busOperationInfo(request: request)
         }
@@ -62,6 +61,9 @@ final class BusInfoViewModel: BaseViewModel {
             return
         }
 
+        lastRequest = request
+        currentTask?.cancel()
+        
         Task {
             do {
                 let response = try await busInfoUseCase.busOperationInfo(request)

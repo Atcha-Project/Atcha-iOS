@@ -130,6 +130,33 @@ class BaseViewController<VM: BaseViewModel>: UIViewController {
         loadingView?.layer.zPosition = 100
     }
     
+    func showLoadingOnce() {
+        hideLoading()
+        
+        let loading = LoadingView(frame: view.bounds)
+        loading.startOnce()
+        loading.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(loading)
+        
+        NSLayoutConstraint.activate([
+            loading.topAnchor.constraint(equalTo: view.topAnchor),
+            loading.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            loading.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            loading.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+        
+        loadingView?.layer.zPosition = 100
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self, weak loading] in
+            loading?.stop()
+            loading?.removeFromSuperview()
+
+            if self?.loadingView === loading {
+                self?.loadingView = nil
+            }
+        }
+    }
+    
     // MARK: - 로딩 뷰 숨기기
     func hideLoading() {
         loadingView?.stop()
