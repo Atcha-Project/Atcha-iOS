@@ -131,24 +131,15 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
                 guard let self = self else { return }
                 
                 self.applySnapshot(courses: courses)
-                
-                if !self.viewModel.isLoading {
-                    guard !self.viewModel.isServerError else { return }
-                    if courses.isEmpty {
-                        self.noSearchLabel.attributedText = AtchaFont.B4_R_15("검색 가능한 막차가 없습니다.", color: AtchaColor.gray400)
-                        self.noSearchStack.isHidden = false
-                        self.courseCollectionView.backgroundColor = AtchaColor.gray950
-                    } else {
-                        self.noSearchStack.isHidden = true
-                        self.courseCollectionView.backgroundColor = AtchaColor.black
-                    }
-                }
             }
             .store(in: &cancellables)
     }
     // MARK: - 경로탐색 UI
     private func setupUI() {
         view.backgroundColor = AtchaColor.gray950
+        
+        noSearchStack.isHidden = true
+        courseCollectionView.backgroundColor = AtchaColor.black
         
         courseView.layer.cornerRadius = 12
         courseView.backgroundColor = AtchaColor.gray930

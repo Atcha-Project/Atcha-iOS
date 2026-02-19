@@ -243,7 +243,7 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
             snapshot.appendItems(stations, toSection: .busRouteList)
         }
         
-        dataSource.apply(snapshot, animatingDifferences: true) { [weak self] in
+        dataSource.apply(snapshot, animatingDifferences: false) { [weak self] in
             guard let self = self else { return }
             self.busRouteCollectionView.collectionViewLayout.invalidateLayout()
             
