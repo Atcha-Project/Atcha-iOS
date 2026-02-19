@@ -134,7 +134,6 @@ class BaseViewController<VM: BaseViewModel>: UIViewController {
         hideLoading()
         
         let loading = LoadingView(frame: view.bounds)
-        loading.startOnce()
         loading.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(loading)
         
@@ -145,15 +144,12 @@ class BaseViewController<VM: BaseViewModel>: UIViewController {
             loading.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
         
-        loadingView?.layer.zPosition = 100
+        loading.layer.zPosition = 100
+        loadingView = loading
+        loading.startOnce()
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self, weak loading] in
-            loading?.stop()
-            loading?.removeFromSuperview()
-
-            if self?.loadingView === loading {
-                self?.loadingView = nil
-            }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
+            self?.hideLoading()
         }
     }
     
@@ -216,16 +212,16 @@ class BaseViewController<VM: BaseViewModel>: UIViewController {
 extension BaseViewController {
     func ensureLocationPermissionOrShowToast() -> Bool {
         let status = CLLocationManager.authorizationStatus()
-
+        
         switch status {
         case .authorizedAlways, .authorizedWhenInUse:
             activePermissionToast?.hideImmediately()
             activePermissionToast = nil
             return true
-
+            
         case .denied, .restricted, .notDetermined:
             activePermissionToast?.hideImmediately()
-
+            
             let toast = AtchaActionToast(
                 message: "위치 권한을 허용해 주세요",
                 actionTitle: "설정하기"
@@ -233,10 +229,10 @@ extension BaseViewController {
                 guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
                 UIApplication.shared.open(url)
             }
-
+            
             activePermissionToast = toast
             toast.show(in: view, duration: 2.0, topOffset: 10)
-
+            
             return true
         @unknown default:
             return true
@@ -249,7 +245,7 @@ extension BaseViewController {
         let center = UNUserNotificationCenter.current()
         var isAuthorized = false
         let semaphore = DispatchSemaphore(value: 0)
-
+        
         center.getNotificationSettings { settings in
             switch settings.authorizationStatus {
             case .authorized, .provisional:
@@ -259,18 +255,18 @@ extension BaseViewController {
             }
             semaphore.signal()
         }
-
+        
         semaphore.wait()
-
+        
         if isAuthorized {
             activeAlarmPermissionToast?.hideImmediately()
             activeAlarmPermissionToast = nil
             return true
         }
-
+        
         // 권한 없으면: 토스트는 띄우되 진행은 막지 않음
         activeAlarmPermissionToast?.hideImmediately()
-
+        
         let toast = AtchaActionToast(
             message: "알람 권한을 허용해 주세요",
             actionTitle: "설정하기"
@@ -279,10 +275,10 @@ extension BaseViewController {
             UIApplication.shared.open(url)
             self?.activeAlarmPermissionToast = nil
         }
-
+        
         activeAlarmPermissionToast = toast
         toast.show(in: view, duration: 5.0, topOffset: 10)
-
+        
         return true
     }
 }

@@ -78,7 +78,7 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
             .receive(on: RunLoop.main)
             .sink { [weak self] isLoading in
                 guard let self = self else { return }
-                
+        
                 if isLoading {
                     self.showLoading()
                     self.noSearchStack.isHidden = true
@@ -94,11 +94,9 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
             .sink { [weak self] (busInfo: BusPositionInfo) in
                 self?.noSearchStack.isHidden = true
                 self?.busRouteCollectionView.isHidden = false
-
                 self?.applySnapshot(busRoute: busInfo)
                 let busCount = busInfo.busPositions?.count ?? 0
                 self?.headerView.updateBusCount(busCount)
-                self?.hideLoading()
             }
             .store(in: &cancellables)
         
@@ -200,7 +198,6 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         let busType = viewModel.busType
         let busesAtStation = viewModel.busRealTimeInfo?.realTimeBusArrival ?? []
         let busPosition = viewModel.busPositionInfo?.busPositions ?? []
-        
         
         let order = station.order ?? 0
         let turnPoint = viewModel.busPositionInfo?.turnPoint ?? 9999

@@ -177,7 +177,7 @@ class BusRouteCell: UICollectionViewCell {
                 guard let vehicleId = info.vehicleId else { continue }
                 
                 let matchedBus = bus.first(where: { $0.vehicleId == vehicleId })
-                
+
                 var remainStation = 0
                 if let matchedBus = matchedBus,
                    let busSection = matchedBus.sectionOrder,
@@ -187,6 +187,7 @@ class BusRouteCell: UICollectionViewCell {
                 
                 let congestion = info.busCongestion
                 let seconds = info.remainingTime ?? 0
+                
                 remainSeconds.append(seconds)
                 
                 let label = UILabel()

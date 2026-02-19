@@ -84,7 +84,7 @@ final class BusDetailViewModel: BaseViewModel {
             do {
                 let response = try await busInfoUseCase.busRealTimeInfo(request)
                 self.busRouteInfo = response.toBusRouteInfo()
-                
+
                 guard let routeId = busRouteInfo.busRouteId, !routeId.isEmpty else {
                     self.isServerError = true
                     return
@@ -102,6 +102,8 @@ final class BusDetailViewModel: BaseViewModel {
                 
                 let position = try await busInfoUseCase.busPositionInfo(positionRequest)
                 self.busPositionInfo = position
+                self.busRealTimeInfo = response
+            
             } catch {
                 self.isServerError = true
                 print("실시간 버스 조회 실패")
@@ -116,7 +118,6 @@ final class BusDetailViewModel: BaseViewModel {
             do {
                 let response = try await busInfoUseCase.busPositionInfo(request)
                 self.isServerError = false
-                self.busPositionInfo = response
             } catch {
                 self.isServerError = true
                 print("버스 위치 정보 실패")
