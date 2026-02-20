@@ -21,6 +21,15 @@ jobs:
         with:
           xcode-version: "16.3"
 
+      - name: Debug toolchain (Xcode/SDK/Sim)
+        run: |
+          set -euxo pipefail
+          xcodebuild -version
+          xcodebuild -showsdks
+          xcrun simctl list runtimes
+          xcrun simctl list devices available
+          xcodebuild -showdestinations -project Atcha-iOS.xcodeproj -scheme Atcha-iOS
+
       - name: Build (Dev compile-only)
         run: |
           xcodebuild \
