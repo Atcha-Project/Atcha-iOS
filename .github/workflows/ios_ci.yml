@@ -11,29 +11,56 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
-
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
 
       - name: Select Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: "16.3"
+          xcode-version: "16.2"
+
+      - name: Debug toolchain
+        run: |
+          xcodebuild -version
+          xcodebuild -showsdks
+          xcrun simctl list runtimes
+
+      - name: Install iOS SDK
+        # sudo를 붙여서 확실하게 권한을 주고 실행합니다.
+        run: sudo xcodebuild -downloadPlatform iOS
+
+      - name: Create Dummy Configs
+        run: |
+          # 프로젝트 폴더 생성
+          mkdir -p Atcha-iOS/Atcha-iOS
+          
+          # 생성할 파일 목록 (BaseConfig 추가!)
+          CONFIG_FILES=("BaseConfig.xcconfig" "DevConfig.xcconfig" "StageConfig.xcconfig" "LiveConfig.xcconfig")
+          
+          for FILE in "${CONFIG_FILES[@]}"; do
+            # 1. 루트 경로
+            echo "// Dummy Config for CI" > "$FILE"
+            # 2. 첫 번째 하위 경로
+            echo "// Dummy Config for CI" > "Atcha-iOS/$FILE"
+            # 3. 두 번째 하위 경로 (사진에서 본 실제 위치)
+            echo "// Dummy Config for CI" > "Atcha-iOS/Atcha-iOS/$FILE"
+            echo "Created $FILE in multiple locations"
+          done
 
       - name: Build (Any iOS Device)
         run: |
           xcodebuild \
             -project Atcha-iOS.xcodeproj \
-            -scheme Atcha-iOS \
+            -scheme Atcha-Dev \
             -configuration Debug \
             -destination 'generic/platform=iOS' \
-            -derivedDataPath Build/ \
-            FRAMEWORK_SEARCH_PATHS='$(inherited) $(PROJECT_DIR)' \
-            ALWAYS_SEARCH_USER_PATHS=YES \
-            STRIP_INSTALLED_PRODUCT=NO \
+            -sdk iphoneos \
+            IPHONEOS_DEPLOYMENT_TARGET=16.1 \
+            FRAMEWORK_SEARCH_PATHS="$(inherited) $PWD $PWD/Atcha-iOS $PWD/Atcha-iOS/Atcha-iOS" \
+            SWIFT_INCLUDE_PATHS="$(inherited) $PWD $PWD/Atcha-iOS $PWD/Atcha-iOS/Atcha-iOS" \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
-            AD_HOC_CODE_SIGN_ALLOWED=YES \
+            AD_HOC_CODE_SIGNING_ALLOWED=YES \
             clean build
