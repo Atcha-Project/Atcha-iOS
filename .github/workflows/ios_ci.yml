@@ -36,5 +36,10 @@ jobs:
             -scheme Atcha-iOS \
             -configuration Debug \
             -destination 'generic/platform=iOS' \
+            -derivedDataPath Build/ \
+            FRAMEWORK_SEARCH_PATHS='$(inherited) $(PROJECT_DIR)' \
             CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            AD_HOC_CODE_SIGNING_ALLOWED=YES \
             clean build
