@@ -95,10 +95,9 @@
 		6D81574E2E13EC0F003688A6 /* Int+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D81574D2E13EC0F003688A6 /* Int+Ext.swift */; };
 		6D8C67A12F48363300D2F55F /* DevConfig.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6D8C67A02F48363300D2F55F /* DevConfig.xcconfig */; };
 		6D8C67A52F48364C00D2F55F /* LiveConfig.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6D8C67A42F48364C00D2F55F /* LiveConfig.xcconfig */; };
-		6D8C67A92F483EFA00D2F55F /* Secrets.common.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6D8C67A82F483EFA00D2F55F /* Secrets.common.xcconfig */; };
-		6D8C67AB2F483F3100D2F55F /* Secrets.dev.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6D8C67AA2F483F3100D2F55F /* Secrets.dev.xcconfig */; };
-		6D8C67AD2F483F5600D2F55F /* Secrets.live.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6D8C67AC2F483F5600D2F55F /* Secrets.live.xcconfig */; };
+		6D8C67A92F483EFA00D2F55F /* BaseConfig.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6D8C67A82F483EFA00D2F55F /* BaseConfig.xcconfig */; };
 		6D8C67AF2F48407200D2F55F /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D8C67AE2F48407200D2F55F /* AppConfig.swift */; };
+		6D8C67B32F4879DB00D2F55F /* StageConfig.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6D8C67B22F4879DB00D2F55F /* StageConfig.xcconfig */; };
 		6D8D8AE02E013819003DABB2 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 6D8D8ADF2E013819003DABB2 /* SnapKit */; };
 		6D8D8B132E01B338003DABB2 /* AtchaButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D8D8B122E01B338003DABB2 /* AtchaButton.swift */; };
 		6D8D8B172E02BBC0003DABB2 /* AtchaNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D8D8B162E02BBC0003DABB2 /* AtchaNavigationBar.swift */; };
@@ -422,10 +421,9 @@
 		6D81574D2E13EC0F003688A6 /* Int+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Int+Ext.swift"; sourceTree = "<group>"; };
 		6D8C67A02F48363300D2F55F /* DevConfig.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = DevConfig.xcconfig; sourceTree = "<group>"; };
 		6D8C67A42F48364C00D2F55F /* LiveConfig.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = LiveConfig.xcconfig; sourceTree = "<group>"; };
-		6D8C67A82F483EFA00D2F55F /* Secrets.common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.common.xcconfig; sourceTree = "<group>"; };
-		6D8C67AA2F483F3100D2F55F /* Secrets.dev.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.dev.xcconfig; sourceTree = "<group>"; };
-		6D8C67AC2F483F5600D2F55F /* Secrets.live.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.live.xcconfig; sourceTree = "<group>"; };
+		6D8C67A82F483EFA00D2F55F /* BaseConfig.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = BaseConfig.xcconfig; sourceTree = "<group>"; };
 		6D8C67AE2F48407200D2F55F /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
+		6D8C67B22F4879DB00D2F55F /* StageConfig.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = StageConfig.xcconfig; sourceTree = "<group>"; };
 		6D8D8B122E01B338003DABB2 /* AtchaButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtchaButton.swift; sourceTree = "<group>"; };
 		6D8D8B162E02BBC0003DABB2 /* AtchaNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtchaNavigationBar.swift; sourceTree = "<group>"; };
 		6D91A8E32E29F5B30081BAFC /* CourseSettingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseSettingViewController.swift; sourceTree = "<group>"; };
@@ -1102,11 +1100,10 @@
 		6DE42B842DFDE6360041344C = {
 			isa = PBXGroup;
 			children = (
-				6D8C67AA2F483F3100D2F55F /* Secrets.dev.xcconfig */,
-				6D8C67AC2F483F5600D2F55F /* Secrets.live.xcconfig */,
-				6D8C67A82F483EFA00D2F55F /* Secrets.common.xcconfig */,
+				6D8C67A82F483EFA00D2F55F /* BaseConfig.xcconfig */,
 				6D8C67A02F48363300D2F55F /* DevConfig.xcconfig */,
 				6D8C67A42F48364C00D2F55F /* LiveConfig.xcconfig */,
+				6D8C67B22F4879DB00D2F55F /* StageConfig.xcconfig */,
 				B68309632E005ADE00E2D029 /* .gitignore */,
 				B68309522E005A3600E2D029 /* Atcha-iOS */,
 				6DE42B8E2DFDE6360041344C /* Products */,
@@ -2012,20 +2009,19 @@
 				B68309582E005A3600E2D029 /* Colors.xcassets in Resources */,
 				B68309592E005A3600E2D029 /* Pretendard-Bold.otf in Resources */,
 				6D6879BE2E4067B400E59C55 /* Refresh.json in Resources */,
+				6D8C67B32F4879DB00D2F55F /* StageConfig.xcconfig in Resources */,
 				B683095A2E005A3600E2D029 /* Pretendard-ExtraBold.otf in Resources */,
 				B683095B2E005A3600E2D029 /* Pretendard-Medium.otf in Resources */,
 				B683095C2E005A3600E2D029 /* Pretendard-Regular.otf in Resources */,
 				6D8C67A12F48363300D2F55F /* DevConfig.xcconfig in Resources */,
 				B61C44902E3F750B00285A4B /* silent.mp3 in Resources */,
 				6D8157462E127BDB003688A6 /* GoogleService-Info.plist in Resources */,
-				6D8C67AD2F483F5600D2F55F /* Secrets.live.xcconfig in Resources */,
-				6D8C67AB2F483F3100D2F55F /* Secrets.dev.xcconfig in Resources */,
 				6D8C67A52F48364C00D2F55F /* LiveConfig.xcconfig in Resources */,
 				B683095D2E005A3600E2D029 /* Pretendard-SemiBold.otf in Resources */,
 				6DEE30AF2ED4102D00E35368 /* siren.mp3 in Resources */,
 				6D74AE3C2EAA123E00FB8D52 /* Character_Jump.json in Resources */,
 				6D79F9AD2E6D75EC00BD8BC8 /* Alarm.json in Resources */,
-				6D8C67A92F483EFA00D2F55F /* Secrets.common.xcconfig in Resources */,
+				6D8C67A92F483EFA00D2F55F /* BaseConfig.xcconfig in Resources */,
 				B683095E2E005A3600E2D029 /* Icon.xcassets in Resources */,
 				B683095F2E005A3600E2D029 /* Assets.xcassets in Resources */,
 				B68309612E005A3600E2D029 /* LaunchScreen.storyboard in Resources */,
@@ -2340,19 +2336,75 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
-		6DE42BA12DFDE6370041344C /* Debug */ = {
+		6D8C67B02F4879C800D2F55F /* Stage */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6D8C67A02F48363300D2F55F /* DevConfig.xcconfig */;
+			baseConfigurationReference = 6D8C67B22F4879DB00D2F55F /* StageConfig.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 23SCTLK482;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Stage;
+		};
+		6D8C67B12F4879C800D2F55F /* Stage */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6D8C67B22F4879DB00D2F55F /* StageConfig.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "Atcha-iOS/Atcha-iOS.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
-				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 23SCTLK482;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 11;
+				DEVELOPMENT_TEAM = 23SCTLK482;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Atcha-iOS",
@@ -2377,7 +2429,51 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.atcha.iOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Atcha Debug";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Stage;
+		};
+		6DE42BA12DFDE6370041344C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6D8C67A02F48363300D2F55F /* DevConfig.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Atcha-iOS/Atcha-iOS.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 11;
+				DEVELOPMENT_TEAM = 23SCTLK482;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Atcha-iOS",
+					"$(PROJECT_DIR)",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Atcha-iOS/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "앗차";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.navigation";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "정확한 막차 경로를 제공하기 위해 권한이 필요합니다";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "정확한 막차 경로를 제공하기 위해 권한이 필요합니다";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.7;
+				PRODUCT_BUNDLE_IDENTIFIER = com.atcha.iOS;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -2396,11 +2492,9 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "Atcha-iOS/Atcha-iOS.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
-				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
-				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 23SCTLK482;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 11;
+				DEVELOPMENT_TEAM = 23SCTLK482;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Atcha-iOS",
@@ -2425,7 +2519,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.atcha.iOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Atcha Release";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -2567,6 +2660,7 @@
 			buildConfigurations = (
 				6DE42BA32DFDE6370041344C /* Debug */,
 				6DE42BA42DFDE6370041344C /* Release */,
+				6D8C67B02F4879C800D2F55F /* Stage */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -2576,6 +2670,7 @@
 			buildConfigurations = (
 				6DE42BA12DFDE6370041344C /* Debug */,
 				6DE42BA22DFDE6370041344C /* Release */,
+				6D8C67B12F4879C800D2F55F /* Stage */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
