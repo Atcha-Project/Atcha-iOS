@@ -10,8 +10,8 @@ import UIKit
 enum AtchaColor{
     
     // MARK: - Static
-    static let black = UIColor(named: "black")!
-    static let white = UIColor(named: "white")!
+    static let black = UIColor(named: "atcha_black")!
+    static let white = UIColor(named: "atcha_white")!
     
     // MARK: - Primary
     static let main = UIColor(named: "Main")!

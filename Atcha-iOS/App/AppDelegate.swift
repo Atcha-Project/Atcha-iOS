@@ -32,7 +32,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         AmplitudeManager.shared.start(
             userId: savedId,
             autocapture: [.sessions, .appLifecycles],
-            logLevel: .WARN
+            logLevel: .warn
         )
         AmplitudeManager.shared.flush()
         
