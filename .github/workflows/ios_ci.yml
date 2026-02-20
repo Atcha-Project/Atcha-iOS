@@ -43,15 +43,13 @@ jobs:
         run: |
           xcodebuild \
             -project Atcha-iOS.xcodeproj \
-            -scheme Atcha-iOS \
+            -scheme Atcha-Dev \  # 이 부분을 Atcha-Dev로 수정
             -configuration Debug \
             -destination 'generic/platform=iOS' \
             -sdk iphoneos \
             IPHONEOS_DEPLOYMENT_TARGET=16.1 \
-            # [수정포인트] SDK가 있는 실제 하위 폴더를 정확히 짚어줍니다.
-            FRAMEWORK_SEARCH_PATHS='$(inherited) $(PROJECT_DIR)/Atcha-iOS' \
-            # Swift 모듈 검색 경로도 동일하게 잡아줍니다.
-            SWIFT_INCLUDE_PATHS='$(inherited) $(PROJECT_DIR)/Atcha-iOS' \
+            FRAMEWORK_SEARCH_PATHS='$(inherited) $(PROJECT_DIR)/**' \
+            SWIFT_INCLUDE_PATHS='$(inherited) $(PROJECT_DIR)/**' \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
