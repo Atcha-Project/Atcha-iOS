@@ -27,7 +27,6 @@ jobs:
             -project Atcha-iOS.xcodeproj \
             -scheme Atcha-Dev \
             -configuration Debug \
-            -sdk iphoneos \
-            -destination 'generic/platform=iOS' \
-            CODE_SIGNING_ALLOWED=NO \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
             clean build
