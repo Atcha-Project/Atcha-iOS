@@ -21,11 +21,11 @@ jobs:
         with:
           xcode-version: "16.3"
 
-      - name: Build (Dev)
+      - name: Build (Dev compile-only)
         run: |
           xcodebuild build \
             -project "Atcha-iOS.xcodeproj" \
             -scheme "Atcha-Dev" \
             -configuration "Debug" \
-            -destination 'generic/platform=iOS Simulator' \
+            -sdk iphonesimulator \
             CODE_SIGNING_ALLOWED=NO
