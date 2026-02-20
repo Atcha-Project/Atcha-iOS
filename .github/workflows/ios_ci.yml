@@ -23,9 +23,11 @@ jobs:
 
       - name: Build (Dev compile-only)
         run: |
-          xcodebuild build \
-            -project "Atcha-iOS.xcodeproj" \
-            -scheme "Atcha-Dev" \
-            -configuration "Debug" \
-            -sdk iphonesimulator \
-            CODE_SIGNING_ALLOWED=NO
+          xcodebuild \
+            -workspace Atcha-iOS.xcworkspace \
+            -scheme Atcha-Dev \
+            -configuration Debug \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGNING_ALLOWED=NO \
+            clean build
