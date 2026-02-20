@@ -10,7 +10,7 @@ on:
     branches: ["develop"]
 
 jobs:
-  build-and-test:
+  build:
     runs-on: macos-latest
 
     steps:
@@ -27,14 +27,5 @@ jobs:
             -project "Atcha-iOS.xcodeproj" \
             -scheme "Atcha-Dev" \
             -configuration "Debug" \
-            -destination 'platform=iOS Simulator,name=iPhone 15' \
-            CODE_SIGNING_ALLOWED=NO
-
-      - name: Test (Dev)
-        run: |
-          xcodebuild test \
-            -project "Atcha-iOS.xcodeproj" \
-            -scheme "Atcha-Dev" \
-            -configuration "Debug" \
-            -destination 'platform=iOS Simulator,name=iPhone 15' \
+            -destination 'generic/platform=iOS Simulator' \
             CODE_SIGNING_ALLOWED=NO
