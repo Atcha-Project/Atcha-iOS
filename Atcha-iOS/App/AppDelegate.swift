@@ -19,19 +19,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         UNUserNotificationCenter.current().delegate = self
         
         // MARK: - Kakao
-        print("Bundle.main.kakaoInitKey : \(Bundle.main.kakaoApiKey)")
-        KakaoSDK.initSDK(appKey: Bundle.main.kakaoApiKey)
+        KakaoSDK.initSDK(appKey: AppConfig.kakaoApiKey)
         
         // MARK: - Firebase
         FirebaseApp.configure()
         Messaging.messaging().delegate = self
         application.registerForRemoteNotifications()
-        
+
         AmplitudeManager.shared.reset()
         
         let savedId = UserDefaultsWrapper.shared.integer(forKey: UserDefaultsWrapper.Key.userId.rawValue)
         AmplitudeManager.shared.start(
-            environment: .auto,
             userId: savedId,
             autocapture: [.sessions, .appLifecycles],
             logLevel: .WARN

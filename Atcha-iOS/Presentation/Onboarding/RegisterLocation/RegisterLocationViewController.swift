@@ -100,7 +100,7 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
     
     // MARK: - 기본 UI
     private func setupUI() {
-        mapView.setApiKey(Bundle.main.tMapKey)
+        mapView.setApiKey(AppConfig.tmapApiKey)
         mapView.delegate = self
         locationSettingImage.image = UIImage.settingLocationMark
         
