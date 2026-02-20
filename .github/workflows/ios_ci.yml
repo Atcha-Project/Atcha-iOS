@@ -32,11 +32,20 @@ jobs:
 
       - name: Create Dummy Configs
         run: |
-          mkdir -p Atcha-iOS
-          CONFIG_FILES=("DevConfig.xcconfig" "StageConfig.xcconfig" "LiveConfig.xcconfig")
+          # 프로젝트 폴더 생성
+          mkdir -p Atcha-iOS/Atcha-iOS
+          
+          # 생성할 파일 목록 (BaseConfig 추가!)
+          CONFIG_FILES=("BaseConfig.xcconfig" "DevConfig.xcconfig" "StageConfig.xcconfig" "LiveConfig.xcconfig")
+          
           for FILE in "${CONFIG_FILES[@]}"; do
+            # 1. 루트 경로
             echo "// Dummy Config for CI" > "$FILE"
+            # 2. 첫 번째 하위 경로
             echo "// Dummy Config for CI" > "Atcha-iOS/$FILE"
+            # 3. 두 번째 하위 경로 (사진에서 본 실제 위치)
+            echo "// Dummy Config for CI" > "Atcha-iOS/Atcha-iOS/$FILE"
+            echo "Created $FILE in multiple locations"
           done
 
       - name: Build (Any iOS Device)
