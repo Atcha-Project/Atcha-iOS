@@ -24,7 +24,7 @@ jobs:
       - name: Build (Dev compile-only)
         run: |
           xcodebuild \
-            -workspace Atcha-iOS.xcworkspace \
+            -project Atcha-iOS.xcodeproj \
             -scheme Atcha-Dev \
             -configuration Debug \
             -sdk iphoneos \
