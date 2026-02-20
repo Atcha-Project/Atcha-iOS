@@ -93,6 +93,12 @@
 		6D8157462E127BDB003688A6 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 6D8157452E127BDB003688A6 /* GoogleService-Info.plist */; };
 		6D8157492E129A7C003688A6 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 6D8157482E129A7C003688A6 /* Lottie */; };
 		6D81574E2E13EC0F003688A6 /* Int+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D81574D2E13EC0F003688A6 /* Int+Ext.swift */; };
+		6D8C67A12F48363300D2F55F /* DevConfig.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6D8C67A02F48363300D2F55F /* DevConfig.xcconfig */; };
+		6D8C67A52F48364C00D2F55F /* LiveConfig.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6D8C67A42F48364C00D2F55F /* LiveConfig.xcconfig */; };
+		6D8C67A92F483EFA00D2F55F /* Secrets.common.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6D8C67A82F483EFA00D2F55F /* Secrets.common.xcconfig */; };
+		6D8C67AB2F483F3100D2F55F /* Secrets.dev.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6D8C67AA2F483F3100D2F55F /* Secrets.dev.xcconfig */; };
+		6D8C67AD2F483F5600D2F55F /* Secrets.live.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6D8C67AC2F483F5600D2F55F /* Secrets.live.xcconfig */; };
+		6D8C67AF2F48407200D2F55F /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D8C67AE2F48407200D2F55F /* AppConfig.swift */; };
 		6D8D8AE02E013819003DABB2 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 6D8D8ADF2E013819003DABB2 /* SnapKit */; };
 		6D8D8B132E01B338003DABB2 /* AtchaButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D8D8B122E01B338003DABB2 /* AtchaButton.swift */; };
 		6D8D8B172E02BBC0003DABB2 /* AtchaNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D8D8B162E02BBC0003DABB2 /* AtchaNavigationBar.swift */; };
@@ -119,7 +125,6 @@
 		6DB7636F2E45C6D100D06A49 /* AlarmRepositoryImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DB7636E2E45C6D100D06A49 /* AlarmRepositoryImpl.swift */; };
 		6DB763712E45C7A300D06A49 /* AlarmRefreshResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DB763702E45C7A300D06A49 /* AlarmRefreshResponse.swift */; };
 		6DB763732E45C7E800D06A49 /* AlarmRefresh.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DB763722E45C7E800D06A49 /* AlarmRefresh.swift */; };
-		6DB763752E48E11300D06A49 /* Secrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6DB763742E48E11300D06A49 /* Secrets.xcconfig */; };
 		6DB7637C2E48E6AC00D06A49 /* TMapSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6DB763782E48E6A900D06A49 /* TMapSDK.framework */; };
 		6DB7637D2E48E6AC00D06A49 /* TMapSDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 6DB763782E48E6A900D06A49 /* TMapSDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		6DB7637F2E48E6AD00D06A49 /* VSMSDK.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6DB763792E48E6A900D06A49 /* VSMSDK.xcframework */; };
@@ -415,6 +420,12 @@
 		6D8157432E126C45003688A6 /* LockViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockViewController.swift; sourceTree = "<group>"; };
 		6D8157452E127BDB003688A6 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		6D81574D2E13EC0F003688A6 /* Int+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Int+Ext.swift"; sourceTree = "<group>"; };
+		6D8C67A02F48363300D2F55F /* DevConfig.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = DevConfig.xcconfig; sourceTree = "<group>"; };
+		6D8C67A42F48364C00D2F55F /* LiveConfig.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = LiveConfig.xcconfig; sourceTree = "<group>"; };
+		6D8C67A82F483EFA00D2F55F /* Secrets.common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.common.xcconfig; sourceTree = "<group>"; };
+		6D8C67AA2F483F3100D2F55F /* Secrets.dev.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.dev.xcconfig; sourceTree = "<group>"; };
+		6D8C67AC2F483F5600D2F55F /* Secrets.live.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.live.xcconfig; sourceTree = "<group>"; };
+		6D8C67AE2F48407200D2F55F /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
 		6D8D8B122E01B338003DABB2 /* AtchaButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtchaButton.swift; sourceTree = "<group>"; };
 		6D8D8B162E02BBC0003DABB2 /* AtchaNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtchaNavigationBar.swift; sourceTree = "<group>"; };
 		6D91A8E32E29F5B30081BAFC /* CourseSettingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseSettingViewController.swift; sourceTree = "<group>"; };
@@ -439,7 +450,6 @@
 		6DB7636E2E45C6D100D06A49 /* AlarmRepositoryImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmRepositoryImpl.swift; sourceTree = "<group>"; };
 		6DB763702E45C7A300D06A49 /* AlarmRefreshResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmRefreshResponse.swift; sourceTree = "<group>"; };
 		6DB763722E45C7E800D06A49 /* AlarmRefresh.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmRefresh.swift; sourceTree = "<group>"; };
-		6DB763742E48E11300D06A49 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 		6DB763782E48E6A900D06A49 /* TMapSDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = TMapSDK.framework; sourceTree = "<group>"; };
 		6DB763792E48E6A900D06A49 /* VSMSDK.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = VSMSDK.xcframework; sourceTree = "<group>"; };
 		6DB763832E4D710900D06A49 /* SSEParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SSEParser.swift; sourceTree = "<group>"; };
@@ -1092,7 +1102,11 @@
 		6DE42B842DFDE6360041344C = {
 			isa = PBXGroup;
 			children = (
-				6DB763742E48E11300D06A49 /* Secrets.xcconfig */,
+				6D8C67AA2F483F3100D2F55F /* Secrets.dev.xcconfig */,
+				6D8C67AC2F483F5600D2F55F /* Secrets.live.xcconfig */,
+				6D8C67A82F483EFA00D2F55F /* Secrets.common.xcconfig */,
+				6D8C67A02F48363300D2F55F /* DevConfig.xcconfig */,
+				6D8C67A42F48364C00D2F55F /* LiveConfig.xcconfig */,
 				B68309632E005ADE00E2D029 /* .gitignore */,
 				B68309522E005A3600E2D029 /* Atcha-iOS */,
 				6DE42B8E2DFDE6360041344C /* Products */,
@@ -1239,6 +1253,7 @@
 				B683093B2E005A3600E2D029 /* AppDelegate.swift */,
 				B683093C2E005A3600E2D029 /* SceneDelegate.swift */,
 				B65C12D62E0429B30016D2F0 /* AppFlowCoordinator.swift */,
+				6D8C67AE2F48407200D2F55F /* AppConfig.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -1995,18 +2010,22 @@
 			buildActionMask = 2147483647;
 			files = (
 				B68309582E005A3600E2D029 /* Colors.xcassets in Resources */,
-				6DB763752E48E11300D06A49 /* Secrets.xcconfig in Resources */,
 				B68309592E005A3600E2D029 /* Pretendard-Bold.otf in Resources */,
 				6D6879BE2E4067B400E59C55 /* Refresh.json in Resources */,
 				B683095A2E005A3600E2D029 /* Pretendard-ExtraBold.otf in Resources */,
 				B683095B2E005A3600E2D029 /* Pretendard-Medium.otf in Resources */,
 				B683095C2E005A3600E2D029 /* Pretendard-Regular.otf in Resources */,
+				6D8C67A12F48363300D2F55F /* DevConfig.xcconfig in Resources */,
 				B61C44902E3F750B00285A4B /* silent.mp3 in Resources */,
 				6D8157462E127BDB003688A6 /* GoogleService-Info.plist in Resources */,
+				6D8C67AD2F483F5600D2F55F /* Secrets.live.xcconfig in Resources */,
+				6D8C67AB2F483F3100D2F55F /* Secrets.dev.xcconfig in Resources */,
+				6D8C67A52F48364C00D2F55F /* LiveConfig.xcconfig in Resources */,
 				B683095D2E005A3600E2D029 /* Pretendard-SemiBold.otf in Resources */,
 				6DEE30AF2ED4102D00E35368 /* siren.mp3 in Resources */,
 				6D74AE3C2EAA123E00FB8D52 /* Character_Jump.json in Resources */,
 				6D79F9AD2E6D75EC00BD8BC8 /* Alarm.json in Resources */,
+				6D8C67A92F483EFA00D2F55F /* Secrets.common.xcconfig in Resources */,
 				B683095E2E005A3600E2D029 /* Icon.xcassets in Resources */,
 				B683095F2E005A3600E2D029 /* Assets.xcassets in Resources */,
 				B68309612E005A3600E2D029 /* LaunchScreen.storyboard in Resources */,
@@ -2293,6 +2312,7 @@
 				B65C13002E057B2A0016D2F0 /* NetworkLogger.swift in Sources */,
 				6D1EE2E72E09A43700F7BBF1 /* PushAlarmViewModel.swift in Sources */,
 				B6AC8BD72E2A82C300410ECD /* MyAccountDIContainer.swift in Sources */,
+				6D8C67AF2F48407200D2F55F /* AppConfig.swift in Sources */,
 				6D1EE2DC2E08E4EA00F7BBF1 /* HomeRegisterViewModel.swift in Sources */,
 				B6B57EC52E1AB0FE00B29EB1 /* MainRoute.swift in Sources */,
 			);
@@ -2322,7 +2342,7 @@
 /* Begin XCBuildConfiguration section */
 		6DE42BA12DFDE6370041344C /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6DB763742E48E11300D06A49 /* Secrets.xcconfig */;
+			baseConfigurationReference = 6D8C67A02F48363300D2F55F /* DevConfig.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -2370,7 +2390,7 @@
 		};
 		6DE42BA22DFDE6370041344C /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6DB763742E48E11300D06A49 /* Secrets.xcconfig */;
+			baseConfigurationReference = 6D8C67A42F48364C00D2F55F /* LiveConfig.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -2418,7 +2438,7 @@
 		};
 		6DE42BA32DFDE6370041344C /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6DB763742E48E11300D06A49 /* Secrets.xcconfig */;
+			baseConfigurationReference = 6D8C67A02F48363300D2F55F /* DevConfig.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -2483,7 +2503,7 @@
 		};
 		6DE42BA42DFDE6370041344C /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6DB763742E48E11300D06A49 /* Secrets.xcconfig */;
+			baseConfigurationReference = 6D8C67A42F48364C00D2F55F /* LiveConfig.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;

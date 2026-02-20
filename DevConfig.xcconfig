@@ -1,0 +1,14 @@
+//
+//  DevConfig.xcconfig
+//  Atcha-iOS
+//
+//  Created by wodnd on 2/20/26.
+//
+
+// Configuration settings file format documentation can be found at:
+// https://developer.apple.com/documentation/xcode/adding-a-build-configuration-file-to-your-project
+
+#include "Secrets.common.xcconfig"
+#include "Secrets.dev.xcconfig"
+
+API_BASE_URL = https$(COLON)$(SLASH)$(SLASH)atcha.p-e.kr/api

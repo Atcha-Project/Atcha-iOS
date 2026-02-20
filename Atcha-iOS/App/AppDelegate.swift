@@ -31,7 +31,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         
         let savedId = UserDefaultsWrapper.shared.integer(forKey: UserDefaultsWrapper.Key.userId.rawValue)
         AmplitudeManager.shared.start(
-            environment: .auto,
             userId: savedId,
             autocapture: [.sessions, .appLifecycles],
             logLevel: .WARN
