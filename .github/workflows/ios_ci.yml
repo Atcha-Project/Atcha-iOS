@@ -26,14 +26,21 @@ jobs:
           xcodebuild -showsdks
           xcrun simctl list runtimes
 
-      - name: Download iOS Platform
-        run: xcodebuild -downloadPlatform iOS
-
-      - name: Create Dummy Config
+      - name: Create Dummy Configs
         run: |
-          touch DevConfig.xcconfig
-          echo "// Dummy Config for CI" >> DevConfig.xcconfig
+          # 프로젝트 구조에 맞춰 폴더 생성
+          mkdir -p Atcha-iOS
           
+          # 생성할 파일 목록 (LiveConfig 추가)
+          CONFIG_FILES=("DevConfig.xcconfig" "StageConfig.xcconfig" "LiveConfig.xcconfig")
+          
+          for FILE in "${CONFIG_FILES[@]}"; do
+            # 루트와 프로젝트 폴더 양쪽 모두 생성 (안전 장치)
+            echo "// Dummy Config for CI" > "$FILE"
+            echo "// Dummy Config for CI" > "Atcha-iOS/$FILE"
+            echo "Created $FILE"
+          done
+
       - name: Build (Any iOS Device)
         run: |
           xcodebuild \
