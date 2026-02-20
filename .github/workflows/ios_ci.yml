@@ -41,7 +41,7 @@ jobs:
             -scheme Atcha-iOS \
             -configuration Debug \
             -destination 'generic/platform=iOS' \
-            -sdk iphoneos18.3.1 \
+            -sdk iphoneos \
             IPHONEOS_DEPLOYMENT_TARGET=16.1 \
             FRAMEWORK_SEARCH_PATHS='$(inherited) $(PROJECT_DIR)' \
             CODE_SIGNING_ALLOWED=NO \
