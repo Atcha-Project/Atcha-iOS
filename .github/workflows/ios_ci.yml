@@ -25,7 +25,7 @@ jobs:
         run: |
           xcodebuild \
             -project Atcha-iOS.xcodeproj \
-            -scheme Atcha-Dev \
+            -scheme Atcha-iOS \
             -configuration Debug \
             -sdk iphonesimulator \
             -destination 'generic/platform=iOS Simulator' \
