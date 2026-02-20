@@ -26,12 +26,15 @@ jobs:
           xcodebuild -showsdks
           xcrun simctl list runtimes
 
-      - name: Build (Simulator)
+      - name: Download iOS Platform
+        run: xcodebuild -downloadPlatform iOS
+
+      - name: Build (Any iOS Device)
         run: |
           xcodebuild \
             -project Atcha-iOS.xcodeproj \
             -scheme Atcha-iOS \
             -configuration Debug \
-            -sdk iphonesimulator \
-            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGNING_ALLOWED=NO \
             clean build
