@@ -33,5 +33,5 @@ jobs:
             -scheme Atcha-iOS \
             -configuration Debug \
             -sdk iphonesimulator \
-            -destination 'generic/platform=iOS Simulator' \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
             clean build
