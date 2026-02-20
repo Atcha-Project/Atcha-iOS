@@ -43,7 +43,7 @@ jobs:
         run: |
           xcodebuild \
             -project Atcha-iOS.xcodeproj \
-            -scheme Atcha-Dev \  # 이 부분을 Atcha-Dev로 수정
+            -scheme Atcha-Dev \
             -configuration Debug \
             -destination 'generic/platform=iOS' \
             -sdk iphoneos \
