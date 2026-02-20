@@ -227,7 +227,10 @@ final class PermissionViewController: BaseViewController<PermissionViewModel> {
             UIApplication.shared.open(url)
         })
         
-        present(alert, animated: true)
+        // 권한 팝업 직후 안전하게 다음 런루프에 표시
+        DispatchQueue.main.async { [weak self] in
+            self?.present(alert, animated: true)
+        }
     }
     
     private func presentPushDeniedAlert() {
@@ -289,8 +292,13 @@ final class PermissionViewController: BaseViewController<PermissionViewModel> {
 
 extension PermissionViewController {
     @objc private func handleRegiTap() {
-        dimView.alpha = 0
-        dismiss(animated: true)
+        // 컨테이너만 숨기고(시트는 유지), 뒤 화면 터치 방지 위해 dim은 유지
+        button.isEnabled = false
+        containerView.isUserInteractionEnabled = false
+        UIView.animate(withDuration: 0.2) {
+            self.containerView.alpha = 0
+        }
+
         viewModel.startPermissionFlow()
         AmplitudeManager.shared.track(.permission_setting)
         AmplitudeManager.shared.timerStart("signup_dwell")
