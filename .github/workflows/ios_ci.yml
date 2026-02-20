@@ -21,11 +21,19 @@ jobs:
         with:
           xcode-version: "16.3"
 
-      - name: Build (Dev)
+      - name: Build (Any iOS Device)
         run: |
-          xcodebuild build \
-            -project "Atcha-iOS.xcodeproj" \
-            -scheme "Atcha-Dev" \
-            -configuration "Debug" \
-            -destination 'generic/platform=iOS Simulator' \
-            CODE_SIGNING_ALLOWED=NO
+          xcodebuild \
+            -project Atcha-iOS.xcodeproj \
+            -scheme Atcha-iOS \
+            -configuration Debug \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath Build/ \
+            FRAMEWORK_SEARCH_PATHS='$(inherited) $(PROJECT_DIR)' \
+            ALWAYS_SEARCH_USER_PATHS=YES \
+            STRIP_INSTALLED_PRODUCT=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            AD_HOC_CODE_SIGN_ALLOWED=YES \
+            clean build
