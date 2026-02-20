@@ -162,7 +162,7 @@
 		B61C448E2E3F57B600285A4B /* AlarmManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B61C448D2E3F57B600285A4B /* AlarmManager.swift */; };
 		B61C44902E3F750B00285A4B /* silent.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = B61C448F2E3F750B00285A4B /* silent.mp3 */; };
 		B61C44952E4033E500285A4B /* LockScreenCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B61C44942E4033E500285A4B /* LockScreenCoordinator.swift */; };
-		B61C44982E40341B00285A4B /* LockScreenDIConatiner.swift in Sources */ = {isa = PBXBuildFile; fileRef = B61C44972E40341B00285A4B /* LockScreenDIConatiner.swift */; };
+		B61C44982E40341B00285A4B /* LockScreenDIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B61C44972E40341B00285A4B /* LockScreenDIContainer.swift */; };
 		B637D6E72E30C71500F73F14 /* AtchaPopupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B637D6E62E30C71500F73F14 /* AtchaPopupViewController.swift */; };
 		B637D6E92E30C72700F73F14 /* AtchaPopupViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B637D6E82E30C72700F73F14 /* AtchaPopupViewModel.swift */; };
 		B637D6EB2E30C75900F73F14 /* AtchaPopupInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B637D6EA2E30C75900F73F14 /* AtchaPopupInfo.swift */; };
@@ -477,7 +477,7 @@
 		B61C448D2E3F57B600285A4B /* AlarmManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmManager.swift; sourceTree = "<group>"; };
 		B61C448F2E3F750B00285A4B /* silent.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = silent.mp3; sourceTree = "<group>"; };
 		B61C44942E4033E500285A4B /* LockScreenCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockScreenCoordinator.swift; sourceTree = "<group>"; };
-		B61C44972E40341B00285A4B /* LockScreenDIConatiner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockScreenDIConatiner.swift; sourceTree = "<group>"; };
+		B61C44972E40341B00285A4B /* LockScreenDIContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockScreenDIContainer.swift; sourceTree = "<group>"; };
 		B637D6E62E30C71500F73F14 /* AtchaPopupViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtchaPopupViewController.swift; sourceTree = "<group>"; };
 		B637D6E82E30C72700F73F14 /* AtchaPopupViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtchaPopupViewModel.swift; sourceTree = "<group>"; };
 		B637D6EA2E30C75900F73F14 /* AtchaPopupInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtchaPopupInfo.swift; sourceTree = "<group>"; };
@@ -1149,7 +1149,7 @@
 		B61C44962E40340C00285A4B /* LockScreen */ = {
 			isa = PBXGroup;
 			children = (
-				B61C44972E40341B00285A4B /* LockScreenDIConatiner.swift */,
+				B61C44972E40341B00285A4B /* LockScreenDIContainer.swift */,
 			);
 			path = LockScreen;
 			sourceTree = "<group>";
@@ -2271,7 +2271,7 @@
 				6D2B8CBE2E39C9CB00608104 /* BusInfoRepository.swift in Sources */,
 				6D5E03BE2E24F70B0065AFBE /* FetchRecentSearchRequest.swift in Sources */,
 				6D2B8CAB2E39A9E500608104 /* BusOperationInfoResponse.swift in Sources */,
-				B61C44982E40341B00285A4B /* LockScreenDIConatiner.swift in Sources */,
+				B61C44982E40341B00285A4B /* LockScreenDIContainer.swift in Sources */,
 				6D6879DC2E43703200E59C55 /* PushAlarmPatchRequest.swift in Sources */,
 				B6DC7C1D2E169F37005D8E17 /* MapBottomType.swift in Sources */,
 				B65C134A2E07A1280016D2F0 /* MyPageRouter.swift in Sources */,
@@ -2450,6 +2450,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_TEAM = 23SCTLK482;
+				EXCLUDED_ARCHS = "";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Atcha-iOS",
@@ -2471,6 +2472,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.7;
+				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.atcha.iOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

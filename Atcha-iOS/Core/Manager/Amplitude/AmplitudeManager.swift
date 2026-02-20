@@ -24,7 +24,7 @@ final class AmplitudeManager {
     func start(
         userId: Int? = nil,
         autocapture: AutocaptureOptions = [.sessions, .appLifecycles],
-        logLevel: LogLevelEnum = .WARN
+        logLevel: LogLevelEnum = .warn
     ) {
         // 빌드 환경(xcconfig)이 이미 AMPLITUDE_API_KEY를 주입하므로 여기서는 하나만 읽는다
         let apiKey = Self.readApiKey()
