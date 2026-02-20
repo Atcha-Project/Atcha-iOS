@@ -29,6 +29,11 @@ jobs:
       - name: Download iOS Platform
         run: xcodebuild -downloadPlatform iOS
 
+      - name: Create Dummy Config
+        run: |
+          touch DevConfig.xcconfig
+          echo "// Dummy Config for CI" >> DevConfig.xcconfig
+          
       - name: Build (Any iOS Device)
         run: |
           xcodebuild \
