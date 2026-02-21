@@ -95,7 +95,7 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
         
         // 수직 그라데이션 배경 적용 (top: #121212, bottom: #1E1E1E)
         let topColor = UIColor(red: 0x12/255.0, green: 0x12/255.0, blue: 0x12/255.0, alpha: 1.0)
-        let bottomColor = UIColor(red: 0x24/255.0, green: 0x24/255.0, blue: 0x24/255.0, alpha: 1.0)
+        let bottomColor = UIColor(red: 0x2C/255.0, green: 0x2C/255.0, blue: 0x2E/255.0, alpha: 1.0)
         
         gradientLayer.colors = [topColor.cgColor, bottomColor.cgColor]
         gradientLayer.locations = [0.0, 1.0]
