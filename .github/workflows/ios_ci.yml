@@ -4,10 +4,8 @@
 name: iOS CI
 
 on:
-  push:
-    branches: ["develop"]
   pull_request:
-    branches: ["develop"]
+    branches: ["env/dev", "env/stage", "env/live"]
 
 jobs:
   build:
