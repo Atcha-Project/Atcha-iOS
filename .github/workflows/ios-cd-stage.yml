@@ -42,11 +42,16 @@ jobs:
         
       - name: Create Real Configs
         run: |
-          mkdir -p Atcha-iOS/Atcha-iOS
-          echo "${{ secrets.STAGE_CONFIG_CONTENT }}" | base64 --decode > "Atcha-iOS/Atcha-iOS/StageConfig.xcconfig"
-          echo "${{ secrets.BASE_CONFIG_CONTENT }}" | base64 --decode > "Atcha-iOS/Atcha-iOS/BaseConfig.xcconfig"
+          # Xcode가 찾는 경로: /Users/runner/work/Atcha-iOS/Atcha-iOS/StageConfig.xcconfig
+          # checkout 후 현재 위치가 이미 그 경로이므로 바로 생성
+          echo "${{ secrets.STAGE_CONFIG_CONTENT }}" | base64 --decode > "StageConfig.xcconfig"
+          echo "${{ secrets.BASE_CONFIG_CONTENT }}" | base64 --decode > "BaseConfig.xcconfig"
     
-          cat "Atcha-iOS/Atcha-iOS/StageConfig.xcconfig"  # 확인용
+          echo "=== 파일 위치 확인 ==="
+          pwd
+          ls *.xcconfig
+          echo "=== StageConfig 내용 ==="
+          cat StageConfig.xcconfig
           
       - name: Install Fastlane
         run: bundle install
