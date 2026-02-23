@@ -26,6 +26,7 @@ jobs:
           xcode-version: "16.2"
 
       - name: Install iOS SDK
+        continue-on-error: true
         run: sudo xcodebuild -downloadPlatform iOS
         
       - name: Create Real Configs (테플용 실제 설정)
