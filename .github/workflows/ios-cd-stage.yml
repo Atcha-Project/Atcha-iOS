@@ -11,8 +11,6 @@ jobs:
   deploy-testflight:
     runs-on: macos-15
     
-    # 🔥 이전에 GitHub 설정에서 만든 승인 대기 환경 (이름이 다르면 맞춰주세요)
-    # 이 줄 덕분에 워크플로우가 바로 실행되지 않고 수락을 기다립니다.
     environment: TestFlight-Deploy 
 
     steps:
