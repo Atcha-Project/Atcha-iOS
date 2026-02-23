@@ -11,9 +11,7 @@ on:
 jobs:
   deploy-testflight:
     runs-on: macos-15
-    
-    # 🔥 이전에 GitHub 설정에서 만든 승인 대기 환경 (이름이 다르면 맞춰주세요)
-    # 이 줄 덕분에 워크플로우가 바로 실행되지 않고 수락을 기다립니다.
+  
     environment: TestFlight-Deploy 
 
     steps:
@@ -69,5 +67,5 @@ jobs:
           GYM_XC_ARGS: "PROVISIONING_PROFILE_SPECIFIER='match AppStore com.atcha.iOS' CODE_SIGN_STYLE=Manual"
           FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT: 120
         
-        # Fastfile에 작성된 테플 업로드용 lane 실행 (이름은 설정하신 대로 맞춰주세요)
+        # Fastfile에 작성된 테플 업로드용 lane 실행
         run: bundle exec fastlane beta
