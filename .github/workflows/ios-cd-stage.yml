@@ -42,20 +42,11 @@ jobs:
         
       - name: Create Real Configs
         run: |
-          # 1. 절대 경로로 확실하게 폴더 생성
           mkdir -p Atcha-iOS/Atcha-iOS
-          
-          # 2. Xcode가 에러 로그에서 찾고 있는 그 경로에 직접 파일 생성
-          # 에러 로그: /Users/runner/work/Atcha-iOS/Atcha-iOS/Atcha-iOS/StageConfig.xcconfig
-          echo "${{ secrets.STAGE_CONFIG_CONTENT }}" > "Atcha-iOS/Atcha-iOS/StageConfig.xcconfig"
-          echo "${{ secrets.BASE_CONFIG_CONTENT }}" > "Atcha-iOS/Atcha-iOS/BaseConfig.xcconfig"
-          
-          # 3. 만약 프로젝트 파일(.xcodeproj)이 루트에 있다면 루트에도 복사 (보험용)
-          cp "Atcha-iOS/Atcha-iOS/StageConfig.xcconfig" "./StageConfig.xcconfig" || true
-          cp "Atcha-iOS/Atcha-iOS/BaseConfig.xcconfig" "./BaseConfig.xcconfig" || true
-          
-          echo "Config files created successfully."
-          ls -R Atcha-iOS/Atcha-iOS # 파일이 잘 들어갔는지 로그에 출력
+          echo "${{ secrets.STAGE_CONFIG_CONTENT }}" | base64 --decode > "Atcha-iOS/Atcha-iOS/StageConfig.xcconfig"
+          echo "${{ secrets.BASE_CONFIG_CONTENT }}" | base64 --decode > "Atcha-iOS/Atcha-iOS/BaseConfig.xcconfig"
+    
+          cat "Atcha-iOS/Atcha-iOS/StageConfig.xcconfig"  # 확인용
           
       - name: Install Fastlane
         run: bundle install
