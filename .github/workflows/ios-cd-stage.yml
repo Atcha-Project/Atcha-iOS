@@ -4,7 +4,6 @@
 name: iOS CD (Stage -> TestFlight)
 
 on:
-  # develop이 아닌 env/stage 브랜치에 코드가 push 되거나 PR이 병합될 때 트리거됩니다.
   pull_request:
     branches: ["env/dev", "env/stage"]
 
