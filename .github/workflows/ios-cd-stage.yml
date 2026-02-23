@@ -6,7 +6,7 @@ name: iOS CD (Stage -> TestFlight)
 on:
   # develop이 아닌 env/stage 브랜치에 코드가 push 되거나 PR이 병합될 때 트리거됩니다.
   pull_request:
-    branches: ["env/stage"]
+    branches: ["env/dev"]
 
 jobs:
   deploy-testflight:
@@ -27,9 +27,6 @@ jobs:
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: "16.2"
-
-      - name: Install iOS SDK
-        run: sudo xcodebuild -downloadPlatform iOS
 
       - name: Create Real Configs (테플용 실제 설정)
         run: |
