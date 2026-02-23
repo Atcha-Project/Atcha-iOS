@@ -4,16 +4,13 @@
 name: iOS CD (Stage -> TestFlight)
 
 on:
-  # develop이 아닌 env/stage 브랜치에 코드가 push 되거나 PR이 병합될 때 트리거됩니다.
   pull_request:
-    branches: ["env/dev", "env/stage"]
+    branches: ["env/stage"]
 
 jobs:
   deploy-testflight:
     runs-on: macos-15
     
-    # 🔥 이전에 GitHub 설정에서 만든 승인 대기 환경 (이름이 다르면 맞춰주세요)
-    # 이 줄 덕분에 워크플로우가 바로 실행되지 않고 수락을 기다립니다.
     environment: TestFlight-Deploy 
 
     steps:
@@ -44,6 +41,8 @@ jobs:
         run: |
           # Xcode가 찾는 경로: /Users/runner/work/Atcha-iOS/Atcha-iOS/StageConfig.xcconfig
           # checkout 후 현재 위치가 이미 그 경로이므로 바로 생성
+          echo "${{ secrets.LIVE_CONFIG_CONTENT }}" | base64 --decode > "LiveConfig.xcconfig"
+          echo "${{ secrets.DEV_CONFIG_CONTENT }}" | base64 --decode > "DevConfig.xcconfig"
           echo "${{ secrets.STAGE_CONFIG_CONTENT }}" | base64 --decode > "StageConfig.xcconfig"
           echo "${{ secrets.BASE_CONFIG_CONTENT }}" | base64 --decode > "BaseConfig.xcconfig"
     
