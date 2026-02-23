@@ -67,13 +67,11 @@ jobs:
           APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
           APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           APP_STORE_CONNECT_API_KEY_KEY: ${{ secrets.ASC_KEY_CONTENT }}
-          FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT: 120
-          # 🔥 중요: gym(build_app)이 사용할 환경 변수 설정
-          GYM_SDK: "iphoneos"
+          GYM_SCHEME: "Atcha-Stage"
           GYM_CONFIGURATION: "Release"
           GYM_EXPORT_METHOD: "app-store"
-          # 🔥 중요: 코드 사이닝 강제 매핑 (match에서 생성된 이름과 일치해야 함)
           GYM_XC_ARGS: "PROVISIONING_PROFILE_SPECIFIER='match AppStore com.atcha.iOS' CODE_SIGN_STYLE=Manual"
+          FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT: 120
         
         # Fastfile에 작성된 테플 업로드용 lane 실행 (이름은 설정하신 대로 맞춰주세요)
         run: bundle exec fastlane beta
