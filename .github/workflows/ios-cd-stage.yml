@@ -37,8 +37,12 @@ jobs:
           # (GitHub Secrets에 진짜 Config 내용을 텍스트로 넣어두고 빼서 쓰는 방식을 추천합니다)
           echo "${{ secrets.STAGE_CONFIG_CONTENT }}" > "Atcha-iOS/Atcha-iOS/StageConfig.xcconfig"
           echo "${{ secrets.BASE_CONFIG_CONTENT }}" > "Atcha-iOS/Atcha-iOS/BaseConfig.xcconfig"
-          # 필요에 따라 다른 Config도 추가
 
+          cp "Atcha-iOS/Atcha-iOS/StageConfig.xcconfig" "Atcha-iOS/StageConfig.xcconfig"
+          cp "Atcha-iOS/Atcha-iOS/BaseConfig.xcconfig" "Atcha-iOS/BaseConfig.xcconfig"
+
+          echo "Config files created and copied to expected paths."
+          
       - name: Install Fastlane
         run: bundle install
 
@@ -53,4 +57,6 @@ jobs:
           FASTLANE_XCODEBUILD_SETTINGS_RETRIES: 5
         
         # Fastfile에 작성된 테플 업로드용 lane 실행 (이름은 설정하신 대로 맞춰주세요)
-        run: bundle exec fastlane beta
+        run: |
+          bundle exec fastlane beta \
+          xcargs: "PROVISIONING_PROFILE_SPECIFIER='match AppStore com.atcha.iOS' CODE_SIGN_STYLE=Manual"
