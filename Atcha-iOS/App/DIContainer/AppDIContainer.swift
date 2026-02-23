@@ -9,6 +9,8 @@ import UIKit
 import Foundation
 
 final class AppDIContainer {
+    private let compositionRoot: AppCompositionRoot
+    @available(*, deprecated, message: "Use AppCompositionRoot and pass it from SceneDelegate instead.")
     static let shared = AppDIContainer()
     
     var tokenStorage: TokenStorage
@@ -20,21 +22,25 @@ final class AppDIContainer {
     let onboardingDIContainer: OnboardingDIContainer
     let lockScreenDIContainer: LockScreenDIContainer
     
-    let locationStateHolder: LocationStateHolder = LocationStateHolder()
+    let locationStateHolder: LocationStateHolder
     
     private init() {
-        self.tokenStorage = TokenStorageImpl()
-        self.networkDIContainer = NetworkDIContainer(tokenStorage: tokenStorage)
-        
-        let apiServce: APIService = networkDIContainer.makeAPIService()
-        let noHeaderApiService: APIService = networkDIContainer.makeAPIService(useInterceptor: false)
-      
-        self.splashDIContainer = SplashDIContainer(apiService: apiServce)
-        self.loginDIContainer = LoginDIContainer(apiService: noHeaderApiService)
-        self.onboardingDIContainer = OnboardingDIContainer(apiService: apiServce,
-                                                           locationStateHolder: locationStateHolder)
-        self.mainDIContainer = MainDIContainer(apiService: apiServce,
-                                               locationStateHolder: locationStateHolder)
-        self.lockScreenDIContainer = LockScreenDIContainer(apiService: apiServce)
+        // Forward to a single composition root to unify dependency creation
+        self.compositionRoot = AppCompositionRoot()
+
+        // Core
+        self.tokenStorage = compositionRoot.tokenStorage
+        self.networkDIContainer = compositionRoot.networkDIContainer
+
+        // Features
+        self.splashDIContainer = compositionRoot.splashDIContainer
+        self.loginDIContainer = compositionRoot.loginDIContainer
+        self.onboardingDIContainer = compositionRoot.onboardingDIContainer
+        self.mainDIContainer = compositionRoot.mainDIContainer
+        self.lockScreenDIContainer = compositionRoot.lockScreenDIContainer
+
+        // Shared state holders
+        self.locationStateHolder = compositionRoot.locationStateHolder
     }
 }
+

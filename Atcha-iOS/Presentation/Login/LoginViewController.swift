@@ -8,6 +8,7 @@
 import UIKit
 import SnapKit
 import AuthenticationServices
+import QuartzCore
 
 final class LoginViewController: BaseViewController<LoginViewModel> {
     private var appleLoginDelegateWrapper: AppleLoginDelegateWrapper?
@@ -19,6 +20,8 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
     private var autoScrollTimer: Timer?
     private let multiplier = 3 // 실제 아이템 수 * multiplier 만큼 셀 생성
     private var isInitialSetup = true
+    
+    private let gradientLayer = CAGradientLayer()
     
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -58,6 +61,8 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         
+        gradientLayer.frame = backgroundImageView.bounds
+        
         // 컬렉션뷰 레이아웃이 완료된 후 중간 위치로 초기화
         if isInitialSetup {
             let itemCount = LoginIntro.allCases.count
@@ -88,7 +93,15 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
     private func setupUI() {
         view.addSubViews(backgroundImageView, pageControl, collectionView, loginButtonStackView)
         
-        backgroundImageView.image = UIImage.splashBG
+        // 수직 그라데이션 배경 적용 (top: #121212, bottom: #1E1E1E)
+        let topColor = UIColor(red: 0x12/255.0, green: 0x12/255.0, blue: 0x12/255.0, alpha: 1.0)
+        let bottomColor = UIColor(red: 0x2C/255.0, green: 0x2C/255.0, blue: 0x2E/255.0, alpha: 1.0)
+        
+        gradientLayer.colors = [topColor.cgColor, bottomColor.cgColor]
+        gradientLayer.locations = [0.0, 1.0]
+        gradientLayer.startPoint = CGPoint(x: 0.5, y: 0.0)
+        gradientLayer.endPoint = CGPoint(x: 0.5, y: 1.0)
+        backgroundImageView.layer.insertSublayer(gradientLayer, at: 0)
         
         pageControl.numberOfPages = LoginIntro.allCases.count
         pageControl.currentPage = 0
@@ -292,3 +305,4 @@ extension LoginViewController: UICollectionViewDataSource, UICollectionViewDeleg
         }
     }
 }
+

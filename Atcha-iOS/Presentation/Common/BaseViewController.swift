@@ -54,7 +54,7 @@ class BaseViewController<VM: BaseViewModel>: UIViewController {
         navigationController?.interactivePopGestureRecognizer?.delegate = self as? any UIGestureRecognizerDelegate
     }
     
-    func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+    @objc func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
         return navigationController?.viewControllers.count ?? 0 > 1
     }
     
