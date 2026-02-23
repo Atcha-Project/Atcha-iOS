@@ -32,7 +32,9 @@ platform :ios do
       project: "Atcha-iOS.xcodeproj",  
       scheme: "Atcha-Stage",   
       configuration: "Stage",         
-      clean: true
+      clean: true,
+      export_method: "app-store",
+      xcargs: "CODE_SIGN_STYLE=Manual PROVISIONING_PROFILE_SPECIFIER='match AppStore com.atcha.iOS'"
     )
 
     upload_to_testflight(api_key: api_key)
