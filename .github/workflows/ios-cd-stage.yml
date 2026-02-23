@@ -5,7 +5,7 @@ name: iOS CD (Stage -> TestFlight)
 
 on:
   pull_request:
-    branches: ["env/dev", "env/stage"]
+    branches: ["env/stage"]
 
 jobs:
   deploy-testflight:
