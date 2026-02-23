@@ -43,6 +43,8 @@ jobs:
         run: |
           # Xcode가 찾는 경로: /Users/runner/work/Atcha-iOS/Atcha-iOS/StageConfig.xcconfig
           # checkout 후 현재 위치가 이미 그 경로이므로 바로 생성
+          echo "${{ secrets.LIVE_CONFIG_CONTENT }}" | base64 --decode > "LiveConfig.xcconfig"
+          echo "${{ secrets.DEV_CONFIG_CONTENT }}" | base64 --decode > "DevConfig.xcconfig"
           echo "${{ secrets.STAGE_CONFIG_CONTENT }}" | base64 --decode > "StageConfig.xcconfig"
           echo "${{ secrets.BASE_CONFIG_CONTENT }}" | base64 --decode > "BaseConfig.xcconfig"
     
