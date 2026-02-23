@@ -40,20 +40,22 @@ jobs:
             }
           done
         
-      - name: Create Real Configs (테플용 실제 설정)
+      - name: Create Real Configs
         run: |
+          # 1. 절대 경로로 확실하게 폴더 생성
           mkdir -p Atcha-iOS/Atcha-iOS
           
-          # ⚠️ 주의: 테플에 올라가는 앱은 실제 동작해야 하므로 
-          # Dummy가 아닌 '진짜 환경 변수'가 들어간 Config 파일을 만들어야 합니다.
-          # (GitHub Secrets에 진짜 Config 내용을 텍스트로 넣어두고 빼서 쓰는 방식을 추천합니다)
+          # 2. Xcode가 에러 로그에서 찾고 있는 그 경로에 직접 파일 생성
+          # 에러 로그: /Users/runner/work/Atcha-iOS/Atcha-iOS/Atcha-iOS/StageConfig.xcconfig
           echo "${{ secrets.STAGE_CONFIG_CONTENT }}" > "Atcha-iOS/Atcha-iOS/StageConfig.xcconfig"
           echo "${{ secrets.BASE_CONFIG_CONTENT }}" > "Atcha-iOS/Atcha-iOS/BaseConfig.xcconfig"
-
-          cp "Atcha-iOS/Atcha-iOS/StageConfig.xcconfig" "Atcha-iOS/StageConfig.xcconfig"
-          cp "Atcha-iOS/Atcha-iOS/BaseConfig.xcconfig" "Atcha-iOS/BaseConfig.xcconfig"
-
-          echo "Config files created and copied to expected paths."
+          
+          # 3. 만약 프로젝트 파일(.xcodeproj)이 루트에 있다면 루트에도 복사 (보험용)
+          cp "Atcha-iOS/Atcha-iOS/StageConfig.xcconfig" "./StageConfig.xcconfig" || true
+          cp "Atcha-iOS/Atcha-iOS/BaseConfig.xcconfig" "./BaseConfig.xcconfig" || true
+          
+          echo "Config files created successfully."
+          ls -R Atcha-iOS/Atcha-iOS # 파일이 잘 들어갔는지 로그에 출력
           
       - name: Install Fastlane
         run: bundle install
@@ -65,9 +67,13 @@ jobs:
           APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
           APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           APP_STORE_CONNECT_API_KEY_KEY: ${{ secrets.ASC_KEY_CONTENT }}
-          GYM_XC_ARGS: "PROVISIONING_PROFILE_SPECIFIER='match AppStore com.atcha.iOS' CODE_SIGN_STYLE=Manual"
           FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT: 120
-          FASTLANE_XCODEBUILD_SETTINGS_RETRIES: 5
+          # 🔥 중요: gym(build_app)이 사용할 환경 변수 설정
+          GYM_SDK: "iphoneos"
+          GYM_CONFIGURATION: "Release"
+          GYM_EXPORT_METHOD: "app-store"
+          # 🔥 중요: 코드 사이닝 강제 매핑 (match에서 생성된 이름과 일치해야 함)
+          GYM_XC_ARGS: "PROVISIONING_PROFILE_SPECIFIER='match AppStore com.atcha.iOS' CODE_SIGN_STYLE=Manual"
         
         # Fastfile에 작성된 테플 업로드용 lane 실행 (이름은 설정하신 대로 맞춰주세요)
         run: bundle exec fastlane beta
