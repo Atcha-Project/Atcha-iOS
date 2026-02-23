@@ -35,7 +35,7 @@ final class TMapWrapper: NSObject, MapRendering {
     }
     
     private func configureDefaultSettings() {
-        mapView.setApiKey(Bundle.main.tMapKey)
+        mapView.setApiKey(AppConfig.tmapApiKey)
         mapView.delegate = self
         mapView.locationDelgate = self
     }

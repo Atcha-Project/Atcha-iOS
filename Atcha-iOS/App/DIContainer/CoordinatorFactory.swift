@@ -8,6 +8,10 @@
 import UIKit
 import Foundation
 
+/// CoordinatorFactory protocols define how feature coordinators are constructed.
+/// These protocols are conformed to by the application's composition root (see `AppCompositionRoot`)
+/// to avoid service locator style lookups and to enable constructor injection of dependencies.
+
 protocol SplashCoordinatorFactory {
     func makeSplashCoordinator(navigationController: UINavigationController) -> SplashCoordinator
 }
@@ -27,6 +31,9 @@ protocol MainCoordinatorFactory {
 protocol LockScreenCoordinatorFactory {
     func makeLockScreenCoordinator(navigationController: UINavigationController) -> LockScreenCoordinator
 }
+
+/// A convenience alias that groups all coordinator factory protocols used to bootstrap flows.
+typealias AppCoordinatorFactory = SplashCoordinatorFactory & LoginCoordinatorFactory & OnboardingCoordinatorFactory & MainCoordinatorFactory & LockScreenCoordinatorFactory
 
 extension AppDIContainer: SplashCoordinatorFactory,
                           LoginCoordinatorFactory,
@@ -53,3 +60,4 @@ extension AppDIContainer: SplashCoordinatorFactory,
         return lockScreenDIContainer.makeLockScreenCoordinator(navigationController: navigationController)
     }
 }
+
