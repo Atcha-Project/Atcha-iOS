@@ -30,7 +30,12 @@ platform :ios do
     )
 
     match(type: "appstore")
-    increment_build_number(xcodeproj: "Atcha-iOS.xcodeproj")
+    latest_build = latest_testflight_build_number(api_key: api_key)
+
+    increment_build_number(
+      build_number: latest_build + 1,
+      xcodeproj: "Atcha-iOS.xcodeproj"
+    )
 
     build_app(
       project: "Atcha-iOS.xcodeproj",  
@@ -47,7 +52,13 @@ platform :ios do
   desc "App Store 업로드 (Submit은 안 함)"
   lane :release do
     match(type: "appstore")
-    increment_build_number(xcodeproj: "Atcha-iOS.xcodeproj")
+
+    latest_build = latest_testflight_build_number(api_key: api_key)
+
+    increment_build_number(
+      build_number: latest_build + 1,
+      xcodeproj: "Atcha-iOS.xcodeproj"
+    )
 
     build_app(
       project: "Atcha-iOS.xcodeproj",
