@@ -1,0 +1,63 @@
+# This workflow will build a Swift project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-swift
+
+name: iOS CD (Live -> App Store) 
+
+on:
+  pull_request:
+    branches: ["env/dev"] 
+
+jobs:
+  deploy-appstore:
+    runs-on: macos-15
+    
+    environment: AppStore-Deploy 
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: "latest-stable"
+
+      - name: Install iOS SDK (Retry up to 3 times)
+        run: |
+          for i in {1..3}; do
+            echo "Attempt $i to download iOS platform..."
+            sudo xcodebuild -downloadPlatform iOS && break || {
+              if [ $i -lt 3 ]; then
+                echo "Attempt $i failed. Retrying in 10 seconds..."
+                sleep 10
+              else
+                echo "All 3 attempts failed. Moving on (continue-on-error is set)."
+                exit 1
+              fi
+            }
+          done
+        
+      - name: Create Real Configs
+        run: |
+          echo "${{ secrets.LIVE_CONFIG_CONTENT }}" | base64 --decode > "LiveConfig.xcconfig"
+          echo "${{ secrets.DEV_CONFIG_CONTENT }}" | base64 --decode > "DevConfig.xcconfig"
+          echo "${{ secrets.STAGE_CONFIG_CONTENT }}" | base64 --decode > "StageConfig.xcconfig"
+          echo "${{ secrets.BASE_CONFIG_CONTENT }}" | base64 --decode > "BaseConfig.xcconfig"
+    
+      - name: Install Fastlane
+        run: bundle install
+
+      - name: Build and Upload to App Store
+        env:
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_TOKEN }}
+          APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          APP_STORE_CONNECT_API_KEY_KEY: ${{ secrets.ASC_KEY_CONTENT }}
+          GYM_SCHEME: "Atcha-Live" 
+          GYM_CONFIGURATION: "Release"
+          GYM_EXPORT_METHOD: "app-store"
+          GYM_XC_ARGS: "PROVISIONING_PROFILE_SPECIFIER='match AppStore com.atcha.iOS' CODE_SIGN_STYLE=Manual"
+          FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT: 120
+        
+        run: bundle exec fastlane release
