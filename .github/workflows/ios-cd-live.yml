@@ -1,17 +1,17 @@
 # This workflow will build a Swift project
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-swift
 
-name: iOS CD (Stage -> TestFlight)
+name: iOS CD (Live -> App Store) 
 
 on:
   push:
-    branches: ["env/stage"]
+    branches: ["env/live"] 
 
 jobs:
-  deploy-testflight:
+  deploy-appstore:
     runs-on: macos-15
     
-    environment: TestFlight-Deploy 
+    environment: AppStore-Deploy 
 
     steps:
       - name: Checkout Code
@@ -39,34 +39,25 @@ jobs:
         
       - name: Create Real Configs
         run: |
-          # Xcode가 찾는 경로: /Users/runner/work/Atcha-iOS/Atcha-iOS/StageConfig.xcconfig
-          # checkout 후 현재 위치가 이미 그 경로이므로 바로 생성
           echo "${{ secrets.LIVE_CONFIG_CONTENT }}" | base64 --decode > "LiveConfig.xcconfig"
           echo "${{ secrets.DEV_CONFIG_CONTENT }}" | base64 --decode > "DevConfig.xcconfig"
           echo "${{ secrets.STAGE_CONFIG_CONTENT }}" | base64 --decode > "StageConfig.xcconfig"
           echo "${{ secrets.BASE_CONFIG_CONTENT }}" | base64 --decode > "BaseConfig.xcconfig"
     
-          echo "=== 파일 위치 확인 ==="
-          pwd
-          ls *.xcconfig
-          echo "=== StageConfig 내용 ==="
-          cat StageConfig.xcconfig
-          
       - name: Install Fastlane
         run: bundle install
 
-      - name: Build and Upload to TestFlight
+      - name: Build and Upload to App Store
         env:
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
           MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_TOKEN }}
           APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
           APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           APP_STORE_CONNECT_API_KEY_KEY: ${{ secrets.ASC_KEY_CONTENT }}
-          GYM_SCHEME: "Atcha-Stage"
+          GYM_SCHEME: "Atcha-Live" 
           GYM_CONFIGURATION: "Release"
           GYM_EXPORT_METHOD: "app-store"
           GYM_XC_ARGS: "PROVISIONING_PROFILE_SPECIFIER='match AppStore com.atcha.iOS' CODE_SIGN_STYLE=Manual"
           FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT: 120
         
-        # Fastfile에 작성된 테플 업로드용 lane 실행 (이름은 설정하신 대로 맞춰주세요)
-        run: bundle exec fastlane beta
+        run: bundle exec fastlane release
