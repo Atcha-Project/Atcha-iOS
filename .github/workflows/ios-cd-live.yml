@@ -4,8 +4,8 @@
 name: iOS CD (Live -> App Store) 
 
 on:
-  pull_request:
-    branches: ["env/dev"] 
+  push:
+    branches: ["env/live"] 
 
 jobs:
   deploy-appstore:
