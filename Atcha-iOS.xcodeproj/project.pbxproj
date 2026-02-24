@@ -51,6 +51,7 @@
 		6D368BB22E03BD2C00144EE7 /* SearchTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D368BB12E03BD2C00144EE7 /* SearchTextField.swift */; };
 		6D368BB42E03BE9A00144EE7 /* AtchaTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D368BB32E03BE9A00144EE7 /* AtchaTextField.swift */; };
 		6D52FBC12E7F07CB00D28C82 /* SessionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D52FBC02E7F07CB00D28C82 /* SessionController.swift */; };
+		6D5C790D2F47E76900936E6A /* AppCompositionRoot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C790C2F47E76900936E6A /* AppCompositionRoot.swift */; };
 		6D5E03B92E24F3A50065AFBE /* AddRecentSearchRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5E03B82E24F3A50065AFBE /* AddRecentSearchRequest.swift */; };
 		6D5E03BE2E24F70B0065AFBE /* FetchRecentSearchRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5E03BD2E24F70B0065AFBE /* FetchRecentSearchRequest.swift */; };
 		6D5E03C82E2881830065AFBE /* FetchRecentSearchResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5E03C72E2881830065AFBE /* FetchRecentSearchResponse.swift */; };
@@ -92,6 +93,11 @@
 		6D8157462E127BDB003688A6 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 6D8157452E127BDB003688A6 /* GoogleService-Info.plist */; };
 		6D8157492E129A7C003688A6 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 6D8157482E129A7C003688A6 /* Lottie */; };
 		6D81574E2E13EC0F003688A6 /* Int+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D81574D2E13EC0F003688A6 /* Int+Ext.swift */; };
+		6D8C67A12F48363300D2F55F /* DevConfig.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6D8C67A02F48363300D2F55F /* DevConfig.xcconfig */; };
+		6D8C67A52F48364C00D2F55F /* LiveConfig.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6D8C67A42F48364C00D2F55F /* LiveConfig.xcconfig */; };
+		6D8C67A92F483EFA00D2F55F /* BaseConfig.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6D8C67A82F483EFA00D2F55F /* BaseConfig.xcconfig */; };
+		6D8C67AF2F48407200D2F55F /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D8C67AE2F48407200D2F55F /* AppConfig.swift */; };
+		6D8C67B32F4879DB00D2F55F /* StageConfig.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6D8C67B22F4879DB00D2F55F /* StageConfig.xcconfig */; };
 		6D8D8AE02E013819003DABB2 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 6D8D8ADF2E013819003DABB2 /* SnapKit */; };
 		6D8D8B132E01B338003DABB2 /* AtchaButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D8D8B122E01B338003DABB2 /* AtchaButton.swift */; };
 		6D8D8B172E02BBC0003DABB2 /* AtchaNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D8D8B162E02BBC0003DABB2 /* AtchaNavigationBar.swift */; };
@@ -118,7 +124,6 @@
 		6DB7636F2E45C6D100D06A49 /* AlarmRepositoryImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DB7636E2E45C6D100D06A49 /* AlarmRepositoryImpl.swift */; };
 		6DB763712E45C7A300D06A49 /* AlarmRefreshResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DB763702E45C7A300D06A49 /* AlarmRefreshResponse.swift */; };
 		6DB763732E45C7E800D06A49 /* AlarmRefresh.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DB763722E45C7E800D06A49 /* AlarmRefresh.swift */; };
-		6DB763752E48E11300D06A49 /* Secrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6DB763742E48E11300D06A49 /* Secrets.xcconfig */; };
 		6DB7637C2E48E6AC00D06A49 /* TMapSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6DB763782E48E6A900D06A49 /* TMapSDK.framework */; };
 		6DB7637D2E48E6AC00D06A49 /* TMapSDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 6DB763782E48E6A900D06A49 /* TMapSDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		6DB7637F2E48E6AD00D06A49 /* VSMSDK.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6DB763792E48E6A900D06A49 /* VSMSDK.xcframework */; };
@@ -157,7 +162,7 @@
 		B61C448E2E3F57B600285A4B /* AlarmManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B61C448D2E3F57B600285A4B /* AlarmManager.swift */; };
 		B61C44902E3F750B00285A4B /* silent.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = B61C448F2E3F750B00285A4B /* silent.mp3 */; };
 		B61C44952E4033E500285A4B /* LockScreenCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B61C44942E4033E500285A4B /* LockScreenCoordinator.swift */; };
-		B61C44982E40341B00285A4B /* LockScreenDIConatiner.swift in Sources */ = {isa = PBXBuildFile; fileRef = B61C44972E40341B00285A4B /* LockScreenDIConatiner.swift */; };
+		B61C44982E40341B00285A4B /* LockScreenDIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B61C44972E40341B00285A4B /* LockScreenDIContainer.swift */; };
 		B637D6E72E30C71500F73F14 /* AtchaPopupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B637D6E62E30C71500F73F14 /* AtchaPopupViewController.swift */; };
 		B637D6E92E30C72700F73F14 /* AtchaPopupViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B637D6E82E30C72700F73F14 /* AtchaPopupViewModel.swift */; };
 		B637D6EB2E30C75900F73F14 /* AtchaPopupInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B637D6EA2E30C75900F73F14 /* AtchaPopupInfo.swift */; };
@@ -373,6 +378,7 @@
 		6D368BB12E03BD2C00144EE7 /* SearchTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchTextField.swift; sourceTree = "<group>"; };
 		6D368BB32E03BE9A00144EE7 /* AtchaTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtchaTextField.swift; sourceTree = "<group>"; };
 		6D52FBC02E7F07CB00D28C82 /* SessionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionController.swift; sourceTree = "<group>"; };
+		6D5C790C2F47E76900936E6A /* AppCompositionRoot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCompositionRoot.swift; sourceTree = "<group>"; };
 		6D5E03B82E24F3A50065AFBE /* AddRecentSearchRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddRecentSearchRequest.swift; sourceTree = "<group>"; };
 		6D5E03BD2E24F70B0065AFBE /* FetchRecentSearchRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchRecentSearchRequest.swift; sourceTree = "<group>"; };
 		6D5E03C72E2881830065AFBE /* FetchRecentSearchResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchRecentSearchResponse.swift; sourceTree = "<group>"; };
@@ -413,6 +419,11 @@
 		6D8157432E126C45003688A6 /* LockViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockViewController.swift; sourceTree = "<group>"; };
 		6D8157452E127BDB003688A6 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		6D81574D2E13EC0F003688A6 /* Int+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Int+Ext.swift"; sourceTree = "<group>"; };
+		6D8C67A02F48363300D2F55F /* DevConfig.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = DevConfig.xcconfig; sourceTree = "<group>"; };
+		6D8C67A42F48364C00D2F55F /* LiveConfig.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = LiveConfig.xcconfig; sourceTree = "<group>"; };
+		6D8C67A82F483EFA00D2F55F /* BaseConfig.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = BaseConfig.xcconfig; sourceTree = "<group>"; };
+		6D8C67AE2F48407200D2F55F /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
+		6D8C67B22F4879DB00D2F55F /* StageConfig.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = StageConfig.xcconfig; sourceTree = "<group>"; };
 		6D8D8B122E01B338003DABB2 /* AtchaButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtchaButton.swift; sourceTree = "<group>"; };
 		6D8D8B162E02BBC0003DABB2 /* AtchaNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtchaNavigationBar.swift; sourceTree = "<group>"; };
 		6D91A8E32E29F5B30081BAFC /* CourseSettingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseSettingViewController.swift; sourceTree = "<group>"; };
@@ -437,7 +448,6 @@
 		6DB7636E2E45C6D100D06A49 /* AlarmRepositoryImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmRepositoryImpl.swift; sourceTree = "<group>"; };
 		6DB763702E45C7A300D06A49 /* AlarmRefreshResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmRefreshResponse.swift; sourceTree = "<group>"; };
 		6DB763722E45C7E800D06A49 /* AlarmRefresh.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmRefresh.swift; sourceTree = "<group>"; };
-		6DB763742E48E11300D06A49 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 		6DB763782E48E6A900D06A49 /* TMapSDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = TMapSDK.framework; sourceTree = "<group>"; };
 		6DB763792E48E6A900D06A49 /* VSMSDK.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = VSMSDK.xcframework; sourceTree = "<group>"; };
 		6DB763832E4D710900D06A49 /* SSEParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SSEParser.swift; sourceTree = "<group>"; };
@@ -467,7 +477,7 @@
 		B61C448D2E3F57B600285A4B /* AlarmManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmManager.swift; sourceTree = "<group>"; };
 		B61C448F2E3F750B00285A4B /* silent.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = silent.mp3; sourceTree = "<group>"; };
 		B61C44942E4033E500285A4B /* LockScreenCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockScreenCoordinator.swift; sourceTree = "<group>"; };
-		B61C44972E40341B00285A4B /* LockScreenDIConatiner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockScreenDIConatiner.swift; sourceTree = "<group>"; };
+		B61C44972E40341B00285A4B /* LockScreenDIContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockScreenDIContainer.swift; sourceTree = "<group>"; };
 		B637D6E62E30C71500F73F14 /* AtchaPopupViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtchaPopupViewController.swift; sourceTree = "<group>"; };
 		B637D6E82E30C72700F73F14 /* AtchaPopupViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtchaPopupViewModel.swift; sourceTree = "<group>"; };
 		B637D6EA2E30C75900F73F14 /* AtchaPopupInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtchaPopupInfo.swift; sourceTree = "<group>"; };
@@ -1090,7 +1100,10 @@
 		6DE42B842DFDE6360041344C = {
 			isa = PBXGroup;
 			children = (
-				6DB763742E48E11300D06A49 /* Secrets.xcconfig */,
+				6D8C67A82F483EFA00D2F55F /* BaseConfig.xcconfig */,
+				6D8C67A02F48363300D2F55F /* DevConfig.xcconfig */,
+				6D8C67A42F48364C00D2F55F /* LiveConfig.xcconfig */,
+				6D8C67B22F4879DB00D2F55F /* StageConfig.xcconfig */,
 				B68309632E005ADE00E2D029 /* .gitignore */,
 				B68309522E005A3600E2D029 /* Atcha-iOS */,
 				6DE42B8E2DFDE6360041344C /* Products */,
@@ -1136,7 +1149,7 @@
 		B61C44962E40340C00285A4B /* LockScreen */ = {
 			isa = PBXGroup;
 			children = (
-				B61C44972E40341B00285A4B /* LockScreenDIConatiner.swift */,
+				B61C44972E40341B00285A4B /* LockScreenDIContainer.swift */,
 			);
 			path = LockScreen;
 			sourceTree = "<group>";
@@ -1237,6 +1250,7 @@
 				B683093B2E005A3600E2D029 /* AppDelegate.swift */,
 				B683093C2E005A3600E2D029 /* SceneDelegate.swift */,
 				B65C12D62E0429B30016D2F0 /* AppFlowCoordinator.swift */,
+				6D8C67AE2F48407200D2F55F /* AppConfig.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -1259,6 +1273,7 @@
 				B65C12D92E042A740016D2F0 /* AppDIContainer.swift */,
 				B65C130D2E057D4D0016D2F0 /* NetworkDIContainer.swift */,
 				B65C13452E07A0D70016D2F0 /* CoordinatorFactory.swift */,
+				6D5C790C2F47E76900936E6A /* AppCompositionRoot.swift */,
 			);
 			path = DIContainer;
 			sourceTree = "<group>";
@@ -1992,18 +2007,21 @@
 			buildActionMask = 2147483647;
 			files = (
 				B68309582E005A3600E2D029 /* Colors.xcassets in Resources */,
-				6DB763752E48E11300D06A49 /* Secrets.xcconfig in Resources */,
 				B68309592E005A3600E2D029 /* Pretendard-Bold.otf in Resources */,
 				6D6879BE2E4067B400E59C55 /* Refresh.json in Resources */,
+				6D8C67B32F4879DB00D2F55F /* StageConfig.xcconfig in Resources */,
 				B683095A2E005A3600E2D029 /* Pretendard-ExtraBold.otf in Resources */,
 				B683095B2E005A3600E2D029 /* Pretendard-Medium.otf in Resources */,
 				B683095C2E005A3600E2D029 /* Pretendard-Regular.otf in Resources */,
+				6D8C67A12F48363300D2F55F /* DevConfig.xcconfig in Resources */,
 				B61C44902E3F750B00285A4B /* silent.mp3 in Resources */,
 				6D8157462E127BDB003688A6 /* GoogleService-Info.plist in Resources */,
+				6D8C67A52F48364C00D2F55F /* LiveConfig.xcconfig in Resources */,
 				B683095D2E005A3600E2D029 /* Pretendard-SemiBold.otf in Resources */,
 				6DEE30AF2ED4102D00E35368 /* siren.mp3 in Resources */,
 				6D74AE3C2EAA123E00FB8D52 /* Character_Jump.json in Resources */,
 				6D79F9AD2E6D75EC00BD8BC8 /* Alarm.json in Resources */,
+				6D8C67A92F483EFA00D2F55F /* BaseConfig.xcconfig in Resources */,
 				B683095E2E005A3600E2D029 /* Icon.xcassets in Resources */,
 				B683095F2E005A3600E2D029 /* Assets.xcassets in Resources */,
 				B68309612E005A3600E2D029 /* LaunchScreen.storyboard in Resources */,
@@ -2201,6 +2219,7 @@
 				B65C133B2E069B4D0016D2F0 /* RefreshTokenResponse.swift in Sources */,
 				B6FB20882E1BE4F40032751B /* FetchTaxiFareRepository.swift in Sources */,
 				B655AFBA2E3C26A9008BFDE4 /* DetailRouteEndCell.swift in Sources */,
+				6D5C790D2F47E76900936E6A /* AppCompositionRoot.swift in Sources */,
 				B69A046B2E90DE0100CA382C /* UpdateAppVersionUseCase.swift in Sources */,
 				6D2B8CA22E39A74100608104 /* BusOperationInfo.swift in Sources */,
 				6D6879C02E40684C00E59C55 /* RefreshView.swift in Sources */,
@@ -2252,7 +2271,7 @@
 				6D2B8CBE2E39C9CB00608104 /* BusInfoRepository.swift in Sources */,
 				6D5E03BE2E24F70B0065AFBE /* FetchRecentSearchRequest.swift in Sources */,
 				6D2B8CAB2E39A9E500608104 /* BusOperationInfoResponse.swift in Sources */,
-				B61C44982E40341B00285A4B /* LockScreenDIConatiner.swift in Sources */,
+				B61C44982E40341B00285A4B /* LockScreenDIContainer.swift in Sources */,
 				6D6879DC2E43703200E59C55 /* PushAlarmPatchRequest.swift in Sources */,
 				B6DC7C1D2E169F37005D8E17 /* MapBottomType.swift in Sources */,
 				B65C134A2E07A1280016D2F0 /* MyPageRouter.swift in Sources */,
@@ -2289,6 +2308,7 @@
 				B65C13002E057B2A0016D2F0 /* NetworkLogger.swift in Sources */,
 				6D1EE2E72E09A43700F7BBF1 /* PushAlarmViewModel.swift in Sources */,
 				B6AC8BD72E2A82C300410ECD /* MyAccountDIContainer.swift in Sources */,
+				6D8C67AF2F48407200D2F55F /* AppConfig.swift in Sources */,
 				6D1EE2DC2E08E4EA00F7BBF1 /* HomeRegisterViewModel.swift in Sources */,
 				B6B57EC52E1AB0FE00B29EB1 /* MainRoute.swift in Sources */,
 			);
@@ -2316,17 +2336,75 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
-		6DE42BA12DFDE6370041344C /* Debug */ = {
+		6D8C67B02F4879C800D2F55F /* Stage */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6DB763742E48E11300D06A49 /* Secrets.xcconfig */;
+			baseConfigurationReference = 6D8C67B22F4879DB00D2F55F /* StageConfig.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 23SCTLK482;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Stage;
+		};
+		6D8C67B12F4879C800D2F55F /* Stage */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6D8C67B22F4879DB00D2F55F /* StageConfig.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "Atcha-iOS/Atcha-iOS.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 15;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 23SCTLK482;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -2353,7 +2431,54 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.atcha.iOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Atcha Debug";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "match AppStore com.atcha.iOS";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Stage;
+		};
+		6DE42BA12DFDE6370041344C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6D8C67A02F48363300D2F55F /* DevConfig.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Atcha-iOS/Atcha-iOS.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 15;
+				DEVELOPMENT_TEAM = 23SCTLK482;
+				EXCLUDED_ARCHS = "";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Atcha-iOS",
+					"$(PROJECT_DIR)",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Atcha-iOS/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "앗차";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.navigation";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "정확한 막차 경로를 제공하기 위해 권한이 필요합니다";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "정확한 막차 경로를 제공하기 위해 권한이 필요합니다";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.7;
+				OTHER_SWIFT_FLAGS = "";
+				PRODUCT_BUNDLE_IDENTIFIER = com.atcha.iOS;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -2366,7 +2491,7 @@
 		};
 		6DE42BA22DFDE6370041344C /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6DB763742E48E11300D06A49 /* Secrets.xcconfig */;
+			baseConfigurationReference = 6D8C67A42F48364C00D2F55F /* LiveConfig.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -2374,7 +2499,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 15;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 23SCTLK482;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -2401,7 +2526,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.atcha.iOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Atcha Release";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "match AppStore com.atcha.iOS";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -2414,7 +2539,7 @@
 		};
 		6DE42BA32DFDE6370041344C /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6DB763742E48E11300D06A49 /* Secrets.xcconfig */;
+			baseConfigurationReference = 6D8C67A02F48363300D2F55F /* DevConfig.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -2479,7 +2604,7 @@
 		};
 		6DE42BA42DFDE6370041344C /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6DB763742E48E11300D06A49 /* Secrets.xcconfig */;
+			baseConfigurationReference = 6D8C67A42F48364C00D2F55F /* LiveConfig.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -2543,6 +2668,7 @@
 			buildConfigurations = (
 				6DE42BA32DFDE6370041344C /* Debug */,
 				6DE42BA42DFDE6370041344C /* Release */,
+				6D8C67B02F4879C800D2F55F /* Stage */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -2552,6 +2678,7 @@
 			buildConfigurations = (
 				6DE42BA12DFDE6370041344C /* Debug */,
 				6DE42BA22DFDE6370041344C /* Release */,
+				6D8C67B12F4879C800D2F55F /* Stage */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

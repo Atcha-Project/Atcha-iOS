@@ -14,7 +14,7 @@ final class LockScreenDIContainer {
         self.apiService = apiService
     }
     
-    private lazy var fetchTaxiFareUseCase = FetchTaxiFareUseCaseImpl(repository: FetchTaxiFareRepositoryImpl(apiService: apiService, ))
+    private lazy var fetchTaxiFareUseCase = FetchTaxiFareUseCaseImpl(repository: FetchTaxiFareRepositoryImpl(apiService: apiService))
     
     func makeLockScreenViewModel() -> LockViewModel {
         return LockViewModel(taxiFare: 0,
