@@ -46,10 +46,10 @@ class AppFlowCoordinator {
                 showMainFlow(info: info, address: address, bottomType: .departure)
             case .lockScreen(let info, let address):
                 showLockScreenFlow(info: info, address: address)
-//            case .realTime(let info, let address):
-//                showMainFlow(info: info, address: address, bottomType: .realTime)
-//            case .finishTime(let info, let address):
-//                showMainFlow(info: info, address: address, bottomType: .finish)
+                //            case .realTime(let info, let address):
+                //                showMainFlow(info: info, address: address, bottomType: .realTime)
+                //            case .finishTime(let info, let address):
+                //                showMainFlow(info: info, address: address, bottomType: .finish)
             case .detailRoute(let lat, let lon, let address):
                 print("lat : \(lat), lon : \(lon), address : \(address)")
             }
@@ -72,7 +72,7 @@ class AppFlowCoordinator {
         mainCoordinator?.lockScreenConfrim = { [weak self] info, address in
             DispatchQueue.main.async {
                 if let info, let address {
-//                    self?.showMainFlow(info: info, address: address, bottomType: .realTime)
+                    //                    self?.showMainFlow(info: info, address: address, bottomType: .realTime)
                     self?.showMainFlow(info: info, address: address, bottomType: .detail)
                     // TODO: 상세화면 연동 로직 적용하기
                 } else {
@@ -117,6 +117,13 @@ class AppFlowCoordinator {
                 isExist ? self?.showMainFlow() : self?.showOnboardingFlow()
             }
         }
+        
+        loginCoordinator.onFinishWithGuest = { [weak self] in
+            DispatchQueue.main.async {
+                self?.showMainFlow()
+            }
+        }
+        
         loginCoordinator.start()
         self.loginCoordinator = loginCoordinator
     }

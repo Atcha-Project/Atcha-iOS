@@ -13,6 +13,7 @@ final class LoginCoordinator {
     private let diContainer: LoginDIContainer
     
     var onFinishWithExistUser: ((Bool) -> Void)?
+    var onFinishWithGuest: (() -> Void)?
     
     init(navigationController: UINavigationController,
          diContainer: LoginDIContainer) {
@@ -25,6 +26,11 @@ final class LoginCoordinator {
         viewModel.isExistUser = { [weak self] isExist in
             self?.onFinishWithExistUser?(isExist)
         }
+        
+        viewModel.onFinishWithGuest = { [weak self] in
+            self?.onFinishWithGuest?()
+        }
+        
         let viewController = LoginViewController(viewModel: viewModel)
         navigationController.pushViewController(viewController, animated: true)
     }

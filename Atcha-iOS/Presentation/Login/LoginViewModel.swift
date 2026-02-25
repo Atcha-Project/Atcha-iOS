@@ -16,6 +16,7 @@ final class LoginViewModel: BaseViewModel {
     }
     
     var isExistUser: ((Bool) -> Void)?
+    var onFinishWithGuest: (() -> Void)?
     
     func kakaoLoginTapped() {
         Task {
@@ -69,7 +70,7 @@ extension LoginViewModel {
                         .rawValue)
                     UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.reVisit
                         .rawValue)
-                
+                    
                     AmplitudeManager.shared.bindUser(id: String(id))
                     AmplitudeManager.shared.flush()
                 }
@@ -103,5 +104,10 @@ extension LoginViewModel {
                 break
             }
         }
+    }
+    
+    func guestLoginTapped() {
+        UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.isGuest.rawValue)
+        onFinishWithGuest?()
     }
 }

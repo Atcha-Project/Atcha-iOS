@@ -15,6 +15,7 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
     private let backgroundImageView: UIImageView = UIImageView()
     private let kakaoLoginButton: UIButton = UIButton(type: .custom)
     private let appleLoginButton: UIButton = UIButton(type: .custom)
+    private let guestLoginButton: UILabel = UILabel()
     
     private let pageControl = UIPageControl()
     private var autoScrollTimer: Timer?
@@ -91,7 +92,7 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
     }
     
     private func setupUI() {
-        view.addSubViews(backgroundImageView, pageControl, collectionView, loginButtonStackView)
+        view.addSubViews(backgroundImageView, pageControl, collectionView, loginButtonStackView, guestLoginButton)
         
         // 수직 그라데이션 배경 적용 (top: #121212, bottom: #1E1E1E)
         let topColor = UIColor(red: 0x12/255.0, green: 0x12/255.0, blue: 0x12/255.0, alpha: 1.0)
@@ -108,6 +109,13 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
         pageControl.currentPageIndicatorTintColor = AtchaColor.main
         pageControl.pageIndicatorTintColor = AtchaColor.gray300
         pageControl.isUserInteractionEnabled = false
+        
+        guestLoginButton.attributedText = AtchaFont.R_13("게스트 모드", alignment: .center)
+        guestLoginButton.textColor = AtchaColor.main
+        guestLoginButton.numberOfLines = 0
+        guestLoginButton.isUserInteractionEnabled = true
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(didTapGuestLoginLabel))
+        guestLoginButton.addGestureRecognizer(tapGesture)
     }
     
     private func setupAutoLayout() {
@@ -129,6 +137,11 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
         loginButtonStackView.snp.makeConstraints { make in
             make.horizontalEdges.equalToSuperview()
             make.bottom.equalToSuperview().inset(40)
+        }
+        
+        guestLoginButton.snp.makeConstraints { make in
+            make.centerX.equalToSuperview()
+            make.bottom.equalToSuperview().inset(20)
         }
     }
     
@@ -182,7 +195,7 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
         let iconView = UIImageView(image: icon)
         iconView.contentMode = .scaleAspectFit
         iconView.tintColor = iconTint
-
+        
         let label = UILabel()
         label.attributedText = AtchaFont.B_15(labelText, color: textColor)
         label.textAlignment = .center
@@ -234,6 +247,10 @@ extension LoginViewController {
         ) { [weak self] delegate in
             self?.appleLoginDelegateWrapper = delegate
         }
+    }
+    
+    @objc private func didTapGuestLoginLabel() {
+        viewModel.guestLoginTapped()
     }
 }
 

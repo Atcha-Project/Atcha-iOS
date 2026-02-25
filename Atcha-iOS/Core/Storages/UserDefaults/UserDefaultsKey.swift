@@ -38,4 +38,6 @@ public extension UserDefaultsWrapper.Key {
     static let alarmRegister: UserDefaultsWrapper.Key = "alarmRegister"
     static let popRegister: UserDefaultsWrapper.Key = "popRegister"
     static let departureAlarmDidFire: UserDefaultsWrapper.Key = "departureAlarmDidFire"
+    
+    static let isGuest: UserDefaultsWrapper.Key = "isGuest"
 }
