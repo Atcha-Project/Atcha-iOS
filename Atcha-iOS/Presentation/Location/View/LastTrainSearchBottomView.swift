@@ -49,6 +49,10 @@ final class LastTrainSearchBottomView: UIView {
                                                         style: .filled(.disabled),
                                                         image: .imgSearch16Px) {}
     
+    private let isGuest = UserDefaultsWrapper.shared.bool(
+        forKey: UserDefaultsWrapper.Key.isGuest.rawValue
+    ) ?? false
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupView()
@@ -131,11 +135,19 @@ final class LastTrainSearchBottomView: UIView {
 
 extension LastTrainSearchBottomView {
     @objc private func handleCurrentTap() {
-        actionPublisher.send(.currentTapped)
+        if isGuest {
+            print("게스트 모드입니다.")
+        } else {
+            actionPublisher.send(.currentTapped)
+        }
     }
     
     @objc private func handleSearchTap() {
-        actionPublisher.send(.searchTapped)
+        if isGuest {
+            print("게스트 모드입니다.")
+        } else {
+            actionPublisher.send(.searchTapped)
+        }
     }
     
     @objc private func handleDestinationTap() {

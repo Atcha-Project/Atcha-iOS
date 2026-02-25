@@ -102,6 +102,16 @@ final class MainViewController: BaseViewController<MainViewModel>,
     
     private var lastCourseUpdateAt: CFTimeInterval = 0
     private let courseValidWindow: CFTimeInterval = 1.2
+    
+    
+    private let isGuest = UserDefaultsWrapper.shared.bool(
+        forKey: UserDefaultsWrapper.Key.isGuest.rawValue
+    ) ?? false
+    private lazy var guestNavigationBar: BackOnlyNavigationBar = AtchaNavigationBar.backOnly(onBack: { [weak self] in
+        
+        self?.viewModel.handleRoute(route: .backToLogin)
+    }, tintColor: AtchaColor.white)
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         let isAlarmRegistered = UserDefaultsWrapper.shared.bool(
@@ -139,7 +149,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
         }
         
         viewModel.setLoading(true)
-        
+    
         setupUI()
         setupAutoLayout()
         installMapUserGestureDetector()
@@ -189,12 +199,13 @@ final class MainViewController: BaseViewController<MainViewModel>,
             flagImageView,
             atchaImageView,
             lastTrainSearchView,
-            myPageButton,
             loactionButton,
             lastTrainDepartView,
             //            lastTrainRealTimeView,
             //            lastTrainArrivalView,
-            ballonView
+            ballonView,
+            guestNavigationBar,
+            myPageButton
         )
         
         mapContainerView.delegate = self
@@ -210,6 +221,12 @@ final class MainViewController: BaseViewController<MainViewModel>,
         
         ballonView.isHidden = true
         ballonView.alpha = 0
+        
+        if isGuest {
+            guestNavigationBar.isHidden = false
+        } else {
+            guestNavigationBar.isHidden = true
+        }
     }
     
     private func configureButton(_ button: UIButton, imageName: String, action: Selector) {
@@ -249,11 +266,7 @@ extension MainViewController {
         //            make.horizontalEdges.equalToSuperview()
         //            make.bottom.equalToSuperview()
         //        }
-        myPageButton.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
-            make.trailing.equalToSuperview().inset(16)
-            make.width.height.equalTo(40)
-        }
+        
         loactionButton.snp.makeConstraints { make in
             make.bottom.equalTo(lastTrainSearchView.snp.top).inset(-16)
             make.trailing.equalToSuperview().inset(16)
@@ -272,6 +285,21 @@ extension MainViewController {
             make.horizontalEdges.equalToSuperview()
             make.top.equalToSuperview()
             make.bottom.equalTo(lastTrainSearchView.snp.top).inset(30)
+        }
+        
+        if isGuest {
+            guestNavigationBar.snp.makeConstraints { make in
+                make.top.equalTo(view.safeAreaLayoutGuide)
+                make.leading.trailing.equalToSuperview()
+            }
+        } else {
+            guestNavigationBar.snp.removeConstraints()
+        }
+        
+        myPageButton.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
+            make.trailing.equalToSuperview().inset(16)
+            make.width.height.equalTo(40)
         }
     }
 }
@@ -1060,7 +1088,11 @@ extension MainViewController {
     }
     
     @objc private func didTapMyPageButton() {
-        viewModel.handleRoute(route: .myPage)
+        if isGuest {
+            print("게스트 모드입니다")
+        } else {
+            viewModel.handleRoute(route: .myPage)
+        }
     }
     
     @objc private func didTapLocationButton() {

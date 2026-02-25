@@ -474,6 +474,8 @@ extension MainViewModel {
             routeHandler?(.proximity)
         case .dismissLockScreen:
             routeHandler?(.dismissLockScreen)
+        case .backToLogin:
+            routeHandler?(.backToLogin)
         }
     }
 }

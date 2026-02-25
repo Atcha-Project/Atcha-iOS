@@ -57,6 +57,8 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
         setupUI()
         setupLoginButtons()
         setupAutoLayout()
+        
+        UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.isGuest.rawValue)
     }
     
     override func viewDidLayoutSubviews() {
