@@ -356,36 +356,44 @@ extension MainViewController {
     private func handleSearchViewAction(_ action: LastTrainSearchBottomView.Action) {
         switch action {
         case .currentTapped:
-            AmplitudeManager.shared.track(.origin_search_click)
-            
-            viewModel.handleRoute(route: .changeCourse(
-                location: Location(name: "", lat: 0.0, lon: 0.0, businessCategory: "", address: "", radius: "")))
+            if isGuest {
+                presentLoginAlert()
+            } else {
+                AmplitudeManager.shared.track(.origin_search_click)
+                
+                viewModel.handleRoute(route: .changeCourse(
+                    location: Location(name: "", lat: 0.0, lon: 0.0, businessCategory: "", address: "", radius: "")))
+            }
         case .searchTapped:
-            AmplitudeManager.shared.track(.course_search_click)
-            
-            guard let startCoord = viewModel.currentLocation else {
-                view.showToast(message: "현재 위치를 확인 중이에요. 잠시 후 다시 시도해 주세요.")
-                return
+            if isGuest {
+                presentLoginAlert()
+            } else {
+                AmplitudeManager.shared.track(.course_search_click)
+                
+                guard let startCoord = viewModel.currentLocation else {
+                    view.showToast(message: "현재 위치를 확인 중이에요. 잠시 후 다시 시도해 주세요.")
+                    return
+                }
+                
+                let wrapper = UserDefaultsWrapper.shared
+                let endLatStr = wrapper.string(forKey: UserDefaultsWrapper.Key.homeLat.rawValue) ?? "37.554722"
+                let endLonStr = wrapper.string(forKey: UserDefaultsWrapper.Key.homeLon.rawValue) ?? "126.970833"
+                
+                guard let endLat = Double(endLatStr), let endLon = Double(endLonStr) else {
+                    view.showToast(message: "저장된 목적지 좌표가 잘못되었어요.")
+                    return
+                }
+                let endCoord = CLLocationCoordinate2D(latitude: endLat, longitude: endLon)
+                
+                if ProximityManager.shared.isWithinThreshold(from: startCoord, to: endCoord) {
+                    viewModel.handleRoute(route: .proximity)
+                    return
+                }
+                
+                viewModel.handleRoute(route: .courseSearch(
+                    startLat: "", startLon: "", startAddress: ""
+                ))
             }
-            
-            let wrapper = UserDefaultsWrapper.shared
-            let endLatStr = wrapper.string(forKey: UserDefaultsWrapper.Key.homeLat.rawValue) ?? "37.554722"
-            let endLonStr = wrapper.string(forKey: UserDefaultsWrapper.Key.homeLon.rawValue) ?? "126.970833"
-            
-            guard let endLat = Double(endLatStr), let endLon = Double(endLonStr) else {
-                view.showToast(message: "저장된 목적지 좌표가 잘못되었어요.")
-                return
-            }
-            let endCoord = CLLocationCoordinate2D(latitude: endLat, longitude: endLon)
-            
-            if ProximityManager.shared.isWithinThreshold(from: startCoord, to: endCoord) {
-                viewModel.handleRoute(route: .proximity)
-                return
-            }
-            
-            viewModel.handleRoute(route: .courseSearch(
-                startLat: "", startLon: "", startAddress: ""
-            ))
         }
     }
     
@@ -1089,7 +1097,7 @@ extension MainViewController {
     
     @objc private func didTapMyPageButton() {
         if isGuest {
-            print("게스트 모드입니다")
+            presentLoginAlert()
         } else {
             viewModel.handleRoute(route: .myPage)
         }
@@ -1440,5 +1448,23 @@ extension MainViewController: UIGestureRecognizerDelegate {
         if g.state == .began {
             isFollowingUser = false
         }
+    }
+}
+
+extension MainViewController {
+    private func presentLoginAlert() {
+        let alert = UIAlertController(
+            title: "앗차! 로그인이 필요해요",
+            message: "로그인하고 앗차의 모든 기능을\n편리하게 이용해 보세요!",
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "닫기", style: .cancel))
+        
+        alert.addAction(UIAlertAction(title: "로그인하기", style: .default) { [weak self] _ in
+            self?.viewModel.handleRoute(route: .backToLogin)
+        })
+        
+        present(alert, animated: true)
     }
 }

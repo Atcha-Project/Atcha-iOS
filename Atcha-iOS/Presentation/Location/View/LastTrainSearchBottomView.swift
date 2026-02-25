@@ -135,19 +135,11 @@ final class LastTrainSearchBottomView: UIView {
 
 extension LastTrainSearchBottomView {
     @objc private func handleCurrentTap() {
-        if isGuest {
-            print("게스트 모드입니다.")
-        } else {
-            actionPublisher.send(.currentTapped)
-        }
+        actionPublisher.send(.currentTapped)
     }
     
     @objc private func handleSearchTap() {
-        if isGuest {
-            print("게스트 모드입니다.")
-        } else {
-            actionPublisher.send(.searchTapped)
-        }
+        actionPublisher.send(.searchTapped)
     }
     
     @objc private func handleDestinationTap() {
