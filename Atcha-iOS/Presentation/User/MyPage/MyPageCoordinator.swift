@@ -17,6 +17,7 @@ final class MyPageCoordinator {
     private var myPageViewModelRef: MyPageViewModel?
     
     var signoutFinish: (() -> Void)?
+    var withdrawFinish: (() -> Void)?
     
     init(navigationController: UINavigationController,
          diContainer: MyPageDIContainer) {
@@ -131,7 +132,7 @@ final class MyPageCoordinator {
     private func showWithdraw() {
         let vm = diContainer.makeWithdrawViewModel()
         vm.signOutFinish = { [weak self] in
-            self?.signoutFinish?()
+            self?.withdrawFinish?()
         }
         let vc = diContainer.makeWithdrawViewController(viewModel: vm)
         navigationController.pushViewController(vc, animated: true)

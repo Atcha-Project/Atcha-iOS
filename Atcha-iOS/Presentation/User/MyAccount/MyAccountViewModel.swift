@@ -28,6 +28,7 @@ final class MyAccountViewModel: BaseViewModel {
                 AppDIContainer.shared.tokenStorage.clearRefreshToken()
                 UserDefaultsWrapper.shared.removeAll()
                 AppDIContainer.shared.locationStateHolder.clear()
+                UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.isGuest.rawValue)
                 await MainActor.run {
                     logout?()
                 }

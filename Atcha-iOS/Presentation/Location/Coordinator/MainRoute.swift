@@ -15,5 +15,5 @@ enum MainRoute {
     case lockScreen(info: LegInfo?, address: String?) // 잠금화면
     case proximity // 가까운 거리 알림 모달
     case dismissLockScreen
-    case backToLogin
+    case loginSheet
 }

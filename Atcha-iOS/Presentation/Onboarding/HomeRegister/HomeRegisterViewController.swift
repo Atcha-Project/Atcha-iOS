@@ -25,7 +25,6 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
     private let currentLocationButton = UIButton()
     private lazy var nextButton = AtchaButton(text: "다음", size: .h52, style: .filled(.disabled)) { [weak self] in
         
-        self?.viewModel.routeHandler?(.pushRegister)
     }
         
     override func viewDidLoad() {
@@ -48,7 +47,6 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
     
     // MARK: - ViewModel 바인딩
     private func bindViewModel() {
-        viewModel.routeHandler?(.permission)
         
         viewModel.$selectedState
             .compactMap { $0 }

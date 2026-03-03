@@ -16,7 +16,6 @@ final class LoginViewModel: BaseViewModel {
     }
     
     var isExistUser: ((Bool) -> Void)?
-    var onFinishWithGuest: (() -> Void)?
     
     func kakaoLoginTapped() {
         Task {
@@ -75,8 +74,7 @@ extension LoginViewModel {
                     AmplitudeManager.shared.flush()
                 }
                 
-                
-                
+                UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.isGuest.rawValue)
                 print("로그인 완료")
             } catch {
                 print("로그인 실패: \(error.localizedDescription)")
@@ -87,6 +85,8 @@ extension LoginViewModel {
     func checkRegistration(provider: LoginType, token: String) {
         Task {
             let request = AuthCheckRequest(provider: provider.rawValue, accessToken: token)
+            
+            print("토큰값 확인: \(request)")
             let result = try await loginUseCase.checkRegistration(request)
             
             UserDefaultsWrapper.shared.set(token, forKey: UserDefaultsWrapper.Key.providerToken.rawValue)
@@ -104,10 +104,5 @@ extension LoginViewModel {
                 break
             }
         }
-    }
-    
-    func guestLoginTapped() {
-        UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.isGuest.rawValue)
-        onFinishWithGuest?()
     }
 }

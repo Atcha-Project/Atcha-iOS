@@ -103,14 +103,11 @@ final class MainViewController: BaseViewController<MainViewModel>,
     private var lastCourseUpdateAt: CFTimeInterval = 0
     private let courseValidWindow: CFTimeInterval = 1.2
     
-    
-    private let isGuest = UserDefaultsWrapper.shared.bool(
-        forKey: UserDefaultsWrapper.Key.isGuest.rawValue
-    ) ?? false
-    private lazy var guestNavigationBar: BackOnlyNavigationBar = AtchaNavigationBar.backOnly(onBack: { [weak self] in
-        
-        self?.viewModel.handleRoute(route: .backToLogin)
-    }, tintColor: AtchaColor.white)
+    private var isGuest: Bool {
+        return UserDefaultsWrapper.shared.bool(
+            forKey: UserDefaultsWrapper.Key.isGuest.rawValue
+        ) ?? false
+    }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -204,7 +201,6 @@ final class MainViewController: BaseViewController<MainViewModel>,
             //            lastTrainRealTimeView,
             //            lastTrainArrivalView,
             ballonView,
-            guestNavigationBar,
             myPageButton
         )
         
@@ -221,12 +217,6 @@ final class MainViewController: BaseViewController<MainViewModel>,
         
         ballonView.isHidden = true
         ballonView.alpha = 0
-        
-        if isGuest {
-            guestNavigationBar.isHidden = false
-        } else {
-            guestNavigationBar.isHidden = true
-        }
     }
     
     private func configureButton(_ button: UIButton, imageName: String, action: Selector) {
@@ -285,15 +275,6 @@ extension MainViewController {
             make.horizontalEdges.equalToSuperview()
             make.top.equalToSuperview()
             make.bottom.equalTo(lastTrainSearchView.snp.top).inset(30)
-        }
-        
-        if isGuest {
-            guestNavigationBar.snp.makeConstraints { make in
-                make.top.equalTo(view.safeAreaLayoutGuide)
-                make.leading.trailing.equalToSuperview()
-            }
-        } else {
-            guestNavigationBar.snp.removeConstraints()
         }
         
         myPageButton.snp.makeConstraints { make in
@@ -1453,18 +1434,6 @@ extension MainViewController: UIGestureRecognizerDelegate {
 
 extension MainViewController {
     private func presentLoginAlert() {
-        let alert = UIAlertController(
-            title: "앗차! 로그인이 필요해요",
-            message: "로그인하고 앗차의 모든 기능을\n편리하게 이용해 보세요!",
-            preferredStyle: .alert
-        )
-        
-        alert.addAction(UIAlertAction(title: "닫기", style: .cancel))
-        
-        alert.addAction(UIAlertAction(title: "로그인하기", style: .default) { [weak self] _ in
-            self?.viewModel.handleRoute(route: .backToLogin)
-        })
-        
-        present(alert, animated: true)
+        self.viewModel.handleRoute(route: .loginSheet)
     }
 }

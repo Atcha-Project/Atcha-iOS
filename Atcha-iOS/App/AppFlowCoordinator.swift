@@ -65,11 +65,27 @@ class AppFlowCoordinator {
         let navigationController = UINavigationController()
         window.rootViewController = navigationController
         mainCoordinator = container.makeMainCoordinator(navigationController: navigationController)
-        mainCoordinator?.signoutFinish = { [weak self] in
-            DispatchQueue.main.async {
-                self?.showLoginFlow()
+        
+        mainCoordinator?.routeToOnboarding = { [weak self] in
+                guard let self = self else { return }
+                DispatchQueue.main.async {
+                    // Main의 네비게이션 컨트롤러를 그대로 사용해서 그 위에 얹음
+                    let onboardingCoordinator = self.container.makeOnboardingCoordinator(navigationController: navigationController)
+                    
+                    // 온보딩이 모두 끝났을 때의 처리
+                    onboardingCoordinator.onFinish = { [weak self] success in
+                        DispatchQueue.main.async {
+                            // 온보딩 완료 시 쌓여있던 온보딩 화면들을 싹 치우고 Main(지도)으로 복귀!
+                            navigationController.popToRootViewController(animated: true)
+                            self?.onboardingCoordinator = nil
+                        }
+                    }
+                    
+                    onboardingCoordinator.start()
+                    self.onboardingCoordinator = onboardingCoordinator // 메모리 유지
+                }
             }
-        }
+        
         mainCoordinator?.lockScreenConfrim = { [weak self] info, address in
             DispatchQueue.main.async {
                 if let info, let address {
@@ -116,12 +132,6 @@ class AppFlowCoordinator {
         loginCoordinator.onFinishWithExistUser = { [weak self] isExist in
             DispatchQueue.main.async {
                 isExist ? self?.showMainFlow() : self?.showOnboardingFlow()
-            }
-        }
-        
-        loginCoordinator.onFinishWithGuest = { [weak self] in
-            DispatchQueue.main.async {
-                self?.showMainFlow()
             }
         }
         
