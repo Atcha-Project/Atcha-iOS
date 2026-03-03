@@ -17,6 +17,7 @@ class AppFlowCoordinator {
     private var loginCoordinator: LoginCoordinator?
     private var onboardingCoordinator: OnboardingCoordinator?
     private var lockScreenCoordinator: LockScreenCoordinator?
+    private var introCoordinator: IntroCoordinator?
     
     init(window: UIWindow, container: AppDIContainer) {
         self.window = window
@@ -37,7 +38,7 @@ class AppFlowCoordinator {
             guard let self else { return }
             switch router {
             case .login:
-                showLoginFlow()
+                showIntroFlow()
             case .main:
                 showMainFlow()
             case .onboarding:
@@ -126,6 +127,22 @@ class AppFlowCoordinator {
         
         loginCoordinator.start()
         self.loginCoordinator = loginCoordinator
+    }
+    
+    private func showIntroFlow() {
+        let navigationController = UINavigationController()
+        window.rootViewController = navigationController
+        
+        let introCoordinator = container.makeIntroCoordinator(navigationController: navigationController)
+        
+        introCoordinator.onFinishWithGuest = { [weak self] in
+            DispatchQueue.main.async {
+                self?.showMainFlow()
+            }
+        }
+        
+        introCoordinator.start()
+        self.introCoordinator = introCoordinator
     }
     
     private func showOnboardingFlow() {
