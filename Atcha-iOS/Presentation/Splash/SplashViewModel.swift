@@ -86,15 +86,21 @@ final class SplashViewModel: BaseViewModel {
             return
         }
         
-        if let _ = wrapper.string(forKey: UserDefaultsWrapper.Key.providerToken.rawValue) { // 로그인만 진행한 경우
-            if let _ = AppDIContainer.shared.tokenStorage.accessToken { // 토큰도 정상적으로 존재하는 경우
-                fetchUserInfo()
+        if AppDIContainer.shared.tokenStorage.accessToken != nil {
+            // 1. 토큰이 있는 경우 (로그인 유저) -> 유저정보 받고 메인으로!
+            fetchUserInfo()
+            routerHandler?(.main)
+        } else {
+            // 2. 토큰이 없는 경우 (신규 유저 or 로그아웃/탈퇴 유저)
+            let hasSeenIntro = wrapper.bool(forKey: UserDefaultsWrapper.Key.hasSeenIntro.rawValue) ?? false
+            
+            if hasSeenIntro {
+                // 이미 인트로를 보고 넘긴 적이 있다면 (그냥 게스트 유저) -> 바로 메인으로!
                 routerHandler?(.main)
             } else {
-                routerHandler?(.onboarding)
+                // 설치 후 처음 켰거나, 탈퇴(초기화) 후 처음 킨 경우 -> 인트로 화면으로!
+                routerHandler?(.intro)
             }
-        } else {
-            routerHandler?(.login)
         }
     }
     

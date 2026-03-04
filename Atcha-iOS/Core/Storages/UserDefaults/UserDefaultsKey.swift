@@ -12,6 +12,7 @@ public extension UserDefaultsWrapper.Key {
     static let providerToken: UserDefaultsWrapper.Key = "providerToken"
     static let userId: UserDefaultsWrapper.Key = "userId"
     static let reVisit: UserDefaultsWrapper.Key = "reVisit"
+    static let hasSeenIntro: UserDefaultsWrapper.Key = "hasSeenIntro"
     
     static let homeLat: UserDefaultsWrapper.Key = "homeLat"
     static let homeLon: UserDefaultsWrapper.Key = "homeLon"

@@ -23,10 +23,7 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
     private let locationAddressLabel = UILabel()
     
     private let currentLocationButton = UIButton()
-    private lazy var nextButton = AtchaButton(text: "다음", size: .h52, style: .filled(.disabled)) { [weak self] in
-        
-    }
-        
+ 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
@@ -93,9 +90,6 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
                 make.height.equalTo(50)
             }
         case .myPage:
-//            viewModel.setupSelectedHome()
-            nextButton.isHidden = true
-            
             titleLabel.snp.remakeConstraints { make in
                 make.height.equalTo(0)
             }
@@ -113,8 +107,7 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
         view.addSubViews(navigationBar,
                          titleLabel,
                          searchLocationContainer,
-                         currentLocationButton,
-                         nextButton)
+                         currentLocationButton)
         searchLocationContainer.addSubview(searchLocationLabel)
         titleLabel.attributedText = AtchaFont.H2_B_22("우리집 또는 귀가 장소를\n알려주세요",
                                                       color: AtchaColor.white)
@@ -132,9 +125,6 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
         currentLocationButton.layer.borderColor = AtchaColor.gray800.cgColor
         currentLocationButton.tintColor = .white
         setupLocationButton(title: "현위치 찾기", icon: UIImage.mylocationOutlined)
-        
-        nextButton.isEnabled = false
-        nextButton.updateStyle(text: "다음", style: .filled(.disabled))
     }
     
     private func setupAutoLayout() {
@@ -160,10 +150,6 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
         searchLocationLabel.snp.makeConstraints {
             $0.leading.equalToSuperview().offset(16)
             $0.centerY.equalToSuperview()
-        }
-        nextButton.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview().inset(16)
-            make.bottom.equalTo(view.safeAreaLayoutGuide).inset(20)
         }
     }
     
@@ -204,9 +190,6 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
             $0.centerY.equalToSuperview()
         }
         setupLocationButton(title: "수정하기", icon: nil)
-        
-        nextButton.isEnabled = true
-        nextButton.updateStyle(text: "다음", style: .filled(.primary))
     }
     
     // MARK: - 현위치 찾기 Button

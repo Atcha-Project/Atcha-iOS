@@ -21,6 +21,7 @@ final class MainCoordinator {
     var routeToOnboarding: (() -> Void)?
     var lockScreenConfrim: ((LegInfo?, String?) -> Void)?
     var routeHandler: ((MainRoute) -> Void)?
+    var withdrawFinish: (() -> Void)?
     
     init(navigationController: UINavigationController,
          diContainer: MainDIContainer) {
@@ -68,6 +69,11 @@ final class MainCoordinator {
                     
                     
                     self.myPageCoordinator = nil
+                }
+            }
+            myPageCoordinator.withdrawFinish = { [weak self] in
+                DispatchQueue.main.async {
+                    self?.withdrawFinish?()
                 }
             }
             
