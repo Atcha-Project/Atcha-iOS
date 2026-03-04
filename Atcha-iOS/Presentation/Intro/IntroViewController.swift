@@ -45,8 +45,6 @@ final class IntroViewController: BaseViewController<IntroViewModel> {
         setupUI()
         setupButtons()
         setupAutoLayout()
-        
-        UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.isGuest.rawValue)
     }
     
     override func viewDidLayoutSubviews() {
