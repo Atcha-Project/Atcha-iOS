@@ -43,17 +43,17 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         bindView()
         bindFollowLogic()
         installMapUserGestureDetector()
-//#if DEBUG
-//// ✅ 서울아산병원(대략)
-//viewModel.mockLocation = CLLocationCoordinate2D(latitude:37.566956, longitude: 126.979406)
-//viewModel.currentLocation = viewModel.mockLocation
-//#endif
+        //#if DEBUG
+        //// ✅ 서울아산병원(대략)
+        //viewModel.mockLocation = CLLocationCoordinate2D(latitude:37.566956, longitude: 126.979406)
+        //viewModel.currentLocation = viewModel.mockLocation
+        //#endif
         
     }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-
+        
         if !isAlarmFired && !allCoordinates.isEmpty {
             mapContainerView.adjustMapToFit(coordinates: allCoordinates)
             
@@ -248,38 +248,38 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             .store(in: &cancellables)
         
         Publishers.CombineLatest(viewModel.$legTrafficInfo, viewModel.$legtPathInfo)
-                .receive(on: DispatchQueue.global(qos: .userInitiated))
-                .sink { [weak self] trafficInfos, pathInfos in
-                    guard let self else { return }
-                    guard !trafficInfos.isEmpty, !pathInfos.isEmpty else { return }
-
-                    var dict: [UUID: [CLLocationCoordinate2D]] = [:]
-
-                    for (traffic, path) in zip(trafficInfos, pathInfos) {
-                        guard traffic.mode == path.mode else { continue }
-
-                        if let shape = path.passShape, !shape.isEmpty {
-                            dict[traffic.id] = self.convertShapeToCoords(shape)
-                            continue
-                        }
-
-                        if let steps = path.step, !steps.isEmpty {
-                            let merged = steps
-                                .compactMap { $0.linestring }
-                                .filter { !$0.isEmpty }
-                                .joined(separator: " ")
-
-                            if !merged.isEmpty {
-                                dict[traffic.id] = self.convertShapeToCoords(merged)
-                            }
-                        }
+            .receive(on: DispatchQueue.global(qos: .userInitiated))
+            .sink { [weak self] trafficInfos, pathInfos in
+                guard let self else { return }
+                guard !trafficInfos.isEmpty, !pathInfos.isEmpty else { return }
+                
+                var dict: [UUID: [CLLocationCoordinate2D]] = [:]
+                
+                for (traffic, path) in zip(trafficInfos, pathInfos) {
+                    guard traffic.mode == path.mode else { continue }
+                    
+                    if let shape = path.passShape, !shape.isEmpty {
+                        dict[traffic.id] = self.convertShapeToCoords(shape)
+                        continue
                     }
-
-                    DispatchQueue.main.async { [weak self] in
-                        self?.legPolylineById = dict
+                    
+                    if let steps = path.step, !steps.isEmpty {
+                        let merged = steps
+                            .compactMap { $0.linestring }
+                            .filter { !$0.isEmpty }
+                            .joined(separator: " ")
+                        
+                        if !merged.isEmpty {
+                            dict[traffic.id] = self.convertShapeToCoords(merged)
+                        }
                     }
                 }
-                .store(in: &cancellables)
+                
+                DispatchQueue.main.async { [weak self] in
+                    self?.legPolylineById = dict
+                }
+            }
+            .store(in: &cancellables)
     }
     
     private func bindFollowLogic() {
@@ -289,10 +289,10 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             .receive(on: RunLoop.main)
             .sink { [weak self] coord in
                 guard let self else { return }
-
+                
                 // 1) 유저 마커 업데이트 (메인)
                 self.mapContainerView.updateUserMarker(location: coord)
-
+                
                 // 2) 지도 follow 로직 (메인)
                 if self.isAlarmFired {
                     // 알람 울린 후엔 계속 따라감
@@ -302,39 +302,39 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
                     self.mapContainerView.setupZoomCenter(location: coord)
                 }
                 // else: fit 유지 (건드리지 않음)
-
+                
                 // 3) 근처(150m) 지나가면 반짝임 계산 (백그라운드)
                 let threshold: CLLocationDistance = 150
-
+                
                 let polylines = self.legPolylineById
                 let orderedLegs = self.viewModel.legTrafficInfo   // ✅ 화면 표시 순서(위→아래)
-
+                
                 DispatchQueue.global(qos: .userInitiated).async { [weak self] in
                     guard let self else { return }
-
+                    
                     // 1) near 후보들을 Set으로 수집
                     var nearCandidates = Set<UUID>()
-
+                    
                     for (id, polyline) in polylines {
                         let d = self.distanceToPolylineMeters(point: coord, polyline: polyline)
                         if d <= threshold {
                             nearCandidates.insert(id)
                         }
                     }
-
+                    
                     // 2) ✅ "위에 있는 셀 우선" = orderedLegs 순서로 첫 매칭 1개만 남김
                     var picked: Set<UUID> = []
                     if let first = orderedLegs.first(where: { nearCandidates.contains($0.id) })?.id {
                         picked = [first]
                     }
-
+                    
                     DispatchQueue.main.async { [weak self] in
                         self?.viewModel.nearLegIDs = picked
                     }
                 }
             }
             .store(in: &cancellables)
-
+        
         // 헤딩
         viewModel.$deviceHeading
             .compactMap { $0 }
@@ -411,41 +411,44 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
     }
     
     @objc private func didTapAlarmRegister() {
-        let busLegs = viewModel.legTrafficInfo.filter { $0.mode == .bus }
-        let busCount = busLegs.count
-        let hasSubway = viewModel.legTrafficInfo.contains { $0.mode == .subway }
-        let hasLongWaitBus = busLegs.contains { ($0.targetBusTerm ?? 0) >= 40 }
-        
-        let isException = (busCount == 1) && (hasSubway == false)
-        
-        let shouldShowPopup = hasLongWaitBus && !isException
-        
-        let routeId = viewModel.infos.pathInfo.first?.routeId
-        
-        let alarmRequest = AlarmRequest(lastRouteId: routeId)
-        let isAlarmRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
-        
-        if isAlarmRegistered {
-            if shouldShowPopup {
-                showCoursePopup(alarmRequest)
+        self.ensureAlarmPermissionAndExecute { [weak self] in
+            guard let self = self else { return }
+            
+            let busLegs = self.viewModel.legTrafficInfo.filter { $0.mode == .bus }
+            let busCount = busLegs.count
+            let hasSubway = self.viewModel.legTrafficInfo.contains { $0.mode == .subway }
+            let hasLongWaitBus = busLegs.contains { ($0.targetBusTerm ?? 0) >= 40 }
+            
+            let isException = (busCount == 1) && (hasSubway == false)
+            let shouldShowPopup = hasLongWaitBus && !isException
+            
+            let routeId = self.viewModel.infos.pathInfo.first?.routeId
+            let alarmRequest = AlarmRequest(lastRouteId: routeId)
+            let isAlarmRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
+            
+            if isAlarmRegistered {
+                if shouldShowPopup {
+                    self.showCoursePopup(alarmRequest)
+                } else {
+                    self.showRe_RegisterPopup(alarmRequest)
+                }
             } else {
-                showRe_RegisterPopup(alarmRequest)
-            }
-        } else {
-            if shouldShowPopup {
-                showCoursePopup(alarmRequest)
-            } else {
-                viewModel.alarmRegister(alarmRequest)
-                viewModel.getAlarmTapped?(viewModel.address, viewModel.infos)
-                let dwellSeconds = AmplitudeManager.shared.timerEndSeconds("alarm_dwell")
-                AmplitudeManager.shared.track(
-                    .another_alarm_register,
-                    props(
-                        AmplitudeProperty.dwellTime(seconds: dwellSeconds)
+                if shouldShowPopup {
+                    self.showCoursePopup(alarmRequest)
+                } else {
+                    self.viewModel.alarmRegister(alarmRequest)
+                    self.viewModel.getAlarmTapped?(self.viewModel.address, self.viewModel.infos)
+                    
+                    let dwellSeconds = AmplitudeManager.shared.timerEndSeconds("alarm_dwell")
+                    AmplitudeManager.shared.track(
+                        .another_alarm_register,
+                        props(
+                            AmplitudeProperty.dwellTime(seconds: dwellSeconds)
+                        )
                     )
-                )
+                }
             }
-        }
+        } 
     }
     
     private func applyMapModeOnAppearOrAlarmChange() {
@@ -460,7 +463,7 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             isFollowingUser = false
             shouldCenterToCurrentLocationOnce = false
             viewModel.stopHeading()
-
+            
             // 화면 재진입 때마다 fit으로 "다시" 고정하려면 매번 호출
             mapContainerView.adjustMapToFit(coordinates: allCoordinates)
             lastRouteFitApplied = true
@@ -481,11 +484,11 @@ extension DetailRouteViewController {
     
     @objc private func didTapLocationButton() {
         ensureLocationPermissionOrShowToast()
-
+        
         isFollowingUser = true
         shouldCenterToCurrentLocationOnce = true
         viewModel.startHeading()
-
+        
         viewModel.setupLocation()
         
         mapContainerView.snp.remakeConstraints { make in
@@ -497,15 +500,15 @@ extension DetailRouteViewController {
     
     @objc private func didTapReload() {
         refreshButton.start()
-
+        
         if !isAlarmFired {
             isFollowingUser = false
             shouldCenterToCurrentLocationOnce = false
             viewModel.stopHeading()
-
+            
             mapContainerView.adjustMapToFit(coordinates: allCoordinates)
         }
-
+        
         viewModel.fetchInfo()
         AmplitudeManager.shared.track(.course_refresh_click)
     }
@@ -597,33 +600,33 @@ extension DetailRouteViewController {
         polyline: [CLLocationCoordinate2D]
     ) -> CLLocationDistance {
         guard polyline.count >= 2 else { return .greatestFiniteMagnitude }
-
+        
         let p = MKMapPoint(point)
         var best = CLLocationDistance.greatestFiniteMagnitude
-
+        
         for i in 0..<(polyline.count - 1) {
             let a = MKMapPoint(polyline[i])
             let b = MKMapPoint(polyline[i + 1])
-
+            
             let abx = b.x - a.x
             let aby = b.y - a.y
             let apx = p.x - a.x
             let apy = p.y - a.y
-
+            
             let ab2 = abx*abx + aby*aby
             if ab2 == 0 { // 같은 점이면 점-점 거리
                 best = min(best, p.distance(to: a))
                 continue
             }
-
+            
             // 투영 비율 t를 0~1로 clamp
             var t = (apx*abx + apy*aby) / ab2
             t = max(0, min(1, t))
-
+            
             let closest = MKMapPoint(x: a.x + t*abx, y: a.y + t*aby)
             best = min(best, p.distance(to: closest))
         }
-
+        
         return best
     }
 }
@@ -631,28 +634,28 @@ extension DetailRouteViewController {
 extension DetailRouteViewController: UIGestureRecognizerDelegate {
     private func installMapUserGestureDetector() {
         let targetView = mapContainerView.gestureTargetView
-
+        
         let pan = UIPanGestureRecognizer(target: self, action: #selector(userDidManipulateMap))
         pan.cancelsTouchesInView = false
         pan.delegate = self
         targetView.addGestureRecognizer(pan)
-
+        
         let pinch = UIPinchGestureRecognizer(target: self, action: #selector(userDidManipulateMap))
         pinch.cancelsTouchesInView = false
         pinch.delegate = self
         targetView.addGestureRecognizer(pinch)
-
+        
         let rotate = UIRotationGestureRecognizer(target: self, action: #selector(userDidManipulateMap))
         rotate.cancelsTouchesInView = false
         rotate.delegate = self
         targetView.addGestureRecognizer(rotate)
     }
-
+    
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer,
                            shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
         true
     }
-
+    
     @objc private func userDidManipulateMap(_ g: UIGestureRecognizer) {
         if g.state == .began {
             isFollowingUser = false

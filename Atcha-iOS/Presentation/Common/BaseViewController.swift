@@ -244,31 +244,77 @@ extension BaseViewController {
     }
 }
 
+
 extension BaseViewController {
-    func ensureAlarmPermissionOrShowToast() -> Bool {
+    
+    /// 권한을 확인하고, 없으면 요청하거나(최초) 알럿/토스트를 띄웁니다.
+    /// - Parameter completion: 권한이 허용되었을 때 실행할 클로저 (등록 진행)
+    func ensureAlarmPermissionAndExecute(completion: @escaping () -> Void) {
         let center = UNUserNotificationCenter.current()
-        var isAuthorized = false
-        let semaphore = DispatchSemaphore(value: 0)
         
-        center.getNotificationSettings { settings in
-            switch settings.authorizationStatus {
-            case .authorized, .provisional:
-                isAuthorized = true
-            default:
-                isAuthorized = false
+        center.getNotificationSettings { [weak self] settings in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                
+                switch settings.authorizationStatus {
+                case .authorized, .provisional:
+                    // 1. 이미 허용되어 있음 -> 바로 콜백 실행
+                    self.activeAlarmPermissionToast?.hideImmediately()
+                    self.activeAlarmPermissionToast = nil
+                    completion()
+                    
+                case .notDetermined:
+                    // 2. 최초 요청 -> 권한 묻기 시스템 팝업 띄움
+                    center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
+                        DispatchQueue.main.async {
+                            if granted {
+                                // 사용자가 '허용'을 누름 -> 콜백 실행
+                                completion()
+                            } else {
+                                // 사용자가 '거절'을 누름 -> 최초 1회 Alert 띄우기
+                                self.handleAlarmPermissionDenied()
+                            }
+                        }
+                    }
+                    
+                case .denied, .ephemeral:
+                    // 3. 이미 거절된 상태 -> 토스트 띄우기
+                    self.showAlarmPermissionToast()
+                    
+                @unknown default:
+                    break
+                }
             }
-            semaphore.signal()
         }
+    }
+    
+    // MARK: - 거절/토스트 처리 헬퍼 함수
+    
+    private func handleAlarmPermissionDenied() {
+        let hasShownAlert = UserDefaults.standard.bool(forKey: "hasShownAlarmDeniedAlert")
         
-        semaphore.wait()
-        
-        if isAuthorized {
-            activeAlarmPermissionToast?.hideImmediately()
-            activeAlarmPermissionToast = nil
-            return true
+        if !hasShownAlert {
+            // 최초 거절 시 1회 Alert
+            UserDefaults.standard.set(true, forKey: "hasShownAlarmDeniedAlert")
+            
+            let alert = UIAlertController(
+                title: nil,
+                message: "알림을 허용하지 않으면\n막차 알람이 울리지 못해요.",
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: "닫기", style: .cancel, handler: nil))
+            alert.addAction(UIAlertAction(title: "설정하기", style: .default) { _ in
+                guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+                UIApplication.shared.open(url)
+            })
+            present(alert, animated: true)
+        } else {
+            // 그 이후에는 토스트
+            showAlarmPermissionToast()
         }
-        
-        // 권한 없으면: 토스트는 띄우되 진행은 막지 않음
+    }
+    
+    private func showAlarmPermissionToast() {
         activeAlarmPermissionToast?.hideImmediately()
         
         let toast = AtchaActionToast(
@@ -282,7 +328,5 @@ extension BaseViewController {
         
         activeAlarmPermissionToast = toast
         toast.show(in: view, duration: 5.0, topOffset: 10)
-        
-        return true
     }
 }

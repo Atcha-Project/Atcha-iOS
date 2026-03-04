@@ -114,12 +114,6 @@ final class HomeRegisterViewModel: BaseViewModel {
         }
     }
     
-//    func requestAuth() {
-//        Task {
-//            _ = await requestUseCase.askLocationPermission()
-//            _ = await requestUseCase.askPushPermission()
-//        }
-//    }
     
     func setupSelectedHome() {
         let name: String = locationStateHolder.buildingName ?? ""

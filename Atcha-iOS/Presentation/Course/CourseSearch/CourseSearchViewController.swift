@@ -253,47 +253,49 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
         
         cell.onGetAlarmTapped = { [weak self] in
             guard let self else { return }
-            let course = model.course
-            
-            let pathInfo: [LegPathInfo] = model.course.toLegPathInfos()
-            let trafficInfo: [LegTrafficInfo] = model.course.toLegTrafficInfos()
-            let busInfo: [BusDetailInfo] = model.course.toBusInfos()
-            
-            let alarmRequest = AlarmRequest(lastRouteId: model.course.routeId)
-            let alarmTapped = (viewModel.startAddress, LegInfo(pathInfo: pathInfo, trafficInfo: trafficInfo, busInfo: busInfo))
-            
-            let busLegs = trafficInfo.filter { $0.mode == .bus }
-            let busCount = busLegs.count
-            let hasSubway = trafficInfo.contains { $0.mode == .subway }
-            let hasLongWaitBus = busLegs.contains { ($0.targetBusTerm ?? 0) >= 40 }
-            
-            let isException = (busCount == 1) && (hasSubway == false)
-            
-            let shouldShowPopup = hasLongWaitBus && !isException
-            
-            let isAlarmRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
-            
-            if isAlarmRegistered {
-                if shouldShowPopup {
-                    showCoursePopup(alarmRequest, alarmTapped)
+            self.ensureAlarmPermissionAndExecute {
+                let course = model.course
+                
+                let pathInfo: [LegPathInfo] = model.course.toLegPathInfos()
+                let trafficInfo: [LegTrafficInfo] = model.course.toLegTrafficInfos()
+                let busInfo: [BusDetailInfo] = model.course.toBusInfos()
+                
+                let alarmRequest = AlarmRequest(lastRouteId: model.course.routeId)
+                let alarmTapped = (self.viewModel.startAddress, LegInfo(pathInfo: pathInfo, trafficInfo: trafficInfo, busInfo: busInfo))
+                
+                let busLegs = trafficInfo.filter { $0.mode == .bus }
+                let busCount = busLegs.count
+                let hasSubway = trafficInfo.contains { $0.mode == .subway }
+                let hasLongWaitBus = busLegs.contains { ($0.targetBusTerm ?? 0) >= 40 }
+                
+                let isException = (busCount == 1) && (hasSubway == false)
+                
+                let shouldShowPopup = hasLongWaitBus && !isException
+                
+                let isAlarmRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
+                
+                if isAlarmRegistered {
+                    if shouldShowPopup {
+                        self.showCoursePopup(alarmRequest, alarmTapped)
+                    } else {
+                        self.showRe_RegisterPopup(alarmRequest, alarmTapped)
+                    }
                 } else {
-                    showRe_RegisterPopup(alarmRequest, alarmTapped)
-                }
-            } else {
-                if shouldShowPopup {
-                    showCoursePopup(alarmRequest, alarmTapped)
-                } else {
-                    viewModel.alarmRegister(alarmRequest)
-                    viewModel.getAlarmTapped?(alarmTapped.0, alarmTapped.1)
-                    
-                    let dwellSeconds = AmplitudeManager.shared.timerEndSeconds("alarm_dwell")
-                    AmplitudeManager.shared.track(
-                        .alarm_register,
-                        props(
-                            AmplitudeProperty.dwellTime(seconds: dwellSeconds)
+                    if shouldShowPopup {
+                        self.showCoursePopup(alarmRequest, alarmTapped)
+                    } else {
+                        self.viewModel.alarmRegister(alarmRequest)
+                        self.viewModel.getAlarmTapped?(alarmTapped.0, alarmTapped.1)
+                        
+                        let dwellSeconds = AmplitudeManager.shared.timerEndSeconds("alarm_dwell")
+                        AmplitudeManager.shared.track(
+                            .alarm_register,
+                            props(
+                                AmplitudeProperty.dwellTime(seconds: dwellSeconds)
+                            )
                         )
-                    )
-                    navigationController?.popToRootViewController(animated: true)
+                        self.navigationController?.popToRootViewController(animated: true)
+                    }
                 }
             }
         }

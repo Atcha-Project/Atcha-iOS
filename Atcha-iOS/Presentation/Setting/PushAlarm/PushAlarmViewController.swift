@@ -59,7 +59,6 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
         
         AmplitudeManager.shared.trackScreen(.alarm_setting)
         
-        ensureAlarmPermissionOrShowToast()
     }
     
     override func viewDidLoad() {
