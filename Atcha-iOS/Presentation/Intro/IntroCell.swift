@@ -8,8 +8,8 @@
 import UIKit
 import SnapKit
 
-final class LoginIntroCell: UICollectionViewCell {
-    static let id = "LoginIntroCell"
+final class IntroCell: UICollectionViewCell {
+    static let id = "IntroCell"
     
     private let titleLabel = UILabel()
     private let imageView = UIImageView()
@@ -26,8 +26,8 @@ final class LoginIntroCell: UICollectionViewCell {
         setupAutoLayout()
     }
     
-    func configure(info: LoginIntro) {
-        titleLabel.attributedText = AtchaFont.H1_B_26(info.title, color: AtchaColor.white, alignment: .center)
+    func configure(info: Intro) {
+        titleLabel.attributedText = AtchaFont.H2_B_22(info.title, color: AtchaColor.white, alignment: .center)
         imageView.image = info.image
     }
     
@@ -38,17 +38,16 @@ final class LoginIntroCell: UICollectionViewCell {
     }
     
     private func setupAutoLayout() {
-        titleLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(30)
+        imageView.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(125.34)
             make.centerX.equalToSuperview()
+            make.horizontalEdges.equalToSuperview()
+            make.height.equalTo(imageView.snp.width).multipliedBy(415.32 / 392.0)
         }
         
-        imageView.snp.makeConstraints { make in
-            make.top.equalTo(titleLabel.snp.bottom).offset(60)
+        titleLabel.snp.makeConstraints { make in
+            make.top.equalTo(imageView.snp.bottom).offset(40)
             make.centerX.equalToSuperview()
-            make.width.equalToSuperview().multipliedBy(0.8)
-            make.height.equalTo(imageView.snp.width).multipliedBy(320.0 / 350.0)
-//            make.bottom.lessThanOrEqualToSuperview().inset(40)
         }
     }
 }

@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "Step2.png",
+      "filename" : "step2.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "Step2@2x.png",
+      "filename" : "step2@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "Step2@3x.png",
+      "filename" : "step2@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

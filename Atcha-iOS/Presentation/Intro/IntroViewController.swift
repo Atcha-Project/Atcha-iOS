@@ -32,8 +32,8 @@ final class IntroViewController: BaseViewController<IntroViewModel> {
         collectionView.backgroundColor = .clear
         collectionView.isPagingEnabled = true
         collectionView.showsHorizontalScrollIndicator = false
-        collectionView.register(LoginIntroCell.self,
-                                forCellWithReuseIdentifier: LoginIntroCell.id)
+        collectionView.register(IntroCell.self,
+                                forCellWithReuseIdentifier: IntroCell.id)
         collectionView.delegate = self
         collectionView.dataSource = self
         return collectionView
@@ -56,7 +56,7 @@ final class IntroViewController: BaseViewController<IntroViewModel> {
         
         // 컬렉션뷰 레이아웃이 완료된 후 중간 위치로 초기화
         if isInitialSetup {
-            let itemCount = LoginIntro.allCases.count
+            let itemCount = Intro.allCases.count
             let middleIndex = itemCount * (multiplier / 2)
             let indexPath = IndexPath(item: middleIndex, section: 0)
             collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: false)
@@ -93,9 +93,9 @@ final class IntroViewController: BaseViewController<IntroViewModel> {
         gradientLayer.endPoint = CGPoint(x: 0.5, y: 1.0)
         backgroundImageView.layer.insertSublayer(gradientLayer, at: 0)
         
-        pageControl.numberOfPages = LoginIntro.allCases.count
+        pageControl.numberOfPages = Intro.allCases.count
         pageControl.currentPage = 0
-        pageControl.currentPageIndicatorTintColor = AtchaColor.main
+        pageControl.currentPageIndicatorTintColor = AtchaColor.white
         pageControl.pageIndicatorTintColor = AtchaColor.gray300
         pageControl.isUserInteractionEnabled = false
     }
@@ -105,15 +105,16 @@ final class IntroViewController: BaseViewController<IntroViewModel> {
             make.edges.equalToSuperview()
         }
         
-        pageControl.snp.makeConstraints { make in
-            make.centerX.equalToSuperview()
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(56)
+        collectionView.snp.makeConstraints { make in
+            make.top.equalToSuperview()
+            make.horizontalEdges.equalToSuperview()
+            make.bottom.equalTo(pageControl.snp.top).offset(-32) // 페이지 컨트롤과의 간격
         }
         
-        collectionView.snp.makeConstraints { make in
-            make.horizontalEdges.equalToSuperview()
-            make.top.equalTo(pageControl.snp.bottom)
-            make.bottom.equalTo(guestLoginButton.snp.top)
+        pageControl.snp.makeConstraints { make in
+            make.centerX.equalToSuperview()
+            make.bottom.equalTo(guestLoginButton.snp.top).offset(-81.34)
+            make.height.equalTo(6)
         }
         
         guestLoginButton.snp.makeConstraints { make in
@@ -124,7 +125,7 @@ final class IntroViewController: BaseViewController<IntroViewModel> {
     }
     
     @objc private func goToNextPage() {
-        let itemsPerPage = LoginIntro.allCases.count
+        let itemsPerPage = Intro.allCases.count
         let currentOffset = collectionView.contentOffset.x
         let pageWidth = collectionView.bounds.width
         let currentPage = Int(currentOffset / pageWidth)
@@ -199,18 +200,18 @@ extension IntroViewController: ASAuthorizationControllerPresentationContextProvi
 extension IntroViewController: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         // 무한 스크롤을 위해 실제 아이템 수의 배수만큼 생성
-        return LoginIntro.allCases.count * multiplier
+        return Intro.allCases.count * multiplier
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: LoginIntroCell.id, for: indexPath) as? LoginIntroCell else {
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: IntroCell.id, for: indexPath) as? IntroCell else {
             
             return UICollectionViewCell()
         }
         
         // 실제 인덱스로 변환 (0-5 범위로 순환)
-        let actualIndex = indexPath.item % LoginIntro.allCases.count
-        cell.configure(info: LoginIntro.allCases[actualIndex])
+        let actualIndex = indexPath.item % Intro.allCases.count
+        cell.configure(info: Intro.allCases[actualIndex])
         return cell
     }
     
@@ -222,7 +223,7 @@ extension IntroViewController: UICollectionViewDataSource, UICollectionViewDeleg
     }
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        let itemsPerPage = LoginIntro.allCases.count
+        let itemsPerPage = Intro.allCases.count
         let pageWidth = scrollView.frame.width
         let currentPage = Int(scrollView.contentOffset.x / pageWidth + 0.5)
         
@@ -241,7 +242,7 @@ extension IntroViewController: UICollectionViewDataSource, UICollectionViewDeleg
     
     // 스크롤 위치가 끝에 가까워지면 중간으로 재배치
     private func resetScrollPositionIfNeeded() {
-        let itemsPerPage = LoginIntro.allCases.count
+        let itemsPerPage = Intro.allCases.count
         let pageWidth = collectionView.bounds.width
         let currentPage = Int(collectionView.contentOffset.x / pageWidth + 0.5)
         let totalPages = itemsPerPage * multiplier
