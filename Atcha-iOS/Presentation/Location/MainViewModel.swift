@@ -35,7 +35,7 @@ final class MainViewModel: BaseViewModel{
     @Published var showAlarmStopPopUpView: Bool = false
     
     @Published var departureStr: String?
-//    @Published var currentCourse: CLLocationDirection?
+    //    @Published var currentCourse: CLLocationDirection?
     @Published var deviceHeading: CLLocationDirection?
     private let headingManager = HeadingManager()
     
@@ -53,6 +53,8 @@ final class MainViewModel: BaseViewModel{
     var routeHandler: ((MainRoute) -> Void)?
     var courseSearchResultHandler: ((String, LegInfo) -> Void)?
     @Published private(set) var lastReverseGeocode: Location?
+    
+    @Published var showLocationDeniedAlert: Bool = false
     
     init(authorizationUseCase: RequestLocationAuthorizationUseCase,
          streamUseCase: ObserveLocationStreamUseCase,
@@ -195,8 +197,14 @@ final class MainViewModel: BaseViewModel{
     func requestPermissionAndStartTracking() {
         Task {
             let status = await authorizationUseCase.askLocationPermission()
-            let _ = await authorizationUseCase.askPushPermission()
-            guard status == .authorizedAlways || status == .authorizedWhenInUse else { return }
+            guard status == .authorizedAlways || status == .authorizedWhenInUse else {
+                let hasShown = UserDefaults.standard.bool(forKey: "hasShownMainLocationAlert")
+                if (status == .denied || status == .restricted) && !hasShown {
+                    UserDefaults.standard.set(true, forKey: "hasShownMainLocationAlert")
+                    await MainActor.run { self.showLocationDeniedAlert = true }
+                }
+                return
+            }
             
             self.startHeading()
             
@@ -210,10 +218,10 @@ final class MainViewModel: BaseViewModel{
                         didSendInitialLocation = true
                     }
                     
-//                    let course = location.course
-//                    if course >= 0 {
-//                        self.currentCourse = course
-//                    }
+                    //                    let course = location.course
+                    //                    if course >= 0 {
+                    //                        self.currentCourse = course
+                    //                    }
                     
                     selectedLocation = currentLocation
                 }

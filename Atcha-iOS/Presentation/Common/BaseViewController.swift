@@ -220,7 +220,7 @@ extension BaseViewController {
         case .authorizedAlways, .authorizedWhenInUse:
             activePermissionToast?.hideImmediately()
             activePermissionToast = nil
-            return true
+            return true 
             
         case .denied, .restricted, .notDetermined:
             activePermissionToast?.hideImmediately()
@@ -236,9 +236,10 @@ extension BaseViewController {
             activePermissionToast = toast
             toast.show(in: view, duration: 2.0, topOffset: 10)
             
-            return true
+            return false
+            
         @unknown default:
-            return true
+            return false
         }
     }
 }

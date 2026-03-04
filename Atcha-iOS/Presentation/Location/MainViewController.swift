@@ -121,7 +121,6 @@ final class MainViewController: BaseViewController<MainViewModel>,
         
         if !isAlarmRegistered {
             isFollowingUser = false
-            ensureLocationPermissionOrShowToast()
         }
         
         if shouldShowWelcomeToast {
@@ -141,7 +140,6 @@ final class MainViewController: BaseViewController<MainViewModel>,
             // 원래 있던 일반적인 권한 체크 (온보딩 직후가 아닐 때만)
             if !isAlarmRegistered {
                 isFollowingUser = false
-                ensureLocationPermissionOrShowToast()
             }
         }
         
@@ -323,6 +321,18 @@ extension MainViewController {
         bindLockView()
         bindAlarmTimeoutView()
         bindDeviceHeadingUpdates()
+        bindPermissionAlert()
+    }
+    
+    private func bindPermissionAlert() {
+        viewModel.$showLocationDeniedAlert
+            .filter { $0 }
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                self?.presentLocationDeniedAlert()
+                self?.viewModel.showLocationDeniedAlert = false // 띄운 뒤 신호 초기화
+            }
+            .store(in: &cancellables)
     }
     
     // MARK: - bind Lock View
@@ -627,10 +637,6 @@ extension MainViewController {
             .sink { [weak self] heading in
                 guard let self else { return }
                 guard self.isFollowingUser else { return }
-                
-                //                let now = CACurrentMediaTime()
-                //                let hasRecentCourse = (now - self.lastCourseUpdateAt) < self.courseValidWindow
-                //                guard !hasRecentCourse else { return }
                 
                 self.mapContainerView.setHeading(heading)
             }
@@ -1109,7 +1115,7 @@ extension MainViewController {
     }
     
     @objc private func didTapLocationButton() {
-        ensureLocationPermissionOrShowToast()
+        guard ensureLocationPermissionOrShowToast() else { return }
         
         isFollowingUser = true
         shouldCenterToCurrentLocationOnce = true
@@ -1420,7 +1426,16 @@ extension MainViewController {
     }
     
     func mapView(_ mapView: TMapWrapper, didSelectLocation coordinate: CLLocationCoordinate2D) {
+        self.isFollowingUser = false
+        self.viewModel.stopHeading()
         viewModel.currentLocation = coordinate
+    }
+    
+    func mapViewDidStartScroll(_ mapView: TMapWrapper) {
+        if self.isFollowingUser {
+            self.isFollowingUser = false
+            self.viewModel.stopHeading()
+        }
     }
 }
 
@@ -1452,6 +1467,7 @@ extension MainViewController: UIGestureRecognizerDelegate {
     @objc private func userDidManipulateMap(_ g: UIGestureRecognizer) {
         if g.state == .began {
             isFollowingUser = false
+            viewModel.stopHeading()
         }
     }
 }
@@ -1459,5 +1475,26 @@ extension MainViewController: UIGestureRecognizerDelegate {
 extension MainViewController {
     private func presentLoginAlert() {
         self.viewModel.handleRoute(route: .loginSheet)
+    }
+}
+
+extension MainViewController {
+    private func presentLocationDeniedAlert() {
+        let alert = UIAlertController(
+            title: nil,
+            message: "위치 권한을 허용하지 않으면\n현위치의 막차를 확인할 수 없어요.",
+            preferredStyle: .alert
+        )
+        
+        // 닫기: 메인에서는 푸시 권한으로 넘어갈 필요가 없으므로 그냥 닫히게만 둡니다.
+        alert.addAction(UIAlertAction(title: "닫기", style: .cancel, handler: nil))
+        
+        // 설정하기: 설정 앱으로 이동
+        alert.addAction(UIAlertAction(title: "설정하기", style: .default) { _ in
+            guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+            UIApplication.shared.open(url)
+        })
+        
+        present(alert, animated: true)
     }
 }

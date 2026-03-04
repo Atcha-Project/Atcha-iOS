@@ -234,5 +234,7 @@ extension HomeFindViewController {
     func mapView(_ mapView: TMapWrapper, didSelectLocation coordinate: CLLocationCoordinate2D) {
         viewModel.currentLocation = coordinate
     }
+    
+    func mapViewDidStartScroll(_ mapView: TMapWrapper) {}
 }
 
