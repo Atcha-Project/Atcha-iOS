@@ -220,9 +220,9 @@ extension BaseViewController {
         case .authorizedAlways, .authorizedWhenInUse:
             activePermissionToast?.hideImmediately()
             activePermissionToast = nil
-            return true 
+            return true
             
-        case .denied, .restricted, .notDetermined:
+        case .denied, .restricted:
             activePermissionToast?.hideImmediately()
             
             let toast = AtchaActionToast(
@@ -235,7 +235,11 @@ extension BaseViewController {
             
             activePermissionToast = toast
             toast.show(in: view, duration: 2.0, topOffset: 10)
+            return false
             
+        case .notDetermined:
+            // 💡 아직 권한을 묻기 전이거나 '한 번만 허용' 세션이 만료된 상태입니다.
+            // 이때는 토스트를 띄우지 않고 false만 반환하여 시스템 팝업이 뜰 기회를 줍니다.
             return false
             
         @unknown default:
