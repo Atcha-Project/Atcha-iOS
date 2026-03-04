@@ -25,11 +25,11 @@ final class PushAlarmSheetViewController: BaseViewController<PushAlarmSheetViewM
         return label
     }()
     
-    private let closeButton: UIButton = {
-        let button = UIButton(type: .custom)
-        button.setImage(UIImage(systemName: "xmark"), for: .normal)
-        button.tintColor = .white
-        return button
+    private let closeImageView: UIImageView = {
+        let image = UIImageView()
+        image.image = .xGray
+        image.tintColor = AtchaColor.gray100
+        return image
     }()
     
     private let alarmListStackView: UIStackView = {
@@ -53,6 +53,8 @@ final class PushAlarmSheetViewController: BaseViewController<PushAlarmSheetViewM
     
     // 화면이 닫혔을 때 코디네이터나 부모에게 알리기 위한 콜백
     var onDismiss: (() -> Void)?
+    var onComplete: (() -> Void)? // 완료 버튼 눌렀을 때만 호출
+    private var isConfirmed: Bool = false
     
     // MARK: - View Life Cycle
     override func viewDidLoad() {
@@ -68,15 +70,15 @@ final class PushAlarmSheetViewController: BaseViewController<PushAlarmSheetViewM
     }
     
     override func viewDidAppear(_ animated: Bool) {
-            super.viewDidAppear(animated)
-            
-            UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseOut, animations: {
-                self.dimView.alpha = 1
-                self.containerView.transform = .identity
-            }) { _ in
-                AlarmManager.shared.previewAlarmVolume(0.3)
-            }
+        super.viewDidAppear(animated)
+        
+        UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseOut, animations: {
+            self.dimView.alpha = 1
+            self.containerView.transform = .identity
+        }) { _ in
+            AlarmManager.shared.previewAlarmVolume(0.3)
         }
+    }
     
     deinit {
         AlarmManager.shared.stopPreview()
@@ -99,10 +101,13 @@ final class PushAlarmSheetViewController: BaseViewController<PushAlarmSheetViewM
         view.addSubview(containerView)
         
         view.backgroundColor = .clear
-        containerView.addSubViews(titleLabel, closeButton, alarmListStackView, completeButton)
+        containerView.addSubViews(titleLabel, closeImageView, alarmListStackView, completeButton)
         
-        // ✅ 버튼 타겟 설정
-        closeButton.addTarget(self, action: #selector(didTapCloseButton), for: .touchUpInside)
+        // 버튼 타겟 설정
+        closeImageView.isUserInteractionEnabled = true
+        
+        let closeTap = UITapGestureRecognizer(target: self, action: #selector(didTapCloseButton))
+        closeImageView.addGestureRecognizer(closeTap)
         completeButton.addTarget(self, action: #selector(didTapCompleteButton), for: .touchUpInside)
         
         // 초기 상태: 화면 아래에 숨김
@@ -123,7 +128,7 @@ final class PushAlarmSheetViewController: BaseViewController<PushAlarmSheetViewM
             make.leading.equalToSuperview().inset(24)
         }
         
-        closeButton.snp.makeConstraints { make in
+        closeImageView.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(32)
             make.trailing.equalToSuperview().inset(24)
             make.width.height.equalTo(24)
@@ -141,44 +146,44 @@ final class PushAlarmSheetViewController: BaseViewController<PushAlarmSheetViewM
     }
     
     private func setupAlarmLists() {
-            // 이미지 순서: 소리 및 진동, 소리, 진동
-            let options: [PushAlarmOption] = [.both, .onlySound, .onlyVibration]
+        // 이미지 순서: 소리 및 진동, 소리, 진동
+        let options: [PushAlarmOption] = [.both, .onlySound, .onlyVibration]
+        
+        // 기본 선택값을 .both로 강제 설정
+        let currentOption = PushAlarmOption.both
+        self.selectedOption = currentOption
+        AlarmManager.shared.setAlarmOption(currentOption)
+        
+        options.forEach { option in
+            let isSelected = (option == currentOption)
+            let listView = AtchaList(
+                title: option.rawValue,
+                listType: .radioButton(isOn: isSelected)
+            )
             
-            // 💡 기본 선택값을 .both로 강제 설정
-            let currentOption = PushAlarmOption.both
-            self.selectedOption = currentOption
-            AlarmManager.shared.setAlarmOption(currentOption)
+            listView.backgroundColor = isSelected ? AtchaColor.opacity100 : .clear
             
-            options.forEach { option in
-                let isSelected = (option == currentOption)
-                let listView = AtchaList(
-                    title: option.rawValue,
-                    listType: .radioButton(isOn: isSelected)
-                )
+            listView.onSelect = { [weak self] selected in
+                guard let self = self else { return }
                 
-                listView.backgroundColor = isSelected ? AtchaColor.opacity100 : .clear
-                
-                listView.onSelect = { [weak self] selected in
-                    guard let self = self else { return }
-                    
-                    self.alarmCheckmarkLists.forEach {
-                        $0.setRadio(false)
-                        $0.backgroundColor = .clear
-                    }
-                    selected.setRadio(true)
-                    selected.backgroundColor = AtchaColor.opacity100
-                    self.selectedOption = option
-                    
-                    // 💡 매니저의 옵션을 먼저 변경한 뒤 미리보기 호출
-                    AlarmManager.shared.setAlarmOption(option)
-                    AlarmManager.shared.previewAlarmVolume(0.3)
+                self.alarmCheckmarkLists.forEach {
+                    $0.setRadio(false)
+                    $0.backgroundColor = .clear
                 }
+                selected.setRadio(true)
+                selected.backgroundColor = AtchaColor.opacity100
+                self.selectedOption = option
                 
-                listView.snp.makeConstraints { $0.height.equalTo(52) }
-                alarmListStackView.addArrangedSubview(listView)
-                alarmCheckmarkLists.append(listView)
+                // 💡 매니저의 옵션을 먼저 변경한 뒤 미리보기 호출
+                AlarmManager.shared.setAlarmOption(option)
+                AlarmManager.shared.previewAlarmVolume(0.3)
             }
+            
+            listView.snp.makeConstraints { $0.height.equalTo(52) }
+            alarmListStackView.addArrangedSubview(listView)
+            alarmCheckmarkLists.append(listView)
         }
+    }
 }
 
 // MARK: - Actions
@@ -187,6 +192,7 @@ extension PushAlarmSheetViewController {
     // X 버튼 클릭 시 실행
     @objc private func didTapCloseButton() {
         AlarmManager.shared.stopPreview()
+        isConfirmed = false
         dismissSheet()
     }
     
@@ -196,6 +202,7 @@ extension PushAlarmSheetViewController {
             AlarmManager.shared.stopPreview()
             AlarmManager.shared.setAlarmOption(option)
             AlarmManager.shared.setAlarmArmed(true)
+            isConfirmed = true
         }
         dismissSheet()
     }
@@ -248,6 +255,9 @@ extension PushAlarmSheetViewController {
             self.containerView.transform = CGAffineTransform(translationX: 0, y: self.sheetHeight)
         }) { _ in
             self.dismiss(animated: false) {
+                if self.isConfirmed {
+                    self.onComplete?()
+                }
                 self.onDismiss?()
             }
         }

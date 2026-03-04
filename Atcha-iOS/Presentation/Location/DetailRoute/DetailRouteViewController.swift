@@ -432,9 +432,11 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         // 뒷배경이 보이도록 설정
         sheetVC.modalPresentationStyle = .overFullScreen
         
-        // 완료/X 클릭 시 실행될 콜백
-        sheetVC.onDismiss = {
+        sheetVC.onComplete = {
             completion()
+        }
+        
+        sheetVC.onDismiss = {
         }
         
         present(sheetVC, animated: false)

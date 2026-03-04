@@ -421,17 +421,20 @@ extension CourseSearchViewController {
 
 extension CourseSearchViewController {
     private func presentPushAlarmSheet(completion: @escaping () -> Void) {
-            let sheetVM = PushAlarmSheetViewModel()
-            let sheetVC = PushAlarmSheetViewController(viewModel: sheetVM)
-            
-            sheetVC.modalPresentationStyle = .overFullScreen
-            
-            sheetVC.onDismiss = {
-                completion()
-            }
-            
-            present(sheetVC, animated: false)
+        let sheetVM = PushAlarmSheetViewModel()
+        let sheetVC = PushAlarmSheetViewController(viewModel: sheetVM)
+        
+        sheetVC.modalPresentationStyle = .overFullScreen
+        
+        sheetVC.onComplete = {
+            completion()
         }
+        
+        sheetVC.onDismiss = {
+        }
+        
+        present(sheetVC, animated: false)
+    }
     
     /// 권한 확인 및 실제 서버 알람 등록 처리
     private func handleAlarmPermissionAndRegistration(for model: CourseUIModel) {
