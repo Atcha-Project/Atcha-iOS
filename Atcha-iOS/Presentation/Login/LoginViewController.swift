@@ -44,11 +44,18 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
         setupUI()
         setupLoginButtons()
         setupAutoLayout()
+        
+        containerView.transform = CGAffineTransform(translationX: 0, y: sheetHeight)
+        setupGestures()
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        dimView.alpha = 1
+        
+        UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseOut, animations: {
+            self.dimView.alpha = 1
+            self.containerView.transform = .identity // 원래 위치로 복귀
+        })
     }
     
     private func setupDim() {
@@ -68,7 +75,7 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
         
         view.backgroundColor = .clear
         containerView.addSubViews(titleLabel, loginButtonStackView)
-
+        
     }
     
     private func setupAutoLayout() {
@@ -183,5 +190,60 @@ extension LoginViewController {
 extension LoginViewController: ASAuthorizationControllerPresentationContextProviding {
     func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
         return self.view.window!
+    }
+}
+
+// MARK: - Gestures & Animations
+extension LoginViewController {
+    private func setupGestures() {
+        // 1. 빈 배경(Dim) 터치 시 닫기
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(didTapDimView))
+        dimView.addGestureRecognizer(tapGesture)
+        dimView.isUserInteractionEnabled = true
+        
+        // 2. 시트를 아래로 스와이프해서 닫기
+        let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture(_:)))
+        containerView.addGestureRecognizer(panGesture)
+    }
+    
+    @objc private func didTapDimView() {
+        dismissSheet()
+    }
+    
+    @objc private func handlePanGesture(_ gesture: UIPanGestureRecognizer) {
+        let translation = gesture.translation(in: view)
+        let velocity = gesture.velocity(in: view)
+        
+        switch gesture.state {
+        case .changed:
+            // 아래로 내릴 때만 움직이게 (위로는 안 올라가게 막음)
+            if translation.y > 0 {
+                containerView.transform = CGAffineTransform(translationX: 0, y: translation.y)
+            }
+        case .ended, .cancelled:
+            // 충분히 빨리 내렸거나 절반 이상 내렸으면 닫기
+            if velocity.y > 1000 || translation.y > (sheetHeight / 2) {
+                dismissSheet()
+            } else {
+                // 아니면 다시 원래 자리로 복귀 (튕겨 올라옴)
+                UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseOut, animations: {
+                    self.containerView.transform = .identity
+                })
+            }
+        default:
+            break
+        }
+    }
+    
+    // 자연스럽게 시트가 내려가고 딤이 옅어지며 닫히는 애니메이션
+    private func dismissSheet() {
+        UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseIn, animations: {
+            self.dimView.alpha = 0
+            self.containerView.transform = CGAffineTransform(translationX: 0, y: self.sheetHeight)
+        }) { _ in
+            self.dismiss(animated: false) {
+                self.viewModel.loginCancelled?()
+            }
+        }
     }
 }

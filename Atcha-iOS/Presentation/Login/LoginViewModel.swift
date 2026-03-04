@@ -16,6 +16,7 @@ final class LoginViewModel: BaseViewModel {
     }
     
     var isExistUser: ((Bool) -> Void)?
+    var loginCancelled: (() -> Void)?
     
     func kakaoLoginTapped() {
         Task {

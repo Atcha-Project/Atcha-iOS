@@ -335,6 +335,12 @@ final class MainCoordinator {
                 }
             }
             
+            loginCoordinator.onCancel = { [weak self] in
+                DispatchQueue.main.async {
+                    self?.loginCoordinator = nil
+                }
+            }
+            
             loginCoordinator.start()
         }
         
