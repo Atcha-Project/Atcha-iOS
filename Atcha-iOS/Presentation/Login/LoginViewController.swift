@@ -104,7 +104,7 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
         configureLoginButton(
             button: kakaoLoginButton,
             icon: UIImage.kakao,
-            labelText: "카카오로 계속하기",
+            labelText: "카카오톡으로 3초만에 시작",
             textColor: AtchaColor.black,
             bgColor: AtchaColor.Etc.kakao,
             iconTint: AtchaColor.Etc.kakaoLogo
@@ -135,37 +135,32 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
         iconView.tintColor = iconTint
         
         let label = UILabel()
-        label.attributedText = AtchaFont.B_15(labelText, color: textColor)
+        label.attributedText = AtchaFont.B_15(lineHeight: 0, labelText, color: textColor, alignment: .center)
         label.textAlignment = .center
-        
-        let stackView = UIStackView()
-        stackView.axis = .horizontal
-        stackView.spacing = 10
-        
-        stackView.addArrangedSubview(iconView)
-        stackView.addArrangedSubview(label)
         
         button.layer.cornerRadius = 8
         button.layer.backgroundColor = bgColor.cgColor
         
-        
-        stackView.isUserInteractionEnabled = false
+        // 터치 이벤트를 버튼이 받도록
         iconView.isUserInteractionEnabled = false
         label.isUserInteractionEnabled = false
         
-        button.addSubview(stackView)
+        // 스택 뷰 없이 버튼에 직접 추가
+        button.addSubViews(iconView, label)
         
+        // 1. 아이콘: 왼쪽에서 일정 간격 띄워서 수직 중앙 정렬
         iconView.snp.makeConstraints { make in
+            make.leading.equalToSuperview().offset(16) // 피그마 수치에 맞게 조정 (16~24 권장)
+            make.centerY.equalToSuperview()
             make.width.height.equalTo(24)
         }
         
-        stackView.snp.makeConstraints { make in
-            make.centerX.equalToSuperview()
-            make.centerY.equalToSuperview()
+        label.snp.makeConstraints { make in
+            make.center.equalToSuperview()
         }
         
         button.snp.makeConstraints { make in
-            make.horizontalEdges.equalToSuperview().inset(20)
+            make.horizontalEdges.equalToSuperview().inset(24)
             make.height.equalTo(52)
         }
     }

@@ -157,27 +157,25 @@ final class IntroViewController: BaseViewController<IntroViewModel> {
         
         
         let label = UILabel()
-        label.attributedText = AtchaFont.B1_R_17(labelText, color: textColor)
+        label.attributedText = AtchaFont.B1_R_17(lineHeight: 0, labelText, color: textColor, alignment: .center)
         label.textAlignment = .center
-        
-        let stackView = UIStackView()
-        stackView.axis = .horizontal
-        stackView.spacing = 10
-        
-        stackView.addArrangedSubview(label)
         
         button.layer.cornerRadius = 8
         button.layer.backgroundColor = bgColor.cgColor
         
-        
-        stackView.isUserInteractionEnabled = false
         label.isUserInteractionEnabled = false
         
-        button.addSubview(stackView)
+        // 스택 뷰 없이 버튼에 직접 추가
+        button.addSubViews(label)
         
-        stackView.snp.makeConstraints { make in
-            make.centerX.equalToSuperview()
-            make.centerY.equalToSuperview()
+        
+        label.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+        }
+        
+        button.snp.makeConstraints { make in
+            make.horizontalEdges.equalToSuperview().inset(15)
+            make.height.equalTo(56)
         }
     }
 }
