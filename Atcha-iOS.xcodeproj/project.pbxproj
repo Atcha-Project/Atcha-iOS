@@ -117,6 +117,8 @@
 		6D91A90F2E38A1C60081BAFC /* BusDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D91A90E2E38A1C60081BAFC /* BusDetailViewModel.swift */; };
 		6D9283742E3AFF6A0090889B /* BusRouteCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D9283732E3AFF6A0090889B /* BusRouteCell.swift */; };
 		6D9284422E3C6ADF0090889B /* PaddingLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D9284412E3C6ADF0090889B /* PaddingLabel.swift */; };
+		6D9F79E92F57F24F008C1492 /* PushAlarmSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D9F79E82F57F24F008C1492 /* PushAlarmSheetViewController.swift */; };
+		6D9F79EC2F57F266008C1492 /* PushAlarmSheetViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D9F79EB2F57F266008C1492 /* PushAlarmSheetViewModel.swift */; };
 		6DADA5932EA09B6E00CA9BE2 /* AmplitudeSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 6DADA5922EA09B6E00CA9BE2 /* AmplitudeSwift */; };
 		6DADA5972EA09BA400CA9BE2 /* AmplitudeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DADA5962EA09BA400CA9BE2 /* AmplitudeManager.swift */; };
 		6DADA5992EA09BAC00CA9BE2 /* AmplitudeEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DADA5982EA09BAC00CA9BE2 /* AmplitudeEvent.swift */; };
@@ -446,6 +448,8 @@
 		6D91A90E2E38A1C60081BAFC /* BusDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusDetailViewModel.swift; sourceTree = "<group>"; };
 		6D9283732E3AFF6A0090889B /* BusRouteCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusRouteCell.swift; sourceTree = "<group>"; };
 		6D9284412E3C6ADF0090889B /* PaddingLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaddingLabel.swift; sourceTree = "<group>"; };
+		6D9F79E82F57F24F008C1492 /* PushAlarmSheetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushAlarmSheetViewController.swift; sourceTree = "<group>"; };
+		6D9F79EB2F57F266008C1492 /* PushAlarmSheetViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushAlarmSheetViewModel.swift; sourceTree = "<group>"; };
 		6DADA5962EA09BA400CA9BE2 /* AmplitudeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmplitudeManager.swift; sourceTree = "<group>"; };
 		6DADA5982EA09BAC00CA9BE2 /* AmplitudeEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmplitudeEvent.swift; sourceTree = "<group>"; };
 		6DB4DE8E2F0FE3B900F2DC4E /* RefreshObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshObserver.swift; sourceTree = "<group>"; };
@@ -1038,6 +1042,15 @@
 			path = BusDetail;
 			sourceTree = "<group>";
 		};
+		6D9F79EA2F57F253008C1492 /* PushAlarmSheet */ = {
+			isa = PBXGroup;
+			children = (
+				6D9F79E82F57F24F008C1492 /* PushAlarmSheetViewController.swift */,
+				6D9F79EB2F57F266008C1492 /* PushAlarmSheetViewModel.swift */,
+			);
+			path = PushAlarmSheet;
+			sourceTree = "<group>";
+		};
 		6DADA5952EA09B9500CA9BE2 /* Amplitude */ = {
 			isa = PBXGroup;
 			children = (
@@ -1462,6 +1475,7 @@
 		B66401862E22761800A397AE /* Setting */ = {
 			isa = PBXGroup;
 			children = (
+				6D9F79EA2F57F253008C1492 /* PushAlarmSheet */,
 				6D1EE2D82E08E4BA00F7BBF1 /* PushAlarm */,
 			);
 			path = Setting;
@@ -2279,9 +2293,11 @@
 				6D1EE2E52E09A42F00F7BBF1 /* PushAlarmViewController.swift in Sources */,
 				B6793D4F2E34972B001BE9F5 /* FetchTaxiFareRequest.swift in Sources */,
 				6D8157442E126C45003688A6 /* LockViewController.swift in Sources */,
+				6D9F79E92F57F24F008C1492 /* PushAlarmSheetViewController.swift in Sources */,
 				6D6879DE2E43706800E59C55 /* PushAlarmPatchUseCase.swift in Sources */,
 				B68309572E005A3600E2D029 /* ViewController.swift in Sources */,
 				B6AC8BF82E2BDA2900410ECD /* AppUpdateManager.swift in Sources */,
+				6D9F79EC2F57F266008C1492 /* PushAlarmSheetViewModel.swift in Sources */,
 				B65402D32E76C84D00AB5862 /* DetailRouteBusLabel.swift in Sources */,
 				6DB7636B2E45C5EC00D06A49 /* AlarmUseCase.swift in Sources */,
 				B6D083352E02D928003C28E1 /* AtchaListType.swift in Sources */,

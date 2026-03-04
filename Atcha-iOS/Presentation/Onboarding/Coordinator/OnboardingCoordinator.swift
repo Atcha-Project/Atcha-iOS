@@ -56,13 +56,13 @@ final class OnboardingCoordinator {
         navigationController.pushViewController(vc, animated: true)
     }
     
-    private func showPushRegister() {
-        let vm = diContainer.makePushAlarmViewModel(context: .onboarding)
-        vm.routeHandler = { [weak self] route in self?.handle(route: route) }
-        vm.onFinish = { [weak self] isSuccess in self?.onFinish?(isSuccess) }
-        let vc = diContainer.makePushAlarmViewController(viewModel: vm)
-        navigationController.pushViewController(vc, animated: true)
-    }
+//    private func showPushRegister() {
+//        let vm = diContainer.makePushAlarmViewModel(context: .onboarding)
+//        vm.routeHandler = { [weak self] route in self?.handle(route: route) }
+//        vm.onFinish = { [weak self] isSuccess in self?.onFinish?(isSuccess) }
+//        let vc = diContainer.makePushAlarmViewController(viewModel: vm)
+//        navigationController.pushViewController(vc, animated: true)
+//    }
     //
     //    private func showPermission() {
     //        let vm = diContainer.makePermissionViewModel()
