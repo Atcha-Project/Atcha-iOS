@@ -58,6 +58,8 @@ final class PushAlarmSheetViewController: BaseViewController<PushAlarmSheetViewM
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        view.backgroundColor = .clear
+        
         setupDim()
         setupUI()
         setupAutoLayout()

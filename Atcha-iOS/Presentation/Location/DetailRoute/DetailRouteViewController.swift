@@ -411,9 +411,41 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
     }
     
     @objc private func didTapAlarmRegister() {
+        let hasConfigured = UserDefaults.standard.bool(forKey: "hasSeenAlarmSettingsSheet")
+        if !hasConfigured {
+            // 처음이라면? 설정 시트를 먼저 띄웁니다.
+            self.presentPushAlarmSheet { [weak self] in
+                // 시트 완료 시 플래그 저장 후 권한/등록 단계로 진행
+                UserDefaults.standard.set(true, forKey: "hasSeenAlarmSettingsSheet")
+                self?.handleAlarmPermissionAndRegistration()
+            }
+        } else {
+            // 이미 설정해본 적이 있다면? 바로 권한 체크 및 등록 진행
+            self.handleAlarmPermissionAndRegistration()
+        }
+    }
+    
+    private func presentPushAlarmSheet(completion: @escaping () -> Void) {
+        let sheetVM = PushAlarmSheetViewModel()
+        let sheetVC = PushAlarmSheetViewController(viewModel: sheetVM)
+        
+        // 뒷배경이 보이도록 설정
+        sheetVC.modalPresentationStyle = .overFullScreen
+        
+        // 완료/X 클릭 시 실행될 콜백
+        sheetVC.onDismiss = {
+            completion()
+        }
+        
+        present(sheetVC, animated: false)
+    }
+    
+    /// 2~3단계: 권한 확인 및 실제 서버 알람 등록 처리
+    private func handleAlarmPermissionAndRegistration() {
         self.ensureAlarmPermissionAndExecute { [weak self] in
             guard let self = self else { return }
             
+            // 💡 여기서부터는 권한이 허용된 상태에서만 실행되는 기존 비즈니스 로직입니다.
             let busLegs = self.viewModel.legTrafficInfo.filter { $0.mode == .bus }
             let busCount = busLegs.count
             let hasSubway = self.viewModel.legTrafficInfo.contains { $0.mode == .subway }
@@ -427,12 +459,14 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             let isAlarmRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
             
             if isAlarmRegistered {
+                // 이미 등록된 알람이 있을 때 (재등록/중복 팝업)
                 if shouldShowPopup {
                     self.showCoursePopup(alarmRequest)
                 } else {
                     self.showRe_RegisterPopup(alarmRequest)
                 }
             } else {
+                // 신규 알람 등록
                 if shouldShowPopup {
                     self.showCoursePopup(alarmRequest)
                 } else {
@@ -442,13 +476,14 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
                     let dwellSeconds = AmplitudeManager.shared.timerEndSeconds("alarm_dwell")
                     AmplitudeManager.shared.track(
                         .another_alarm_register,
-                        props(
-                            AmplitudeProperty.dwellTime(seconds: dwellSeconds)
-                        )
+                        props(AmplitudeProperty.dwellTime(seconds: dwellSeconds))
                     )
+                    
+                    // 등록 완료 후 메인 지도로 이동 (필요시 호출)
+                    self.navigationController?.popToMainViewControllerNoAnimation()
                 }
             }
-        } 
+        }
     }
     
     private func applyMapModeOnAppearOrAlarmChange() {

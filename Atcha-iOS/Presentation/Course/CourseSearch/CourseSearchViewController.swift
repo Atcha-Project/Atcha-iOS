@@ -421,17 +421,17 @@ extension CourseSearchViewController {
 
 extension CourseSearchViewController {
     private func presentPushAlarmSheet(completion: @escaping () -> Void) {
-        // DIContainer를 통해 뷰모델과 뷰컨트롤러 생성
-        // (프로젝트 구조에 따라 diContainer.makePushAlarmSheet() 형태를 권장합니다)
-        let sheetVM = PushAlarmSheetViewModel()
-        let sheetVC = PushAlarmSheetViewController(viewModel: sheetVM)
-        
-        sheetVC.onDismiss = {
-            completion()
+            let sheetVM = PushAlarmSheetViewModel()
+            let sheetVC = PushAlarmSheetViewController(viewModel: sheetVM)
+            
+            sheetVC.modalPresentationStyle = .overFullScreen
+            
+            sheetVC.onDismiss = {
+                completion()
+            }
+            
+            present(sheetVC, animated: false)
         }
-        
-        present(sheetVC, animated: false)
-    }
     
     /// 권한 확인 및 실제 서버 알람 등록 처리
     private func handleAlarmPermissionAndRegistration(for model: CourseUIModel) {
