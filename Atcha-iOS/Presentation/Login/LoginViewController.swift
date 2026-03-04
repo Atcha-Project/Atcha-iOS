@@ -15,13 +15,7 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
     private let kakaoLoginButton: UIButton = UIButton(type: .custom)
     private let appleLoginButton: UIButton = UIButton(type: .custom)
     
-    private let titleLabel: UILabel = {
-        let label = UILabel()
-        label.attributedText = AtchaFont.H2_B_22("딱 3초면 돼요!")
-        label.textColor = AtchaColor.white
-        return label
-    }()
-    
+    private let sheetHandler: UIView = UIView()
     
     private lazy var loginButtonStackView: UIStackView = {
         let stack = UIStackView(arrangedSubviews: [kakaoLoginButton,
@@ -35,7 +29,7 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
     
     private let dimView = UIView()
     private let containerView = UIView()
-    private let sheetHeight: CGFloat = 244
+    private let sheetHeight: CGFloat = 198
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -74,7 +68,12 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
         view.addSubview(containerView)
         
         view.backgroundColor = .clear
-        containerView.addSubViews(titleLabel, loginButtonStackView)
+        
+        sheetHandler.backgroundColor = AtchaColor.gray700
+        sheetHandler.layer.cornerRadius = 2
+        sheetHandler.clipsToBounds = true
+        
+        containerView.addSubViews(sheetHandler, loginButtonStackView)
         
     }
     
@@ -87,9 +86,11 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
             make.height.equalTo(sheetHeight)
         }
         
-        titleLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(40)
-            make.leading.equalToSuperview().inset(24)
+        sheetHandler.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(12)
+            make.centerX.equalToSuperview()
+            make.height.equalTo(4)
+            make.width.equalTo(40)
         }
         
         loginButtonStackView.snp.makeConstraints { make in
