@@ -32,6 +32,11 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
         //            completion(.success(request)); return
         //        }
         
+        if path.contains("/auth/check") || path.contains("/auth/login") {
+            completion(.success(request))
+            return
+        }
+        
         if path.contains("/auth/logout") {
             if let refreshToken = tokenStorage.refreshToken {
                 request.setValue("Bearer \(refreshToken)", forHTTPHeaderField: "Authorization")

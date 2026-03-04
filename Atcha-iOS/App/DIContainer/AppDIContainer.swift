@@ -21,6 +21,7 @@ final class AppDIContainer {
     let mainDIContainer: MainDIContainer
     let onboardingDIContainer: OnboardingDIContainer
     let lockScreenDIContainer: LockScreenDIContainer
+    let introDIContainer: IntroDIContainer
     
     let locationStateHolder: LocationStateHolder
     
@@ -38,7 +39,8 @@ final class AppDIContainer {
         self.onboardingDIContainer = compositionRoot.onboardingDIContainer
         self.mainDIContainer = compositionRoot.mainDIContainer
         self.lockScreenDIContainer = compositionRoot.lockScreenDIContainer
-
+        self.introDIContainer = compositionRoot.introDIContainer
+        
         // Shared state holders
         self.locationStateHolder = compositionRoot.locationStateHolder
     }

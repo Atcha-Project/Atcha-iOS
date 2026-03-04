@@ -17,6 +17,7 @@ protocol MapRendering: AnyObject, TMapViewDelegate, TmapViewLocationDelegate {
 protocol TMapWrapperDelegate: AnyObject {
     func mapView(_ mapView: TMapWrapper, didUpdateLocation coordinate: CLLocationCoordinate2D)
     func mapView(_ mapView: TMapWrapper, didSelectLocation coordinate: CLLocationCoordinate2D)
+    func mapViewDidStartScroll(_ mapView: TMapWrapper)
     func didFinishLoadingMap(_ mapView: TMapWrapper)
 }
 
@@ -159,7 +160,7 @@ final class TMapWrapper: NSObject, MapRendering {
 extension TMapWrapper: TMapViewDelegate, TmapViewLocationDelegate {
     func mapViewDidFinishLoadingMap() {
         mapView.setMapType(.Night)
-        mapView.setZoom(18)
+        mapView.setZoom(16)
         mapView.isShowCompass = false
         mapView.isRotationEnable = true
         delegate?.didFinishLoadingMap(self)
@@ -178,6 +179,7 @@ extension TMapWrapper: TMapViewDelegate, TmapViewLocationDelegate {
     func mapView(_ mapView: TMapView,
                  shouldChangeFrom oldPosition: CLLocationCoordinate2D,
                  to newPosition: CLLocationCoordinate2D) {
+        delegate?.mapViewDidStartScroll(self)
         delegate?.mapView(self, didUpdateLocation: newPosition)
     }
 }

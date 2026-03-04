@@ -31,6 +31,7 @@ final class WithdrawViewModel: BaseViewModel {
                 AppDIContainer.shared.tokenStorage.clearAllTokens()
                 UserDefaultsWrapper.shared.removeAll()
                 AppDIContainer.shared.locationStateHolder.clear()
+                UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.hasSeenIntro.rawValue)
                 signOutFinish?()
             } catch {
                 print("error 발생")

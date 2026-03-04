@@ -46,8 +46,6 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
         AlarmManager.shared.stopPreview()
         
         switch self.viewModel.context {
-        case .onboarding:
-            self.viewModel.signUp()
         case .myPage:
             self.onSettingComplete?(true)
             self.navigationController?.popViewController(animated: true)
@@ -59,7 +57,6 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
         
         AmplitudeManager.shared.trackScreen(.alarm_setting)
         
-        ensureAlarmPermissionOrShowToast()
     }
     
     override func viewDidLoad() {
@@ -89,8 +86,6 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
     private func applyContext(_ context: PushAlarmContext, animated: Bool) {
         let updates = {
             switch context {
-            case .onboarding:
-                self.setupOnbaordingUI()
             case .myPage:
                 self.setupMyPageUI()
             }

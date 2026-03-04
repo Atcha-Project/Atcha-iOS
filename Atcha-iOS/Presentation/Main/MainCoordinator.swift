@@ -14,12 +14,14 @@ final class MainCoordinator {
     private let diContainer: MainDIContainer
     private var myPageCoordinator: MyPageCoordinator?
     private var busDetailCoordinator: BusDetailCoordinator?
+    private var loginCoordinator: LoginCoordinator?
     
     private var mainViewModel: MainViewModel?
     
-    var signoutFinish: (() -> Void)?
+    var routeToOnboarding: (() -> Void)?
     var lockScreenConfrim: ((LegInfo?, String?) -> Void)?
     var routeHandler: ((MainRoute) -> Void)?
+    var withdrawFinish: (() -> Void)?
     
     init(navigationController: UINavigationController,
          diContainer: MainDIContainer) {
@@ -58,7 +60,23 @@ final class MainCoordinator {
                 diContainer: myPageDI
             )
             self.myPageCoordinator = myPageCoordinator
-            myPageCoordinator.signoutFinish = self.signoutFinish
+            myPageCoordinator.signoutFinish = { [weak self] in
+                DispatchQueue.main.async {
+                    guard let self = self else { return }
+                    
+                    self.navigationController.popToRootViewController(animated: true)
+                    self.mainViewModel?.bottomType = .search
+                    
+                    
+                    self.myPageCoordinator = nil
+                }
+            }
+            myPageCoordinator.withdrawFinish = { [weak self] in
+                DispatchQueue.main.async {
+                    self?.withdrawFinish?()
+                }
+            }
+            
             myPageCoordinator.start()
         case let .courseSearch(startLat, startLon, startAddress):
             let courseDI = diContainer.makeCourseDIContainer()
@@ -283,17 +301,47 @@ final class MainCoordinator {
             
         case .dismissLockScreen:
             dismissPresentedIfNeeded {
-                    DispatchQueue.global(qos: .utility).async {
-                        self.mainViewModel?.showLockView = false
-                        self.mainViewModel?.showAlarmStopPopUpView = true
+                DispatchQueue.global(qos: .utility).async {
+                    self.mainViewModel?.showLockView = false
+                    self.mainViewModel?.showAlarmStopPopUpView = true
+                    
+                    AlarmManager.shared.sendBackgroundPush(
+                        title: "출발 알람이 자동 종료되었어요",
+                        body: "클릭해서 경로 재탐색하기"
+                    )
+                    
+                }
+            }
+        case .loginSheet:
+            let loginDI = diContainer.makeLoginDIContainer()
+            let loginCoordinator = LoginCoordinator(
+                navigationController: self.navigationController,
+                diContainer: loginDI
+            )
+            self.loginCoordinator = loginCoordinator
+            
+            loginCoordinator.onFinishWithExistUser = { [weak self] isExist in
+                DispatchQueue.main.async {
+                    self?.navigationController.dismiss(animated: true) {
+                        if isExist {
+                            self?.mainViewModel?.setupLocation()
+                        } else {
+                            self?.routeToOnboarding?()
+                        }
                         
-                        AlarmManager.shared.sendBackgroundPush(
-                            title: "출발 알람이 자동 종료되었어요",
-                            body: "클릭해서 경로 재탐색하기"
-                        )
-                        
+                        // 로그인 코디네이터 메모리 해제
+                        self?.loginCoordinator = nil
                     }
                 }
+            }
+            
+            loginCoordinator.onCancel = { [weak self] in
+                DispatchQueue.main.async {
+                    self?.loginCoordinator = nil
+                }
+            }
+            
+            loginCoordinator.start()
         }
         
         routeHandler?(route)
@@ -304,7 +352,7 @@ final class MainCoordinator {
         while let presented = top?.presentedViewController {
             top = presented
         }
-
+        
         if top !== navigationController.topViewController {
             top?.dismiss(animated: false, completion: completion)
         } else {

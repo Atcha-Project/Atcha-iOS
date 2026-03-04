@@ -9,7 +9,5 @@ import Foundation
 
 enum HomeRouter {
     case homeRegister(useDeviceLocation: Bool)
-    case permission
     case searchAdress
-    case pushRegister
 }

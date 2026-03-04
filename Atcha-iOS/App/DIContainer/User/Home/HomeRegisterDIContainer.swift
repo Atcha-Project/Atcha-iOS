@@ -23,6 +23,7 @@ final class HomeRegisterDIContainer {
     private lazy var searchAddressUseCase: SearchAddressUseCase = SearchAddressUseCaseImpl(repository: addressRepository)
     private lazy var homePatchUseCase: HomePatchUseCase = HomePatchUseCaseImpl(repository: userRepository)
     private lazy var streamUseCase: ObserveLocationStreamUseCase = ObserLocationStreamUseCaseImpl(repository: LocationStreamRepositoryImpl())
+    private lazy var signUpUseCase: SignUpUseCase = SignUpUseCaseImpl(repository: userRepository)
     
     func makeHomeRegisterViewModel(context: HomeRegisterContext) -> HomeRegisterViewModel {
         return HomeRegisterViewModel(context: context,
@@ -40,7 +41,7 @@ final class HomeRegisterDIContainer {
         let viewModel = HomeFindViewModel(context: context,
                                           searchAddressUseCase: searchAddressUseCase,
                                           homePatchUseCase: homePatchUseCase,
-                                          locationStateHolder: locationStateHolder, streamUseCase: streamUseCase)
+                                          locationStateHolder: locationStateHolder, streamUseCase: streamUseCase, signUpUseCase: signUpUseCase)
         return viewModel
     }
     

@@ -165,7 +165,7 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
         courseSortImageView.contentMode = .scaleAspectFit
         
         courseSortView.addArrangedSubview(courseSortLabel)
-//        courseSortView.addArrangedSubview(courseSortImageView)
+        //        courseSortView.addArrangedSubview(courseSortImageView)
         
         view.addSubViews(topNavigationBar, courseView, tabCollectionView, courseSortView, courseCollectionView)
     }
@@ -253,48 +253,18 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
         
         cell.onGetAlarmTapped = { [weak self] in
             guard let self else { return }
-            let course = model.course
             
-            let pathInfo: [LegPathInfo] = model.course.toLegPathInfos()
-            let trafficInfo: [LegTrafficInfo] = model.course.toLegTrafficInfos()
-            let busInfo: [BusDetailInfo] = model.course.toBusInfos()
+            let hasConfigured = UserDefaults.standard.bool(forKey: "hasSeenAlarmSettingsSheet")
             
-            let alarmRequest = AlarmRequest(lastRouteId: model.course.routeId)
-            let alarmTapped = (viewModel.startAddress, LegInfo(pathInfo: pathInfo, trafficInfo: trafficInfo, busInfo: busInfo))
-            
-            let busLegs = trafficInfo.filter { $0.mode == .bus }
-            let busCount = busLegs.count
-            let hasSubway = trafficInfo.contains { $0.mode == .subway }
-            let hasLongWaitBus = busLegs.contains { ($0.targetBusTerm ?? 0) >= 40 }
-            
-            let isException = (busCount == 1) && (hasSubway == false)
-            
-            let shouldShowPopup = hasLongWaitBus && !isException
-            
-            let isAlarmRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
-            
-            if isAlarmRegistered {
-                if shouldShowPopup {
-                    showCoursePopup(alarmRequest, alarmTapped)
-                } else {
-                    showRe_RegisterPopup(alarmRequest, alarmTapped)
+            if !hasConfigured {
+                // 처음이라면 설정 시트를 먼저 띄움
+                self.presentPushAlarmSheet { [weak self] in
+                    UserDefaults.standard.set(true, forKey: "hasSeenAlarmSettingsSheet")
+                    self?.handleAlarmPermissionAndRegistration(for: model)
                 }
             } else {
-                if shouldShowPopup {
-                    showCoursePopup(alarmRequest, alarmTapped)
-                } else {
-                    viewModel.alarmRegister(alarmRequest)
-                    viewModel.getAlarmTapped?(alarmTapped.0, alarmTapped.1)
-                    
-                    let dwellSeconds = AmplitudeManager.shared.timerEndSeconds("alarm_dwell")
-                    AmplitudeManager.shared.track(
-                        .alarm_register,
-                        props(
-                            AmplitudeProperty.dwellTime(seconds: dwellSeconds)
-                        )
-                    )
-                    navigationController?.popToRootViewController(animated: true)
-                }
+                // 이미 설정했다면 바로 권한 체크 및 등록 진행
+                self.handleAlarmPermissionAndRegistration(for: model)
             }
         }
         
@@ -446,5 +416,67 @@ extension CourseSearchViewController {
         
         popupVC.modalPresentationStyle = .overFullScreen
         present(popupVC, animated: false)
+    }
+}
+
+extension CourseSearchViewController {
+    private func presentPushAlarmSheet(completion: @escaping () -> Void) {
+        let sheetVM = PushAlarmSheetViewModel()
+        let sheetVC = PushAlarmSheetViewController(viewModel: sheetVM)
+        
+        sheetVC.modalPresentationStyle = .overFullScreen
+        
+        sheetVC.onComplete = {
+            completion()
+        }
+        
+        sheetVC.onDismiss = {
+        }
+        
+        present(sheetVC, animated: false)
+    }
+    
+    /// 권한 확인 및 실제 서버 알람 등록 처리
+    private func handleAlarmPermissionAndRegistration(for model: CourseUIModel) {
+        self.ensureAlarmPermissionAndExecute { [weak self] in
+            guard let self = self else { return }
+            
+            let pathInfo: [LegPathInfo] = model.course.toLegPathInfos()
+            let trafficInfo: [LegTrafficInfo] = model.course.toLegTrafficInfos()
+            let busInfo: [BusDetailInfo] = model.course.toBusInfos()
+            
+            let alarmRequest = AlarmRequest(lastRouteId: model.course.routeId)
+            let alarmData = (self.viewModel.startAddress, LegInfo(pathInfo: pathInfo, trafficInfo: trafficInfo, busInfo: busInfo))
+            
+            // 팝업 노출 여부 결정 로직 (기존 로직 유지)
+            let busLegs = trafficInfo.filter { $0.mode == .bus }
+            let hasSubway = trafficInfo.contains { $0.mode == .subway }
+            let hasLongWaitBus = busLegs.contains { ($0.targetBusTerm ?? 0) >= 40 }
+            let isException = (busLegs.count == 1) && (hasSubway == false)
+            let shouldShowPopup = hasLongWaitBus && !isException
+            
+            let isAlreadyRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
+            
+            if isAlreadyRegistered {
+                if shouldShowPopup {
+                    self.showCoursePopup(alarmRequest, alarmData)
+                } else {
+                    self.showRe_RegisterPopup(alarmRequest, alarmData)
+                }
+            } else {
+                if shouldShowPopup {
+                    self.showCoursePopup(alarmRequest, alarmData)
+                } else {
+                    // 서버에 알람 등록 실행
+                    self.viewModel.alarmRegister(alarmRequest)
+                    self.viewModel.getAlarmTapped?(alarmData.0, alarmData.1)
+                    
+                    // 앰플리튜드 트래킹 및 메인 이동
+                    let dwellSeconds = AmplitudeManager.shared.timerEndSeconds("alarm_dwell")
+                    AmplitudeManager.shared.track(.alarm_register, props(AmplitudeProperty.dwellTime(seconds: dwellSeconds)))
+                    self.navigationController?.popToRootViewController(animated: true)
+                }
+            }
+        }
     }
 }
