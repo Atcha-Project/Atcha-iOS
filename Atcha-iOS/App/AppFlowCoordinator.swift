@@ -85,6 +85,7 @@ class AppFlowCoordinator {
                         // 집 주소가 등록되었으니, MainVC를 찔러서 현위치/마커를 새로고침하게 합니다.
                         if let mainVC = navigationController.viewControllers.first as? MainViewController {
                             mainVC.viewModel.setupLocation()
+                            mainVC.shouldShowWelcomeToast = true
                         }
                         
                         self?.onboardingCoordinator = nil

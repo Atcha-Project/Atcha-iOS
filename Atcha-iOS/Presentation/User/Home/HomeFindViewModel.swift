@@ -95,7 +95,6 @@ final class HomeFindViewModel: BaseViewModel {
             Task { @MainActor in
                 self.homePatch(request: request)
             }
-            onFinish?(true)
         }
     }
     

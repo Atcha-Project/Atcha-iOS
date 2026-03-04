@@ -109,6 +109,8 @@ final class MainViewController: BaseViewController<MainViewModel>,
         ) ?? false
     }
     
+    var shouldShowWelcomeToast: Bool = false
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         let isAlarmRegistered = UserDefaultsWrapper.shared.bool(
@@ -121,6 +123,28 @@ final class MainViewController: BaseViewController<MainViewModel>,
             isFollowingUser = false
             ensureLocationPermissionOrShowToast()
         }
+        
+        if shouldShowWelcomeToast {
+            shouldShowWelcomeToast = false // 한 번 띄우고 바로 꺼줌 (재진입 시 안 뜨게)
+            
+            // 첫 번째 토스트: 집 주소 등록 완료
+            AtchaToast(message: "집 주소가 등록되었어요").show(in: self.view)
+            
+            // 두 번째 토스트: 위치 권한 체크 (약간의 딜레이 후 띄워서 자연스럽게)
+            let status = CLLocationManager.authorizationStatus()
+            if status != .authorizedAlways && status != .authorizedWhenInUse {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
+                    self?.ensureLocationPermissionOrShowToast()
+                }
+            }
+        } else {
+            // 원래 있던 일반적인 권한 체크 (온보딩 직후가 아닐 때만)
+            if !isAlarmRegistered {
+                isFollowingUser = false
+                ensureLocationPermissionOrShowToast()
+            }
+        }
+        
         AmplitudeManager.shared.trackScreen(.main)
         
         if isAlarmRegistered && !isAlarmFired,
@@ -146,7 +170,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
         }
         
         viewModel.setLoading(true)
-    
+        
         setupUI()
         setupAutoLayout()
         installMapUserGestureDetector()
@@ -536,22 +560,22 @@ extension MainViewController {
                 
                 // 알람 등록 + 출발 전 + departure 화면에서는
                 //    자동으로는 절대 현위치 안 따라감
-//                if isAlarmRegistered {
-//                    if isAlarmFired {
-//                        viewModel.startHeading()
-//                        self.mapContainerView.setupCenter(location: coord)
-//                        return
-//                    }
-//                    
-//                    if self.shouldCenterToCurrentLocationOnce {
-//                        self.mapContainerView.setupCenter(location: coord)
-//                        self.shouldCenterToCurrentLocationOnce = false
-//                    } else {
-//                        return
-//                    }
-//                } else {
-//                    self.mapContainerView.setupCenter(location: coord)
-//                }
+                //                if isAlarmRegistered {
+                //                    if isAlarmFired {
+                //                        viewModel.startHeading()
+                //                        self.mapContainerView.setupCenter(location: coord)
+                //                        return
+                //                    }
+                //
+                //                    if self.shouldCenterToCurrentLocationOnce {
+                //                        self.mapContainerView.setupCenter(location: coord)
+                //                        self.shouldCenterToCurrentLocationOnce = false
+                //                    } else {
+                //                        return
+                //                    }
+                //                } else {
+                //                    self.mapContainerView.setupCenter(location: coord)
+                //                }
             }
             .store(in: &cancellables)
     }
@@ -581,19 +605,19 @@ extension MainViewController {
             .store(in: &cancellables)
     }
     
-//    private func bindCourseUpdates() {
-//        viewModel.$currentCourse
-//            .compactMap { $0 }
-//            .removeDuplicates(by: { abs($0 - $1) < 3 })
-//            .throttle(for: .milliseconds(250), scheduler: RunLoop.main, latest: true)
-//            .sink { [weak self] course in
-//                guard let self else { return }
-//                guard self.isFollowingUser else { return }
-//                self.lastCourseUpdateAt = CACurrentMediaTime()
-//                self.mapContainerView.setHeading(course)
-//            }
-//            .store(in: &cancellables)
-//    }
+    //    private func bindCourseUpdates() {
+    //        viewModel.$currentCourse
+    //            .compactMap { $0 }
+    //            .removeDuplicates(by: { abs($0 - $1) < 3 })
+    //            .throttle(for: .milliseconds(250), scheduler: RunLoop.main, latest: true)
+    //            .sink { [weak self] course in
+    //                guard let self else { return }
+    //                guard self.isFollowingUser else { return }
+    //                self.lastCourseUpdateAt = CACurrentMediaTime()
+    //                self.mapContainerView.setHeading(course)
+    //            }
+    //            .store(in: &cancellables)
+    //    }
     
     private func bindDeviceHeadingUpdates() {
         viewModel.$deviceHeading
@@ -603,11 +627,11 @@ extension MainViewController {
             .sink { [weak self] heading in
                 guard let self else { return }
                 guard self.isFollowingUser else { return }
-
-//                let now = CACurrentMediaTime()
-//                let hasRecentCourse = (now - self.lastCourseUpdateAt) < self.courseValidWindow
-//                guard !hasRecentCourse else { return }
-
+                
+                //                let now = CACurrentMediaTime()
+                //                let hasRecentCourse = (now - self.lastCourseUpdateAt) < self.courseValidWindow
+                //                guard !hasRecentCourse else { return }
+                
                 self.mapContainerView.setHeading(heading)
             }
             .store(in: &cancellables)
@@ -629,26 +653,26 @@ extension MainViewController {
             .receive(on: RunLoop.main)
             .sink { [weak self] coord in
                 guard let self else { return }
-
+                
                 // 마커는 실시간으로 계속 업데이트
                 self.mapContainerView.updateUserMarker(location: coord)
-
+                
                 // ====== center 이동 정책(기존 currentLocation 로직 이관) ======
-
+                
                 let isAlarmRegistered = UserDefaultsWrapper.shared.bool(
                     forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue
                 ) ?? false
-
+                
                 let isAlarmFired = UserDefaultsWrapper.shared.bool(
                     forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue
                 ) ?? false
-
+                
                 // 유저가 "내 위치 따라가기" 모드면 무조건 센터 이동
                 if self.isFollowingUser {
                     self.mapContainerView.setupCenter(location: coord)
                     return
                 }
-
+                
                 // 알람 등록 상태에서는 자동 추적을 기본적으로 막는 기존 정책 유지
                 if isAlarmRegistered {
                     if isAlarmFired {
@@ -665,31 +689,31 @@ extension MainViewController {
             .store(in: &cancellables)
     }
     
-//    private func bindSelectedLocationUpdates() {
-//        viewModel.$selectedLocation
-//            .removeDuplicates()
-//            .compactMap { $0 }
-//            .receive(on: RunLoop.main)
-//            .sink { [weak self] in
-//                guard let self = self else { return }
-//                self.mapContainerView.updateUserMarker(location: $0)
-//                
-//                if self.isFollowingUser {
-//                    viewModel.startHeading()
-//                    self.mapContainerView.setupCenter(location: $0)
-//                    return
-//                }
-//                
-//                let isAlarmFired = UserDefaultsWrapper.shared.bool(
-//                    forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue
-//                ) ?? false
-//                
-//                if isAlarmFired {
-//                    self.mapContainerView.setupCenter(location: $0)
-//                }
-//            }
-//            .store(in: &cancellables)
-//    }
+    //    private func bindSelectedLocationUpdates() {
+    //        viewModel.$selectedLocation
+    //            .removeDuplicates()
+    //            .compactMap { $0 }
+    //            .receive(on: RunLoop.main)
+    //            .sink { [weak self] in
+    //                guard let self = self else { return }
+    //                self.mapContainerView.updateUserMarker(location: $0)
+    //
+    //                if self.isFollowingUser {
+    //                    viewModel.startHeading()
+    //                    self.mapContainerView.setupCenter(location: $0)
+    //                    return
+    //                }
+    //
+    //                let isAlarmFired = UserDefaultsWrapper.shared.bool(
+    //                    forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue
+    //                ) ?? false
+    //
+    //                if isAlarmFired {
+    //                    self.mapContainerView.setupCenter(location: $0)
+    //                }
+    //            }
+    //            .store(in: &cancellables)
+    //    }
     
     private func bindAddressDescriptionUpdates() {
         viewModel.$addressDesc
