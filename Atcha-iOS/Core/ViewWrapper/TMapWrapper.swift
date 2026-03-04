@@ -160,7 +160,7 @@ final class TMapWrapper: NSObject, MapRendering {
 extension TMapWrapper: TMapViewDelegate, TmapViewLocationDelegate {
     func mapViewDidFinishLoadingMap() {
         mapView.setMapType(.Night)
-        mapView.setZoom(18)
+        mapView.setZoom(16)
         mapView.isShowCompass = false
         mapView.isRotationEnable = true
         delegate?.didFinishLoadingMap(self)
