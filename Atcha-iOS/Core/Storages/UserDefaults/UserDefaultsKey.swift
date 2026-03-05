@@ -42,3 +42,9 @@ public extension UserDefaultsWrapper.Key {
     
     static let isGuest: UserDefaultsWrapper.Key = "isGuest"
 }
+
+extension UserDefaults {
+    @objc dynamic var departureAlarmDidFire: Bool {
+        return bool(forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue)
+    }
+}

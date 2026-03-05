@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Combine
 
 final class DetailRouteInfoBottomView: UIView {
     enum SheetState {
@@ -45,6 +46,12 @@ final class DetailRouteInfoBottomView: UIView {
     var getNewBusRealTime: (() -> Void)?
     private var currentNearLegIDs: Set<UUID> = []
     
+    private var cancellables = Set<AnyCancellable>()
+    
+    private var isAlarmFired: Bool {
+        return UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue) ?? false
+    }
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupView()
@@ -52,6 +59,7 @@ final class DetailRouteInfoBottomView: UIView {
         setupAutoLayout()
         setupCollectionView()
         setupDataSource()
+        bindAlarmStatus()
     }
     
     required init?(coder: NSCoder) {
@@ -61,6 +69,17 @@ final class DetailRouteInfoBottomView: UIView {
         setupAutoLayout()
         setupCollectionView()
         setupDataSource()
+        bindAlarmStatus()
+    }
+    
+    private func bindAlarmStatus() {
+        UserDefaults.standard.publisher(for: \.departureAlarmDidFire)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                // 이제 self.collectionView에 직접 접근이 가능하므로 에러가 해결됩니다!
+                self?.collectionView.reloadData()
+            }
+            .store(in: &cancellables)
     }
     
     private func setupView() {
@@ -313,7 +332,7 @@ extension DetailRouteInfoBottomView {
                         )
                         self?.onBusDetail?(info)
                     }
-                    cell.configure(info: item.info)
+                    cell.configure(info: item.info, isAlarmFired: self.isAlarmFired)
                     
                     if let route = item.info?.route, !route.isEmpty {
                         let cellKey = route.components(separatedBy: ":").last ?? route
@@ -338,7 +357,7 @@ extension DetailRouteInfoBottomView {
                         //                        self?.applySnapshot()
                         self?.collectionView.collectionViewLayout.invalidateLayout()
                     }
-                    cell.configure(info: item.info)
+                    cell.configure(info: item.info, isAlarmFired: self.isAlarmFired)
                     
                     if let route = item.info?.route, !route.isEmpty {
                         let key = route.components(separatedBy: ":").last ?? route
@@ -359,11 +378,13 @@ extension DetailRouteInfoBottomView {
     }
     
     func updateProximityHighlight(nearLegIDs: Set<UUID>) {
-        currentNearLegIDs = nearLegIDs
+        let actualNearIDs = isAlarmFired ? nearLegIDs : []
+        currentNearLegIDs = actualNearIDs
+        
         for cell in collectionView.visibleCells {
             if let busCell = cell as? DetailRouteBusCell,
                let leg = busCell.currentLegTrafficInfo {
-                if nearLegIDs.contains(leg.id) {
+                if actualNearIDs.contains(leg.id) {
                     busCell.isNowUserLocationArrived()
                 } else {
                     busCell.stopArrivedEffectIfNeeded()
@@ -372,7 +393,7 @@ extension DetailRouteInfoBottomView {
             
             if let subwayCell = cell as? DetailRouteSubwayCell,
                let leg = subwayCell.currentLegTrafficInfo {
-                if nearLegIDs.contains(leg.id) {
+                if actualNearIDs.contains(leg.id) {
                     subwayCell.isNowUserLocationArrived()
                 } else {
                     subwayCell.stopArrivedEffectIfNeeded()
@@ -381,7 +402,7 @@ extension DetailRouteInfoBottomView {
             
             if let walkCell = cell as? DetailRouteWalkCell,
                let leg = walkCell.currentLegTrafficInfo {
-                if nearLegIDs.contains(leg.id) {
+                if actualNearIDs.contains(leg.id) {
                     walkCell.isNowUserLocationArrived()
                 } else {
                     walkCell.stopArrivedEffectIfNeeded()

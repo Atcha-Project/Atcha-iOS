@@ -81,6 +81,7 @@ final class DetailRouteBusCell: UICollectionViewCell {
     var currentBusInfo: [RealTimeBusArrival] = []
     
     private var isArrivedEffectOn = false
+    private var isAlarmFired: Bool = false
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -110,6 +111,9 @@ final class DetailRouteBusCell: UICollectionViewCell {
         stationListStackViewTopConstraint?.isActive = false
         stationListStackViewBottomConstraint?.isActive = false
         endLabelTopConstraintWithoutStack?.isActive = true
+        
+        isAlarmFired = false
+        busTimerStackView.isHidden = true
     }
     
     override func preferredLayoutAttributesFitting(
@@ -266,7 +270,8 @@ final class DetailRouteBusCell: UICollectionViewCell {
         setupArrivalConstraints()
     }
     
-    func configure(info: LegTrafficInfo?) {
+    func configure(info: LegTrafficInfo?, isAlarmFired: Bool) {
+        self.isAlarmFired = isAlarmFired
         currentLegTrafficInfo = info
         
         stationInfos = []
@@ -303,6 +308,8 @@ final class DetailRouteBusCell: UICollectionViewCell {
                                                   color: .gray100))
         endCombinedLabel.append(AtchaFont.B3_M_15(" 하차", color: .gray500))
         endLabel.attributedText = endCombinedLabel
+        
+        self.busTimerStackView.isHidden = !isAlarmFired
     }
     
     
@@ -494,6 +501,13 @@ extension DetailRouteBusCell {
 
     private func updateBusTimerLabels() {
 
+        guard isAlarmFired else {
+            busTimerStackView.isHidden = true
+            return
+        }
+        
+        busTimerStackView.isHidden = false
+        
         func labelText(for info: RealTimeBusArrival) -> NSAttributedString {
             if info.busStatus == .end {
                 return AtchaFont.B6_R_14("운행 종료", color: .gray)
