@@ -568,7 +568,6 @@ extension DetailRouteViewController {
             self.hideLoading()
         }
     }
-    func mapViewDidStartScroll(_ mapView: TMapWrapper) {}
 }
 
 extension DetailRouteViewController {

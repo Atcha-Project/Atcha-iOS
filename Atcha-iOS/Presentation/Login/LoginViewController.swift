@@ -113,7 +113,7 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
         configureLoginButton(
             button: appleLoginButton,
             icon: UIImage.apple,
-            labelText: "Apple로 계속하기",
+            labelText: "Apple로 시작",
             textColor: AtchaColor.white,
             bgColor: AtchaColor.black,
             iconTint: AtchaColor.white

@@ -18,14 +18,11 @@ final class MainViewController: BaseViewController<MainViewModel>,
     private let mapContainerView: TMapContainerView = TMapContainerView()
     private let lastTrainSearchView: LastTrainSearchBottomView = LastTrainSearchBottomView() // 알람 등록 전
     private let lastTrainDepartView: LastTrainDepartBottomView = LastTrainDepartBottomView() // 알람 등록 이후
-    //    private let lastTrainRealTimeView: LastTrainRealTimeBottomView = LastTrainRealTimeBottomView() // 알람 등록 이후, 시간 지남
-    //    private let lastTrainArrivalView: LastTrainArrivalBottomView = LastTrainArrivalBottomView() // 알람 등록 이후, 시간 지남
     
     private let flagImageView: UIImageView = UIImageView()
     private let alarmTimeoutView: UIView = UIView()
     private let myPageButton: UIButton = UIButton()
     private let loactionButton: UIButton = UIButton()
-    //    private let atchaImageView: UIImageView = UIImageView()
     private let atchaImageView: CharacterJumpView = CharacterJumpView()
     private let ballonView: AtchaBallon = AtchaBallon()
     private let decimalFormatter: NumberFormatter = {
@@ -36,7 +33,6 @@ final class MainViewController: BaseViewController<MainViewModel>,
         f.maximumFractionDigits = 0
         return f
     }()
-    
     
     private var firstAddress: String?
     
@@ -96,6 +92,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
     private var lastJumpTime: CFTimeInterval = 0
     private let minJumpInterval: CFTimeInterval = 1.0
     
+    // MARK: - 상태 제어 변수 (추적/회전 관련)
     private var routeStartCoordinate: CLLocationCoordinate2D?
     private var shouldCenterToCurrentLocationOnce = false
     private var isFollowingUser = false
@@ -111,50 +108,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
     
     var shouldShowWelcomeToast: Bool = false
     
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        let isAlarmRegistered = UserDefaultsWrapper.shared.bool(
-            forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue
-        ) ?? false
-        
-        let isAlarmFired = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue) ?? false
-        
-        if !isAlarmRegistered {
-            isFollowingUser = false
-        }
-        
-        if shouldShowWelcomeToast {
-            shouldShowWelcomeToast = false // 한 번 띄우고 바로 꺼줌 (재진입 시 안 뜨게)
-            
-            // 첫 번째 토스트: 집 주소 등록 완료
-            AtchaToast(message: "집 주소가 등록되었어요").show(in: self.view)
-            
-            // 두 번째 토스트: 위치 권한 체크 (약간의 딜레이 후 띄워서 자연스럽게)
-            let status = CLLocationManager.authorizationStatus()
-            if status != .authorizedAlways && status != .authorizedWhenInUse {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
-                    self?.ensureLocationPermissionOrShowToast()
-                }
-            }
-        } else {
-            // 원래 있던 일반적인 권한 체크 (온보딩 직후가 아닐 때만)
-            if !isAlarmRegistered {
-                isFollowingUser = false
-            }
-        }
-        
-        AmplitudeManager.shared.trackScreen(.main)
-        
-        if isAlarmRegistered && !isAlarmFired,
-           let startCoord = routeStartCoordinate {
-            isFollowingUser = false
-            mapContainerView.setupZoomCenter(location: startCoord)
-        }
-        
-        if isAlarmRegistered && isAlarmFired {
-            isFollowingUser = true
-        }
-    }
+    // MARK: - Life Cycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -171,7 +125,10 @@ final class MainViewController: BaseViewController<MainViewModel>,
         
         setupUI()
         setupAutoLayout()
-        installMapUserGestureDetector()
+        //        installMapUserGestureDetector()
+        mapContainerView.onUserInteraction = { [weak self] in
+            self?.stopFollowingOnUserInteraction()
+        }
         bindView()
     }
     
@@ -181,25 +138,59 @@ final class MainViewController: BaseViewController<MainViewModel>,
         let isAlarmRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
         let isAlarmFired = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue) ?? false
         
-        DispatchQueue.main.asyncAfter(deadline: .now()) { [weak self] in
-            self?.viewModel.setupLocation()
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
             
             if !isAlarmRegistered {
-                self?.mapContainerView.beforeUserMarker()
-            } else {
-                self?.mapContainerView.afterUserMarker()
+                // 1. 앱 진입 시 현위치 1번 찍기 (초기화)
+                self.mapContainerView.beforeUserMarker()
+                self.isFollowingUser = false
+                self.viewModel.stopHeading()
+                
+                if let currentCoord = self.viewModel.selectedLocation ?? self.viewModel.currentLocation {
+                    self.mapContainerView.setupCenter(location: currentCoord)
+                    self.shouldCenterToCurrentLocationOnce = false // 이미 이동했으니 대기 안 함
+                } else {
+                    self.shouldCenterToCurrentLocationOnce = true // 값이 없다면 위치를 찾을 때까지 대기
+                }
+                
+            } else if isAlarmRegistered && !isAlarmFired {
+                // 2. 알람 등록 후 (다른 화면 갔다가 돌아왔을 때 출발지 기준으로 보여줌)
+                self.mapContainerView.afterUserMarker()
+                self.isFollowingUser = false
+                self.viewModel.stopHeading()
+                if let startCoord = self.routeStartCoordinate {
+                    self.mapContainerView.setupZoomCenter(location: startCoord)
+                }
+                
+            } else if isAlarmRegistered && isAlarmFired {
+                // 3. 알람 울리고 나서는 계속 따라가고 회전
+                self.mapContainerView.afterUserMarker()
+                self.isFollowingUser = true
+                self.viewModel.startHeading()
+            }
+        }
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        if shouldShowWelcomeToast {
+            shouldShowWelcomeToast = false // 한 번 띄우고 바로 꺼줌
+            
+            // 첫 번째 토스트: 집 주소 등록 완료
+            AtchaToast(message: "집 주소가 등록되었어요").show(in: self.view)
+            
+            // 두 번째 토스트: 위치 권한 체크
+            let status = CLLocationManager.authorizationStatus()
+            if status != .authorizedAlways && status != .authorizedWhenInUse {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
+                    self?.ensureLocationPermissionOrShowToast()
+                }
             }
         }
         
-        if isAlarmRegistered && !isAlarmFired,
-           let startCoord = routeStartCoordinate {
-            isFollowingUser = false
-            mapContainerView.setupZoomCenter(location: startCoord)
-        }
-        
-        if isAlarmRegistered && isAlarmFired {
-            isFollowingUser = true
-        }
+        AmplitudeManager.shared.trackScreen(.main)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -212,6 +203,8 @@ final class MainViewController: BaseViewController<MainViewModel>,
             .forEach { $0.hideImmediately() }
     }
     
+    // MARK: - Setup UI
+    
     private func setupUI() {
         view.addSubViews(
             mapContainerView,
@@ -220,8 +213,6 @@ final class MainViewController: BaseViewController<MainViewModel>,
             lastTrainSearchView,
             loactionButton,
             lastTrainDepartView,
-            //            lastTrainRealTimeView,
-            //            lastTrainArrivalView,
             ballonView,
             myPageButton
         )
@@ -270,15 +261,6 @@ extension MainViewController {
             make.horizontalEdges.equalToSuperview()
             make.bottom.equalToSuperview()
         }
-        //        lastTrainRealTimeView.snp.makeConstraints { make in
-        //            make.horizontalEdges.equalToSuperview()
-        //            make.bottom.equalToSuperview()
-        //        }
-        //        lastTrainArrivalView.snp.makeConstraints { make in
-        //            make.horizontalEdges.equalToSuperview()
-        //            make.bottom.equalToSuperview()
-        //        }
-        
         loactionButton.snp.makeConstraints { make in
             make.bottom.equalTo(lastTrainSearchView.snp.top).inset(-16)
             make.trailing.equalToSuperview().inset(16)
@@ -353,19 +335,10 @@ extension MainViewController {
             .sink { [weak self] in self?.handleSearchViewAction($0) }
             .store(in: &cancellables)
         
-        //        lastTrainRealTimeView.actionPublisher
-        //            .sink { [weak self] in self?.handleRealTimeViewAction($0) }
-        //            .store(in: &cancellables)
-        
         lastTrainDepartView.actionPublisher
             .receive(on: RunLoop.main)
             .sink { [weak self] in self?.handleTrainDepartAction($0) }
             .store(in: &cancellables)
-        
-        //        lastTrainArrivalView.actionPublisher
-        //            .receive(on: RunLoop.main)
-        //            .sink { [weak self] in self?.handleArrivalViewAction($0) }
-        //            .store(in: &cancellables)
     }
     
     private func handleSearchViewAction(_ action: LastTrainSearchBottomView.Action) {
@@ -412,22 +385,6 @@ extension MainViewController {
         }
     }
     
-    //    private func handleRealTimeViewAction(_ action: LastTrainRealTimeBottomView.Action) {
-    //        switch action {
-    //        case .refreshBusTime, .reloadTapped:
-    //            break
-    //            // TODO: 새로운 통신으로 변경하기
-    //            //            viewModel.getBusRealTime()
-    //        case .exitTapped:
-    //            showAlarmExitPopup()
-    //        case .detailRoadMapTapped: viewModel.handleRoute(route: .detailRoute(address: "",
-    //                                                                             infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: []),
-    //                                                                             context: .afterReigster)
-    //        )
-    //        case .finishAlarm: viewModel.bottomType = .finish
-    //        }
-    //    }
-    
     private func handleTrainDepartAction(_ action: LastTrainDepartBottomView.Action) {
         switch action {
         case .exitTapped:
@@ -454,15 +411,6 @@ extension MainViewController {
         }
     }
     
-    //    private func handleArrivalViewAction(_ action: LastTrainArrivalBottomView.Action) {
-    //        switch action {
-    //        case .exitTapped:
-    //            showAlarmExitPopup()
-    //        case .detailRoadMapTapped: viewModel.handleRoute(route: .detailRoute(address: "",
-    //                                                                             infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: []),
-    //                                                                             context: .afterReigster))
-    //        }
-    //    }
     private func showAlarmTimeoutPopup() {
         let popupVM = AtchaPopupViewModel(info: .alarmTimeout)
         let popupVC = AtchaPopupViewController(viewModel: popupVM)
@@ -503,7 +451,10 @@ extension MainViewController {
         viewModel.requestPermissionAndStartTracking()
         viewModel.removeLegInfoAndAddress()
         viewModel.stopHeading()
+        
+        // 4. 알람 해제 시 1번(초기 상태)으로 돌아감
         isFollowingUser = false
+        shouldCenterToCurrentLocationOnce = true
         
         // 이번 한 번은 프리 말풍선 자동 표시를 건너뛰도록 플래그 세팅
         deferPreBalloonOnce = true
@@ -514,17 +465,16 @@ extension MainViewController {
         mapContainerView.clearMapView()
         mapContainerView.beforeUserMarker()
         
-        if let coord = viewModel.currentLocation {
+        if let coord = viewModel.selectedLocation ?? viewModel.currentLocation {
             mapContainerView.setupCenter(location: coord)
         } else {
-            // 위치 아직 없으면 한 번은 센터 이동 허용 + 위치 요청
             viewModel.setupLocation()
         }
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
             guard let self else { return }
             
-            view.showToast(message: "알람이 종료되었어요")
+            self.view.showToast(message: "알람이 종료되었어요")
             
             // 2초 뒤 수동으로 말풍선 표시 (이때 플래그 해제)
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
@@ -533,20 +483,43 @@ extension MainViewController {
             }
             
             UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue)
-            
         }
     }
     
     // MARK: - ViewModel Bindings
+    
     private func bindCurrentLocationUpdates() {
         viewModel.$currentLocation
             .removeDuplicates()
             .compactMap { $0 }
-            .receive(on: DispatchQueue.main)
+            .receive(on: RunLoop.main) // DispatchQueue.main 대신 RunLoop.main으로 UI 렌더링 동기화
             .sink { [weak self] coord in
                 guard let self = self else { return }
                 
-                // UserDefaults 기준으로 실제 알람 등록 여부
+                // 앱 진입 시 최초 1회(또는 뷰모델이 currentLocation을 명시적으로 바꿔줬을 때)
+                // 지도 중심을 이동시키고 마커를 찍습니다.
+                if self.shouldCenterToCurrentLocationOnce {
+                    self.mapContainerView.setupCenter(location: coord)
+                    self.mapContainerView.updateUserMarker(location: coord)
+                    
+                    // 이동이 완료되었으니 플래그를 꺼서 더 이상 이벤트를 받지 않게 함
+                    self.shouldCenterToCurrentLocationOnce = false
+                }
+            }
+            .store(in: &cancellables)
+    }
+    
+    private func bindSelectedLocationUpdates() {
+        viewModel.$selectedLocation
+            .removeDuplicates()
+            .compactMap { $0 }
+            .receive(on: RunLoop.main)
+            .sink { [weak self] coord in
+                guard let self = self else { return }
+                
+                // 마커는 5초마다 실시간으로 계속 업데이트
+                self.mapContainerView.updateUserMarker(location: coord)
+                
                 let isAlarmRegistered = UserDefaultsWrapper.shared.bool(
                     forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue
                 ) ?? false
@@ -555,37 +528,32 @@ extension MainViewController {
                     forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue
                 ) ?? false
                 
-                if !isAlarmRegistered && !isAlarmFired {
-                    self.mapContainerView.setupCenter(location: coord)
-                }
-                
-                if isAlarmRegistered && !isAlarmFired && shouldCenterToCurrentLocationOnce {
-                    self.mapContainerView.setupCenter(location: coord)
-                    shouldCenterToCurrentLocationOnce = false
-                }
-                
+                // 3. 알람이 울린 상태면 무조건 강제로 센터 유지
                 if isAlarmRegistered && isAlarmFired {
+                    self.isFollowingUser = true
+                    self.viewModel.startHeading()
                     self.mapContainerView.setupCenter(location: coord)
+                    return
                 }
                 
-                // 알람 등록 + 출발 전 + departure 화면에서는
-                //    자동으로는 절대 현위치 안 따라감
-                //                if isAlarmRegistered {
-                //                    if isAlarmFired {
-                //                        viewModel.startHeading()
-                //                        self.mapContainerView.setupCenter(location: coord)
-                //                        return
-                //                    }
-                //
-                //                    if self.shouldCenterToCurrentLocationOnce {
-                //                        self.mapContainerView.setupCenter(location: coord)
-                //                        self.shouldCenterToCurrentLocationOnce = false
-                //                    } else {
-                //                        return
-                //                    }
-                //                } else {
-                //                    self.mapContainerView.setupCenter(location: coord)
-                //                }
+                // 1 & 2. 평상시 유저가 현위치 버튼을 눌러서 따라가기 모드일 때만 센터 이동
+                if self.isFollowingUser {
+                    self.mapContainerView.setupCenter(location: coord)
+                }
+            }
+            .store(in: &cancellables)
+    }
+    
+    private func bindDeviceHeadingUpdates() {
+        viewModel.$deviceHeading
+            .compactMap { $0 }
+            .removeDuplicates(by: { abs($0 - $1) < 2 })
+            .receive(on: RunLoop.main)
+            .sink { [weak self] heading in
+                guard let self else { return }
+                guard self.isFollowingUser else { return }
+                
+                self.mapContainerView.setHeading(heading)
             }
             .store(in: &cancellables)
     }
@@ -615,34 +583,6 @@ extension MainViewController {
             .store(in: &cancellables)
     }
     
-    //    private func bindCourseUpdates() {
-    //        viewModel.$currentCourse
-    //            .compactMap { $0 }
-    //            .removeDuplicates(by: { abs($0 - $1) < 3 })
-    //            .throttle(for: .milliseconds(250), scheduler: RunLoop.main, latest: true)
-    //            .sink { [weak self] course in
-    //                guard let self else { return }
-    //                guard self.isFollowingUser else { return }
-    //                self.lastCourseUpdateAt = CACurrentMediaTime()
-    //                self.mapContainerView.setHeading(course)
-    //            }
-    //            .store(in: &cancellables)
-    //    }
-    
-    private func bindDeviceHeadingUpdates() {
-        viewModel.$deviceHeading
-            .compactMap { $0 }
-            .removeDuplicates(by: { abs($0 - $1) < 2 })
-            .receive(on: RunLoop.main)
-            .sink { [weak self] heading in
-                guard let self else { return }
-                guard self.isFollowingUser else { return }
-                
-                self.mapContainerView.setHeading(heading)
-            }
-            .store(in: &cancellables)
-    }
-    
     private func updateAddress(_ address: String) {
         if firstAddress == nil {
             firstAddress = address
@@ -652,82 +592,11 @@ extension MainViewController {
         lastTrainSearchView.setupCurrentLocationTitle(title)
     }
     
-    private func bindSelectedLocationUpdates() {
-        viewModel.$selectedLocation
-            .removeDuplicates()
-            .compactMap { $0 }
-            .receive(on: RunLoop.main)
-            .sink { [weak self] coord in
-                guard let self else { return }
-                
-                // 마커는 실시간으로 계속 업데이트
-                self.mapContainerView.updateUserMarker(location: coord)
-                
-                // ====== center 이동 정책(기존 currentLocation 로직 이관) ======
-                
-                let isAlarmRegistered = UserDefaultsWrapper.shared.bool(
-                    forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue
-                ) ?? false
-                
-                let isAlarmFired = UserDefaultsWrapper.shared.bool(
-                    forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue
-                ) ?? false
-                
-                // 유저가 "내 위치 따라가기" 모드면 무조건 센터 이동
-                if self.isFollowingUser {
-                    self.mapContainerView.setupCenter(location: coord)
-                    return
-                }
-                
-                // 알람 등록 상태에서는 자동 추적을 기본적으로 막는 기존 정책 유지
-                if isAlarmRegistered {
-                    if isAlarmFired {
-                        // 알람 울린 이후에는 따라가도 됨(기존 로직 유지)
-                        self.viewModel.startHeading()
-                        self.mapContainerView.setupCenter(location: coord)
-                        return
-                    }
-                } else {
-                    // 알람 미등록: 기본은 현재 위치로 센터 이동
-                    self.mapContainerView.setupCenter(location: coord)
-                }
-            }
-            .store(in: &cancellables)
-    }
-    
-    //    private func bindSelectedLocationUpdates() {
-    //        viewModel.$selectedLocation
-    //            .removeDuplicates()
-    //            .compactMap { $0 }
-    //            .receive(on: RunLoop.main)
-    //            .sink { [weak self] in
-    //                guard let self = self else { return }
-    //                self.mapContainerView.updateUserMarker(location: $0)
-    //
-    //                if self.isFollowingUser {
-    //                    viewModel.startHeading()
-    //                    self.mapContainerView.setupCenter(location: $0)
-    //                    return
-    //                }
-    //
-    //                let isAlarmFired = UserDefaultsWrapper.shared.bool(
-    //                    forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue
-    //                ) ?? false
-    //
-    //                if isAlarmFired {
-    //                    self.mapContainerView.setupCenter(location: $0)
-    //                }
-    //            }
-    //            .store(in: &cancellables)
-    //    }
-    
     private func bindAddressDescriptionUpdates() {
         viewModel.$addressDesc
             .receive(on: RunLoop.main)
             .sink { [weak self] desc in
                 self?.lastTrainDepartView.setupLoaction(location: desc)
-                //                self?.lastTrainArrivalView.setupLoaction(location: desc)
-                //                self?.lastTrainRealTimeView.setupLoaction(location: desc)
             }
             .store(in: &cancellables)
     }
@@ -744,15 +613,6 @@ extension MainViewController {
                 case .departure:
                     self?.shouldCenterToCurrentLocationOnce = false
                     self?.lastTrainDepartView.setupLegInfo(info: info)
-                    //                case .detail:
-                    //                    self?.viewModel.handleRoute(route: .detailRoute(address: "",
-                    //                                                                    infos: LegInfo(pathInfo: [], trafficInfo: [], busInfo: []),
-                    //                                                                    context: .afterReigster))
-                    //                case .realTime: do {}
-                    //                    self?.lastTrainRealTimeView.setupLegInfo(info: info)
-                    //                case .finish:
-                    //                    break
-                    //                    self?.lastTrainArrivalView.setupLegInfo(info: info)
                 default: do {}
                 }
                 
@@ -767,14 +627,6 @@ extension MainViewController {
                 self?.setupBottomType(type)
             }
             .store(in: &cancellables)
-        
-        //        viewModel.$busRealTimeInfo
-        //            .compactMap { $0 }
-        //            .receive(on: RunLoop.main)
-        //            .sink { [weak self] info in
-        //                self?.lastTrainRealTimeView.setupBusRealTime(realTime: info)
-        //            }
-        //            .store(in: &cancellables)
         
         viewModel.$departureTime
             .compactMap { $0 }
@@ -837,7 +689,6 @@ extension MainViewController {
             let popBallonDelay: TimeInterval = popRegister ? 2.7 : 2.4
             
             // 앱을 켤 때부터 알람이 이미 등록되어 있었다면, post-delay(기존 2.0초)를 0으로
-            
             let postRevealDelay: TimeInterval = wasAlarmRegisteredOnLaunch ? 0.0 : popBallonDelay
             
             self.scheduleFirstBalloon(gen: gen,
@@ -849,7 +700,6 @@ extension MainViewController {
             
         case .search:
             if !isSame { cancelBalloonQueueAndHide() }
-            //               viewModel.stopAlarmTimer()
             viewModel.stopFinishAlarmTimer()
             lastTrainSearchView.isHidden = false
             flagImageView.isHidden = false
@@ -919,10 +769,8 @@ extension MainViewController {
                         gray: "여기서 막차 놓치면 택시비 ", white: "약 \(fareStr)원"
                     )
                     if self.ballonView.isHidden {
-                        // 아직 안 떠 있으면 처음처럼 보여 주기
                         self.showOrUpdatePreBalloon(content, showTopLine: self.preSessionShowTopLine ?? true)
                     } else {
-                        // 이미 떠 있으면 내용만 교체
                         self.updatePreBalloonContent(content, showTopLine: self.preSessionShowTopLine ?? true)
                     }
                 }
@@ -949,11 +797,9 @@ extension MainViewController {
                     self.lastTrainSearchView.updateSearchEnabled(true)
                     
                     if previous == nil {
-                        // 초기 표시 로직은 함수 쪽에서 요금 없으면 no-op
                         self.showInitialPreAlarmBalloons(force: true)
                     } else if self.isPreAlarmBalloonActive() {
                         if let fare = self.latestFareString {
-                            // 요금 있으면 택시비만 표시/업데이트
                             let content: BalloonContent =
                                 .separation(gray: "여기서 막차 놓치면 택시비 ", white: "약 \(fare)원")
                             if self.ballonView.isHidden {
@@ -961,7 +807,6 @@ extension MainViewController {
                             } else {
                                 self.updatePreBalloonContent(content, showTopLine: self.preSessionShowTopLine ?? true)
                             }
-                        } else {
                         }
                     }
                     
@@ -1087,8 +932,10 @@ extension MainViewController {
 extension MainViewController {
     func didFinishLoadingMap(_ mapView: TMapWrapper) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-            self.viewModel.setupLocation()
             self.hideLoading()
+            
+            // 지도가 완전히 로드된 이 시점에 setupLocation()을 호출해야 합니다!
+            self.viewModel.setupLocation()
             
             let wrapper = UserDefaultsWrapper.shared
             if let legInfo: LegInfo = wrapper.object(forKey: UserDefaultsWrapper.Key.legInfo.rawValue, of: LegInfo.self),
@@ -1118,10 +965,15 @@ extension MainViewController {
         guard ensureLocationPermissionOrShowToast() else { return }
         
         isFollowingUser = true
-        shouldCenterToCurrentLocationOnce = true
         viewModel.startHeading()
-        viewModel.currentLocation = nil
-        viewModel.setupLocation()
+        
+        // 이미 가지고 있는 위치가 있다면 즉시 이동, 없다면 업데이트 대기
+        if let coord = viewModel.selectedLocation ?? viewModel.currentLocation {
+            mapContainerView.setupCenter(location: coord)
+        } else {
+            shouldCenterToCurrentLocationOnce = true
+            viewModel.setupLocation()
+        }
     }
     
     private func safeStartJump() {
@@ -1319,25 +1171,34 @@ extension MainViewController {
         if preSessionShowTopLine == nil {
             preSessionShowTopLine = !isRevisit
         }
+        
         let showTopLine = preSessionShowTopLine ?? true
         let d1 = balloonInitialDelayFirst
         
         if isService {
-            // 서비스 지역인데 아직 요금이 없으면 말풍선은 띄우지 않지만,
-            // 재방문 처리(상단 라인 억제용)는 반드시 해두고 return
-            guard let fare = latestFareString else {
-                if !isRevisit {
-                    UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.reVisit.rawValue)
+            if isGuest {
+                // [추가] 비로그인 상태면 무조건 ???원 표시
+                showOrUpdatePreBalloon(
+                    .separation(gray: "여기서 막차 놓치면 택시비 ", white: "약 ???원"),
+                    delay: d1, animated: true, showTopLine: showTopLine
+                )
+            } else {
+                // 서비스 지역인데 아직 요금이 없으면 말풍선은 띄우지 않지만,
+                // 재방문 처리(상단 라인 억제용)는 반드시 해두고 return
+                guard let fare = latestFareString else {
+                    if !isRevisit {
+                        UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.reVisit.rawValue)
+                    }
+                    hasShownInitialBalloon = true
+                    return
                 }
-                hasShownInitialBalloon = true
-                return
+                
+                // 요금 있으면 택시비 말풍선만 페이드인
+                showOrUpdatePreBalloon(
+                    .separation(gray: "여기서 막차 놓치면 택시비 ", white: "약 \(fare)원"),
+                    delay: d1, animated: true, showTopLine: showTopLine
+                )
             }
-            
-            // 요금 있으면 택시비 말풍선만 페이드인
-            showOrUpdatePreBalloon(
-                .separation(gray: "여기서 막차 놓치면 택시비 ", white: "약 \(fare)원"),
-                delay: d1, animated: true, showTopLine: showTopLine
-            )
         } else {
             // 비서비스 지역은 기존 안내 문구
             showOrUpdatePreBalloon(
@@ -1419,23 +1280,15 @@ extension MainViewController {
     }
 }
 
-// MARK: - Delegate
+// MARK: - Map Delegate & Gesture
 extension MainViewController {
     func mapView(_ mapView: TMapWrapper, didUpdateLocation coordinate: CLLocationCoordinate2D) {
-        viewModel.currentLocation = coordinate
+        // 위치가 업데이트 될 때마다 호출됨 (조작 방해를 막기 위해 비워둠)
     }
     
     func mapView(_ mapView: TMapWrapper, didSelectLocation coordinate: CLLocationCoordinate2D) {
-        self.isFollowingUser = false
-        self.viewModel.stopHeading()
-        viewModel.currentLocation = coordinate
-    }
-    
-    func mapViewDidStartScroll(_ mapView: TMapWrapper) {
-        if self.isFollowingUser {
-            self.isFollowingUser = false
-            self.viewModel.stopHeading()
-        }
+        // 지도 단순 터치(탭) 시 추적 해제
+        stopFollowingOnUserInteraction()
     }
 }
 
@@ -1465,8 +1318,25 @@ extension MainViewController: UIGestureRecognizerDelegate {
     }
     
     @objc private func userDidManipulateMap(_ g: UIGestureRecognizer) {
-        if g.state == .began {
+        // 드래그, 줌 등의 제스처 발생 시 추적 해제
+        if g.state == .began || g.state == .changed {
+            stopFollowingOnUserInteraction()
+        }
+    }
+    
+    // 조작 감지 시 공통 처리 로직 (경우의 수 1,2,3 반영)
+    private func stopFollowingOnUserInteraction() {
+        let isAlarmFired = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue) ?? false
+        
+        // 3. 알람이 울린 후라면 지도를 터치해도 계속 따라가도록 무시
+        if isAlarmFired {
+            return
+        }
+        
+        // 1, 2. 평상시엔 지도를 조작하면 추적과 회전을 중지
+        if isFollowingUser {
             isFollowingUser = false
+            shouldCenterToCurrentLocationOnce = false
             viewModel.stopHeading()
         }
     }
@@ -1486,10 +1356,8 @@ extension MainViewController {
             preferredStyle: .alert
         )
         
-        // 닫기: 메인에서는 푸시 권한으로 넘어갈 필요가 없으므로 그냥 닫히게만 둡니다.
         alert.addAction(UIAlertAction(title: "닫기", style: .cancel, handler: nil))
         
-        // 설정하기: 설정 앱으로 이동
         alert.addAction(UIAlertAction(title: "설정하기", style: .default) { _ in
             guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
             UIApplication.shared.open(url)
@@ -1498,3 +1366,4 @@ extension MainViewController {
         present(alert, animated: true)
     }
 }
+
