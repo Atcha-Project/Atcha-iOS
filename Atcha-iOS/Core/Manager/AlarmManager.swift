@@ -26,7 +26,7 @@ final class AlarmManager {
     // MARK: - State
     private var alarmVolume: Float = 1.0
     private var currentSoundFile: String?
-    var selectedOption: PushAlarmOption = .both
+    var selectedOption: PushAlarmOption = .onlyVibration
     
     private var interruptionObserver: NSObjectProtocol?
     private var silenceHintObserver: NSObjectProtocol?
@@ -177,7 +177,7 @@ extension AlarmManager {
             selectedOption = option
             print("알람 타입 불러오기: \(option)")
         } else {
-            selectedOption = .both
+            selectedOption = .onlyVibration
         }
     }
     

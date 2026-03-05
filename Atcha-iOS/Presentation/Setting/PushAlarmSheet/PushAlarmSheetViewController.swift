@@ -150,7 +150,7 @@ final class PushAlarmSheetViewController: BaseViewController<PushAlarmSheetViewM
         let options: [PushAlarmOption] = [.both, .onlySound, .onlyVibration]
         
         // 기본 선택값을 .both로 강제 설정
-        let currentOption = PushAlarmOption.both
+        let currentOption = PushAlarmOption.onlyVibration
         self.selectedOption = currentOption
         AlarmManager.shared.setAlarmOption(currentOption)
         
