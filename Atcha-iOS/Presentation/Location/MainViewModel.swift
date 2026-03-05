@@ -79,24 +79,32 @@ final class MainViewModel: BaseViewModel{
     }
     
     func bind() {
-        $currentLocation
-            .compactMap { $0 }
-            .removeDuplicates()
-            .debounce(for: .seconds(0.3), scheduler: RunLoop.main)
-            .sink { [weak self] _ in
-                guard let self, let loc = self.currentLocation else { return }
-                Task { await self.updateAddressOnly(for: loc) }
-            }
-            .store(in: &cancellables)
-        
-        $address
-            .compactMap { $0 }
-            .removeDuplicates()
-            .sink { [weak self] _ in
-                Task { await self?.refreshRegionAndFareForCurrentAddress() }
-            }
-            .store(in: &cancellables)
-    }
+            // 🚨 1. currentLocation은 주소 검색을 하지 않고 마커 이동 용도로만 둡니다.
+            $currentLocation
+                .compactMap { $0 }
+                .removeDuplicates()
+                .sink { _ in }
+                .store(in: &cancellables)
+            
+            // 🚨 2. selectedLocation(지도의 중심)이 바뀔 때만 주소를 검색합니다!
+            $selectedLocation
+                .compactMap { $0 }
+                .removeDuplicates()
+                .debounce(for: .seconds(0.3), scheduler: RunLoop.main)
+                .sink { [weak self] loc in
+                    guard let self = self else { return }
+                    Task { await self.updateAddressOnly(for: loc) }
+                }
+                .store(in: &cancellables)
+            
+            $address
+                .compactMap { $0 }
+                .removeDuplicates()
+                .sink { [weak self] _ in
+                    Task { await self?.refreshRegionAndFareForCurrentAddress() }
+                }
+                .store(in: &cancellables)
+        }
     
     private func updateAddressOnly(for location: CLLocationCoordinate2D) async {
         do {
@@ -209,11 +217,18 @@ final class MainViewModel: BaseViewModel{
                 self.startHeading()
                 
                 streamTask = Task {
+                    var didSendInitialLocation = false
                     for await location in streamUseCase.startUpdate() {
                         let newLocation = CLLocationCoordinate2D(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
                         
+                        // 👉 내 진짜 GPS 위치는 계속 업데이트
                         self.currentLocation = newLocation
-                        self.selectedLocation = newLocation
+                        
+                        // 🚨 [수정]: 지도의 중심(selectedLocation)은 "앱 최초 진입 시" 딱 1번만 GPS 위치로 맞춰줍니다.
+                        if !didSendInitialLocation {
+                            self.selectedLocation = newLocation
+                            didSendInitialLocation = true
+                        }
                     }
                 }
             }

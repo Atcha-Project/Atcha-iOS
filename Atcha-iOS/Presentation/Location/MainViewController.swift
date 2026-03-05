@@ -489,60 +489,46 @@ extension MainViewController {
     // MARK: - ViewModel Bindings
     
     private func bindCurrentLocationUpdates() {
-        viewModel.$currentLocation
-            .removeDuplicates()
-            .compactMap { $0 }
-            .receive(on: RunLoop.main) // DispatchQueue.main 대신 RunLoop.main으로 UI 렌더링 동기화
-            .sink { [weak self] coord in
-                guard let self = self else { return }
-                
-                // 앱 진입 시 최초 1회(또는 뷰모델이 currentLocation을 명시적으로 바꿔줬을 때)
-                // 지도 중심을 이동시키고 마커를 찍습니다.
-                if self.shouldCenterToCurrentLocationOnce {
-                    self.mapContainerView.setupCenter(location: coord)
+            viewModel.$currentLocation
+                .removeDuplicates()
+                .compactMap { $0 }
+                .receive(on: RunLoop.main)
+                .sink { [weak self] coord in
+                    guard let self = self else { return }
+                    
+                    // 1. 파란색 내 위치 마커는 무조건 실시간 업데이트
                     self.mapContainerView.updateUserMarker(location: coord)
                     
-                    // 이동이 완료되었으니 플래그를 꺼서 더 이상 이벤트를 받지 않게 함
-                    self.shouldCenterToCurrentLocationOnce = false
+                    let isAlarmRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
+                    let isAlarmFired = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue) ?? false
+                    
+                    // 2. 알람이 울린 상태면 무조건 강제로 센터 유지
+                    if isAlarmRegistered && isAlarmFired {
+                        self.isFollowingUser = true
+                        self.viewModel.startHeading()
+                        self.mapContainerView.setupCenter(location: coord)
+                        return
+                    }
+                    
+                    // 3. 앱 최초 진입이거나, 내가 현위치 버튼을 눌러서 '추적 모드'일 때만 카메라 중심 이동
+                    if self.shouldCenterToCurrentLocationOnce || self.isFollowingUser {
+                        self.mapContainerView.setupCenter(location: coord)
+                        self.shouldCenterToCurrentLocationOnce = false
+                    }
                 }
-            }
-            .store(in: &cancellables)
-    }
-    
-    private func bindSelectedLocationUpdates() {
-        viewModel.$selectedLocation
-            .removeDuplicates()
-            .compactMap { $0 }
-            .receive(on: RunLoop.main)
-            .sink { [weak self] coord in
-                guard let self = self else { return }
-                
-                // 마커는 5초마다 실시간으로 계속 업데이트
-                self.mapContainerView.updateUserMarker(location: coord)
-                
-                let isAlarmRegistered = UserDefaultsWrapper.shared.bool(
-                    forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue
-                ) ?? false
-                
-                let isAlarmFired = UserDefaultsWrapper.shared.bool(
-                    forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue
-                ) ?? false
-                
-                // 3. 알람이 울린 상태면 무조건 강제로 센터 유지
-                if isAlarmRegistered && isAlarmFired {
-                    self.isFollowingUser = true
-                    self.viewModel.startHeading()
-                    self.mapContainerView.setupCenter(location: coord)
-                    return
+                .store(in: &cancellables)
+        }
+        
+        private func bindSelectedLocationUpdates() {
+            viewModel.$selectedLocation
+                .removeDuplicates()
+                .compactMap { $0 }
+                .receive(on: RunLoop.main)
+                .sink { _ in
+                    // 👉 뷰모델에서 알아서 주소를 검색하므로 뷰컨트롤러는 카메라를 건드리지 않음!
                 }
-                
-                // 1 & 2. 평상시 유저가 현위치 버튼을 눌러서 따라가기 모드일 때만 센터 이동
-                if self.isFollowingUser {
-                    self.mapContainerView.setupCenter(location: coord)
-                }
-            }
-            .store(in: &cancellables)
-    }
+                .store(in: &cancellables)
+        }
     
     private func bindDeviceHeadingUpdates() {
         viewModel.$deviceHeading
@@ -962,19 +948,20 @@ extension MainViewController {
     }
     
     @objc private func didTapLocationButton() {
-        guard ensureLocationPermissionOrShowToast() else { return }
-        
-        isFollowingUser = true
-        viewModel.startHeading()
-        
-        // 이미 가지고 있는 위치가 있다면 즉시 이동, 없다면 업데이트 대기
-        if let coord = viewModel.selectedLocation ?? viewModel.currentLocation {
-            mapContainerView.setupCenter(location: coord)
-        } else {
-            shouldCenterToCurrentLocationOnce = true
-            viewModel.setupLocation()
+            guard ensureLocationPermissionOrShowToast() else { return }
+            
+            isFollowingUser = true
+            viewModel.startHeading()
+            
+            // 🚨 수정: 무조건 내 "진짜 위치(currentLocation)"로 지도를 이동시킴
+            if let coord = viewModel.currentLocation {
+                mapContainerView.setupCenter(location: coord)
+                viewModel.selectedLocation = coord // 주소도 현위치로 다시 검색하게 덮어씀
+            } else {
+                shouldCenterToCurrentLocationOnce = true
+                viewModel.setupLocation()
+            }
         }
-    }
     
     private func safeStartJump() {
         let now = CACurrentMediaTime()
@@ -1276,11 +1263,13 @@ extension MainViewController {
 extension MainViewController {
     func mapView(_ mapView: TMapWrapper, didUpdateLocation coordinate: CLLocationCoordinate2D) {
         // 위치가 업데이트 될 때마다 호출됨 (조작 방해를 막기 위해 비워둠)
+        viewModel.selectedLocation = coordinate
     }
     
     func mapView(_ mapView: TMapWrapper, didSelectLocation coordinate: CLLocationCoordinate2D) {
         // 지도 단순 터치(탭) 시 추적 해제
         stopFollowingOnUserInteraction()
+        viewModel.selectedLocation = coordinate
     }
 }
 
