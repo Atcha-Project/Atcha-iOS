@@ -227,7 +227,9 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         viewModel.$nearLegIDs
             .receive(on: RunLoop.main)
             .sink { [weak self] near in
-                self?.bottomSheet.updateProximityHighlight(nearLegIDs: near)
+                guard let self = self else { return }
+                let idsToHighlight = self.isAlarmFired ? near : []
+                self.bottomSheet.updateProximityHighlight(nearLegIDs: idsToHighlight)
             }
             .store(in: &cancellables)
         
@@ -307,7 +309,7 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
                 let threshold: CLLocationDistance = 150
                 
                 let polylines = self.legPolylineById
-                let orderedLegs = self.viewModel.legTrafficInfo   // ✅ 화면 표시 순서(위→아래)
+                let orderedLegs = self.viewModel.legTrafficInfo   // 화면 표시 순서(위→아래)
                 
                 DispatchQueue.global(qos: .userInitiated).async { [weak self] in
                     guard let self else { return }
@@ -322,7 +324,7 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
                         }
                     }
                     
-                    // 2) ✅ "위에 있는 셀 우선" = orderedLegs 순서로 첫 매칭 1개만 남김
+                    // 2) "위에 있는 셀 우선" = orderedLegs 순서로 첫 매칭 1개만 남김
                     var picked: Set<UUID> = []
                     if let first = orderedLegs.first(where: { nearCandidates.contains($0.id) })?.id {
                         picked = [first]
@@ -447,7 +449,7 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         self.ensureAlarmPermissionAndExecute { [weak self] in
             guard let self = self else { return }
             
-            // 💡 여기서부터는 권한이 허용된 상태에서만 실행되는 기존 비즈니스 로직입니다.
+            // 여기서부터는 권한이 허용된 상태에서만 실행되는 기존 비즈니스 로직입니다.
             let busLegs = self.viewModel.legTrafficInfo.filter { $0.mode == .bus }
             let busCount = busLegs.count
             let hasSubway = self.viewModel.legTrafficInfo.contains { $0.mode == .subway }
