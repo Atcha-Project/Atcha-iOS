@@ -557,7 +557,7 @@ extension MainViewController {
                     if self.latestIsServiceRegion == false {
                         self.showOrUpdatePreBalloon(
                             .text(
-                                top: (self.preSessionShowTopLine ?? true) ? "지도를 움직여 출발지를 설정해 봐요" : nil,
+                                top: (self.preSessionShowTopLine ?? true) ? "지도를 움직여 출발지를 설정해요" : nil,
                                 bottom: "서울, 경기, 인천 내에서만 사용할 수 있어요"
                             )
                         )
@@ -819,7 +819,7 @@ extension MainViewController {
                             self.showInitialPreAlarmBalloons(force: true)
                         } else if self.isPreAlarmBalloonActive() {
                             let content: BalloonContent =
-                                .text(top: (self.preSessionShowTopLine ?? true) ? "지도를 움직여 출발지를 설정해 봐요" : nil,
+                                .text(top: (self.preSessionShowTopLine ?? true) ? "지도를 움직여 출발지를 설정해요" : nil,
                                       bottom: "서울, 경기, 인천 내에서만 사용할 수 있어요")
                             if self.ballonView.isHidden {
                                 self.showOrUpdatePreBalloon(content, showTopLine: self.preSessionShowTopLine ?? true)
@@ -1208,7 +1208,7 @@ extension MainViewController {
             } else {
                 // 비서비스 지역은 기존 안내 문구 유지
                 showOrUpdatePreBalloon(
-                    .text(top: showTopLine ? "지도를 움직여 출발지를 설정해 봐요" : nil,
+                    .text(top: showTopLine ? "지도를 움직여 출발지를 설정해요" : nil,
                           bottom: "서울, 경기, 인천 내에서만 사용할 수 있어요"),
                     delay: d1
                 )
