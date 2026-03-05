@@ -1176,29 +1176,21 @@ extension MainViewController {
         let d1 = balloonInitialDelayFirst
         
         if isService {
-            if isGuest {
-                // [추가] 비로그인 상태면 무조건 ???원 표시
-                showOrUpdatePreBalloon(
-                    .separation(gray: "여기서 막차 놓치면 택시비 ", white: "약 ???원"),
-                    delay: d1, animated: true, showTopLine: showTopLine
-                )
-            } else {
-                // 서비스 지역인데 아직 요금이 없으면 말풍선은 띄우지 않지만,
-                // 재방문 처리(상단 라인 억제용)는 반드시 해두고 return
-                guard let fare = latestFareString else {
-                    if !isRevisit {
-                        UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.reVisit.rawValue)
-                    }
-                    hasShownInitialBalloon = true
-                    return
+            // 서비스 지역인데 아직 요금이 없으면 말풍선은 띄우지 않지만,
+            // 재방문 처리(상단 라인 억제용)는 반드시 해두고 return
+            guard let fare = latestFareString else {
+                if !isRevisit {
+                    UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.reVisit.rawValue)
                 }
-                
-                // 요금 있으면 택시비 말풍선만 페이드인
-                showOrUpdatePreBalloon(
-                    .separation(gray: "여기서 막차 놓치면 택시비 ", white: "약 \(fare)원"),
-                    delay: d1, animated: true, showTopLine: showTopLine
-                )
+                hasShownInitialBalloon = true
+                return
             }
+            
+            // 요금 있으면 택시비 말풍선만 페이드인
+            showOrUpdatePreBalloon(
+                .separation(gray: "여기서 막차 놓치면 택시비 ", white: "약 \(fare)원"),
+                delay: d1, animated: true, showTopLine: showTopLine
+            )
         } else {
             // 비서비스 지역은 기존 안내 문구
             showOrUpdatePreBalloon(

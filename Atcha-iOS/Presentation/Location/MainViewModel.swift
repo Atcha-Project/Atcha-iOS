@@ -209,19 +209,10 @@ final class MainViewModel: BaseViewModel{
                 self.startHeading()
                 
                 streamTask = Task {
-                    // 👉 앱 진입 시 최초 1회 위치를 확실히 잡기 위한 플래그
-                    var didSendInitialLocation = false
-                    
                     for await location in streamUseCase.startUpdate() {
                         let newLocation = CLLocationCoordinate2D(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
                         
-                        // 최초 1회이거나, 사용자가 지도를 직접 조작해서 선택한 경우에만 currentLocation을 업데이트
-                        if !didSendInitialLocation {
-                            self.currentLocation = newLocation
-                            didSendInitialLocation = true
-                        }
-                        
-                        // selectedLocation은 뒤에서 실시간 마커 및 "추적"에 사용되므로 계속 업데이트
+                        self.currentLocation = newLocation
                         self.selectedLocation = newLocation
                     }
                 }
