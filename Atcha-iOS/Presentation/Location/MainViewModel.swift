@@ -79,32 +79,32 @@ final class MainViewModel: BaseViewModel{
     }
     
     func bind() {
-            // 🚨 1. currentLocation은 주소 검색을 하지 않고 마커 이동 용도로만 둡니다.
-            $currentLocation
-                .compactMap { $0 }
-                .removeDuplicates()
-                .sink { _ in }
-                .store(in: &cancellables)
-            
-            // 🚨 2. selectedLocation(지도의 중심)이 바뀔 때만 주소를 검색합니다!
-            $selectedLocation
-                .compactMap { $0 }
-                .removeDuplicates()
-                .debounce(for: .seconds(0.3), scheduler: RunLoop.main)
-                .sink { [weak self] loc in
-                    guard let self = self else { return }
-                    Task { await self.updateAddressOnly(for: loc) }
-                }
-                .store(in: &cancellables)
-            
-            $address
-                .compactMap { $0 }
-                .removeDuplicates()
-                .sink { [weak self] _ in
-                    Task { await self?.refreshRegionAndFareForCurrentAddress() }
-                }
-                .store(in: &cancellables)
-        }
+        // 1. currentLocation은 주소 검색을 하지 않고 마커 이동 용도로만 둡니다.
+        $currentLocation
+            .compactMap { $0 }
+            .removeDuplicates()
+            .sink { _ in }
+            .store(in: &cancellables)
+        
+        // 2. selectedLocation(지도의 중심)이 바뀔 때만 주소를 검색합니다!
+        $selectedLocation
+            .compactMap { $0 }
+            .removeDuplicates()
+            .debounce(for: .seconds(0.3), scheduler: RunLoop.main)
+            .sink { [weak self] loc in
+                guard let self = self else { return }
+                Task { await self.updateAddressOnly(for: loc) }
+            }
+            .store(in: &cancellables)
+        
+        $address
+            .compactMap { $0 }
+            .removeDuplicates()
+            .sink { [weak self] _ in
+                Task { await self?.refreshRegionAndFareForCurrentAddress() }
+            }
+            .store(in: &cancellables)
+    }
     
     private func updateAddressOnly(for location: CLLocationCoordinate2D) async {
         do {
@@ -118,15 +118,16 @@ final class MainViewModel: BaseViewModel{
         guard let lat = lastReverseGeocode?.lat,
               let lon = lastReverseGeocode?.lon else { return }
         
-        // 서비스지역 먼저
+        // 서비스지역 먼저 (비회원도 이건 알아야 하므로 유지)
         do {
             let okReq = CheckServiceRegionRequest(lat: lat, lon: lon)
             let ok = try await searchAddressUseCase.checkServiceRegion(okReq)
             await MainActor.run { self.isServiceRegion = ok }
         } catch { print("서비스 지역 확인 실패: \(error)") }
         
-        // 택시비는 서비스지역 O일 때만
-        guard self.isServiceRegion == true else { return }
+        // [추가] 게스트이거나 서비스 지역이 아니면 택시비 조회 안 함!
+        let isGuest = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.isGuest.rawValue) ?? false
+        guard self.isServiceRegion == true, !isGuest else { return }
         let req = FetchTaxiFareRequest(
             originLat: lastReverseGeocode?.lat,
             originLon: lastReverseGeocode?.lon,
@@ -203,36 +204,36 @@ final class MainViewModel: BaseViewModel{
     }
     
     func requestPermissionAndStartTracking() {
-            Task {
-                let status = await authorizationUseCase.askLocationPermission()
-                guard status == .authorizedAlways || status == .authorizedWhenInUse else {
-                    let hasShown = UserDefaults.standard.bool(forKey: "hasShownMainLocationAlert")
-                    if (status == .denied || status == .restricted) && !hasShown {
-                        UserDefaults.standard.set(true, forKey: "hasShownMainLocationAlert")
-                        await MainActor.run { self.showLocationDeniedAlert = true }
-                    }
-                    return
+        Task {
+            let status = await authorizationUseCase.askLocationPermission()
+            guard status == .authorizedAlways || status == .authorizedWhenInUse else {
+                let hasShown = UserDefaults.standard.bool(forKey: "hasShownMainLocationAlert")
+                if (status == .denied || status == .restricted) && !hasShown {
+                    UserDefaults.standard.set(true, forKey: "hasShownMainLocationAlert")
+                    await MainActor.run { self.showLocationDeniedAlert = true }
                 }
-                
-                self.startHeading()
-                
-                streamTask = Task {
-                    var didSendInitialLocation = false
-                    for await location in streamUseCase.startUpdate() {
-                        let newLocation = CLLocationCoordinate2D(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
-                        
-                        // 👉 내 진짜 GPS 위치는 계속 업데이트
-                        self.currentLocation = newLocation
-                        
-                        // 🚨 [수정]: 지도의 중심(selectedLocation)은 "앱 최초 진입 시" 딱 1번만 GPS 위치로 맞춰줍니다.
-                        if !didSendInitialLocation {
-                            self.selectedLocation = newLocation
-                            didSendInitialLocation = true
-                        }
+                return
+            }
+            
+            self.startHeading()
+            
+            streamTask = Task {
+                var didSendInitialLocation = false
+                for await location in streamUseCase.startUpdate() {
+                    let newLocation = CLLocationCoordinate2D(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
+                    
+                    // 내 진짜 GPS 위치는 계속 업데이트
+                    self.currentLocation = newLocation
+                    
+                    // [수정]: 지도의 중심(selectedLocation)은 "앱 최초 진입 시" 딱 1번만 GPS 위치로 맞춰줍니다.
+                    if !didSendInitialLocation {
+                        self.selectedLocation = newLocation
+                        didSendInitialLocation = true
                     }
                 }
             }
         }
+    }
     
     func refreshDepatrueTime() {
         Task {

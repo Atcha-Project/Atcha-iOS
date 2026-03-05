@@ -740,70 +740,23 @@ extension MainViewController {
     }
     
     private func bindTaxiFareUpdates() {
-        viewModel.$taxiFare
-            .compactMap { $0 }
-            .map { Int($0) }
-            .removeDuplicates()
-            .receive(on: RunLoop.main)
-            .sink { [weak self] fareInt in
-                guard let self else { return }
-                let fareStr = self.decimalFormatter.string(from: NSNumber(value: fareInt)) ?? "\(fareInt)"
-                self.latestFareString = fareStr
-                
-                if self.isPreAlarmBalloonActive(), self.latestIsServiceRegion == true {
-                    let content: BalloonContent = .separation(
-                        gray: "여기서 막차 놓치면 택시비 ", white: "약 \(fareStr)원"
-                    )
-                    if self.ballonView.isHidden {
-                        self.showOrUpdatePreBalloon(content, showTopLine: self.preSessionShowTopLine ?? true)
-                    } else {
-                        self.updatePreBalloonContent(content, showTopLine: self.preSessionShowTopLine ?? true)
-                    }
-                }
-                
-                if !self.postAlarmMessages.isEmpty {
-                    self.postAlarmMessages[self.postAlarmMessages.count - 1] =
-                        .separation(gray: "여기서 막차 놓치면 택시비 ", white: "약 \(fareStr)원")
-                }
-            }
-            .store(in: &cancellables)
-    }
-    
-    private func bindServiceRegionUpdates() {
-        viewModel.$isServiceRegion
-            .removeDuplicates()
-            .receive(on: RunLoop.main)
-            .sink { [weak self] ok in
-                guard let self else { return }
-                let previous = self.latestIsServiceRegion
-                self.latestIsServiceRegion = ok
-                
-                switch ok {
-                case .some(true):
-                    self.lastTrainSearchView.updateSearchEnabled(true)
+            viewModel.$taxiFare
+                .compactMap { $0 }
+                .map { Int($0) }
+                .removeDuplicates()
+                .receive(on: RunLoop.main)
+                .sink { [weak self] fareInt in
+                    guard let self else { return }
+                    let fareStr = self.decimalFormatter.string(from: NSNumber(value: fareInt)) ?? "\(fareInt)"
+                    self.latestFareString = fareStr
                     
-                    if previous == nil {
-                        self.showInitialPreAlarmBalloons(force: true)
-                    } else if self.isPreAlarmBalloonActive() {
-                        if let fare = self.latestFareString {
-                            let content: BalloonContent =
-                                .separation(gray: "여기서 막차 놓치면 택시비 ", white: "약 \(fare)원")
-                            if self.ballonView.isHidden {
-                                self.showOrUpdatePreBalloon(content, showTopLine: self.preSessionShowTopLine ?? true)
-                            } else {
-                                self.updatePreBalloonContent(content, showTopLine: self.preSessionShowTopLine ?? true)
-                            }
-                        }
-                    }
-                    
-                case .some(false):
-                    self.lastTrainSearchView.updateSearchEnabled(false)
-                    if previous == nil {
-                        self.showInitialPreAlarmBalloons(force: true)
-                    } else if self.isPreAlarmBalloonActive() {
-                        let content: BalloonContent =
-                            .text(top: (self.preSessionShowTopLine ?? true) ? "지도를 움직여 출발지를 설정해 봐요" : nil,
-                                  bottom: "서울, 경기, 인천 내에서만 사용할 수 있어요")
+                    if self.isPreAlarmBalloonActive(), self.latestIsServiceRegion == true {
+                        // 🚨 수정: 게스트일 경우 금액을 가려줍니다.
+                        let displayFare = self.isGuest ? "???원" : "\(fareStr)원"
+                        let content: BalloonContent = .separation(
+                            gray: "여기서 막차 놓치면 택시비 ", white: "약 \(displayFare)"
+                        )
+                        
                         if self.ballonView.isHidden {
                             self.showOrUpdatePreBalloon(content, showTopLine: self.preSessionShowTopLine ?? true)
                         } else {
@@ -811,12 +764,76 @@ extension MainViewController {
                         }
                     }
                     
-                case .none:
-                    self.lastTrainSearchView.updateSearchEnabled(false)
+                    // 🚨 알람 등록 후 말풍선 큐에도 똑같이 반영
+                    if !self.postAlarmMessages.isEmpty {
+                        let displayFare = self.isGuest ? "???원" : "\(fareStr)원"
+                        self.postAlarmMessages[self.postAlarmMessages.count - 1] =
+                            .separation(gray: "여기서 막차 놓치면 택시비 ", white: "약 \(displayFare)")
+                    }
                 }
-            }
-            .store(in: &cancellables)
-    }
+                .store(in: &cancellables)
+        }
+    
+    private func bindServiceRegionUpdates() {
+            viewModel.$isServiceRegion
+                .removeDuplicates()
+                .receive(on: RunLoop.main)
+                .sink { [weak self] ok in
+                    guard let self = self else { return }
+                    let previous = self.latestIsServiceRegion
+                    self.latestIsServiceRegion = ok
+                    
+                    switch ok {
+                    case .some(true):
+                        // 서비스 지역으로 들어옴!
+                        self.lastTrainSearchView.updateSearchEnabled(true)
+                        
+                        if previous == nil {
+                            self.showInitialPreAlarmBalloons(force: true)
+                        } else if self.isPreAlarmBalloonActive() {
+                            
+                            // 수정: 게스트 모드면 요금(fare)이 없어도 바로 ???로 띄워줘야 함!
+                            if self.isGuest {
+                                let content: BalloonContent = .separation(gray: "여기서 막차 놓치면 택시비 ", white: "약 ???원")
+                                if self.ballonView.isHidden {
+                                    self.showOrUpdatePreBalloon(content, showTopLine: self.preSessionShowTopLine ?? true)
+                                } else {
+                                    self.updatePreBalloonContent(content, showTopLine: self.preSessionShowTopLine ?? true)
+                                }
+                                
+                            } else if let fare = self.latestFareString {
+                                // 일반 회원이고 요금이 있을 때
+                                let content: BalloonContent = .separation(gray: "여기서 막차 놓치면 택시비 ", white: "약 \(fare)원")
+                                if self.ballonView.isHidden {
+                                    self.showOrUpdatePreBalloon(content, showTopLine: self.preSessionShowTopLine ?? true)
+                                } else {
+                                    self.updatePreBalloonContent(content, showTopLine: self.preSessionShowTopLine ?? true)
+                                }
+                            }
+                        }
+                        
+                    case .some(false):
+                        // 서비스 지역을 벗어남 (울산 등)
+                        self.lastTrainSearchView.updateSearchEnabled(false)
+                        if previous == nil {
+                            self.showInitialPreAlarmBalloons(force: true)
+                        } else if self.isPreAlarmBalloonActive() {
+                            let content: BalloonContent =
+                                .text(top: (self.preSessionShowTopLine ?? true) ? "지도를 움직여 출발지를 설정해 봐요" : nil,
+                                      bottom: "서울, 경기, 인천 내에서만 사용할 수 있어요")
+                            if self.ballonView.isHidden {
+                                self.showOrUpdatePreBalloon(content, showTopLine: self.preSessionShowTopLine ?? true)
+                            } else {
+                                self.updatePreBalloonContent(content, showTopLine: self.preSessionShowTopLine ?? true)
+                            }
+                        }
+                        
+                    case .none:
+                        self.lastTrainSearchView.updateSearchEnabled(false)
+                    }
+                }
+                .store(in: &cancellables)
+        }
     
     // MARK: - Constraint Helper
     private func updateAtchaImageConstraint(relativeTo view: UIView) {
@@ -1152,52 +1169,62 @@ extension MainViewController {
     
     // 초기 프리 말풍선
     private func showInitialPreAlarmBalloons(force: Bool = false) {
-        guard let isService = latestIsServiceRegion else { return }
-        guard isPreAlarmBalloonActive() else { return }
-        
-        if preSessionShowTopLine == nil {
-            preSessionShowTopLine = !isRevisit
-        }
-        
-        let showTopLine = preSessionShowTopLine ?? true
-        let d1 = balloonInitialDelayFirst
-        
-        if isService {
-            // 서비스 지역인데 아직 요금이 없으면 말풍선은 띄우지 않지만,
-            // 재방문 처리(상단 라인 억제용)는 반드시 해두고 return
-            guard let fare = latestFareString else {
-                if !isRevisit {
-                    UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.reVisit.rawValue)
+            guard let isService = latestIsServiceRegion else { return }
+            guard isPreAlarmBalloonActive() else { return }
+            
+            if preSessionShowTopLine == nil {
+                preSessionShowTopLine = !isRevisit
+            }
+            let showTopLine = preSessionShowTopLine ?? true
+            let d1 = balloonInitialDelayFirst
+            
+            if isService {
+                // 서비스 지역인데 아직 요금이 없으면 말풍선은 띄우지 않지만,
+                // 재방문 처리(상단 라인 억제용)는 반드시 해두고 return
+                guard let fare = latestFareString else {
+                    if !isRevisit {
+                        UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.reVisit.rawValue)
+                    }
+                    
+                    // [추가 로직] 게스트일 경우 서버에서 요금을 안 주거나 늦게 줄 수 있으므로
+                    // 요금(fare)이 없어도 바로 ???로 띄워줍니다!
+                    if isGuest {
+                        showOrUpdatePreBalloon(
+                            .separation(gray: "여기서 막차 놓치면 택시비 ", white: "약 ???원"),
+                            delay: d1, animated: true, showTopLine: showTopLine
+                        )
+                        hasShownInitialBalloon = true
+                    }
+                    return
                 }
-                hasShownInitialBalloon = true
-                return
+                
+                // 요금이 있고 서비스 지역일 때
+                let displayFare = isGuest ? "???원" : "\(fare)원"
+                showOrUpdatePreBalloon(
+                    .separation(gray: "여기서 막차 놓치면 택시비 ", white: "약 \(displayFare)"),
+                    delay: d1, animated: true, showTopLine: showTopLine
+                )
+                
+            } else {
+                // 비서비스 지역은 기존 안내 문구 유지
+                showOrUpdatePreBalloon(
+                    .text(top: showTopLine ? "지도를 움직여 출발지를 설정해 봐요" : nil,
+                          bottom: "서울, 경기, 인천 내에서만 사용할 수 있어요"),
+                    delay: d1
+                )
             }
             
-            // 요금 있으면 택시비 말풍선만 페이드인
-            showOrUpdatePreBalloon(
-                .separation(gray: "여기서 막차 놓치면 택시비 ", white: "약 \(fare)원"),
-                delay: d1, animated: true, showTopLine: showTopLine
-            )
-        } else {
-            // 비서비스 지역은 기존 안내 문구
-            showOrUpdatePreBalloon(
-                .text(top: showTopLine ? "지도를 움직여 출발지를 설정해 봐요" : nil,
-                      bottom: "서울, 경기, 인천 내에서만 사용할 수 있어요"),
-                delay: d1
-            )
+            // 여기까지 도달했을 때도 초기 방문이면 reVisit 저장
+            if !isRevisit {
+                UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.reVisit.rawValue)
+            }
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
+                self?.atchaImageView.stop()
+                self?.atchaImageView.start()
+            }
+            hasShownInitialBalloon = true
         }
-        
-        // 여기까지 도달했을 때도 초기 방문이면 reVisit 저장
-        if !isRevisit {
-            UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.reVisit.rawValue)
-        }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
-            self?.atchaImageView.stop()
-            self?.atchaImageView.start()
-        }
-        hasShownInitialBalloon = true
-    }
     
     // 즉시 표시(터치 등): 3초 뒤 오토숨김
     private func showOrUpdateImmediateBalloon(_ content: BalloonContent) {
