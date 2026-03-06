@@ -529,11 +529,10 @@ extension MainViewController {
                     guard let self = self else { return }
                     
                     // 1. 파란색 내 위치 마커는 무조건 실시간 업데이트
-                    self.mapContainerView.updateUserMarker(location: coord)
                     
                     let isAlarmRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
                     let isAlarmFired = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue) ?? false
-                    
+                    self.mapContainerView.updateUserMarker(location: coord, isRegistered: isAlarmRegistered)
                     // 2. 알람이 울린 상태면 무조건 강제로 센터 유지
                     if isAlarmRegistered && isAlarmFired {
                         self.isFollowingUser = true

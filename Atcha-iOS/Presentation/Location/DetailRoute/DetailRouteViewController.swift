@@ -55,21 +55,24 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         
-        if !isAlarmFired && !allCoordinates.isEmpty {
+        if !isAlarmFired && !allCoordinates.isEmpty && !lastRouteFitApplied {
             mapContainerView.adjustMapToFit(coordinates: allCoordinates)
+            lastRouteFitApplied = true // 플래그를 세워 중복 호출 방지
             
-            mapContainerView.snp.remakeConstraints { make in
-                make.horizontalEdges.equalToSuperview()
-                make.top.equalToSuperview()
-                make.height.equalToSuperview().multipliedBy(0.65)
-            }
-        } else if isAlarmFired {
-            mapContainerView.snp.remakeConstraints { make in
-                make.horizontalEdges.equalToSuperview()
-                make.top.equalToSuperview()
-                make.bottom.equalToSuperview().inset(200)
-            }
+            //            mapContainerView.snp.remakeConstraints { make in
+            //                make.horizontalEdges.equalToSuperview()
+            //                make.top.equalToSuperview()
+            //                make.height.equalToSuperview().multipliedBy(0.65)
+            //            }
         }
+        // 알람이 울린 상태라면 Fit 로직은 아예 건너뛰고 제약조건만 업데이트
+        //        else if isAlarmFired {
+        //            mapContainerView.snp.remakeConstraints { make in
+        //                make.horizontalEdges.equalToSuperview()
+        //                make.top.equalToSuperview()
+        //                make.bottom.equalToSuperview().inset(200)
+        //            }
+        //        }
         
         registerGradient.frame = registerContainer.bounds
     }
@@ -294,7 +297,8 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
                 guard let self else { return }
                 
                 // 1) 유저 마커 업데이트 (메인)
-                self.mapContainerView.updateUserMarker(location: coord)
+                let isAlarmRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
+                self.mapContainerView.updateUserMarker(location: coord, isRegistered: isAlarmRegistered)
                 
                 // 2) 지도 follow 로직 (메인)
                 if self.isAlarmFired {
@@ -425,7 +429,15 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             mapContainerView.addTrafficLine(passShape: shape, color: color, markerImage: image, isFirst: isFirst, isLast: isLast)
         }
         
-        mapContainerView.adjustMapToFit(coordinates: allCoordinates)
+        if isAlarmFired {
+            lastRouteFitApplied = true
+            return
+        }
+        
+        if !lastRouteFitApplied && !allCoordinates.isEmpty {
+            mapContainerView.adjustMapToFit(coordinates: allCoordinates)
+            lastRouteFitApplied = true
+        }
     }
     
     private func convertShapeToCoords(_ shape: String) -> [CLLocationCoordinate2D] {
@@ -523,20 +535,39 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
     
     private func applyMapModeOnAppearOrAlarmChange() {
         if isAlarmFired {
-            // (2) 알람 울린 후: 무조건 따라가기 ON
             isFollowingUser = true
             shouldCenterToCurrentLocationOnce = true
             viewModel.startHeading()
-            lastRouteFitApplied = false
+            lastRouteFitApplied = true // 알람 시에는 Fit 방지
+            
+            // ✅ 1. 지도의 크기(제약 조건)를 여기서 먼저 결정
+            mapContainerView.snp.remakeConstraints { make in
+                make.horizontalEdges.equalToSuperview()
+                make.top.equalToSuperview()
+                make.bottom.equalToSuperview().inset(200)
+            }
+            
+            // ✅ 2. 좌표가 있다면 '애니메이션 없이' 즉시 현위치로 이동
+            if let currentCoord = viewModel.currentLocation {
+                mapContainerView.setupCenter(location: currentCoord) // setupZoomCenter 대신 setupCenter(이동만)
+                mapContainerView.setupZoomCenter(location: currentCoord) // 필요 시 줌까지
+            }
         } else {
-            // (1) 알람 울리기 전: 경로 전체 보이기 고정
             isFollowingUser = false
             shouldCenterToCurrentLocationOnce = false
             viewModel.stopHeading()
             
-            // 화면 재진입 때마다 fit으로 "다시" 고정하려면 매번 호출
-            mapContainerView.adjustMapToFit(coordinates: allCoordinates)
-            lastRouteFitApplied = true
+            // 알람 전 맵 크기 설정
+            mapContainerView.snp.remakeConstraints { make in
+                make.horizontalEdges.equalToSuperview()
+                make.top.equalToSuperview()
+                make.height.equalToSuperview().multipliedBy(0.65)
+            }
+            
+            if !allCoordinates.isEmpty {
+                mapContainerView.adjustMapToFit(coordinates: allCoordinates)
+                lastRouteFitApplied = true
+            }
         }
     }
     
@@ -591,6 +622,15 @@ extension DetailRouteViewController {
     func mapView(_ mapView: TMapWrapper, didSelectLocation coordinate: CLLocationCoordinate2D) {}
     
     func didFinishLoadingMap(_ mapView: TMapWrapper) {
+        if isAlarmFired {
+            if let currentCoord = viewModel.currentLocation {
+                // 애니메이션 없이 즉시 이동하여 '깜빡임' 방지
+                mapContainerView.setupCenter(location: currentCoord)
+                mapContainerView.setupZoomCenter(location: currentCoord)
+            }
+        }
+        
+        // 2. 그 다음 경로선 그리기 시작
         viewModel.$legtPathInfo
             .filter { !$0.isEmpty }
             .receive(on: DispatchQueue.main)
