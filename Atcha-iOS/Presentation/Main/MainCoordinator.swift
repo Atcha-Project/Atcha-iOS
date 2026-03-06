@@ -64,9 +64,9 @@ final class MainCoordinator {
                 DispatchQueue.main.async {
                     guard let self = self else { return }
                     
-                    self.navigationController.popToRootViewController(animated: true)
+                    self.mainViewModel?.isGuest = true
                     self.mainViewModel?.bottomType = .search
-                    
+                    self.navigationController.popToRootViewController(animated: true)
                     
                     self.myPageCoordinator = nil
                 }
@@ -326,7 +326,6 @@ final class MainCoordinator {
                         guard let self = self else { return }
                         
                         let newGuestStatus = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.isGuest.rawValue) ?? false
-                        print("DEBUG 🔑: 로그인창 닫힘. 새로운 게스트 상태: \(newGuestStatus)")
                         self.mainViewModel?.isGuest = newGuestStatus
                         
                         if isExist {
