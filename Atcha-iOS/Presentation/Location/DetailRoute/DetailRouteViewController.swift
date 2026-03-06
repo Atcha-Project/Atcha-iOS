@@ -43,6 +43,7 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         bindView()
         bindFollowLogic()
         installMapUserGestureDetector()
+        bindAlarmFireStatus()
         //#if DEBUG
         //// ✅ 서울아산병원(대략)
         //viewModel.mockLocation = CLLocationCoordinate2D(latitude:37.566956, longitude: 126.979406)
@@ -346,6 +347,36 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
                 guard let self else { return }
                 guard isFollowingUser || isAlarmFired else { return }
                 mapContainerView.setHeading(heading)
+            }
+            .store(in: &cancellables)
+    }
+    
+    private func bindAlarmFireStatus() {
+        // UserDefaults의 변화를 실시간으로 구독합니다.
+        UserDefaults.standard.publisher(for: \.departureAlarmDidFire)
+            .removeDuplicates() // 같은 값이 연속으로 들어오는 것 방지
+            .receive(on: RunLoop.main)
+            .sink { [weak self] isFired in
+                guard let self = self else { return }
+                
+                if isFired {
+                    // 1. 추적 플래그 ON
+                    self.isFollowingUser = true
+                    
+                    // 2. 헤딩(회전) 시작
+                    self.viewModel.startHeading()
+                    
+                    // 3. 유저 마커 스타일 변경 (알람 후 전용 마커가 있다면)
+                    self.mapContainerView.afterUserMarker()
+                    
+                    // 4. 즉시 현재 위치로 지도 중심 이동
+                    if let currentCoord = self.viewModel.currentLocation {
+                        self.mapContainerView.setupCenter(location: currentCoord)
+                    }
+                } else {
+                    self.isFollowingUser = false
+                    self.viewModel.stopHeading()
+                }
             }
             .store(in: &cancellables)
     }
