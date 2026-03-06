@@ -563,6 +563,12 @@ extension MainViewModel {
             print("서비스 지역 확인 실패:", error)
         }
     }
+    
+    func refreshCurrentMapCenterData() {
+        Task {
+            await self.refreshRegionAndFareForCurrentAddress()
+        }
+    }
 }
 
 // MARK: - Network

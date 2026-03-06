@@ -329,7 +329,8 @@ final class MainCoordinator {
                         self.mainViewModel?.isGuest = newGuestStatus
                         
                         if isExist {
-                            self.mainViewModel?.setupLocation()
+//                            self.mainViewModel?.setupLocation()
+                            self.mainViewModel?.refreshCurrentMapCenterData()
                         } else {
                             self.routeToOnboarding?()
                         }
