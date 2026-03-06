@@ -64,9 +64,9 @@ final class MainCoordinator {
                 DispatchQueue.main.async {
                     guard let self = self else { return }
                     
-                    self.navigationController.popToRootViewController(animated: true)
+                    self.mainViewModel?.isGuest = true
                     self.mainViewModel?.bottomType = .search
-                    
+                    self.navigationController.popToRootViewController(animated: true)
                     
                     self.myPageCoordinator = nil
                 }
@@ -323,14 +323,20 @@ final class MainCoordinator {
             loginCoordinator.onFinishWithExistUser = { [weak self] isExist in
                 DispatchQueue.main.async {
                     self?.navigationController.dismiss(animated: true) {
+                        guard let self = self else { return }
+                        
+                        let newGuestStatus = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.isGuest.rawValue) ?? false
+                        self.mainViewModel?.isGuest = newGuestStatus
+                        
                         if isExist {
-                            self?.mainViewModel?.setupLocation()
+//                            self.mainViewModel?.setupLocation()
+                            self.mainViewModel?.refreshCurrentMapCenterData()
                         } else {
-                            self?.routeToOnboarding?()
+                            self.routeToOnboarding?()
                         }
                         
                         // 로그인 코디네이터 메모리 해제
-                        self?.loginCoordinator = nil
+                        self.loginCoordinator = nil
                     }
                 }
             }

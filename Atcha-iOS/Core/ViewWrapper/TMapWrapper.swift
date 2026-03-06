@@ -17,7 +17,6 @@ protocol MapRendering: AnyObject, TMapViewDelegate, TmapViewLocationDelegate {
 protocol TMapWrapperDelegate: AnyObject {
     func mapView(_ mapView: TMapWrapper, didUpdateLocation coordinate: CLLocationCoordinate2D)
     func mapView(_ mapView: TMapWrapper, didSelectLocation coordinate: CLLocationCoordinate2D)
-    func mapViewDidStartScroll(_ mapView: TMapWrapper)
     func didFinishLoadingMap(_ mapView: TMapWrapper)
 }
 
@@ -41,7 +40,7 @@ final class TMapWrapper: NSObject, MapRendering {
         mapView.locationDelgate = self
     }
     
-    func updateUserMarker(coordinate: CLLocationCoordinate2D) {
+    func updateUserMarker(coordinate: CLLocationCoordinate2D, isRegistered: Bool) {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
             if let marker = userMarker {
@@ -49,7 +48,7 @@ final class TMapWrapper: NSObject, MapRendering {
                 if marker.map == nil { marker.map = mapView } // ← 숨겨져 있던 마커 다시 보이게
             } else {
                 userMarker = TMapMarker(position: coordinate)
-                userMarker?.icon = UIImage.currentLocationMark
+                userMarker?.icon = isRegistered ? UIImage.currentLocationMark : UIImage.beforeCurrentLocation
                 userMarker?.map = mapView
             }
         }
@@ -179,7 +178,6 @@ extension TMapWrapper: TMapViewDelegate, TmapViewLocationDelegate {
     func mapView(_ mapView: TMapView,
                  shouldChangeFrom oldPosition: CLLocationCoordinate2D,
                  to newPosition: CLLocationCoordinate2D) {
-        delegate?.mapViewDidStartScroll(self)
         delegate?.mapView(self, didUpdateLocation: newPosition)
     }
 }

@@ -105,6 +105,7 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
             button: kakaoLoginButton,
             icon: UIImage.kakao,
             labelText: "카카오톡으로 3초만에 시작",
+            fontClosure: { AtchaFont.B2_SB_15($0, color: $1, alignment: $2) },
             textColor: AtchaColor.black,
             bgColor: AtchaColor.Etc.kakao,
             iconTint: AtchaColor.Etc.kakaoLogo
@@ -113,7 +114,8 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
         configureLoginButton(
             button: appleLoginButton,
             icon: UIImage.apple,
-            labelText: "Apple로 계속하기",
+            labelText: "Apple로 시작",
+            fontClosure: { AtchaFont.B3_M_15($0, color: $1, alignment: $2) },
             textColor: AtchaColor.white,
             bgColor: AtchaColor.black,
             iconTint: AtchaColor.white
@@ -126,6 +128,7 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
     private func configureLoginButton(button: UIButton,
                                       icon: UIImage,
                                       labelText: String,
+                                      fontClosure: (String, UIColor, NSTextAlignment) -> NSAttributedString,
                                       textColor: UIColor,
                                       bgColor: UIColor,
                                       iconTint: UIColor) {
@@ -135,7 +138,7 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
         iconView.tintColor = iconTint
         
         let label = UILabel()
-        label.attributedText = AtchaFont.B_15(lineHeight: 0, labelText, color: textColor, alignment: .center)
+        label.attributedText = fontClosure(labelText, textColor, .center)
         label.textAlignment = .center
         
         button.layer.cornerRadius = 8

@@ -14,6 +14,8 @@ final class TMapContainerView: UIView {
     private var tMapWrapper: TMapWrapper!
     var gestureTargetView: UIView { tMapWrapper.mapView }
     
+    var onUserInteraction: (() -> Void)?
+    
     weak var delegate: TMapWrapperDelegate? {
         didSet {
             tMapWrapper?.delegate = delegate
@@ -46,6 +48,18 @@ final class TMapContainerView: UIView {
         }
     }
     
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+            let hitView = super.hitTest(point, with: event)
+            
+            // 지도가 터치되었다면 애니메이션에 씹히기 전에 즉시 멈춤 신호를 보냅니다.
+            if hitView != nil {
+                DispatchQueue.main.async {
+                    self.onUserInteraction?()
+                }
+            }
+            return hitView
+        }
+    
     func setupCenter(location: CLLocationCoordinate2D) {
         tMapWrapper.mapView.setCenter(location)
     }
@@ -55,8 +69,8 @@ final class TMapContainerView: UIView {
         tMapWrapper.mapView.setZoom(16)
     }
     
-    func updateUserMarker(location: CLLocationCoordinate2D) {
-        tMapWrapper.updateUserMarker(coordinate: location)
+    func updateUserMarker(location: CLLocationCoordinate2D, isRegistered: Bool) {
+        tMapWrapper.updateUserMarker(coordinate: location, isRegistered: isRegistered)
     }
     
     func afterUserMarker() { tMapWrapper.afterUserMarker() }
