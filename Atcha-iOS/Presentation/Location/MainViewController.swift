@@ -11,6 +11,7 @@ import CoreLocation
 import TMapSDK
 import VSMSDK
 import SnapKit
+import Combine
 
 final class MainViewController: BaseViewController<MainViewModel>,
                                 TMapWrapperDelegate{
@@ -100,11 +101,11 @@ final class MainViewController: BaseViewController<MainViewModel>,
     private var lastCourseUpdateAt: CFTimeInterval = 0
     private let courseValidWindow: CFTimeInterval = 1.2
     
-    private var isGuest: Bool {
-        return UserDefaultsWrapper.shared.bool(
-            forKey: UserDefaultsWrapper.Key.isGuest.rawValue
-        ) ?? false
-    }
+//    private var isGuest: Bool {
+//        return UserDefaultsWrapper.shared.bool(
+//            forKey: UserDefaultsWrapper.Key.isGuest.rawValue
+//        ) ?? false
+//    }
     
     var shouldShowWelcomeToast: Bool = false
     
@@ -375,7 +376,7 @@ extension MainViewController {
     private func handleSearchViewAction(_ action: LastTrainSearchBottomView.Action) {
         switch action {
         case .currentTapped:
-            if isGuest {
+            if viewModel.isGuest {
                 presentLoginAlert()
             } else {
                 AmplitudeManager.shared.track(.origin_search_click)
@@ -384,7 +385,7 @@ extension MainViewController {
                     location: Location(name: "", lat: 0.0, lon: 0.0, businessCategory: "", address: "", radius: "")))
             }
         case .searchTapped:
-            if isGuest {
+            if viewModel.isGuest {
                 presentLoginAlert()
             } else {
                 AmplitudeManager.shared.track(.course_search_click)
@@ -771,39 +772,39 @@ extension MainViewController {
     }
     
     private func bindTaxiFareUpdates() {
-            viewModel.$taxiFare
-                .compactMap { $0 }
-                .map { Int($0) }
-                .removeDuplicates()
-                .receive(on: RunLoop.main)
-                .sink { [weak self] fareInt in
-                    guard let self else { return }
-                    let fareStr = self.decimalFormatter.string(from: NSNumber(value: fareInt)) ?? "\(fareInt)"
-                    self.latestFareString = fareStr
+        // taxiFare와 isGuest 중 하나라도 바뀌면 이 블록이 실행됩니다.
+        Publishers.CombineLatest(viewModel.$taxiFare, viewModel.$isGuest)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] fare, isGuest in
+                guard let self = self, let fare = fare else { return }
+                
+                let fareInt = Int(fare)
+                let fareStr = self.decimalFormatter.string(from: NSNumber(value: fareInt)) ?? "\(fareInt)"
+                self.latestFareString = fareStr
+                
+                if self.isPreAlarmBalloonActive(), self.latestIsServiceRegion == true {
+                    // 이제 파라미터로 들어오는 최신 isGuest 상태에 따라 ??? 혹은 금액이 결정됩니다.
+                    let displayFare = isGuest ? "???원" : "\(fareStr)원"
+                    let content: BalloonContent = .separation(
+                        gray: "여기서 막차 놓치면 택시비 ", white: "약 \(displayFare)"
+                    )
                     
-                    if self.isPreAlarmBalloonActive(), self.latestIsServiceRegion == true {
-                        // 🚨 수정: 게스트일 경우 금액을 가려줍니다.
-                        let displayFare = self.isGuest ? "???원" : "\(fareStr)원"
-                        let content: BalloonContent = .separation(
-                            gray: "여기서 막차 놓치면 택시비 ", white: "약 \(displayFare)"
-                        )
-                        
-                        if self.ballonView.isHidden {
-                            self.showOrUpdatePreBalloon(content, showTopLine: self.preSessionShowTopLine ?? true)
-                        } else {
-                            self.updatePreBalloonContent(content, showTopLine: self.preSessionShowTopLine ?? true)
-                        }
-                    }
-                    
-                    // 🚨 알람 등록 후 말풍선 큐에도 똑같이 반영
-                    if !self.postAlarmMessages.isEmpty {
-                        let displayFare = self.isGuest ? "???원" : "\(fareStr)원"
-                        self.postAlarmMessages[self.postAlarmMessages.count - 1] =
-                            .separation(gray: "여기서 막차 놓치면 택시비 ", white: "약 \(displayFare)")
+                    if self.ballonView.isHidden {
+                        self.showOrUpdatePreBalloon(content, showTopLine: self.preSessionShowTopLine ?? true)
+                    } else {
+                        self.updatePreBalloonContent(content, showTopLine: self.preSessionShowTopLine ?? true)
                     }
                 }
-                .store(in: &cancellables)
-        }
+                
+                // 알람 등록 후 말풍선 큐 갱신
+                if !self.postAlarmMessages.isEmpty {
+                    let displayFare = isGuest ? "???원" : "\(fareStr)원"
+                    self.postAlarmMessages[self.postAlarmMessages.count - 1] =
+                        .separation(gray: "여기서 막차 놓치면 택시비 ", white: "약 \(displayFare)")
+                }
+            }
+            .store(in: &cancellables)
+    }
     
     private func bindServiceRegionUpdates() {
             viewModel.$isServiceRegion
@@ -824,7 +825,7 @@ extension MainViewController {
                         } else if self.isPreAlarmBalloonActive() {
                             
                             // 수정: 게스트 모드면 요금(fare)이 없어도 바로 ???로 띄워줘야 함!
-                            if self.isGuest {
+                            if viewModel.isGuest {
                                 let content: BalloonContent = .separation(gray: "여기서 막차 놓치면 택시비 ", white: "약 ???원")
                                 if self.ballonView.isHidden {
                                     self.showOrUpdatePreBalloon(content, showTopLine: self.preSessionShowTopLine ?? true)
@@ -988,7 +989,7 @@ extension MainViewController {
     }
     
     @objc private func didTapMyPageButton() {
-        if isGuest {
+        if viewModel.isGuest {
             presentLoginAlert()
         } else {
             viewModel.handleRoute(route: .myPage)
@@ -1219,7 +1220,7 @@ extension MainViewController {
                     
                     // [추가 로직] 게스트일 경우 서버에서 요금을 안 주거나 늦게 줄 수 있으므로
                     // 요금(fare)이 없어도 바로 ???로 띄워줍니다!
-                    if isGuest {
+                    if viewModel.isGuest {
                         showOrUpdatePreBalloon(
                             .separation(gray: "여기서 막차 놓치면 택시비 ", white: "약 ???원"),
                             delay: d1, animated: true, showTopLine: showTopLine
@@ -1230,7 +1231,7 @@ extension MainViewController {
                 }
                 
                 // 요금이 있고 서비스 지역일 때
-                let displayFare = isGuest ? "???원" : "\(fare)원"
+                let displayFare = viewModel.isGuest ? "???원" : "\(fare)원"
                 showOrUpdatePreBalloon(
                     .separation(gray: "여기서 막차 놓치면 택시비 ", white: "약 \(displayFare)"),
                     delay: d1, animated: true, showTopLine: showTopLine

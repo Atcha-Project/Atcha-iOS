@@ -55,6 +55,7 @@ final class MainViewModel: BaseViewModel{
     @Published private(set) var lastReverseGeocode: Location?
     
     @Published var showLocationDeniedAlert: Bool = false
+    @Published var isGuest: Bool = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.isGuest.rawValue) ?? false
     
     init(authorizationUseCase: RequestLocationAuthorizationUseCase,
          streamUseCase: ObserveLocationStreamUseCase,
@@ -96,6 +97,13 @@ final class MainViewModel: BaseViewModel{
                 Task { await self.updateAddressOnly(for: loc) }
             }
             .store(in: &cancellables)
+        $isGuest
+            .removeDuplicates()
+            .sink { [weak self] guest in
+                guard let self = self, !guest else { return } // 게스트에서 회원으로 바뀐 경우만
+                Task { await self.refreshRegionAndFareForCurrentAddress() }
+            }
+            .store(in: &cancellables)
         
         $address
             .compactMap { $0 }
@@ -125,8 +133,7 @@ final class MainViewModel: BaseViewModel{
             await MainActor.run { self.isServiceRegion = ok }
         } catch { print("서비스 지역 확인 실패: \(error)") }
         
-        // [추가] 게스트이거나 서비스 지역이 아니면 택시비 조회 안 함!
-        let isGuest = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.isGuest.rawValue) ?? false
+
         guard self.isServiceRegion == true, !isGuest else { return }
         let req = FetchTaxiFareRequest(
             originLat: lastReverseGeocode?.lat,
