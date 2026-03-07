@@ -86,6 +86,8 @@ class AppFlowCoordinator {
                         if let mainVC = navigationController.viewControllers.first as? MainViewController {
                             mainVC.viewModel.setupLocation()
                             mainVC.shouldShowWelcomeToast = true
+                            
+                            mainVC.viewModel.isGuest = false
                         }
                         
                         self?.onboardingCoordinator = nil
