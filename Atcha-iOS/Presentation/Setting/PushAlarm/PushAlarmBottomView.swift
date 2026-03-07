@@ -26,7 +26,7 @@ final class PushAlarmBottomView: UIView {
         return stack
     }()
     
-    private let volumeSlider = UISlider()
+    private let volumeSlider = AtchaSlider()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -51,8 +51,8 @@ final class PushAlarmBottomView: UIView {
         
         volumeSlider.minimumValue = 1 / 16
         volumeSlider.maximumValue = 1.0
-        volumeSlider.minimumTrackTintColor = AtchaColor.main
-        volumeSlider.maximumTrackTintColor = AtchaColor.gray200
+        volumeSlider.minimumTrackTintColor = AtchaColor.white
+        volumeSlider.maximumTrackTintColor = AtchaColor.gray910
         volumeSlider.backgroundColor = .clear
         volumeSlider.isUserInteractionEnabled = true
         volumeSlider.isContinuous = false
@@ -153,3 +153,15 @@ final class PushAlarmBottomView: UIView {
     }
 }
 
+
+final class AtchaSlider: UISlider {
+    // 트랙의 높이를 설정합니다.
+    var trackHeight: CGFloat = 4
+    
+    // 트랙의 크기와 위치를 결정하는 메서드를 오버라이드합니다.
+    override func trackRect(forBounds bounds: CGRect) -> CGRect {
+        var customBounds = super.trackRect(forBounds: bounds)
+        customBounds.size.height = trackHeight
+        return customBounds
+    }
+}

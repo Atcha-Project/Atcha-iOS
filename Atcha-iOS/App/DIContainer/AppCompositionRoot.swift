@@ -25,6 +25,7 @@ final class AppCompositionRoot {
     let onboardingDIContainer: OnboardingDIContainer
     let mainDIContainer: MainDIContainer
     let lockScreenDIContainer: LockScreenDIContainer
+    let introDIContainer: IntroDIContainer
 
     // MARK: - Init
     init() {
@@ -43,6 +44,7 @@ final class AppCompositionRoot {
         self.mainDIContainer = MainDIContainer(apiService: apiService,
                                                locationStateHolder: locationStateHolder)
         self.lockScreenDIContainer = LockScreenDIContainer(apiService: apiService)
+        self.introDIContainer = IntroDIContainer()
     }
 }
 
@@ -51,7 +53,8 @@ extension AppCompositionRoot: SplashCoordinatorFactory,
                                LoginCoordinatorFactory,
                                OnboardingCoordinatorFactory,
                                MainCoordinatorFactory,
-                               LockScreenCoordinatorFactory {
+                              LockScreenCoordinatorFactory,
+                              IntroCoordinatorFactory {
     func makeSplashCoordinator(navigationController: UINavigationController) -> SplashCoordinator {
         return splashDIContainer.makeSplashCoordinator(navigationController: navigationController)
     }
@@ -70,5 +73,9 @@ extension AppCompositionRoot: SplashCoordinatorFactory,
 
     func makeLockScreenCoordinator(navigationController: UINavigationController) -> LockScreenCoordinator {
         return lockScreenDIContainer.makeLockScreenCoordinator(navigationController: navigationController)
+    }
+    
+    func makeIntroCoordinator(navigationController: UINavigationController) -> IntroCoordinator {
+        return introDIContainer.makeIntroCoordinator(navigationController: navigationController)
     }
 }

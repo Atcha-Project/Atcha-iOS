@@ -12,6 +12,7 @@ public extension UserDefaultsWrapper.Key {
     static let providerToken: UserDefaultsWrapper.Key = "providerToken"
     static let userId: UserDefaultsWrapper.Key = "userId"
     static let reVisit: UserDefaultsWrapper.Key = "reVisit"
+    static let hasSeenIntro: UserDefaultsWrapper.Key = "hasSeenIntro"
     
     static let homeLat: UserDefaultsWrapper.Key = "homeLat"
     static let homeLon: UserDefaultsWrapper.Key = "homeLon"
@@ -38,4 +39,12 @@ public extension UserDefaultsWrapper.Key {
     static let alarmRegister: UserDefaultsWrapper.Key = "alarmRegister"
     static let popRegister: UserDefaultsWrapper.Key = "popRegister"
     static let departureAlarmDidFire: UserDefaultsWrapper.Key = "departureAlarmDidFire"
+    
+    static let isGuest: UserDefaultsWrapper.Key = "isGuest"
+}
+
+extension UserDefaults {
+    @objc dynamic var departureAlarmDidFire: Bool {
+        return bool(forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue)
+    }
 }

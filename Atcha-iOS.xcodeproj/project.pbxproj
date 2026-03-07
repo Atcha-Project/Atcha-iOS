@@ -58,6 +58,10 @@
 		6D5E03CA2E2882290065AFBE /* Course.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5E03C92E2882290065AFBE /* Course.swift */; };
 		6D5E03CD2E2882BB0065AFBE /* CourseSearchRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5E03CC2E2882BB0065AFBE /* CourseSearchRequest.swift */; };
 		6D5E03D02E28853E0065AFBE /* CourseSearchResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5E03CF2E28853E0065AFBE /* CourseSearchResponse.swift */; };
+		6D61ABE32F57158000111C9B /* IntroViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D61ABE22F57158000111C9B /* IntroViewController.swift */; };
+		6D61ABE52F57158700111C9B /* IntroViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D61ABE42F57158700111C9B /* IntroViewModel.swift */; };
+		6D61ABE82F57174D00111C9B /* IntroDIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D61ABE72F57174D00111C9B /* IntroDIContainer.swift */; };
+		6D61ABEB2F57179C00111C9B /* IntroCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D61ABEA2F57179C00111C9B /* IntroCoordinator.swift */; };
 		6D6879BC2E3E78E200E59C55 /* RouteLineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6879BB2E3E78E200E59C55 /* RouteLineView.swift */; };
 		6D6879BE2E4067B400E59C55 /* Refresh.json in Resources */ = {isa = PBXBuildFile; fileRef = 6D6879BD2E4067B400E59C55 /* Refresh.json */; };
 		6D6879C02E40684C00E59C55 /* RefreshView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6879BF2E40684C00E59C55 /* RefreshView.swift */; };
@@ -113,6 +117,8 @@
 		6D91A90F2E38A1C60081BAFC /* BusDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D91A90E2E38A1C60081BAFC /* BusDetailViewModel.swift */; };
 		6D9283742E3AFF6A0090889B /* BusRouteCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D9283732E3AFF6A0090889B /* BusRouteCell.swift */; };
 		6D9284422E3C6ADF0090889B /* PaddingLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D9284412E3C6ADF0090889B /* PaddingLabel.swift */; };
+		6D9F79E92F57F24F008C1492 /* PushAlarmSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D9F79E82F57F24F008C1492 /* PushAlarmSheetViewController.swift */; };
+		6D9F79EC2F57F266008C1492 /* PushAlarmSheetViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D9F79EB2F57F266008C1492 /* PushAlarmSheetViewModel.swift */; };
 		6DADA5932EA09B6E00CA9BE2 /* AmplitudeSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 6DADA5922EA09B6E00CA9BE2 /* AmplitudeSwift */; };
 		6DADA5972EA09BA400CA9BE2 /* AmplitudeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DADA5962EA09BA400CA9BE2 /* AmplitudeManager.swift */; };
 		6DADA5992EA09BAC00CA9BE2 /* AmplitudeEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DADA5982EA09BAC00CA9BE2 /* AmplitudeEvent.swift */; };
@@ -142,7 +148,7 @@
 		6DC3BEF32E04FE1D00831470 /* KeychainKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DC3BEF22E04FE1D00831470 /* KeychainKey.swift */; };
 		6DC3BF482E05C77D00831470 /* LoginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DC3BF472E05C77D00831470 /* LoginViewModel.swift */; };
 		6DC3BF4A2E05C79700831470 /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DC3BF492E05C79700831470 /* LoginViewController.swift */; };
-		6DC3BF5E2E07123F00831470 /* LoginIntroCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DC3BF5D2E07123F00831470 /* LoginIntroCell.swift */; };
+		6DC3BF5E2E07123F00831470 /* IntroCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DC3BF5D2E07123F00831470 /* IntroCell.swift */; };
 		6DC3BF602E071F0900831470 /* LoginUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DC3BF5F2E071F0900831470 /* LoginUseCase.swift */; };
 		6DC3BF682E0721F300831470 /* LoginDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DC3BF672E0721F300831470 /* LoginDTO.swift */; };
 		6DD632B12E4F8A9F00C6A66E /* CheckServiceRegionRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DD632B02E4F8A9F00C6A66E /* CheckServiceRegionRequest.swift */; };
@@ -284,7 +290,7 @@
 		B6AC8BF82E2BDA2900410ECD /* AppUpdateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BF72E2BDA2900410ECD /* AppUpdateManager.swift */; };
 		B6AC8BFA2E2BE59700410ECD /* MyPageHomeRegisterRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BF92E2BE59700410ECD /* MyPageHomeRegisterRouter.swift */; };
 		B6AC8BFC2E2BF27200410ECD /* UINavigationController+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BFB2E2BF27200410ECD /* UINavigationController+Ext.swift */; };
-		B6AC8BFE2E2D1F5400410ECD /* LoginItnro.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BFD2E2D1F5400410ECD /* LoginItnro.swift */; };
+		B6AC8BFE2E2D1F5400410ECD /* Intro.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AC8BFD2E2D1F5400410ECD /* Intro.swift */; };
 		B6ADE1942E0C0DE6008C4E23 /* LoginType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6ADE1932E0C0DE6008C4E23 /* LoginType.swift */; };
 		B6B57EC22E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B57EC12E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift */; };
 		B6B57EC52E1AB0FE00B29EB1 /* MainRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B57EC42E1AB0FE00B29EB1 /* MainRoute.swift */; };
@@ -385,6 +391,10 @@
 		6D5E03C92E2882290065AFBE /* Course.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Course.swift; sourceTree = "<group>"; };
 		6D5E03CC2E2882BB0065AFBE /* CourseSearchRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseSearchRequest.swift; sourceTree = "<group>"; };
 		6D5E03CF2E28853E0065AFBE /* CourseSearchResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseSearchResponse.swift; sourceTree = "<group>"; };
+		6D61ABE22F57158000111C9B /* IntroViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroViewController.swift; sourceTree = "<group>"; };
+		6D61ABE42F57158700111C9B /* IntroViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroViewModel.swift; sourceTree = "<group>"; };
+		6D61ABE72F57174D00111C9B /* IntroDIContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroDIContainer.swift; sourceTree = "<group>"; };
+		6D61ABEA2F57179C00111C9B /* IntroCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroCoordinator.swift; sourceTree = "<group>"; };
 		6D6879BB2E3E78E200E59C55 /* RouteLineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteLineView.swift; sourceTree = "<group>"; };
 		6D6879BD2E4067B400E59C55 /* Refresh.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = Refresh.json; sourceTree = "<group>"; };
 		6D6879BF2E40684C00E59C55 /* RefreshView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshView.swift; sourceTree = "<group>"; };
@@ -438,6 +448,8 @@
 		6D91A90E2E38A1C60081BAFC /* BusDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusDetailViewModel.swift; sourceTree = "<group>"; };
 		6D9283732E3AFF6A0090889B /* BusRouteCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusRouteCell.swift; sourceTree = "<group>"; };
 		6D9284412E3C6ADF0090889B /* PaddingLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaddingLabel.swift; sourceTree = "<group>"; };
+		6D9F79E82F57F24F008C1492 /* PushAlarmSheetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushAlarmSheetViewController.swift; sourceTree = "<group>"; };
+		6D9F79EB2F57F266008C1492 /* PushAlarmSheetViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushAlarmSheetViewModel.swift; sourceTree = "<group>"; };
 		6DADA5962EA09BA400CA9BE2 /* AmplitudeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmplitudeManager.swift; sourceTree = "<group>"; };
 		6DADA5982EA09BAC00CA9BE2 /* AmplitudeEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmplitudeEvent.swift; sourceTree = "<group>"; };
 		6DB4DE8E2F0FE3B900F2DC4E /* RefreshObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshObserver.swift; sourceTree = "<group>"; };
@@ -457,7 +469,7 @@
 		6DC3BEF22E04FE1D00831470 /* KeychainKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainKey.swift; sourceTree = "<group>"; };
 		6DC3BF472E05C77D00831470 /* LoginViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewModel.swift; sourceTree = "<group>"; };
 		6DC3BF492E05C79700831470 /* LoginViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
-		6DC3BF5D2E07123F00831470 /* LoginIntroCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginIntroCell.swift; sourceTree = "<group>"; };
+		6DC3BF5D2E07123F00831470 /* IntroCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroCell.swift; sourceTree = "<group>"; };
 		6DC3BF5F2E071F0900831470 /* LoginUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginUseCase.swift; sourceTree = "<group>"; };
 		6DC3BF672E0721F300831470 /* LoginDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginDTO.swift; sourceTree = "<group>"; };
 		6DD632B02E4F8A9F00C6A66E /* CheckServiceRegionRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckServiceRegionRequest.swift; sourceTree = "<group>"; };
@@ -603,7 +615,7 @@
 		B6AC8BF72E2BDA2900410ECD /* AppUpdateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateManager.swift; sourceTree = "<group>"; };
 		B6AC8BF92E2BE59700410ECD /* MyPageHomeRegisterRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyPageHomeRegisterRouter.swift; sourceTree = "<group>"; };
 		B6AC8BFB2E2BF27200410ECD /* UINavigationController+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UINavigationController+Ext.swift"; sourceTree = "<group>"; };
-		B6AC8BFD2E2D1F5400410ECD /* LoginItnro.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginItnro.swift; sourceTree = "<group>"; };
+		B6AC8BFD2E2D1F5400410ECD /* Intro.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Intro.swift; sourceTree = "<group>"; };
 		B6ADE1932E0C0DE6008C4E23 /* LoginType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginType.swift; sourceTree = "<group>"; };
 		B6B57EC12E1A89AB00B29EB1 /* LastTrainSearchBottomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastTrainSearchBottomView.swift; sourceTree = "<group>"; };
 		B6B57EC42E1AB0FE00B29EB1 /* MainRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainRoute.swift; sourceTree = "<group>"; };
@@ -850,6 +862,34 @@
 			path = CourseSearchDTO;
 			sourceTree = "<group>";
 		};
+		6D61ABE12F5714EF00111C9B /* Intro */ = {
+			isa = PBXGroup;
+			children = (
+				6D61ABE92F57178F00111C9B /* Coordinator */,
+				6D61ABE22F57158000111C9B /* IntroViewController.swift */,
+				6D61ABE42F57158700111C9B /* IntroViewModel.swift */,
+				6DC3BF5D2E07123F00831470 /* IntroCell.swift */,
+				B6AC8BFD2E2D1F5400410ECD /* Intro.swift */,
+			);
+			path = Intro;
+			sourceTree = "<group>";
+		};
+		6D61ABE62F57174500111C9B /* Intro */ = {
+			isa = PBXGroup;
+			children = (
+				6D61ABE72F57174D00111C9B /* IntroDIContainer.swift */,
+			);
+			path = Intro;
+			sourceTree = "<group>";
+		};
+		6D61ABE92F57178F00111C9B /* Coordinator */ = {
+			isa = PBXGroup;
+			children = (
+				6D61ABEA2F57179C00111C9B /* IntroCoordinator.swift */,
+			);
+			path = Coordinator;
+			sourceTree = "<group>";
+		};
 		6D6879C12E41A75B00E59C55 /* Withdraw */ = {
 			isa = PBXGroup;
 			children = (
@@ -1004,6 +1044,15 @@
 			path = BusDetail;
 			sourceTree = "<group>";
 		};
+		6D9F79EA2F57F253008C1492 /* PushAlarmSheet */ = {
+			isa = PBXGroup;
+			children = (
+				6D9F79E82F57F24F008C1492 /* PushAlarmSheetViewController.swift */,
+				6D9F79EB2F57F266008C1492 /* PushAlarmSheetViewModel.swift */,
+			);
+			path = PushAlarmSheet;
+			sourceTree = "<group>";
+		};
 		6DADA5952EA09B9500CA9BE2 /* Amplitude */ = {
 			isa = PBXGroup;
 			children = (
@@ -1056,8 +1105,6 @@
 				B6CF46F32E0961F000304A85 /* Coordinator */,
 				6DC3BF472E05C77D00831470 /* LoginViewModel.swift */,
 				6DC3BF492E05C79700831470 /* LoginViewController.swift */,
-				6DC3BF5D2E07123F00831470 /* LoginIntroCell.swift */,
-				B6AC8BFD2E2D1F5400410ECD /* LoginItnro.swift */,
 			);
 			path = Login;
 			sourceTree = "<group>";
@@ -1258,6 +1305,7 @@
 		B65C12D82E042A320016D2F0 /* DIContainer */ = {
 			isa = PBXGroup;
 			children = (
+				6D61ABE62F57174500111C9B /* Intro */,
 				B61C44962E40340C00285A4B /* LockScreen */,
 				6D2B8CB62E39C87F00608104 /* BusInfo */,
 				B6793D572E38735A001BE9F5 /* Route */,
@@ -1427,6 +1475,7 @@
 		B66401862E22761800A397AE /* Setting */ = {
 			isa = PBXGroup;
 			children = (
+				6D9F79EA2F57F253008C1492 /* PushAlarmSheet */,
 				6D1EE2D82E08E4BA00F7BBF1 /* PushAlarm */,
 			);
 			path = Setting;
@@ -1490,6 +1539,7 @@
 		B673C48C2E0424E200EE4AD0 /* Presentation */ = {
 			isa = PBXGroup;
 			children = (
+				6D61ABE12F5714EF00111C9B /* Intro */,
 				6D91A90B2E38A1AC0081BAFC /* BusDetail */,
 				B637D6E52E30C6F600F73F14 /* Popup */,
 				B6AC8BF22E2BD3F500410ECD /* WebView */,
@@ -2085,7 +2135,7 @@
 				B65C13312E0658580016D2F0 /* MyPageViewModel.swift in Sources */,
 				6D9284422E3C6ADF0090889B /* PaddingLabel.swift in Sources */,
 				B637D6EB2E30C75900F73F14 /* AtchaPopupInfo.swift in Sources */,
-				B6AC8BFE2E2D1F5400410ECD /* LoginItnro.swift in Sources */,
+				B6AC8BFE2E2D1F5400410ECD /* Intro.swift in Sources */,
 				B65C133D2E06E00F0016D2F0 /* MyPageDIContainer.swift in Sources */,
 				B65C134F2E07A6C70016D2F0 /* MainCoordinator.swift in Sources */,
 				B66401892E22768000A397AE /* PushRegisterDIContainer.swift in Sources */,
@@ -2123,7 +2173,7 @@
 				6D73EB632E16121700F8DF8B /* CourseModifyViewModel.swift in Sources */,
 				6DC3BF4A2E05C79700831470 /* LoginViewController.swift in Sources */,
 				B637D6E92E30C72700F73F14 /* AtchaPopupViewModel.swift in Sources */,
-				6DC3BF5E2E07123F00831470 /* LoginIntroCell.swift in Sources */,
+				6DC3BF5E2E07123F00831470 /* IntroCell.swift in Sources */,
 				6D91A8E82E29F68E0081BAFC /* OriginSettingBottomView.swift in Sources */,
 				B66401802E2243D100A397AE /* SearchLocationRequest.swift in Sources */,
 				6D73EBD62E1748AD00F8DF8B /* CourseCell.swift in Sources */,
@@ -2137,6 +2187,7 @@
 				6D81574E2E13EC0F003688A6 /* Int+Ext.swift in Sources */,
 				B6C507532E1296A8000AB39F /* MainViewController.swift in Sources */,
 				B6AC8BFC2E2BF27200410ECD /* UINavigationController+Ext.swift in Sources */,
+				6D61ABE82F57174D00111C9B /* IntroDIContainer.swift in Sources */,
 				B65C13232E058C490016D2F0 /* AppVersionInfo.swift in Sources */,
 				B69E31AE2E2683C9001040F4 /* PermissionViewModel.swift in Sources */,
 				B65402CF2E767B6E00AB5862 /* DetailRouteSummaryCell.swift in Sources */,
@@ -2162,6 +2213,7 @@
 				6D5E03C82E2881830065AFBE /* FetchRecentSearchResponse.swift in Sources */,
 				B6AC8BF62E2BD91000410ECD /* AppInfoProvider.swift in Sources */,
 				6DC3BEF12E04FE1600831470 /* KeychainWrapper.swift in Sources */,
+				6D61ABEB2F57179C00111C9B /* IntroCoordinator.swift in Sources */,
 				B6ADE1942E0C0DE6008C4E23 /* LoginType.swift in Sources */,
 				B68309672E005B5300E2D029 /* UIView+Ext.swift in Sources */,
 				6D1EE2F72E0A933000F7BBF1 /* OnboardingCoordinator.swift in Sources */,
@@ -2188,6 +2240,7 @@
 				B65C13042E057B8F0016D2F0 /* TokenStorage.swift in Sources */,
 				B68309562E005A3600E2D029 /* AtchaFont.swift in Sources */,
 				B65C12DA2E042A740016D2F0 /* AppDIContainer.swift in Sources */,
+				6D61ABE52F57158700111C9B /* IntroViewModel.swift in Sources */,
 				B6FB209B2E1D33550032751B /* HomeFindViewModel.swift in Sources */,
 				6DFF29B42E0CDA0E0039399F /* LocationService.swift in Sources */,
 				6D2B8CA42E39A74800608104 /* BusRealTimeInfo.swift in Sources */,
@@ -2232,6 +2285,7 @@
 				6D26E0002F3C17C3005097A4 /* SubwayRealTimeInfoRequest.swift in Sources */,
 				B673C4912E0424FD00EE4AD0 /* SplashViewModel.swift in Sources */,
 				6DB763692E45C53A00D06A49 /* AlarmRequest.swift in Sources */,
+				6D61ABE32F57158000111C9B /* IntroViewController.swift in Sources */,
 				B6C507502E129693000AB39F /* LocationStreamRepositoryImpl.swift in Sources */,
 				B6AC8BD92E2A85D800410ECD /* SignOutUseCase.swift in Sources */,
 				6D26E0022F3C17DE005097A4 /* SubwayRealTimeInfoResponse.swift in Sources */,
@@ -2239,9 +2293,11 @@
 				6D1EE2E52E09A42F00F7BBF1 /* PushAlarmViewController.swift in Sources */,
 				B6793D4F2E34972B001BE9F5 /* FetchTaxiFareRequest.swift in Sources */,
 				6D8157442E126C45003688A6 /* LockViewController.swift in Sources */,
+				6D9F79E92F57F24F008C1492 /* PushAlarmSheetViewController.swift in Sources */,
 				6D6879DE2E43706800E59C55 /* PushAlarmPatchUseCase.swift in Sources */,
 				B68309572E005A3600E2D029 /* ViewController.swift in Sources */,
 				B6AC8BF82E2BDA2900410ECD /* AppUpdateManager.swift in Sources */,
+				6D9F79EC2F57F266008C1492 /* PushAlarmSheetViewModel.swift in Sources */,
 				B65402D32E76C84D00AB5862 /* DetailRouteBusLabel.swift in Sources */,
 				6DB7636B2E45C5EC00D06A49 /* AlarmUseCase.swift in Sources */,
 				B6D083352E02D928003C28E1 /* AtchaListType.swift in Sources */,

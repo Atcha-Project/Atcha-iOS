@@ -80,7 +80,9 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
                     )
                     if ok {
                         self.viewModel.handleRegister()
-                        self.navigationController?.popToViewController(ofType: HomeRegisterViewController.self)
+                        if viewModel.context == .myPage {
+                            self.navigationController?.popToViewController(ofType: HomeRegisterViewController.self)
+                        }
                     } else {
                         AtchaToast(message: "앗차는 현재 서울, 경기, 인천에서만 이용 가능해요")
                             .show(in: self.view)
@@ -232,5 +234,7 @@ extension HomeFindViewController {
     func mapView(_ mapView: TMapWrapper, didSelectLocation coordinate: CLLocationCoordinate2D) {
         viewModel.currentLocation = coordinate
     }
+    
+    func mapViewDidStartScroll(_ mapView: TMapWrapper) {}
 }
 

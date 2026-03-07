@@ -32,14 +32,19 @@ protocol LockScreenCoordinatorFactory {
     func makeLockScreenCoordinator(navigationController: UINavigationController) -> LockScreenCoordinator
 }
 
+protocol IntroCoordinatorFactory {
+    func makeIntroCoordinator(navigationController: UINavigationController) -> IntroCoordinator
+}
+
 /// A convenience alias that groups all coordinator factory protocols used to bootstrap flows.
-typealias AppCoordinatorFactory = SplashCoordinatorFactory & LoginCoordinatorFactory & OnboardingCoordinatorFactory & MainCoordinatorFactory & LockScreenCoordinatorFactory
+typealias AppCoordinatorFactory = SplashCoordinatorFactory & LoginCoordinatorFactory & OnboardingCoordinatorFactory & MainCoordinatorFactory & LockScreenCoordinatorFactory & IntroCoordinatorFactory
 
 extension AppDIContainer: SplashCoordinatorFactory,
                           LoginCoordinatorFactory,
                           OnboardingCoordinatorFactory,
                           MainCoordinatorFactory,
-                          LockScreenCoordinatorFactory {
+                          LockScreenCoordinatorFactory,
+                          IntroCoordinatorFactory {
     func makeSplashCoordinator(navigationController: UINavigationController) -> SplashCoordinator {
         return splashDIContainer.makeSplashCoordinator(navigationController: navigationController)
     }
@@ -58,6 +63,10 @@ extension AppDIContainer: SplashCoordinatorFactory,
     
     func makeLockScreenCoordinator(navigationController: UINavigationController) -> LockScreenCoordinator {
         return lockScreenDIContainer.makeLockScreenCoordinator(navigationController: navigationController)
+    }
+    
+    func makeIntroCoordinator(navigationController: UINavigationController) -> IntroCoordinator {
+        return introDIContainer.makeIntroCoordinator(navigationController: navigationController)
     }
 }
 
