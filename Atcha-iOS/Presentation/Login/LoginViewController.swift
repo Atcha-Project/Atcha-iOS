@@ -12,33 +12,10 @@ import QuartzCore
 
 final class LoginViewController: BaseViewController<LoginViewModel> {
     private var appleLoginDelegateWrapper: AppleLoginDelegateWrapper?
-    private let backgroundImageView: UIImageView = UIImageView()
     private let kakaoLoginButton: UIButton = UIButton(type: .custom)
     private let appleLoginButton: UIButton = UIButton(type: .custom)
     
-    private let pageControl = UIPageControl()
-    private var autoScrollTimer: Timer?
-    private let multiplier = 3 // 실제 아이템 수 * multiplier 만큼 셀 생성
-    private var isInitialSetup = true
-    
-    private let gradientLayer = CAGradientLayer()
-    
-    private lazy var collectionView: UICollectionView = {
-        let layout = UICollectionViewFlowLayout()
-        layout.scrollDirection = .horizontal
-        layout.minimumLineSpacing = 0
-        
-        let collectionView = UICollectionView(frame: .zero,
-                                              collectionViewLayout: layout)
-        collectionView.backgroundColor = .clear
-        collectionView.isPagingEnabled = true
-        collectionView.showsHorizontalScrollIndicator = false
-        collectionView.register(LoginIntroCell.self,
-                                forCellWithReuseIdentifier: LoginIntroCell.id)
-        collectionView.delegate = self
-        collectionView.dataSource = self
-        return collectionView
-    }()
+    private let sheetHandler: UIView = UIView()
     
     private lazy var loginButtonStackView: UIStackView = {
         let stack = UIStackView(arrangedSubviews: [kakaoLoginButton,
@@ -50,80 +27,70 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
         return stack
     }()
     
+    private let dimView = UIView()
+    private let containerView = UIView()
+    private let sheetHeight: CGFloat = 198
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        setupDim()
         setupUI()
         setupLoginButtons()
         setupAutoLayout()
+        
+        containerView.transform = CGAffineTransform(translationX: 0, y: sheetHeight)
+        setupGestures()
     }
     
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
         
-        gradientLayer.frame = backgroundImageView.bounds
-        
-        // 컬렉션뷰 레이아웃이 완료된 후 중간 위치로 초기화
-        if isInitialSetup {
-            let itemCount = LoginIntro.allCases.count
-            let middleIndex = itemCount * (multiplier / 2)
-            let indexPath = IndexPath(item: middleIndex, section: 0)
-            collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: false)
-            isInitialSetup = false
-        }
+        UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseOut, animations: {
+            self.dimView.alpha = 1
+            self.containerView.transform = .identity // 원래 위치로 복귀
+        })
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
+    private func setupDim() {
+        modalPresentationStyle = .overFullScreen
+        modalTransitionStyle = .crossDissolve
         
-        autoScrollTimer = Timer.scheduledTimer(timeInterval: 4.0,
-                                               target: self,
-                                               selector: #selector(goToNextPage),
-                                               userInfo: nil,
-                                               repeats: true)
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        
-        autoScrollTimer?.invalidate()
-        autoScrollTimer = nil
+        dimView.backgroundColor = UIColor.black.withAlphaComponent(0.9)
+        dimView.alpha = 0
+        view.addSubview(dimView)
     }
     
     private func setupUI() {
-        view.addSubViews(backgroundImageView, pageControl, collectionView, loginButtonStackView)
+        containerView.backgroundColor = .gray940
+        containerView.layer.cornerRadius = 20
+        containerView.clipsToBounds = true
+        view.addSubview(containerView)
         
-        // 수직 그라데이션 배경 적용 (top: #121212, bottom: #1E1E1E)
-        let topColor = UIColor(red: 0x12/255.0, green: 0x12/255.0, blue: 0x12/255.0, alpha: 1.0)
-        let bottomColor = UIColor(red: 0x2C/255.0, green: 0x2C/255.0, blue: 0x2E/255.0, alpha: 1.0)
+        view.backgroundColor = .clear
         
-        gradientLayer.colors = [topColor.cgColor, bottomColor.cgColor]
-        gradientLayer.locations = [0.0, 1.0]
-        gradientLayer.startPoint = CGPoint(x: 0.5, y: 0.0)
-        gradientLayer.endPoint = CGPoint(x: 0.5, y: 1.0)
-        backgroundImageView.layer.insertSublayer(gradientLayer, at: 0)
+        sheetHandler.backgroundColor = AtchaColor.gray700
+        sheetHandler.layer.cornerRadius = 2
+        sheetHandler.clipsToBounds = true
         
-        pageControl.numberOfPages = LoginIntro.allCases.count
-        pageControl.currentPage = 0
-        pageControl.currentPageIndicatorTintColor = AtchaColor.main
-        pageControl.pageIndicatorTintColor = AtchaColor.gray300
-        pageControl.isUserInteractionEnabled = false
+        containerView.addSubViews(sheetHandler, loginButtonStackView)
+        
     }
     
     private func setupAutoLayout() {
-        backgroundImageView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+        dimView.snp.makeConstraints { $0.edges.equalToSuperview() }
+        
+        containerView.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview()
+            make.bottom.equalToSuperview()
+            make.height.equalTo(sheetHeight)
         }
         
-        pageControl.snp.makeConstraints { make in
+        sheetHandler.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(12)
             make.centerX.equalToSuperview()
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(56)
-        }
-        
-        collectionView.snp.makeConstraints { make in
-            make.horizontalEdges.equalToSuperview()
-            make.top.equalTo(pageControl.snp.bottom)
-            make.bottom.equalTo(loginButtonStackView.snp.top)
+            make.height.equalTo(4)
+            make.width.equalTo(40)
         }
         
         loginButtonStackView.snp.makeConstraints { make in
@@ -132,28 +99,13 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
         }
     }
     
-    @objc private func goToNextPage() {
-        let itemsPerPage = LoginIntro.allCases.count
-        let currentOffset = collectionView.contentOffset.x
-        let pageWidth = collectionView.bounds.width
-        let currentPage = Int(currentOffset / pageWidth)
-        let nextPage = currentPage + 1
-        
-        let indexPath = IndexPath(item: nextPage, section: 0)
-        collectionView.scrollToItem(at: indexPath,
-                                    at: .centeredHorizontally,
-                                    animated: true)
-        
-        // 실제 페이지 번호 업데이트 (0-5 범위 내에서)
-        let actualPage = nextPage % itemsPerPage
-        pageControl.currentPage = actualPage
-    }
     
     private func setupLoginButtons() {
         configureLoginButton(
             button: kakaoLoginButton,
             icon: UIImage.kakao,
-            labelText: "카카오로 계속하기",
+            labelText: "카카오톡으로 3초만에 시작",
+            fontClosure: { AtchaFont.B2_SB_15($0, color: $1, alignment: $2) },
             textColor: AtchaColor.black,
             bgColor: AtchaColor.Etc.kakao,
             iconTint: AtchaColor.Etc.kakaoLogo
@@ -162,7 +114,8 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
         configureLoginButton(
             button: appleLoginButton,
             icon: UIImage.apple,
-            labelText: "Apple로 계속하기",
+            labelText: "Apple로 시작",
+            fontClosure: { AtchaFont.B3_M_15($0, color: $1, alignment: $2) },
             textColor: AtchaColor.white,
             bgColor: AtchaColor.black,
             iconTint: AtchaColor.white
@@ -175,6 +128,7 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
     private func configureLoginButton(button: UIButton,
                                       icon: UIImage,
                                       labelText: String,
+                                      fontClosure: (String, UIColor, NSTextAlignment) -> NSAttributedString,
                                       textColor: UIColor,
                                       bgColor: UIColor,
                                       iconTint: UIColor) {
@@ -182,39 +136,34 @@ final class LoginViewController: BaseViewController<LoginViewModel> {
         let iconView = UIImageView(image: icon)
         iconView.contentMode = .scaleAspectFit
         iconView.tintColor = iconTint
-
+        
         let label = UILabel()
-        label.attributedText = AtchaFont.B_15(labelText, color: textColor)
+        label.attributedText = fontClosure(labelText, textColor, .center)
         label.textAlignment = .center
-        
-        let stackView = UIStackView()
-        stackView.axis = .horizontal
-        stackView.spacing = 10
-        
-        stackView.addArrangedSubview(iconView)
-        stackView.addArrangedSubview(label)
         
         button.layer.cornerRadius = 8
         button.layer.backgroundColor = bgColor.cgColor
         
-        
-        stackView.isUserInteractionEnabled = false
+        // 터치 이벤트를 버튼이 받도록
         iconView.isUserInteractionEnabled = false
         label.isUserInteractionEnabled = false
         
-        button.addSubview(stackView)
+        // 스택 뷰 없이 버튼에 직접 추가
+        button.addSubViews(iconView, label)
         
+        // 1. 아이콘: 왼쪽에서 일정 간격 띄워서 수직 중앙 정렬
         iconView.snp.makeConstraints { make in
+            make.leading.equalToSuperview().offset(16) // 피그마 수치에 맞게 조정 (16~24 권장)
+            make.centerY.equalToSuperview()
             make.width.height.equalTo(24)
         }
         
-        stackView.snp.makeConstraints { make in
-            make.centerX.equalToSuperview()
-            make.centerY.equalToSuperview()
+        label.snp.makeConstraints { make in
+            make.center.equalToSuperview()
         }
         
         button.snp.makeConstraints { make in
-            make.horizontalEdges.equalToSuperview().inset(20)
+            make.horizontalEdges.equalToSuperview().inset(24)
             make.height.equalTo(52)
         }
     }
@@ -243,66 +192,57 @@ extension LoginViewController: ASAuthorizationControllerPresentationContextProvi
     }
 }
 
-extension LoginViewController: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        // 무한 스크롤을 위해 실제 아이템 수의 배수만큼 생성
-        return LoginIntro.allCases.count * multiplier
+// MARK: - Gestures & Animations
+extension LoginViewController {
+    private func setupGestures() {
+        // 1. 빈 배경(Dim) 터치 시 닫기
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(didTapDimView))
+        dimView.addGestureRecognizer(tapGesture)
+        dimView.isUserInteractionEnabled = true
+        
+        // 2. 시트를 아래로 스와이프해서 닫기
+        let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture(_:)))
+        containerView.addGestureRecognizer(panGesture)
     }
     
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: LoginIntroCell.id, for: indexPath) as? LoginIntroCell else {
-            
-            return UICollectionViewCell()
+    @objc private func didTapDimView() {
+        dismissSheet()
+    }
+    
+    @objc private func handlePanGesture(_ gesture: UIPanGestureRecognizer) {
+        let translation = gesture.translation(in: view)
+        let velocity = gesture.velocity(in: view)
+        
+        switch gesture.state {
+        case .changed:
+            // 아래로 내릴 때만 움직이게 (위로는 안 올라가게 막음)
+            if translation.y > 0 {
+                containerView.transform = CGAffineTransform(translationX: 0, y: translation.y)
+            }
+        case .ended, .cancelled:
+            // 충분히 빨리 내렸거나 절반 이상 내렸으면 닫기
+            if velocity.y > 1000 || translation.y > (sheetHeight / 2) {
+                dismissSheet()
+            } else {
+                // 아니면 다시 원래 자리로 복귀 (튕겨 올라옴)
+                UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseOut, animations: {
+                    self.containerView.transform = .identity
+                })
+            }
+        default:
+            break
         }
-        
-        // 실제 인덱스로 변환 (0-5 범위로 순환)
-        let actualIndex = indexPath.item % LoginIntro.allCases.count
-        cell.configure(info: LoginIntro.allCases[actualIndex])
-        return cell
     }
     
-    func collectionView(_ collectionView: UICollectionView,
-                        layout collectionViewLayout: UICollectionViewLayout,
-                        sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: collectionView.bounds.width,
-                      height: collectionView.bounds.height)
-    }
-    
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        let itemsPerPage = LoginIntro.allCases.count
-        let pageWidth = scrollView.frame.width
-        let currentPage = Int(scrollView.contentOffset.x / pageWidth + 0.5)
-        
-        // 실제 페이지 번호 업데이트 (0-5 범위 내에서)
-        let actualPage = currentPage % itemsPerPage
-        pageControl.currentPage = actualPage
-    }
-    
-    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        resetScrollPositionIfNeeded()
-    }
-    
-    func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
-        resetScrollPositionIfNeeded()
-    }
-    
-    // 스크롤 위치가 끝에 가까워지면 중간으로 재배치
-    private func resetScrollPositionIfNeeded() {
-        let itemsPerPage = LoginIntro.allCases.count
-        let pageWidth = collectionView.bounds.width
-        let currentPage = Int(collectionView.contentOffset.x / pageWidth + 0.5)
-        let totalPages = itemsPerPage * multiplier
-        
-        // 끝 부분에 가까워지면 중간으로 이동
-        if currentPage <= itemsPerPage / 2 {
-            let newPage = currentPage + itemsPerPage
-            let newOffset = CGPoint(x: CGFloat(newPage) * pageWidth, y: 0)
-            collectionView.setContentOffset(newOffset, animated: false)
-        } else if currentPage >= totalPages - itemsPerPage / 2 {
-            let newPage = currentPage - itemsPerPage
-            let newOffset = CGPoint(x: CGFloat(newPage) * pageWidth, y: 0)
-            collectionView.setContentOffset(newOffset, animated: false)
+    // 자연스럽게 시트가 내려가고 딤이 옅어지며 닫히는 애니메이션
+    private func dismissSheet() {
+        UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseIn, animations: {
+            self.dimView.alpha = 0
+            self.containerView.transform = CGAffineTransform(translationX: 0, y: self.sheetHeight)
+        }) { _ in
+            self.dismiss(animated: false) {
+                self.viewModel.loginCancelled?()
+            }
         }
     }
 }
-

@@ -26,7 +26,7 @@ final class AlarmManager {
     // MARK: - State
     private var alarmVolume: Float = 1.0
     private var currentSoundFile: String?
-    var selectedOption: PushAlarmOption = .onlySound
+    var selectedOption: PushAlarmOption = .onlyVibration
     
     private var interruptionObserver: NSObjectProtocol?
     private var silenceHintObserver: NSObjectProtocol?
@@ -40,6 +40,7 @@ final class AlarmManager {
         loadStoredAlarmOption()
         setupAudioSession()
         startObservingAudioSession()
+        preloadPreviewSound()
     }
     
     // MARK: - Public: Volume / Option
@@ -148,6 +149,16 @@ final class AlarmManager {
             }
         }
     }
+    
+    private func preloadPreviewSound() {
+        guard let url = Bundle.main.url(forResource: "siren", withExtension: "mp3") else { return }
+        do {
+            audioPlayer = try AVAudioPlayer(contentsOf: url)
+            audioPlayer?.prepareToPlay()
+        } catch {
+            print("알람음 프리로드 실패")
+        }
+    }
 }
 
 // MARK: - Private: Session / Storage
@@ -166,8 +177,7 @@ extension AlarmManager {
             selectedOption = option
             print("알람 타입 불러오기: \(option)")
         } else {
-            selectedOption = .onlySound
-            print("알람 타입 기본값 사용: onlySound")
+            selectedOption = .onlyVibration
         }
     }
     
@@ -532,6 +542,8 @@ extension AlarmManager {
         isPreviewing = true
         alarmVolume = volume
         
+        stopRepeatingVibration()
+        
         // 햅틱 엔진이 중단되어 있으면 재시작
         if selectedOption == .onlyVibration || selectedOption == .both {
             restartHapticEngine()
@@ -548,6 +560,9 @@ extension AlarmManager {
             }
             
         case .onlyVibration:
+            audioPlayer?.stop()
+            audioPlayer = nil
+            currentSoundFile = nil
             startRepeatingVibration()
             print("진동 미리듣기")
             

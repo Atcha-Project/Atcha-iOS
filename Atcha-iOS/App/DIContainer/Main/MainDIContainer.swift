@@ -44,6 +44,10 @@ final class MainDIContainer {
         LockScreenDIContainer(apiService: apiService)
     }()
     
+    private lazy var loginDI: LoginDIContainer = {
+        LoginDIContainer(apiService: apiService)
+    }()
+    
     init(apiService: APIService, locationStateHolder: LocationStateHolder) {
         self.apiService = apiService
         self.locationStateHolder = locationStateHolder
@@ -116,3 +120,11 @@ extension MainDIContainer{
         return proximityDI
     }
 }
+
+// MARK: - Login
+extension MainDIContainer{
+    func makeLoginDIContainer() -> LoginDIContainer {
+        return loginDI
+    }
+}
+

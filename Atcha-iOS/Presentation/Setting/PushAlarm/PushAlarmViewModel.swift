@@ -9,7 +9,6 @@ import Foundation
 import Combine
 
 enum PushAlarmContext {
-    case onboarding
     case myPage
 }
 

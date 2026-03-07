@@ -13,6 +13,7 @@ final class LoginCoordinator {
     private let diContainer: LoginDIContainer
     
     var onFinishWithExistUser: ((Bool) -> Void)?
+    var onCancel: (() -> Void)?
     
     init(navigationController: UINavigationController,
          diContainer: LoginDIContainer) {
@@ -25,7 +26,13 @@ final class LoginCoordinator {
         viewModel.isExistUser = { [weak self] isExist in
             self?.onFinishWithExistUser?(isExist)
         }
+        
+        viewModel.loginCancelled = { [weak self] in
+            self?.onCancel?()
+        }
+        
         let viewController = LoginViewController(viewModel: viewModel)
-        navigationController.pushViewController(viewController, animated: true)
+        viewController.modalPresentationStyle = .overFullScreen
+        navigationController.present(viewController, animated: false)
     }
 }

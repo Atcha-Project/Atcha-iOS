@@ -42,6 +42,12 @@ final class OnboardingCoordinator {
     private func showHomeFind() {
         let vm = diContainer.makeHomeFindViewModel()
         vm.routeHandler = { [weak self] route in self?.handle(route: route) }
+        vm.onFinish = { [weak self] isSuccess in
+            if isSuccess {
+                UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.isGuest.rawValue)
+            }
+            self?.onFinish?(isSuccess)
+        }
         let vc = diContainer.makeHomeFindViewController(viewModel: vm)
         navigationController.pushViewController(vc, animated: true)
     }
@@ -53,31 +59,27 @@ final class OnboardingCoordinator {
         navigationController.pushViewController(vc, animated: true)
     }
     
-    private func showPushRegister() {
-        let vm = diContainer.makePushAlarmViewModel(context: .onboarding)
-        vm.routeHandler = { [weak self] route in self?.handle(route: route) }
-        vm.onFinish = { [weak self] isSuccess in self?.onFinish?(isSuccess) }
-        let vc = diContainer.makePushAlarmViewController(viewModel: vm)
-        navigationController.pushViewController(vc, animated: true)
-    }
-    
-    private func showPermission() {
-        let vm = diContainer.makePermissionViewModel()
-        let vc = diContainer.makePermissionViewController(viewModel: vm)
-        vc.modalPresentationStyle = .overFullScreen
-        navigationController.present(vc, animated: false)
-    }
+    //    private func showPushRegister() {
+    //        let vm = diContainer.makePushAlarmViewModel(context: .onboarding)
+    //        vm.routeHandler = { [weak self] route in self?.handle(route: route) }
+    //        vm.onFinish = { [weak self] isSuccess in self?.onFinish?(isSuccess) }
+    //        let vc = diContainer.makePushAlarmViewController(viewModel: vm)
+    //        navigationController.pushViewController(vc, animated: true)
+    //    }
+    //
+    //    private func showPermission() {
+    //        let vm = diContainer.makePermissionViewModel()
+    //        let vc = diContainer.makePermissionViewController(viewModel: vm)
+    //        vc.modalPresentationStyle = .overFullScreen
+    //        navigationController.present(vc, animated: false)
+    //    }
     
     private func handle(route: HomeRouter) {
         switch route {
         case .homeRegister:
             showHomeFind()
-        case .permission:
-            showPermission()
         case .searchAdress:
             showSearchAddress()
-        case .pushRegister:
-            showPushRegister()
         }
         
         routeHandler?(route)

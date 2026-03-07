@@ -82,7 +82,7 @@ final class AtchaBallon: UIView {
         if showTopLine {
             // 알람 등록 전: 위 줄 보이게 (고정 문구)
             topLabel.isHidden = false
-            topLabel.attributedText = AtchaFont.B7_M_13("지도를 움직여 출발지를 설정해 봐요", color: .white)
+            topLabel.attributedText = AtchaFont.B7_M_13("지도를 움직여 출발지를 설정해요", color: .white)
             topLabel.alpha = 1
         } else {
             // 알람 등록 후: 위 줄 숨김

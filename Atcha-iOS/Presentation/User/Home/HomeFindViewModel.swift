@@ -22,19 +22,25 @@ final class HomeFindViewModel: BaseViewModel {
         locationStateHolder.currentLocation != nil
     }
     
+    var onFinish: ((Bool) -> Void)?
+    
     private let searchAddressUseCase: SearchAddressUseCase
     private let homePatchUseCase: HomePatchUseCase
     private let locationStateHolder: LocationStateHolder
     private let streamUseCase: ObserveLocationStreamUseCase
+    private let signUpUseCase: SignUpUseCase
     
     init(context: HomeRegisterContext,
          searchAddressUseCase: SearchAddressUseCase,
          homePatchUseCase: HomePatchUseCase,
          locationStateHolder: LocationStateHolder,
-         streamUseCase: ObserveLocationStreamUseCase) {
+         streamUseCase: ObserveLocationStreamUseCase,
+         signUpUseCase: SignUpUseCase) {
+        
         self.context = context
         self.searchAddressUseCase = searchAddressUseCase
         self.homePatchUseCase = homePatchUseCase
+        self.signUpUseCase = signUpUseCase
         self.locationStateHolder = locationStateHolder
         self.streamUseCase = streamUseCase
         self.buildingName = locationStateHolder.buildingName
@@ -72,7 +78,7 @@ final class HomeFindViewModel: BaseViewModel {
         switch context {
         case .onboarding:
             saveCurrentLoaction()
-            
+            signUp()
         case .myPage:
             guard let currentLocation,
                   let address else {
@@ -218,5 +224,69 @@ extension HomeFindViewModel {
     private func fetchCurrentAddress(lat: Double, lon: Double) async throws -> Location? {
         let request: ReverseGeocodeLocationRequest = ReverseGeocodeLocationRequest(lat: lat, lon: lon)
         return try await searchAddressUseCase.searchLocation(request)
+    }
+}
+
+// MARK: - SignUP
+extension HomeFindViewModel {
+    func signUp() {
+        guard let provider = UserDefaultsWrapper.shared.integer(forKey: UserDefaultsWrapper.Key.provider.rawValue) else {
+            print("플랫폼 정보 없음")
+            return
+        }
+        
+        guard let fcmToken = AppDIContainer.shared.tokenStorage.fcmToken else {
+            print("FCM 토큰이 없습니다.")
+            return
+        }
+        
+        let request = SignUpRequest(
+            provider: provider,
+            userName: "",
+            address: locationStateHolder.address ?? "",
+            lat: locationStateHolder.currentLocation?.latitude ?? 0.0,
+            lon: locationStateHolder.currentLocation?.longitude ?? 0.0,
+            alertFrequencies: [1, 10],
+            fcmToken: fcmToken
+        )
+        
+        // TODO: 위치 변경해야할 듯
+        UserDefaultsWrapper.shared.set(locationStateHolder.currentLocation?.latitude ?? 0.0, forKey: UserDefaultsWrapper.Key.homeLat.rawValue)
+        UserDefaultsWrapper.shared.set(locationStateHolder.currentLocation?.longitude ?? 0.0, forKey: UserDefaultsWrapper.Key.homeLon.rawValue)
+        
+        Task {
+            do {
+                let response = try await signUpUseCase.excute(request)
+                
+                AppDIContainer.shared.tokenStorage.accessToken = response.accessToken
+                AppDIContainer.shared.tokenStorage.refreshToken = response.refreshToken
+                
+                UserDefaultsWrapper.shared.set(response.id, forKey: UserDefaultsWrapper.Key.userId.rawValue)
+                if let lat = response.lat, let lon = response.lon, let id = response.id {
+                    UserDefaultsWrapper.shared.set(lat, forKey: UserDefaultsWrapper.Key.homeLat.rawValue)
+                    UserDefaultsWrapper.shared.set(lon, forKey: UserDefaultsWrapper.Key.homeLon.rawValue)
+                    UserDefaultsWrapper.shared.set(id, forKey: UserDefaultsWrapper.Key.userId
+                        .rawValue)
+                    UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.reVisit
+                        .rawValue)
+                    
+                    let dwellSeconds = AmplitudeManager.shared.timerEndSeconds("signup_dwell")
+                    AmplitudeManager.shared.track(
+                        .signup,
+                        props(
+                            AmplitudeProperty.dwellTime(seconds: dwellSeconds)
+                        )
+                    )
+                    print("회원가입 lat/lon 저장 완료: \(lat), \(lon)")
+                    UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.isGuest.rawValue)
+                } else {
+                    print("회원가입 응답에 lat/lon 없음")
+                }
+                
+                onFinish?(true)
+            } catch {
+                onFinish?(false)
+            }
+        }
     }
 }

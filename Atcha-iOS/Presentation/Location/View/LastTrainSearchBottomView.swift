@@ -49,6 +49,10 @@ final class LastTrainSearchBottomView: UIView {
                                                         style: .filled(.disabled),
                                                         image: .imgSearch16Px) {}
     
+    private let isGuest = UserDefaultsWrapper.shared.bool(
+        forKey: UserDefaultsWrapper.Key.isGuest.rawValue
+    ) ?? false
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupView()

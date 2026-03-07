@@ -72,6 +72,7 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
     
     var currentLegTrafficInfo: LegTrafficInfo? = nil
     private var isArrivedEffectOn = false
+    private var isAlarmFired: Bool = false
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -105,6 +106,8 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
         subwayCountdownTimer?.invalidate()
         subwayCountdownTimer = nil
         currentRemainingSec = nil
+        isAlarmFired = false
+        subwayTimerLabel.isHidden = true
     }
     
     override func preferredLayoutAttributesFitting(
@@ -270,7 +273,8 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
         setupArrivalConstraints()
     }
     
-    func configure(info: LegTrafficInfo?) {
+    func configure(info: LegTrafficInfo?, isAlarmFired: Bool) {
+        self.isAlarmFired = isAlarmFired
         currentLegTrafficInfo = info
         
         stationInfos = []
@@ -304,9 +308,11 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
         endCombinedLabel.append(AtchaFont.B3_M_15(" 하차", color: .gray500))
         endLabel.attributedText = endCombinedLabel
         
-//        if isCurrentTimeBetween(startTime: info.startTime, endTime: info.endTime) {
-//            isNowUserLocationArrived()
-//        }
+        //        if isCurrentTimeBetween(startTime: info.startTime, endTime: info.endTime) {
+        //            isNowUserLocationArrived()updateSubwayTimerLabel
+        //        }
+        
+        self.subwayTimerLabel.isHidden = !isAlarmFired
     }
     
     private func addStationNameLabel(info: [PassStopList]) {
@@ -326,7 +332,7 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
         animationView.startAnimationIfNeeded(forceRestart: true)
         backgroundColor = UIColor.opacity100
     }
-
+    
     func stopArrivedEffectIfNeeded() {
         guard isArrivedEffectOn else { return }
         isArrivedEffectOn = false
@@ -406,111 +412,119 @@ extension DetailRouteSubwayCell {
 }
 
 extension DetailRouteSubwayCell {
-
+    
     func setupSubwayRealTime(routeName: String?, infos: [SubwayRealTimeInfo]) {
         stopSubwayCountdownTimer()
         currentRemainingSec = nil
-
+        
         subwayTimerLabel.isHidden = false
         subwayDirectionLabel.attributedText = AtchaFont.B6_R_14("", color: .white)
-
+        
         guard let routeName, !routeName.isEmpty else {
             subwayTimerLabel.attributedText = AtchaFont.B6_R_14("", color: .gray300)
             return
         }
-
+        
         let key = routeName.components(separatedBy: ":").last ?? routeName
-
+        
         let matched = infos.first { info in
             let apiRaw = info.routeName ?? ""
             let apiKey = apiRaw.components(separatedBy: ":").last ?? apiRaw
             return apiKey == key
         }
-
+        
         guard let matched else {
             subwayDirectionLabel.attributedText = AtchaFont.B6_R_14("", color: .gray300)
             subwayTimerLabel.attributedText = AtchaFont.B6_R_14("", color: .gray300)
             return
         }
-
+        
         if let destination = matched.destination {
             subwayDirectionLabel.attributedText = AtchaFont.B6_R_14("\(destination)행", color: .white)
         } else {
             subwayDirectionLabel.attributedText = AtchaFont.B6_R_14("", color: .white)
         }
-
+        
         guard let sec = matched.remainingTime, sec >= 0 else {
             subwayTimerLabel.attributedText = AtchaFont.B6_R_14("", color: .widearea)
             return
         }
-
+        
         currentRemainingSec = sec
         updateSubwayTimerLabel()
         startSubwayCountdownTimerIfNeeded()
     }
-
+    
     private func startSubwayCountdownTimerIfNeeded() {
         if subwayCountdownTimer != nil { return }
-
+        
         subwayCountdownTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             self?.decrementSubwayRemainingTime()
         }
-
+        
         if let timer = subwayCountdownTimer {
             RunLoop.main.add(timer, forMode: .common)
         }
     }
-
+    
     private func stopSubwayCountdownTimer() {
         subwayCountdownTimer?.invalidate()
         subwayCountdownTimer = nil
     }
-
+    
     private func decrementSubwayRemainingTime() {
         guard let sec = currentRemainingSec else {
             stopSubwayCountdownTimer()
             return
         }
-
+        
         let next = sec - 1
         currentRemainingSec = next
-
+        
         if next <= 0 {
             currentRemainingSec = 0
             updateSubwayTimerLabel()
             stopSubwayCountdownTimer()
             return
         }
-
+        
         updateSubwayTimerLabel()
     }
-
+    
     private func updateSubwayTimerLabel() {
+        
+        guard isAlarmFired else {
+            subwayTimerLabel.isHidden = true
+            return
+        }
+        
+        subwayTimerLabel.isHidden = false
+        
         guard let sec = currentRemainingSec else {
             subwayTimerLabel.attributedText = AtchaFont.B6_R_14("", color: .widearea)
             return
         }
-
+        
         if sec == 0 {
             subwayTimerLabel.attributedText = AtchaFont.B6_R_14("도착 또는 출발", color: .widearea)
             return
         }
-
+        
         if sec <= 120 {
             subwayTimerLabel.attributedText = AtchaFont.B6_R_14("곧 도착", color: .widearea)
             return
         }
-
+        
         subwayTimerLabel.attributedText = AtchaFont.B6_R_14(formatSecondsToHMS(sec), color: .widearea)
     }
-
+    
     private func formatSecondsToHMS(_ seconds: Int?) -> String {
         guard let seconds, seconds >= 0 else { return "" }
-
+        
         let h = seconds / 3600
         let m = (seconds % 3600) / 60
         let s = seconds % 60
-
+        
         if h > 0 {
             // 시가 있으면 시/분/초
             // (원하면 "1시간 0분 5초"처럼 0분도 보여줄지 결정 가능)
@@ -520,12 +534,12 @@ extension DetailRouteSubwayCell {
                 return "\(h)시간 \(s)초"
             }
         }
-
+        
         if m > 0 {
             // 시가 없으면 분/초
             return "\(m)분 \(s)초"
         }
-
+        
         // 분도 없으면 초만
         return "\(s)초"
     }
