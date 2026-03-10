@@ -170,7 +170,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
                 self.isFollowingUser = true
                 self.viewModel.startHeading()
                 
-                // 수정된 부분: 화면 복귀 시 즉시 현위치로 카메라 이동
+                //수정된 부분: 화면 복귀 시 즉시 현위치로 카메라 이동
                 if let currentCoord = self.viewModel.currentLocation {
                     // 즉시 중심으로 이동 (필요에 따라 setupZoomCenter를 사용해 줌 레벨까지 고정 가능)
                     self.mapContainerView.setupCenter(location: currentCoord)

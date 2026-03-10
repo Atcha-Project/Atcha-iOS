@@ -238,6 +238,13 @@ final class DetailRouteViewModel: BaseViewModel {
             guard let self else { return }
             
             while !Task.isCancelled {
+                let isRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
+                if !isRegistered {
+                    print("알람 등록 해제 감지: 버스 폴링 중단")
+                    self.stopBusPolling()
+                    break
+                }
+                
                 try? await Task.sleep(nanoseconds: 15_000_000_000)
                 if Task.isCancelled { break }
                 await self.refreshAllBusRealTime()
@@ -276,6 +283,14 @@ final class DetailRouteViewModel: BaseViewModel {
             guard let self else { return }
             
             while !Task.isCancelled {
+                // 추가: 알람 등록 상태 확인
+                let isRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
+                if !isRegistered {
+                    print("알람 등록 해제 감지: 지하철 폴링 중단")
+                    self.stopSubwayPolling()
+                    break
+                }
+                
                 try? await Task.sleep(nanoseconds: 15_000_000_000)
                 if Task.isCancelled { break }
                 await self.refreshAllSubwayRealTime()
