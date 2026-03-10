@@ -301,12 +301,18 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
                 self.mapContainerView.updateUserMarker(location: coord, isRegistered: isAlarmRegistered)
                 
                 // 2) 지도 follow 로직 (메인)
-                if self.isAlarmFired {
-                    // 알람 울린 후엔 계속 따라감
+                //                if self.isAlarmFired {
+                //                    // 알람 울린 후엔 계속 따라감
+                //                    self.mapContainerView.setupZoomCenter(location: coord)
+                //                } else if self.isFollowingUser {
+                //                    // 알람 전: following 켰을 때만 따라감
+                //                    self.mapContainerView.setupZoomCenter(location: coord)
+                //                }
+                if self.isFollowingUser {
                     self.mapContainerView.setupZoomCenter(location: coord)
-                } else if self.isFollowingUser {
-                    // 알람 전: following 켰을 때만 따라감
+                } else if self.shouldCenterToCurrentLocationOnce {
                     self.mapContainerView.setupZoomCenter(location: coord)
+                    self.shouldCenterToCurrentLocationOnce = false
                 }
                 // else: fit 유지 (건드리지 않음)
                 
@@ -349,7 +355,7 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             .receive(on: RunLoop.main)
             .sink { [weak self] heading in
                 guard let self else { return }
-                guard isFollowingUser || isAlarmFired else { return }
+                guard isFollowingUser else { return }
                 mapContainerView.setHeading(heading)
             }
             .store(in: &cancellables)
