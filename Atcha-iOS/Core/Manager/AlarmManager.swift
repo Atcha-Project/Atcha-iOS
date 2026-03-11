@@ -102,6 +102,9 @@ final class AlarmManager {
     
     /// 완전 정지: 예약/타이머/진동/알림/오디오 모두 끊기
     func stopAlarm(keepSilent: Bool = false) {
+        autoStopWorkItem?.cancel()
+        autoStopWorkItem = nil
+        
         shouldKeepBackgroundAudio = false
         pendingStartWorkItem?.cancel()
         pendingStartWorkItem = nil
