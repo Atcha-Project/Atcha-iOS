@@ -32,7 +32,6 @@ final class MainViewModel: BaseViewModel{
     
     @Published var bottomType: MapBottomType?
     @Published var showLockView: Bool = false
-    @Published var showAlarmStopPopUpView: Bool = false
     
     @Published var departureStr: String?
     //    @Published var currentCourse: CLLocationDirection?

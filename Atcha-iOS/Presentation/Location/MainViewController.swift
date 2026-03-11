@@ -312,7 +312,6 @@ extension MainViewController {
         bindTaxiFareUpdates()
         bindServiceRegionUpdates()
         bindLockView()
-        bindAlarmTimeoutView()
         bindDeviceHeadingUpdates()
         bindPermissionAlert()
         bindAlarmFireStatus()
@@ -465,7 +464,6 @@ extension MainViewController {
             guard let self else { return }
             popupVC?.dismiss(animated: false)
             AlarmManager.shared.alarmInit()
-            self.viewModel.showAlarmStopPopUpView = false
         }, for: .touchUpInside)
         
         popupVC.modalPresentationStyle = .overFullScreen
@@ -675,26 +673,6 @@ extension MainViewController {
             .store(in: &cancellables)
     }
     
-    private func bindAlarmTimeoutView() {
-        viewModel.$showAlarmStopPopUpView
-            .receive(on: RunLoop.main)
-            .sink { [weak self] show in
-                guard let self, show else { return }
-                self.viewModel.alarmDelete()
-                self.exitButtonTapped()
-                
-                guard self.presentedViewController == nil else { return }
-                
-                AlarmManager.shared.sendImmediateLocalPush(
-                    title: "출발 알람이 자동 종료되었어요",
-                    body: "클릭해서 경로 재탐색하기"
-                )
-                
-                self.showAlarmTimeoutPopup()
-                self.viewModel.showAlarmStopPopUpView = false
-            }
-            .store(in: &cancellables)
-    }
     
     private func commonAlarmSetupView() {
         updateAtchaImageConstraint(relativeTo: lastTrainDepartView)
@@ -1481,8 +1459,17 @@ extension MainViewController {
                 self.viewModel.alarmDelete()
                 self.exitButtonTapped()
                 
+                if let coord = self.viewModel.currentLocation {
+                    self.mapContainerView.setupCenter(location: coord)
+                    self.viewModel.selectedLocation = coord // 주소도 다시 검색
+                } else {
+                    self.viewModel.setupLocation()
+                }
+                
                 // 3. 타임아웃 팝업 띄우기
-                self.showAlarmTimeoutPopup()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    self.showAlarmTimeoutPopup()
+                }
             }
             .store(in: &cancellables)
     }

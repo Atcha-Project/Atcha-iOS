@@ -627,6 +627,8 @@ extension AlarmManager {
             // 음악/진동 정지
             self.stopAlarm(keepSilent: false) // 아예 무음까지 끄기
             
+            UserDefaults.standard.set(true, forKey: "isAlarmTimedOut")
+            
             // 메인 뷰에 타임아웃 팝업 띄우라고 신호
             NotificationCenter.default.post(name: NSNotification.Name("alarmDidTimeout"), object: nil)
         }

@@ -27,6 +27,7 @@ final class LockViewController: BaseViewController<LockViewModel> {
         bind()
         setupUI()
         setupAutoLayout()
+        observeAlarmTimeout()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -56,13 +57,13 @@ final class LockViewController: BaseViewController<LockViewModel> {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] fare in
                 guard let self = self else { return }
-
+                
                 if fare == 0 {
                     self.taxiFareLabel.attributedText =
-                        AtchaFont.D1_EB_56("계산 중...", color: AtchaColor.Bus.widearea)
+                    AtchaFont.D1_EB_56("계산 중...", color: AtchaColor.Bus.widearea)
                 } else {
                     self.taxiFareLabel.attributedText =
-                        AtchaFont.D1_EB_56("-\(fare.formattedWithComma)", color: AtchaColor.Bus.widearea)
+                    AtchaFont.D1_EB_56("-\(fare.formattedWithComma)", color: AtchaColor.Bus.widearea)
                 }
             }
             .store(in: &cancellables)
@@ -151,12 +152,12 @@ final class LockViewController: BaseViewController<LockViewModel> {
             true,
             forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue
         )
-
+        
         AmplitudeManager.shared.track(.start_click)
     }
     
     @objc private func detailRouteTapped() {
-
+        
         AlarmManager.shared.stopAlarm()
         
         let wrapper = UserDefaultsWrapper.shared
@@ -166,5 +167,15 @@ final class LockViewController: BaseViewController<LockViewModel> {
         
         AmplitudeManager.shared.track(.later_course_click)
         viewModel.routerHandler?(.courseSearch(startLat: lat, startLon: lon, startAddress: address))
+    }
+    
+    private func observeAlarmTimeout() {
+        NotificationCenter.default.publisher(for: NSNotification.Name("alarmDidTimeout"))
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                // 수정됨: 화면을 닫고 메인으로 돌아가는 올바른 라우터 명령 전달
+                self?.viewModel.routerHandler?(.dismissLockScreen)
+            }
+            .store(in: &cancellables)
     }
 }
