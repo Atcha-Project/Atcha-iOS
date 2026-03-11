@@ -39,15 +39,11 @@ final class HomeArrivalManager {
         if distance <= 50 {
             isArrivalSignalSent = true
             
-            let isForeground = UIApplication.shared.applicationState == .active
-            
-            if !isForeground {
-                AlarmManager.shared.sendImmediateLocalPush(
-                    title: "막차 안내 종료",
-                    body: "목적지 부근에 도착했어요",
-                    playSound: true
-                )
-            }
+            AlarmManager.shared.sendImmediateLocalPush(
+                title: "막차 안내 종료",
+                body: "목적지 부근에 도착했어요",
+                playSound: true
+            )
             
             NotificationCenter.default.post(name: NSNotification.Name("userArrivedHome"), object: nil)
         }

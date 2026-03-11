@@ -94,7 +94,7 @@ final class AtchaPopupViewController: BaseViewController<AtchaPopupViewModel> {
             $0.removeFromSuperview()
         }
         
-        if info == .alarmTimeout {
+        if info == .alarmTimeout || info == .arrive{
             buttonStackView.addArrangedSubview(confirmButton)
         } else {
             buttonStackView.addArrangedSubview(cancelButton)
