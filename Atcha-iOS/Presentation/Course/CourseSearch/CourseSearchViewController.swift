@@ -362,7 +362,7 @@ extension CourseSearchViewController {
         let popupVC = AtchaPopupViewController(viewModel: popupVM)
         
         popupVC.confirmButton.addAction(UIAction { [weak popupVC] _ in
-            popupVC?.dismiss(animated: true)
+            popupVC?.dismiss(animated: false)
             
             self.viewModel.alarmRegister(alarmRequest)
             self.viewModel.getAlarmTapped?(alarmTapped.0, alarmTapped.1)
@@ -392,7 +392,7 @@ extension CourseSearchViewController {
         let popupVC = AtchaPopupViewController(viewModel: popupVM)
         
         popupVC.confirmButton.addAction(UIAction { [weak popupVC] _ in
-            popupVC?.dismiss(animated: true)
+            popupVC?.dismiss(animated: false)
             
             self.viewModel.alarmRegister(alarmRequest)
             self.viewModel.getAlarmTapped?(alarmTapped.0, alarmTapped.1)

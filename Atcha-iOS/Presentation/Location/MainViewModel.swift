@@ -32,7 +32,6 @@ final class MainViewModel: BaseViewModel{
     
     @Published var bottomType: MapBottomType?
     @Published var showLockView: Bool = false
-    @Published var showAlarmStopPopUpView: Bool = false
     
     @Published var departureStr: String?
     //    @Published var currentCourse: CLLocationDirection?
@@ -56,6 +55,8 @@ final class MainViewModel: BaseViewModel{
     
     @Published var showLocationDeniedAlert: Bool = false
     @Published var isGuest: Bool = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.isGuest.rawValue) ?? false
+    private var didSendInitialLocation = false
+    private let smoother = LocationSmoother(limit: 5)
     
     init(authorizationUseCase: RequestLocationAuthorizationUseCase,
          streamUseCase: ObserveLocationStreamUseCase,
@@ -225,17 +226,34 @@ final class MainViewModel: BaseViewModel{
             self.startHeading()
             
             streamTask = Task {
-                var didSendInitialLocation = false
                 for await location in streamUseCase.startUpdate() {
-                    let newLocation = CLLocationCoordinate2D(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
+                    // 정확도 필터링 (너무 튀는 값 제거)
+                    guard location.horizontalAccuracy < 150 else { continue }
                     
-                    // 내 진짜 GPS 위치는 계속 업데이트
-                    self.currentLocation = newLocation
+                    // 이동 평균 필터링 (항상 적용하여 부드러운 움직임 확보)
+                    let smoothedCoord = smoother.smooth(location.coordinate)
                     
-                    // [수정]: 지도의 중심(selectedLocation)은 "앱 최초 진입 시" 딱 1번만 GPS 위치로 맞춰줍니다.
-                    if !didSendInitialLocation {
-                        self.selectedLocation = newLocation
-                        didSendInitialLocation = true
+                    var finalCoord = smoothedCoord
+                    
+                    // 알람이 울린 후(`isAlarmFired`)에만 경로 스냅 적용
+                    let isAlarmFired = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue) ?? false
+                    
+                    if isAlarmFired, let path = self.legInfo?.pathInfo {
+                        let allCoords = path.flatMap { convertShapeToCoords($0.passShape ?? "") }
+                        if !allCoords.isEmpty {
+                            finalCoord = smoother.snap(current: smoothedCoord, polyline: allCoords)
+                        }
+                    }
+                    
+                    let capturedCoord = finalCoord
+                    
+                    await MainActor.run {
+                        self.currentLocation = capturedCoord
+                        if !didSendInitialLocation {
+                            self.selectedLocation = capturedCoord
+                            didSendInitialLocation = true
+                        }
+                        HomeArrivalManager.shared.checkHomeArrival(currentCoord: capturedCoord)
                     }
                 }
             }
@@ -380,7 +398,7 @@ extension MainViewModel {
                 showLockView = true
                 AlarmManager.shared.startAlarm(title: "눌러서 출발 알람 끄기",
                                                body: "자리에서 일어나야 할 시간이에요!")
-                startAlarmTimeoutTimer()
+//                startAlarmTimeoutTimer()
                 stopAlarmTimer()
             } else {
                 print("미래")
@@ -589,30 +607,42 @@ extension MainViewModel {
 
 // MARK: - 2분 타임아웃
 extension MainViewModel {
-    private func startAlarmTimeoutTimer() {
-        alarmTimeoutCancellable?.cancel()
-        
-        let task = Task { [weak self] in
-            guard let self else { return }
-            
-            do {
-                try await Task.sleep(nanoseconds: 120 * 1_000_000_000)
-            } catch {
-                return
-            }
-            
-            guard !Task.isCancelled else { return }
-            
-            await MainActor.run {
-                self.routeHandler?(.dismissLockScreen)
-            }
-        }
-        
-        alarmTimeoutCancellable = AnyCancellable { task.cancel() }
-    }
+//    private func startAlarmTimeoutTimer() {
+//        alarmTimeoutCancellable?.cancel()
+//        
+//        let task = Task { [weak self] in
+//            guard let self else { return }
+//            
+//            do {
+//                try await Task.sleep(nanoseconds: 120 * 1_000_000_000)
+//            } catch {
+//                return
+//            }
+//            
+//            guard !Task.isCancelled else { return }
+//            
+//            await MainActor.run {
+//                self.routeHandler?(.dismissLockScreen)
+//            }
+//        }
+//        
+//        alarmTimeoutCancellable = AnyCancellable { task.cancel() }
+//    }
     
     func stopAlarmTimeoutTimer() {
         alarmTimeoutCancellable?.cancel()
         alarmTimeoutCancellable = nil
+    }
+}
+
+extension MainViewModel {
+    private func convertShapeToCoords(_ shape: String) -> [CLLocationCoordinate2D] {
+        shape.split(separator: " ").compactMap { pair in
+            let parts = pair.split(separator: ",")
+            guard parts.count == 2,
+                  let lon = Double(parts[0]),
+                  let lat = Double(parts[1]) else { return nil }
+            return CLLocationCoordinate2D(latitude: lat, longitude: lon)
+        }
     }
 }

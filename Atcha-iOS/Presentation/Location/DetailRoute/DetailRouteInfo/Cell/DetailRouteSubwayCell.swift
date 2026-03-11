@@ -313,6 +313,9 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
         //        }
         
         self.subwayTimerLabel.isHidden = !isAlarmFired
+        if isAlarmFired && currentRemainingSec != nil {
+            updateSubwayTimerLabel()
+        }
     }
     
     private func addStationNameLabel(info: [PassStopList]) {

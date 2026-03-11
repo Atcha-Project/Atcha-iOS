@@ -285,6 +285,8 @@ final class MainCoordinator {
                                                           startLon: startLon,
                                                           startAddress: startAddress))
                     }
+                case .dismissLockScreen:
+                    self?.navigationController.dismiss(animated: true)
                 default: do {}
                 }
             }
@@ -303,13 +305,6 @@ final class MainCoordinator {
             dismissPresentedIfNeeded {
                 DispatchQueue.global(qos: .utility).async {
                     self.mainViewModel?.showLockView = false
-                    self.mainViewModel?.showAlarmStopPopUpView = true
-                    
-                    AlarmManager.shared.sendBackgroundPush(
-                        title: "출발 알람이 자동 종료되었어요",
-                        body: "클릭해서 경로 재탐색하기"
-                    )
-                    
                 }
             }
         case .loginSheet:
@@ -329,7 +324,7 @@ final class MainCoordinator {
                         self.mainViewModel?.isGuest = newGuestStatus
                         
                         if isExist {
-//                            self.mainViewModel?.setupLocation()
+                            //                            self.mainViewModel?.setupLocation()
                             self.mainViewModel?.refreshCurrentMapCenterData()
                         } else {
                             self.routeToOnboarding?()
@@ -372,7 +367,7 @@ extension UINavigationController {
         UIView.performWithoutAnimation {
             if let target = viewControllers.first(where: { $0 is MainViewController }) {
                 popToViewController(target, animated: true)
-            } else {
+            } else { 
                 popToRootViewController(animated: true)
             }
         }

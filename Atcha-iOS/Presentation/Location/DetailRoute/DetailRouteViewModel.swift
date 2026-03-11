@@ -8,6 +8,7 @@
 import Foundation
 import UIKit
 import CoreLocation
+import MapKit
 
 enum DetailRouteContext {
     case beforeRegister
@@ -36,11 +37,9 @@ final class DetailRouteViewModel: BaseViewModel {
     @Published var busRealTimeInfos: [[RealTimeBusArrival]] = []
     private var busRoutes: [String] = []
     private var busRealTimeMap: [String: [RealTimeBusArrival]] = [:]
-    private var busPollingTask: Task<Void, Never>?
     
     @Published var subwayRealTimeInfos: [SubwayRealTimeInfo] = []
     private var subwayRoutes: [String] = []
-    private var subwayPollingTask: Task<Void, Never>?
     
     @Published private(set) var context: DetailRouteContext
     @Published var nearLegIDs: Set<UUID> = []
@@ -48,11 +47,16 @@ final class DetailRouteViewModel: BaseViewModel {
     @Published var deviceHeading: CLLocationDirection?
     private let headingManager = HeadingManager()
     
-
-//#if DEBUG
-//@Published var mockLocation: CLLocationCoordinate2D? = nil
-//#endif
-
+    private let smoother = LocationSmoother(limit: 5)
+    @Published var legPolylineById: [UUID: [CLLocationCoordinate2D]] = [:]
+    
+    private var pollingTask: Task<Void, Never>?
+    @Published var isRefreshing: Bool = false
+    
+    //#if DEBUG
+    //@Published var mockLocation: CLLocationCoordinate2D? = nil
+    //#endif
+    
     init(address: String,
          infos: LegInfo,
          context: DetailRouteContext,
@@ -78,43 +82,41 @@ final class DetailRouteViewModel: BaseViewModel {
     func fetchInfo() {
         legtPathInfo = infos.pathInfo
         legTrafficInfo = infos.trafficInfo
-        print("위치: \(legtPathInfo)")
+        
+        var dict: [UUID: [CLLocationCoordinate2D]] = [:]
+        for (traffic, path) in zip(legTrafficInfo, legtPathInfo) {
+            if let shape = path.passShape, !shape.isEmpty {
+                dict[traffic.id] = self.convertShapeToCoords(shape)
+                continue
+            }
+            if let steps = path.step, !steps.isEmpty {
+                let merged = steps.compactMap { $0.linestring }.filter { !$0.isEmpty }.joined(separator: " ")
+                if !merged.isEmpty {
+                    dict[traffic.id] = self.convertShapeToCoords(merged)
+                }
+            }
+        }
+        self.legPolylineById = dict
         
         guard context == .afterReigster else { return }
-        // 버스
-        let routes = infos.busInfo
-            .compactMap { $0.routeName }
-            .filter { !$0.isEmpty && $0.contains(":") }
         
-        busRoutes = Array(Set(routes)) // 중복 제거
-        busRealTimeMap.removeAll()
-        busRealTimeInfos = []
-        
-        // 최초 1회 로드
-        Task { [weak self] in
-            await self?.refreshAllBusRealTime()
-        }
-        
-        // 15초 폴링 시작
-        startBusPolling()
-        
-        let subwayRoutes = Array(Set(
-            infos.trafficInfo
-                .filter { $0.mode == .subway }
-                .compactMap { $0.route }
-                .filter { !$0.isEmpty }
-        ))
-        
-        self.subwayRoutes = subwayRoutes
-        // 여기서 removeAll 하면 첫 표시가 비었다가 생길 수 있음.
-        // "최초 진입 때만 비우고", 폴링에서는 기존 유지가 더 안정적.
-        self.subwayRealTimeInfos = []
-        
-        Task { [weak self] in
-            await self?.refreshAllSubwayRealTime()
-        }
-        startSubwayPolling()
+        setupRoutes()
+        startPolling()
     }
+    
+    private func setupRoutes() {
+            let routes = infos.busInfo
+                .compactMap { $0.routeName }
+                .filter { !$0.isEmpty && $0.contains(":") }
+            busRoutes = Array(Set(routes))
+
+            subwayRoutes = Array(Set(
+                infos.trafficInfo
+                    .filter { $0.mode == .subway }
+                    .compactMap { $0.route }
+                    .filter { !$0.isEmpty }
+            ))
+        }
     
     @MainActor
     func getBusRealTimeInfo(request: String) {
@@ -130,6 +132,55 @@ final class DetailRouteViewModel: BaseViewModel {
     }
     
     @MainActor
+        func refreshAllRealTimeData() async {
+            guard !busRoutes.isEmpty || !subwayRoutes.isEmpty else { return }
+            
+            isRefreshing = true // 애니메이션 시작 신호
+            
+            // async let을 사용하여 버스와 지하철 정보를 동시에(병렬) 요청함 (속도 최적화)
+            async let refreshBus: () = refreshAllBusRealTime()
+            async let refreshSubway: () = refreshAllSubwayRealTime()
+            
+            _ = await [refreshBus, refreshSubway]
+            
+            // 애니메이션이 시각적으로 잘 보이도록 최소 0.5초 대기 후 종료
+            try? await Task.sleep(nanoseconds: 500_000_000)
+            isRefreshing = false
+        }
+    
+    private func startPolling() {
+            stopPolling()
+            
+            pollingTask = Task { [weak self] in
+                guard let self = self else { return }
+                
+                // 1. 진입 시 최초 1회 즉시 실행
+                await self.refreshAllRealTimeData()
+                
+                while !Task.isCancelled {
+                    // 2. 15초 대기
+                    try? await Task.sleep(nanoseconds: 15_000_000_000)
+                    
+                    // 3. 루프 중간에 취소 여부 및 알람 등록 상태 재확인
+                    let isRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
+                    if !isRegistered || Task.isCancelled {
+                        self.stopPolling()
+                        break
+                    }
+
+                    // 4. 통합 데이터 새로고침 실행
+                    await self.refreshAllRealTimeData()
+                }
+            }
+        }
+
+        func stopPolling() {
+            pollingTask?.cancel()
+            pollingTask = nil
+        }
+    
+    
+    @MainActor
     func getSubwayRealTimeInfo(routeName: String) async {
         do {
             let infos = try await subwayInfoUseCase.subwayRealTimeInfo(.init(routeName: routeName))
@@ -141,74 +192,63 @@ final class DetailRouteViewModel: BaseViewModel {
     }
     
     func requestPermissionAndStartTracking() {
-            Task {
-                let status = await authorizationUseCase.askLocationPermission()
-                guard status == .authorizedAlways || status == .authorizedWhenInUse else { return }
-
-                streamTask?.cancel()
-                streamTask = Task {
-                    for await location in streamUseCase.startUpdate() {
-                        let coord = CLLocationCoordinate2D(
-                            latitude: location.coordinate.latitude,
-                            longitude: location.coordinate.longitude
-                        )
-                        await MainActor.run { self.currentLocation = coord }
+        Task {
+            let status = await authorizationUseCase.askLocationPermission()
+            guard status == .authorizedAlways || status == .authorizedWhenInUse else { return }
+            
+            streamTask?.cancel()
+            streamTask = Task {
+                for await location in streamUseCase.startUpdate() {
+                    guard location.horizontalAccuracy < 150 else { continue }
+                    
+                    // 항상 Smoothing 적용
+                    let smoothedCoord = smoother.smooth(location.coordinate)
+                    
+                    var finalCoord = smoothedCoord
+                    
+                    // 알람이 울린 상태라면 스냅 적용
+                    let isAlarmFired = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue) ?? false
+                    
+                    if isAlarmFired && !legtPathInfo.isEmpty {
+                        let allCoords = legtPathInfo.flatMap { convertShapeToCoords($0.passShape ?? "") }
+                        finalCoord = smoother.snap(current: smoothedCoord, polyline: allCoords)
                     }
+                    
+                    let capturedCoord = finalCoord
+                    
+                    await MainActor.run {
+                        self.currentLocation = capturedCoord
+                        HomeArrivalManager.shared.checkHomeArrival(currentCoord: capturedCoord)
+                    }
+                    
+                    self.calculateProximity(coord: finalCoord)
                 }
             }
         }
+    }
     
     func startHeading() {
-            headingManager.onHeading = { [weak self] h in
-                DispatchQueue.main.async { self?.deviceHeading = h }
-            }
-            headingManager.start()
+        headingManager.onHeading = { [weak self] h in
+            DispatchQueue.main.async { self?.deviceHeading = h }
         }
-
-        func stopHeading() {
-            headingManager.stop()
-        }
-
-        func stopTracking() {
-            streamTask?.cancel()
-            streamUseCase.stopUpdate()
-            headingManager.stop()
-        }
-
-        deinit {
-            stopTracking()
-            stopBusPolling()
-            stopSubwayPolling()
-        }
+        headingManager.start()
+    }
     
-//    func requestPermissionAndStartTracking() {
-//        Task {
-//            let status = await authorizationUseCase.askLocationPermission()
-//            guard status == .authorizedAlways || status == .authorizedWhenInUse else { return }
-//
-//            streamTask = Task { [weak self] in
-//                guard let self else { return }
-//
-//                for await location in streamUseCase.startUpdate() {
-//                    let real = CLLocationCoordinate2D(
-//                        latitude: location.coordinate.latitude,
-//                        longitude: location.coordinate.longitude
-//                    )
-//
-//                    #if DEBUG
-//                    // ✅ 디버그에선 mock 있으면 그걸로 덮어씀
-//                    if let mock = self.mockLocation {
-//                        self.currentLocation = mock
-//                    } else {
-//                        self.currentLocation = real
-//                    }
-//                    #else
-//                    self.currentLocation = real
-//                    #endif
-//                }
-//            }
-//        }
-//    }
+    func stopHeading() {
+        headingManager.stop()
+    }
+    
+    func stopTracking() {
+        streamTask?.cancel()
+        streamUseCase.stopUpdate()
+        headingManager.stop()
+    }
+    
+    deinit {
+        stopTracking()
+        stopPolling()
+    }
+    
     
     func setupLocation() {
         requestPermissionAndStartTracking()
@@ -231,25 +271,7 @@ final class DetailRouteViewModel: BaseViewModel {
         }
     }
     
-    private func startBusPolling() {
-        stopBusPolling()
-        
-        busPollingTask = Task { [weak self] in
-            guard let self else { return }
-            
-            while !Task.isCancelled {
-                try? await Task.sleep(nanoseconds: 15_000_000_000)
-                if Task.isCancelled { break }
-                await self.refreshAllBusRealTime()
-            }
-        }
-    }
-    
-    private func stopBusPolling() {
-        busPollingTask?.cancel()
-        busPollingTask = nil
-    }
-    
+
     @MainActor
     private func refreshAllBusRealTime() async {
         guard !busRoutes.isEmpty else { return }
@@ -268,26 +290,6 @@ final class DetailRouteViewModel: BaseViewModel {
     }
     
     // MARK: - Subway Polling
-    
-    private func startSubwayPolling() {
-        stopSubwayPolling()
-        
-        subwayPollingTask = Task { [weak self] in
-            guard let self else { return }
-            
-            while !Task.isCancelled {
-                try? await Task.sleep(nanoseconds: 15_000_000_000)
-                if Task.isCancelled { break }
-                await self.refreshAllSubwayRealTime()
-            }
-        }
-    }
-    
-    private func stopSubwayPolling() {
-        subwayPollingTask?.cancel()
-        subwayPollingTask = nil
-    }
-    
     @MainActor
     private func refreshAllSubwayRealTime() async {
         guard !subwayRoutes.isEmpty else { return }
@@ -304,5 +306,84 @@ final class DetailRouteViewModel: BaseViewModel {
                 print("실시간 지하철 조회 실패: \(route), \(error)")
             }
         }
+    }
+}
+
+extension DetailRouteViewModel {
+    private func convertShapeToCoords(_ shape: String) -> [CLLocationCoordinate2D] {
+        shape.split(separator: " ").compactMap { pair in
+            let parts = pair.split(separator: ",")
+            guard parts.count == 2,
+                  let lon = Double(parts[0]),
+                  let lat = Double(parts[1]) else { return nil }
+            return CLLocationCoordinate2D(latitude: lat, longitude: lon)
+        }
+    }
+}
+
+extension DetailRouteViewModel {
+    /// 현재 좌표를 기준으로 가장 가까운 경로를 찾아 nearLegIDs를 업데이트합니다.
+    func calculateProximity(coord: CLLocationCoordinate2D?) {
+        guard let coord = coord else { return }
+        
+        let threshold: CLLocationDistance = 150
+        let polylines = self.legPolylineById
+        let orderedLegs = self.legTrafficInfo
+        
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self else { return }
+            var nearCandidates = Set<UUID>()
+            
+            for (id, polyline) in polylines {
+                let d = self.distanceToPolylineMeters(point: coord, polyline: polyline)
+                if d <= threshold {
+                    nearCandidates.insert(id)
+                }
+            }
+            
+            var picked: Set<UUID> = []
+            if let first = orderedLegs.first(where: { nearCandidates.contains($0.id) })?.id {
+                picked = [first]
+            }
+            
+            DispatchQueue.main.async {
+                self.nearLegIDs = picked
+            }
+        }
+    }
+    
+    // 뷰컨트롤러에서 가져온 거리 계산 함수
+    private func distanceToPolylineMeters(
+        point: CLLocationCoordinate2D,
+        polyline: [CLLocationCoordinate2D]
+    ) -> CLLocationDistance {
+        guard polyline.count >= 2 else { return .greatestFiniteMagnitude }
+        
+        let p = MKMapPoint(point)
+        var best = CLLocationDistance.greatestFiniteMagnitude
+        
+        for i in 0..<(polyline.count - 1) {
+            let a = MKMapPoint(polyline[i])
+            let b = MKMapPoint(polyline[i + 1])
+            
+            let abx = b.x - a.x
+            let aby = b.y - a.y
+            let apx = p.x - a.x
+            let apy = p.y - a.y
+            
+            let ab2 = abx*abx + aby*aby
+            if ab2 == 0 {
+                best = min(best, p.distance(to: a))
+                continue
+            }
+            
+            var t = (apx*abx + apy*aby) / ab2
+            t = max(0, min(1, t))
+            
+            let closest = MKMapPoint(x: a.x + t*abx, y: a.y + t*aby)
+            best = min(best, p.distance(to: closest))
+        }
+        
+        return best
     }
 }
