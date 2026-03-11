@@ -241,6 +241,10 @@ final class MainCoordinator {
             self.navigationController.pushViewController(modifyVC, animated: true)
             
         case .detailRoute(let address, let infos, let context):
+            if navigationController.topViewController is DetailRouteViewController {
+                print("이미 상세 경로 화면입니다. 중복 push를 방지합니다.")
+                return
+            }
             let routeDI = diContainer.makeRouteDIContainer()
             let vm = routeDI.makeDetailRouteViewModel(address: address, infos: infos, context: context)
             let vc = routeDI.makeDetailRouteViewController(viewModel: vm)
@@ -367,7 +371,7 @@ extension UINavigationController {
         UIView.performWithoutAnimation {
             if let target = viewControllers.first(where: { $0 is MainViewController }) {
                 popToViewController(target, animated: true)
-            } else { 
+            } else {
                 popToRootViewController(animated: true)
             }
         }

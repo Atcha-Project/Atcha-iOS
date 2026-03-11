@@ -485,15 +485,18 @@ extension MainViewModel {
                 address: lastReverseGeocode?.address,
                 radius: lastReverseGeocode?.radius)))
             
-        case .courseSearch:
-            guard let currentLocation else { return }
-            let lat: String = "\(currentLocation.latitude)"
-            let lon: String = "\(currentLocation.longitude)"
-            let address: String = address ?? ""
+        case .courseSearch(let startLat, let startLon, _):
             
-            routeHandler?(.courseSearch(startLat: lat,
-                                        startLon: lon,
-                                        startAddress: address))
+            if lastReverseGeocode != nil {
+                routeHandler?(.courseSearch(startLat: "\(lastReverseGeocode?.lat ?? 0.0)",
+                                            startLon: "\(lastReverseGeocode?.lon ?? 0.0)",
+                                            startAddress: lastReverseGeocode?.address ?? ""))
+            } else {
+                routeHandler?(.courseSearch(startLat: startLat,
+                                            startLon: startLon,
+                                            startAddress: address ?? ""))
+            }
+            
         case .myPage:
             routeHandler?(.myPage)
             
@@ -605,30 +608,7 @@ extension MainViewModel {
     }
 }
 
-// MARK: - 2분 타임아웃
 extension MainViewModel {
-//    private func startAlarmTimeoutTimer() {
-//        alarmTimeoutCancellable?.cancel()
-//        
-//        let task = Task { [weak self] in
-//            guard let self else { return }
-//            
-//            do {
-//                try await Task.sleep(nanoseconds: 120 * 1_000_000_000)
-//            } catch {
-//                return
-//            }
-//            
-//            guard !Task.isCancelled else { return }
-//            
-//            await MainActor.run {
-//                self.routeHandler?(.dismissLockScreen)
-//            }
-//        }
-//        
-//        alarmTimeoutCancellable = AnyCancellable { task.cancel() }
-//    }
-    
     func stopAlarmTimeoutTimer() {
         alarmTimeoutCancellable?.cancel()
         alarmTimeoutCancellable = nil

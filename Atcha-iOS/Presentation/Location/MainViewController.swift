@@ -401,12 +401,12 @@ extension MainViewController {
             if viewModel.isGuest {
                 presentLoginAlert()
             } else {
-                AmplitudeManager.shared.track(.course_search_click)
-                
-                guard let startCoord = viewModel.currentLocation else {
+                guard let startCoord = mapContainerView.tMapWrapper.mapView.getCenter() else {
                     view.showToast(message: "현재 위치를 확인 중이에요. 잠시 후 다시 시도해 주세요.")
                     return
                 }
+                
+                AmplitudeManager.shared.track(.course_search_click)
                 
                 let wrapper = UserDefaultsWrapper.shared
                 let endLatStr = wrapper.string(forKey: UserDefaultsWrapper.Key.homeLat.rawValue) ?? "37.554722"
@@ -424,7 +424,7 @@ extension MainViewController {
                 }
                 
                 viewModel.handleRoute(route: .courseSearch(
-                    startLat: "", startLon: "", startAddress: ""
+                    startLat: String(startCoord.latitude), startLon: String(startCoord.longitude), startAddress: ""
                 ))
             }
         }
@@ -509,9 +509,14 @@ extension MainViewController {
         mapContainerView.clearMapView()
         mapContainerView.beforeUserMarker()
         
-        if let coord = viewModel.selectedLocation ?? viewModel.currentLocation {
-            mapContainerView.setupCenter(location: coord)
+        if let currentCoord = viewModel.currentLocation {
+            // 현재 좌표가 있다면 즉시 이동
+            mapContainerView.setupCenter(location: currentCoord)
+            viewModel.selectedLocation = currentCoord // 주소 검색 결과도 현위치로 갱신
+            shouldCenterToCurrentLocationOnce = false
         } else {
+            // 아직 좌표가 없다면, 다음 위치 업데이트 시점에 이동하도록 예약
+            shouldCenterToCurrentLocationOnce = true
             viewModel.setupLocation()
         }
         
@@ -575,7 +580,7 @@ extension MainViewController {
             .compactMap { $0 }
             .receive(on: RunLoop.main)
             .sink { _ in
-                // 👉 뷰모델에서 알아서 주소를 검색하므로 뷰컨트롤러는 카메라를 건드리지 않음!
+                // 뷰모델에서 알아서 주소를 검색하므로 뷰컨트롤러는 카메라를 건드리지 않음!
             }
             .store(in: &cancellables)
     }

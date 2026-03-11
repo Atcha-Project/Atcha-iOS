@@ -142,6 +142,7 @@ final class LockViewController: BaseViewController<LockViewModel> {
     @objc private func startTapped() {
         viewModel.cancelLockScreenTimer()
         AlarmManager.shared.stopAlarm()
+        AlarmManager.shared.removeAllAlarmNotificationsExceptAutoStop()
         
         let wrapper = UserDefaultsWrapper.shared
         let legInfo = wrapper.object(forKey: UserDefaultsWrapper.Key.legInfo.rawValue, of: LegInfo.self)
