@@ -32,7 +32,6 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
     private var isAlarmFired: Bool {
         UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue) ?? false
     }
-    private var legPolylineById: [UUID: [CLLocationCoordinate2D]] = [:]
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -253,74 +252,67 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             }
             .store(in: &cancellables)
         
-        Publishers.CombineLatest(viewModel.$legTrafficInfo, viewModel.$legtPathInfo)
-            .receive(on: DispatchQueue.global(qos: .userInitiated))
-            .sink { [weak self] trafficInfos, pathInfos in
-                guard let self else { return }
-                guard !trafficInfos.isEmpty, !pathInfos.isEmpty else { return }
-                
-                var dict: [UUID: [CLLocationCoordinate2D]] = [:]
-                
-                for (traffic, path) in zip(trafficInfos, pathInfos) {
-                    guard traffic.mode == path.mode else { continue }
-                    
-                    if let shape = path.passShape, !shape.isEmpty {
-                        dict[traffic.id] = self.convertShapeToCoords(shape)
-                        continue
-                    }
-                    
-                    if let steps = path.step, !steps.isEmpty {
-                        let merged = steps
-                            .compactMap { $0.linestring }
-                            .filter { !$0.isEmpty }
-                            .joined(separator: " ")
-                        
-                        if !merged.isEmpty {
-                            dict[traffic.id] = self.convertShapeToCoords(merged)
-                        }
-                    }
-                }
-                
-                DispatchQueue.main.async { [weak self] in
-                    self?.legPolylineById = dict
-                }
-            }
-            .store(in: &cancellables)
+        //        Publishers.CombineLatest(viewModel.$legTrafficInfo, viewModel.$legtPathInfo)
+        //            .receive(on: DispatchQueue.global(qos: .userInitiated))
+        //            .sink { [weak self] trafficInfos, pathInfos in
+        //                guard let self else { return }
+        //                guard !trafficInfos.isEmpty, !pathInfos.isEmpty else { return }
+        //
+        //                var dict: [UUID: [CLLocationCoordinate2D]] = [:]
+        //
+        //                for (traffic, path) in zip(trafficInfos, pathInfos) {
+        //                    guard traffic.mode == path.mode else { continue }
+        //
+        //                    if let shape = path.passShape, !shape.isEmpty {
+        //                        dict[traffic.id] = self.convertShapeToCoords(shape)
+        //                        continue
+        //                    }
+        //
+        //                    if let steps = path.step, !steps.isEmpty {
+        //                        let merged = steps
+        //                            .compactMap { $0.linestring }
+        //                            .filter { !$0.isEmpty }
+        //                            .joined(separator: " ")
+        //
+        //                        if !merged.isEmpty {
+        //                            dict[traffic.id] = self.convertShapeToCoords(merged)
+        //                        }
+        //                    }
+        //                }
+        //
+        //                DispatchQueue.main.async { [weak self] in
+        //                    self?.legPolylineById = dict
+        //                }
+        //            }
+        //            .store(in: &cancellables)
     }
     
     private func bindFollowLogic() {
         // 위치
         viewModel.$currentLocation
-            .compactMap { $0 }
             .receive(on: RunLoop.main)
             .sink { [weak self] coord in
                 guard let self else { return }
                 
+                guard let unwrappedCoord = coord else { return }
+                
                 // 1) 유저 마커 업데이트 (메인)
                 let isAlarmRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
-                self.mapContainerView.updateUserMarker(location: coord, isRegistered: isAlarmRegistered)
+                self.mapContainerView.updateUserMarker(location: unwrappedCoord, isRegistered: isAlarmRegistered)
                 
-                // 2) 지도 follow 로직 (메인)
-                //                if self.isAlarmFired {
-                //                    // 알람 울린 후엔 계속 따라감
-                //                    self.mapContainerView.setupZoomCenter(location: coord)
-                //                } else if self.isFollowingUser {
-                //                    // 알람 전: following 켰을 때만 따라감
-                //                    self.mapContainerView.setupZoomCenter(location: coord)
-                //                }
+                
                 if self.isFollowingUser {
-                    self.mapContainerView.setupZoomCenter(location: coord)
+                    self.mapContainerView.setupZoomCenter(location: unwrappedCoord)
                 } else if self.shouldCenterToCurrentLocationOnce {
-                    self.mapContainerView.setupZoomCenter(location: coord)
+                    self.mapContainerView.setupZoomCenter(location: unwrappedCoord)
                     self.shouldCenterToCurrentLocationOnce = false
                 }
                 // else: fit 유지 (건드리지 않음)
                 
                 // 3) 근처(150m) 지나가면 반짝임 계산 (백그라운드)
                 let threshold: CLLocationDistance = 150
-                
-                let polylines = self.legPolylineById
-                let orderedLegs = self.viewModel.legTrafficInfo   // 화면 표시 순서(위→아래)
+                let polylines = self.viewModel.legPolylineById
+                let orderedLegs = self.viewModel.legTrafficInfo
                 
                 DispatchQueue.global(qos: .userInitiated).async { [weak self] in
                     guard let self else { return }
@@ -329,7 +321,7 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
                     var nearCandidates = Set<UUID>()
                     
                     for (id, polyline) in polylines {
-                        let d = self.distanceToPolylineMeters(point: coord, polyline: polyline)
+                        let d = self.distanceToPolylineMeters(point: unwrappedCoord, polyline: polyline)
                         if d <= threshold {
                             nearCandidates.insert(id)
                         }

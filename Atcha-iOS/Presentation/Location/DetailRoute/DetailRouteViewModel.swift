@@ -8,6 +8,7 @@
 import Foundation
 import UIKit
 import CoreLocation
+import MapKit
 
 enum DetailRouteContext {
     case beforeRegister
@@ -49,6 +50,7 @@ final class DetailRouteViewModel: BaseViewModel {
     private let headingManager = HeadingManager()
     
     private let smoother = LocationSmoother(limit: 5)
+    @Published var legPolylineById: [UUID: [CLLocationCoordinate2D]] = [:]
     
     //#if DEBUG
     //@Published var mockLocation: CLLocationCoordinate2D? = nil
@@ -79,7 +81,21 @@ final class DetailRouteViewModel: BaseViewModel {
     func fetchInfo() {
         legtPathInfo = infos.pathInfo
         legTrafficInfo = infos.trafficInfo
-        print("위치: \(legtPathInfo)")
+        
+        var dict: [UUID: [CLLocationCoordinate2D]] = [:]
+        for (traffic, path) in zip(legTrafficInfo, legtPathInfo) {
+            if let shape = path.passShape, !shape.isEmpty {
+                dict[traffic.id] = self.convertShapeToCoords(shape)
+                continue
+            }
+            if let steps = path.step, !steps.isEmpty {
+                let merged = steps.compactMap { $0.linestring }.filter { !$0.isEmpty }.joined(separator: " ")
+                if !merged.isEmpty {
+                    dict[traffic.id] = self.convertShapeToCoords(merged)
+                }
+            }
+        }
+        self.legPolylineById = dict
         
         guard context == .afterReigster else { return }
         // 버스
@@ -165,6 +181,8 @@ final class DetailRouteViewModel: BaseViewModel {
                     }
                     
                     await MainActor.run { self.currentLocation = finalCoord }
+                    
+                    self.calculateProximity(coord: finalCoord)
                 }
             }
         }
@@ -192,7 +210,7 @@ final class DetailRouteViewModel: BaseViewModel {
         stopBusPolling()
         stopSubwayPolling()
     }
-
+    
     
     func setupLocation() {
         requestPermissionAndStartTracking()
@@ -315,5 +333,72 @@ extension DetailRouteViewModel {
                   let lat = Double(parts[1]) else { return nil }
             return CLLocationCoordinate2D(latitude: lat, longitude: lon)
         }
+    }
+}
+
+extension DetailRouteViewModel {
+    /// 현재 좌표를 기준으로 가장 가까운 경로를 찾아 nearLegIDs를 업데이트합니다.
+    func calculateProximity(coord: CLLocationCoordinate2D?) {
+        guard let coord = coord else { return }
+        
+        let threshold: CLLocationDistance = 150
+        let polylines = self.legPolylineById
+        let orderedLegs = self.legTrafficInfo
+        
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self else { return }
+            var nearCandidates = Set<UUID>()
+            
+            for (id, polyline) in polylines {
+                let d = self.distanceToPolylineMeters(point: coord, polyline: polyline)
+                if d <= threshold {
+                    nearCandidates.insert(id)
+                }
+            }
+            
+            var picked: Set<UUID> = []
+            if let first = orderedLegs.first(where: { nearCandidates.contains($0.id) })?.id {
+                picked = [first]
+            }
+            
+            DispatchQueue.main.async {
+                self.nearLegIDs = picked
+            }
+        }
+    }
+    
+    // 뷰컨트롤러에서 가져온 거리 계산 함수
+    private func distanceToPolylineMeters(
+        point: CLLocationCoordinate2D,
+        polyline: [CLLocationCoordinate2D]
+    ) -> CLLocationDistance {
+        guard polyline.count >= 2 else { return .greatestFiniteMagnitude }
+        
+        let p = MKMapPoint(point)
+        var best = CLLocationDistance.greatestFiniteMagnitude
+        
+        for i in 0..<(polyline.count - 1) {
+            let a = MKMapPoint(polyline[i])
+            let b = MKMapPoint(polyline[i + 1])
+            
+            let abx = b.x - a.x
+            let aby = b.y - a.y
+            let apx = p.x - a.x
+            let apy = p.y - a.y
+            
+            let ab2 = abx*abx + aby*aby
+            if ab2 == 0 {
+                best = min(best, p.distance(to: a))
+                continue
+            }
+            
+            var t = (apx*abx + apy*aby) / ab2
+            t = max(0, min(1, t))
+            
+            let closest = MKMapPoint(x: a.x + t*abx, y: a.y + t*aby)
+            best = min(best, p.distance(to: closest))
+        }
+        
+        return best
     }
 }
