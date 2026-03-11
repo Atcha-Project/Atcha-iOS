@@ -487,15 +487,11 @@ extension MainViewModel {
             
         case .courseSearch(let startLat, let startLon, _):
             
-            if lastReverseGeocode != nil {
-                routeHandler?(.courseSearch(startLat: "\(lastReverseGeocode?.lat ?? 0.0)",
-                                            startLon: "\(lastReverseGeocode?.lon ?? 0.0)",
-                                            startAddress: lastReverseGeocode?.address ?? ""))
-            } else {
-                routeHandler?(.courseSearch(startLat: startLat,
-                                            startLon: startLon,
-                                            startAddress: address ?? ""))
-            }
+            routeHandler?(.courseSearch(
+                startLat: (lastReverseGeocode?.lat).map { String($0) } ?? startLat,
+                startLon: (lastReverseGeocode?.lon).map { String($0) } ?? startLon,
+                startAddress: address ?? lastReverseGeocode?.address ?? ""
+            ))
             
         case .myPage:
             routeHandler?(.myPage)
