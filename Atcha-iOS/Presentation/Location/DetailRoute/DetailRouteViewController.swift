@@ -252,6 +252,17 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             }
             .store(in: &cancellables)
         
+        viewModel.$isRefreshing
+            .receive(on: RunLoop.main)
+            .removeDuplicates() // 상태가 실제로 바뀔 때만 실행
+            .sink { [weak self] refreshing in
+                // 데이터 로딩이 시작될 때(true) 버튼 애니메이션 실행
+                if refreshing {
+                    self?.refreshButton.start()
+                }
+            }
+            .store(in: &cancellables)
+        
         //        Publishers.CombineLatest(viewModel.$legTrafficInfo, viewModel.$legtPathInfo)
         //            .receive(on: DispatchQueue.global(qos: .userInitiated))
         //            .sink { [weak self] trafficInfos, pathInfos in
@@ -538,14 +549,14 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             viewModel.startHeading()
             lastRouteFitApplied = true // 알람 시에는 Fit 방지
             
-            // ✅ 1. 지도의 크기(제약 조건)를 여기서 먼저 결정
+            // 1. 지도의 크기(제약 조건)를 여기서 먼저 결정
             mapContainerView.snp.remakeConstraints { make in
                 make.horizontalEdges.equalToSuperview()
                 make.top.equalToSuperview()
                 make.bottom.equalToSuperview().inset(200)
             }
             
-            // ✅ 2. 좌표가 있다면 '애니메이션 없이' 즉시 현위치로 이동
+            // 2. 좌표가 있다면 '애니메이션 없이' 즉시 현위치로 이동
             if let currentCoord = viewModel.currentLocation {
                 mapContainerView.setupCenter(location: currentCoord) // setupZoomCenter 대신 setupCenter(이동만)
                 mapContainerView.setupZoomCenter(location: currentCoord) // 필요 시 줌까지

@@ -37,11 +37,9 @@ final class DetailRouteViewModel: BaseViewModel {
     @Published var busRealTimeInfos: [[RealTimeBusArrival]] = []
     private var busRoutes: [String] = []
     private var busRealTimeMap: [String: [RealTimeBusArrival]] = [:]
-    private var busPollingTask: Task<Void, Never>?
     
     @Published var subwayRealTimeInfos: [SubwayRealTimeInfo] = []
     private var subwayRoutes: [String] = []
-    private var subwayPollingTask: Task<Void, Never>?
     
     @Published private(set) var context: DetailRouteContext
     @Published var nearLegIDs: Set<UUID> = []
@@ -51,6 +49,9 @@ final class DetailRouteViewModel: BaseViewModel {
     
     private let smoother = LocationSmoother(limit: 5)
     @Published var legPolylineById: [UUID: [CLLocationCoordinate2D]] = [:]
+    
+    private var pollingTask: Task<Void, Never>?
+    @Published var isRefreshing: Bool = false
     
     //#if DEBUG
     //@Published var mockLocation: CLLocationCoordinate2D? = nil
@@ -98,40 +99,24 @@ final class DetailRouteViewModel: BaseViewModel {
         self.legPolylineById = dict
         
         guard context == .afterReigster else { return }
-        // 버스
-        let routes = infos.busInfo
-            .compactMap { $0.routeName }
-            .filter { !$0.isEmpty && $0.contains(":") }
         
-        busRoutes = Array(Set(routes)) // 중복 제거
-        busRealTimeMap.removeAll()
-        busRealTimeInfos = []
-        
-        // 최초 1회 로드
-        Task { [weak self] in
-            await self?.refreshAllBusRealTime()
-        }
-        
-        // 15초 폴링 시작
-        startBusPolling()
-        
-        let subwayRoutes = Array(Set(
-            infos.trafficInfo
-                .filter { $0.mode == .subway }
-                .compactMap { $0.route }
-                .filter { !$0.isEmpty }
-        ))
-        
-        self.subwayRoutes = subwayRoutes
-        // 여기서 removeAll 하면 첫 표시가 비었다가 생길 수 있음.
-        // "최초 진입 때만 비우고", 폴링에서는 기존 유지가 더 안정적.
-        self.subwayRealTimeInfos = []
-        
-        Task { [weak self] in
-            await self?.refreshAllSubwayRealTime()
-        }
-        startSubwayPolling()
+        setupRoutes()
+        startPolling()
     }
+    
+    private func setupRoutes() {
+            let routes = infos.busInfo
+                .compactMap { $0.routeName }
+                .filter { !$0.isEmpty && $0.contains(":") }
+            busRoutes = Array(Set(routes))
+
+            subwayRoutes = Array(Set(
+                infos.trafficInfo
+                    .filter { $0.mode == .subway }
+                    .compactMap { $0.route }
+                    .filter { !$0.isEmpty }
+            ))
+        }
     
     @MainActor
     func getBusRealTimeInfo(request: String) {
@@ -145,6 +130,55 @@ final class DetailRouteViewModel: BaseViewModel {
             }
         }
     }
+    
+    @MainActor
+        func refreshAllRealTimeData() async {
+            guard !busRoutes.isEmpty || !subwayRoutes.isEmpty else { return }
+            
+            isRefreshing = true // 애니메이션 시작 신호
+            
+            // async let을 사용하여 버스와 지하철 정보를 동시에(병렬) 요청함 (속도 최적화)
+            async let refreshBus: () = refreshAllBusRealTime()
+            async let refreshSubway: () = refreshAllSubwayRealTime()
+            
+            _ = await [refreshBus, refreshSubway]
+            
+            // 애니메이션이 시각적으로 잘 보이도록 최소 0.5초 대기 후 종료
+            try? await Task.sleep(nanoseconds: 500_000_000)
+            isRefreshing = false
+        }
+    
+    private func startPolling() {
+            stopPolling()
+            
+            pollingTask = Task { [weak self] in
+                guard let self = self else { return }
+                
+                // 1. 진입 시 최초 1회 즉시 실행
+                await self.refreshAllRealTimeData()
+                
+                while !Task.isCancelled {
+                    // 2. 15초 대기
+                    try? await Task.sleep(nanoseconds: 15_000_000_000)
+                    
+                    // 3. 루프 중간에 취소 여부 및 알람 등록 상태 재확인
+                    let isRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
+                    if !isRegistered || Task.isCancelled {
+                        self.stopPolling()
+                        break
+                    }
+
+                    // 4. 통합 데이터 새로고침 실행
+                    await self.refreshAllRealTimeData()
+                }
+            }
+        }
+
+        func stopPolling() {
+            pollingTask?.cancel()
+            pollingTask = nil
+        }
+    
     
     @MainActor
     func getSubwayRealTimeInfo(routeName: String) async {
@@ -212,8 +246,7 @@ final class DetailRouteViewModel: BaseViewModel {
     
     deinit {
         stopTracking()
-        stopBusPolling()
-        stopSubwayPolling()
+        stopPolling()
     }
     
     
@@ -238,32 +271,7 @@ final class DetailRouteViewModel: BaseViewModel {
         }
     }
     
-    private func startBusPolling() {
-        stopBusPolling()
-        
-        busPollingTask = Task { [weak self] in
-            guard let self else { return }
-            
-            while !Task.isCancelled {
-                let isRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
-                if !isRegistered {
-                    print("알람 등록 해제 감지: 버스 폴링 중단")
-                    self.stopBusPolling()
-                    break
-                }
-                
-                try? await Task.sleep(nanoseconds: 15_000_000_000)
-                if Task.isCancelled { break }
-                await self.refreshAllBusRealTime()
-            }
-        }
-    }
-    
-    private func stopBusPolling() {
-        busPollingTask?.cancel()
-        busPollingTask = nil
-    }
-    
+
     @MainActor
     private func refreshAllBusRealTime() async {
         guard !busRoutes.isEmpty else { return }
@@ -282,34 +290,6 @@ final class DetailRouteViewModel: BaseViewModel {
     }
     
     // MARK: - Subway Polling
-    
-    private func startSubwayPolling() {
-        stopSubwayPolling()
-        
-        subwayPollingTask = Task { [weak self] in
-            guard let self else { return }
-            
-            while !Task.isCancelled {
-                // 추가: 알람 등록 상태 확인
-                let isRegistered = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
-                if !isRegistered {
-                    print("알람 등록 해제 감지: 지하철 폴링 중단")
-                    self.stopSubwayPolling()
-                    break
-                }
-                
-                try? await Task.sleep(nanoseconds: 15_000_000_000)
-                if Task.isCancelled { break }
-                await self.refreshAllSubwayRealTime()
-            }
-        }
-    }
-    
-    private func stopSubwayPolling() {
-        subwayPollingTask?.cancel()
-        subwayPollingTask = nil
-    }
-    
     @MainActor
     private func refreshAllSubwayRealTime() async {
         guard !subwayRoutes.isEmpty else { return }
