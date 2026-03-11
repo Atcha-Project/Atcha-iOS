@@ -180,7 +180,12 @@ final class DetailRouteViewModel: BaseViewModel {
                         finalCoord = smoother.snap(current: smoothedCoord, polyline: allCoords)
                     }
                     
-                    await MainActor.run { self.currentLocation = finalCoord }
+                    let capturedCoord = finalCoord
+                    
+                    await MainActor.run {
+                        self.currentLocation = capturedCoord
+                        HomeArrivalManager.shared.checkHomeArrival(currentCoord: capturedCoord)
+                    }
                     
                     self.calculateProximity(coord: finalCoord)
                 }

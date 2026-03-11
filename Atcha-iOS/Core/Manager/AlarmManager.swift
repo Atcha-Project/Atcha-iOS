@@ -33,6 +33,7 @@ final class AlarmManager {
     private var shouldKeepBackgroundAudio = false
     private var isPreviewing = false
     private var hapticEngine: CHHapticEngine?
+    private var autoStopWorkItem: DispatchWorkItem?
     
     // MARK: - Init
     private init() {
@@ -71,6 +72,8 @@ final class AlarmManager {
     /// 서버에서 받은 출발 시각 기준으로 1분 전에 반복 푸시/사운드/진동을 시작
     func startAlarm(title: String, body: String) {
         // 기존 알람 상태만 정리 (silent는 유지 or 다시 켜기)
+        autoStopWorkItem?.cancel()
+        autoStopWorkItem = nil
         stopAlarm(keepSilent: true)
         ensureBackgroundSilentRunning()
         applySavedVolumeForAlarmStart()
@@ -121,6 +124,7 @@ final class AlarmManager {
         }
         
         print("알람 종료 (keepSilent = \(keepSilent))")
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [AlarmNotificationID.autoStopInfo])
     }
     
     func alarmInit() {
@@ -220,13 +224,19 @@ extension AlarmManager {
                 
                 self.sendImmediateLocalPush(title: title, body: body)
             }
+        
+        scheduleAutoStop()
     }
     
-    func sendImmediateLocalPush(title: String, body: String) {
+    func sendImmediateLocalPush(title: String, body: String, playSound: Bool = false) {
         let content = UNMutableNotificationContent()
         content.title = title
         content.body = body
-        content.sound = nil // 사운드는 직접 재생 중
+        if playSound {
+            content.sound = .default
+        } else {
+            content.sound = nil
+        }
         
         let request = UNNotificationRequest(
             identifier: UUID().uuidString,
@@ -591,5 +601,37 @@ extension AlarmManager {
         }
         
         print("미리듣기 종료 (keep=\(shouldKeepBackgroundAudio))")
+    }
+}
+
+extension AlarmManager {
+    private func scheduleAutoStop() {
+        autoStopWorkItem?.cancel()
+        
+        let content = UNMutableNotificationContent()
+        content.title = "출발 알람이 자동 종료되었어요"
+        content.body = "클릭해서 경로 재탐색하기"
+        content.sound = .default
+        
+        let request = UNNotificationRequest(
+            identifier: AlarmNotificationID.autoStopInfo,
+            content: content,
+            trigger: UNTimeIntervalNotificationTrigger(timeInterval: 120.0, repeats: false)
+        )
+        UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
+        
+        // 2. 앱 내부의 정지 로직 및 팝업 신호 (포그라운드일 때 즉시, 백그라운드면 켜질 때 실행됨)
+        let workItem = DispatchWorkItem { [weak self] in
+            guard let self = self else { return }
+            
+            // 음악/진동 정지
+            self.stopAlarm(keepSilent: false) // 아예 무음까지 끄기
+            
+            // 메인 뷰에 타임아웃 팝업 띄우라고 신호
+            NotificationCenter.default.post(name: NSNotification.Name("alarmDidTimeout"), object: nil)
+        }
+        
+        autoStopWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 120.0, execute: workItem)
     }
 }

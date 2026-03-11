@@ -316,6 +316,8 @@ extension MainViewController {
         bindDeviceHeadingUpdates()
         bindPermissionAlert()
         bindAlarmFireStatus()
+        observeArrival()
+        observeAlarmTimeout()
     }
     
     private func bindPermissionAlert() {
@@ -682,6 +684,12 @@ extension MainViewController {
                 self.exitButtonTapped()
                 
                 guard self.presentedViewController == nil else { return }
+                
+                AlarmManager.shared.sendImmediateLocalPush(
+                    title: "출발 알람이 자동 종료되었어요",
+                    body: "클릭해서 경로 재탐색하기"
+                )
+                
                 self.showAlarmTimeoutPopup()
                 self.viewModel.showAlarmStopPopUpView = false
             }
@@ -1418,3 +1426,64 @@ extension MainViewController {
     }
 }
 
+// MARK: - 도착 자동 종료 처리
+extension MainViewController {
+    private func observeArrival() {
+        NotificationCenter.default.publisher(for: NSNotification.Name("userArrivedHome"))
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+                
+                // 1. 사용자가 다른 화면(상세 경로 등)에 있다면 무조건 메인으로 강제 이동
+                self.navigationController?.popToRootViewController(animated: true)
+                
+                // 2. 백그라운드에서 즉시 알람 종료 통신 및 지도/UI 초기화 실행
+                self.viewModel.alarmDelete()
+                self.exitButtonTapped()
+                
+                // 3. 안내용 팝업 띄우기 (화면 이동이 끝난 0.3초 뒤에 띄워서 자연스럽게)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    self.showArrivalPopup()
+                }
+            }
+            .store(in: &cancellables)
+    }
+    
+    private func showArrivalPopup() {
+        // 이미 팝업이 떠 있다면 무시 (중복 방지)
+        if presentedViewController is AtchaPopupViewController { return }
+        
+        let popupVM = AtchaPopupViewModel(info: .arrive)
+        let popupVC = AtchaPopupViewController(viewModel: popupVM)
+        
+        popupVC.modalPresentationStyle = .overFullScreen
+        popupVC.modalTransitionStyle = .crossDissolve // 부드럽게 나타나고 사라짐
+        
+        popupVC.confirmButton.addAction(UIAction { [weak popupVC] _ in
+            popupVC?.dismiss(animated: false)
+            // 팝업을 닫을 때 다음 알람을 위해 매니저 초기화
+            HomeArrivalManager.shared.reset()
+        }, for: .touchUpInside)
+        
+        self.present(popupVC, animated: false)
+    }
+    
+    private func observeAlarmTimeout() {
+        NotificationCenter.default.publisher(for: NSNotification.Name("alarmDidTimeout"))
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+                
+                // 1. 무조건 메인으로 강제 이동
+                self.navigationController?.popToRootViewController(animated: true)
+                
+                // 2. 백그라운드 취소 로직
+                self.viewModel.alarmDelete()
+                self.exitButtonTapped()
+                
+                // 3. 타임아웃 팝업 띄우기
+                self.showAlarmTimeoutPopup()
+            }
+            .store(in: &cancellables)
+    }
+}

@@ -56,7 +56,7 @@ final class MainViewModel: BaseViewModel{
     
     @Published var showLocationDeniedAlert: Bool = false
     @Published var isGuest: Bool = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.isGuest.rawValue) ?? false
-    
+    private var didSendInitialLocation = false
     private let smoother = LocationSmoother(limit: 5)
     
     init(authorizationUseCase: RequestLocationAuthorizationUseCase,
@@ -227,7 +227,6 @@ final class MainViewModel: BaseViewModel{
             self.startHeading()
             
             streamTask = Task {
-                var didSendInitialLocation = false
                 for await location in streamUseCase.startUpdate() {
                     // 정확도 필터링 (너무 튀는 값 제거)
                     guard location.horizontalAccuracy < 150 else { continue }
@@ -247,12 +246,15 @@ final class MainViewModel: BaseViewModel{
                         }
                     }
                     
+                    let capturedCoord = finalCoord
+                    
                     await MainActor.run {
-                        self.currentLocation = finalCoord
+                        self.currentLocation = capturedCoord
                         if !didSendInitialLocation {
-                            self.selectedLocation = finalCoord
+                            self.selectedLocation = capturedCoord
                             didSendInitialLocation = true
                         }
+                        HomeArrivalManager.shared.checkHomeArrival(currentCoord: capturedCoord)
                     }
                 }
             }
@@ -397,7 +399,7 @@ extension MainViewModel {
                 showLockView = true
                 AlarmManager.shared.startAlarm(title: "눌러서 출발 알람 끄기",
                                                body: "자리에서 일어나야 할 시간이에요!")
-                startAlarmTimeoutTimer()
+//                startAlarmTimeoutTimer()
                 stopAlarmTimer()
             } else {
                 print("미래")
@@ -606,27 +608,27 @@ extension MainViewModel {
 
 // MARK: - 2분 타임아웃
 extension MainViewModel {
-    private func startAlarmTimeoutTimer() {
-        alarmTimeoutCancellable?.cancel()
-        
-        let task = Task { [weak self] in
-            guard let self else { return }
-            
-            do {
-                try await Task.sleep(nanoseconds: 120 * 1_000_000_000)
-            } catch {
-                return
-            }
-            
-            guard !Task.isCancelled else { return }
-            
-            await MainActor.run {
-                self.routeHandler?(.dismissLockScreen)
-            }
-        }
-        
-        alarmTimeoutCancellable = AnyCancellable { task.cancel() }
-    }
+//    private func startAlarmTimeoutTimer() {
+//        alarmTimeoutCancellable?.cancel()
+//        
+//        let task = Task { [weak self] in
+//            guard let self else { return }
+//            
+//            do {
+//                try await Task.sleep(nanoseconds: 120 * 1_000_000_000)
+//            } catch {
+//                return
+//            }
+//            
+//            guard !Task.isCancelled else { return }
+//            
+//            await MainActor.run {
+//                self.routeHandler?(.dismissLockScreen)
+//            }
+//        }
+//        
+//        alarmTimeoutCancellable = AnyCancellable { task.cancel() }
+//    }
     
     func stopAlarmTimeoutTimer() {
         alarmTimeoutCancellable?.cancel()

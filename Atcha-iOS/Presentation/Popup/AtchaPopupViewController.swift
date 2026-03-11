@@ -81,7 +81,7 @@ final class AtchaPopupViewController: BaseViewController<AtchaPopupViewModel> {
         confirmButton.backgroundColor = info.confrimBackgroundColor
         
         // alarmTimeout에서는 cancel이 없으니, cancel 세팅은 조건부로
-        if info != .alarmTimeout {
+        if info != .alarmTimeout || info != .arrive {
             let cancelAttr = AtchaFont.B5_SB_14(info.cancelTitle, color: info.cancelForegroundColor)
             cancelButton.setAttributedTitle(cancelAttr, for: .normal)
             cancelButton.backgroundColor = info.cancelBackgroundColor
