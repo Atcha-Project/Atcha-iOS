@@ -485,15 +485,18 @@ extension MainViewModel {
                 address: lastReverseGeocode?.address,
                 radius: lastReverseGeocode?.radius)))
             
-        case .courseSearch:
-            guard let currentLocation else { return }
-            let lat: String = "\(currentLocation.latitude)"
-            let lon: String = "\(currentLocation.longitude)"
-            let address: String = address ?? ""
+        case .courseSearch(let startLat, let startLon, _):
             
-            routeHandler?(.courseSearch(startLat: lat,
-                                        startLon: lon,
-                                        startAddress: address))
+            if lastReverseGeocode != nil {
+                routeHandler?(.courseSearch(startLat: "\(lastReverseGeocode?.lat ?? 0.0)",
+                                            startLon: "\(lastReverseGeocode?.lon ?? 0.0)",
+                                            startAddress: lastReverseGeocode?.address ?? ""))
+            } else {
+                routeHandler?(.courseSearch(startLat: startLat,
+                                            startLon: startLon,
+                                            startAddress: address ?? ""))
+            }
+            
         case .myPage:
             routeHandler?(.myPage)
             

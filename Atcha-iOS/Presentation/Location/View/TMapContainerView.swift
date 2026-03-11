@@ -11,7 +11,7 @@ import TMapSDK
 import SnapKit
 
 final class TMapContainerView: UIView {
-    private var tMapWrapper: TMapWrapper!
+    var tMapWrapper: TMapWrapper!
     var gestureTargetView: UIView { tMapWrapper.mapView }
     
     var onUserInteraction: (() -> Void)?
