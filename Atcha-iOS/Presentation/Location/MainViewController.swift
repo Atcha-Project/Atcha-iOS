@@ -509,9 +509,14 @@ extension MainViewController {
         mapContainerView.clearMapView()
         mapContainerView.beforeUserMarker()
         
-        if let coord = viewModel.selectedLocation ?? viewModel.currentLocation {
-            mapContainerView.setupCenter(location: coord)
+        if let currentCoord = viewModel.currentLocation {
+            // 현재 좌표가 있다면 즉시 이동
+            mapContainerView.setupCenter(location: currentCoord)
+            viewModel.selectedLocation = currentCoord // 주소 검색 결과도 현위치로 갱신
+            shouldCenterToCurrentLocationOnce = false
         } else {
+            // 아직 좌표가 없다면, 다음 위치 업데이트 시점에 이동하도록 예약
+            shouldCenterToCurrentLocationOnce = true
             viewModel.setupLocation()
         }
         
