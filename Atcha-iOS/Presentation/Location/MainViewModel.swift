@@ -608,30 +608,7 @@ extension MainViewModel {
     }
 }
 
-// MARK: - 2분 타임아웃
 extension MainViewModel {
-//    private func startAlarmTimeoutTimer() {
-//        alarmTimeoutCancellable?.cancel()
-//        
-//        let task = Task { [weak self] in
-//            guard let self else { return }
-//            
-//            do {
-//                try await Task.sleep(nanoseconds: 120 * 1_000_000_000)
-//            } catch {
-//                return
-//            }
-//            
-//            guard !Task.isCancelled else { return }
-//            
-//            await MainActor.run {
-//                self.routeHandler?(.dismissLockScreen)
-//            }
-//        }
-//        
-//        alarmTimeoutCancellable = AnyCancellable { task.cancel() }
-//    }
-    
     func stopAlarmTimeoutTimer() {
         alarmTimeoutCancellable?.cancel()
         alarmTimeoutCancellable = nil

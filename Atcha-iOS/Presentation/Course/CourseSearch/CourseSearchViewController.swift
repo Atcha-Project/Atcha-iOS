@@ -284,16 +284,6 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
     }
     
     // MARK: - Course Snapshot 갱신
-//    private func applySnapshot(courses: [CourseUIModel]) {
-//        var snapshot = Snapshot()
-//        
-//        snapshot.appendSections([.courseList])
-//        if !courses.isEmpty {
-//            snapshot.appendItems(courses, toSection: .courseList)
-//        }
-//        
-//        dataSource.apply(snapshot, animatingDifferences: true)
-//    }
     private func applySnapshot(courses: [CourseUIModel]) {
         // 1. 지금 들어온 데이터 중 1등(가장 늦은 막차)이 누구인지 확인
         let currentLatestId = viewModel.latestDepartureCourseId(in: courses)
