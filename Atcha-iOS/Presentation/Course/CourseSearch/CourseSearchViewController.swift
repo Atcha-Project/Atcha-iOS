@@ -65,6 +65,7 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
     private let noSearchStack: UIStackView = UIStackView()
     private let noSearchImageView: UIImageView = UIImageView()
     private let noSearchLabel: UILabel = UILabel()
+    private var previousLatestId: String?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -283,14 +284,48 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
     }
     
     // MARK: - Course Snapshot 갱신
+//    private func applySnapshot(courses: [CourseUIModel]) {
+//        var snapshot = Snapshot()
+//        
+//        snapshot.appendSections([.courseList])
+//        if !courses.isEmpty {
+//            snapshot.appendItems(courses, toSection: .courseList)
+//        }
+//        
+//        dataSource.apply(snapshot, animatingDifferences: true)
+//    }
     private func applySnapshot(courses: [CourseUIModel]) {
-        var snapshot = Snapshot()
+        // 1. 지금 들어온 데이터 중 1등(가장 늦은 막차)이 누구인지 확인
+        let currentLatestId = viewModel.latestDepartureCourseId(in: courses)
         
+        var snapshot = Snapshot()
         snapshot.appendSections([.courseList])
-        if !courses.isEmpty {
-            snapshot.appendItems(courses, toSection: .courseList)
+        snapshot.appendItems(courses, toSection: .courseList)
+        
+        // 2. 만약 1등이 바뀌었다면? (예: 원래 A였는데 더 늦은 B가 들어옴)
+        if let lastId = previousLatestId, lastId != currentLatestId {
+            
+            // [중요] 모든 셀이 아니라, 딱 '이전 1등'과 '현재 1등'만 다시 그리라고 명령합니다.
+            var itemsToUpdate: [CourseUIModel] = []
+            
+            // 이전 1등이었던 셀 (이제 배지를 떼야 함)
+            if let oldItem = courses.first(where: { $0.id == lastId }) {
+                itemsToUpdate.append(oldItem)
+            }
+            // 새로운 1등인 셀 (이제 배지를 달아야 함)
+            if let newItem = courses.first(where: { $0.id == currentLatestId }) {
+                itemsToUpdate.append(newItem)
+            }
+            
+            if #available(iOS 15.0, *), !itemsToUpdate.isEmpty {
+                snapshot.reconfigureItems(itemsToUpdate)
+            }
         }
         
+        // 3. 상태 저장 및 스냅샷 적용
+        previousLatestId = currentLatestId
+        
+        // animatingDifferences를 true로 두면 1 ( ) 2 사이에 부드럽게 slide-in 됩니다.
         dataSource.apply(snapshot, animatingDifferences: true)
     }
     
