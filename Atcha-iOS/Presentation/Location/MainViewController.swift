@@ -475,7 +475,7 @@ extension MainViewController {
         let popupVC = AtchaPopupViewController(viewModel: popupVM)
         
         popupVC.cancelButton.addAction(UIAction { [weak popupVC] _ in
-            popupVC?.dismiss(animated: true)
+            popupVC?.dismiss(animated: false)
         }, for: .touchUpInside)
         
         popupVC.confirmButton.addAction(UIAction { [weak self, weak popupVC] _ in
