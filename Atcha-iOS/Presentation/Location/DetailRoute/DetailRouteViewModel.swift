@@ -48,11 +48,12 @@ final class DetailRouteViewModel: BaseViewModel {
     @Published var deviceHeading: CLLocationDirection?
     private let headingManager = HeadingManager()
     
-
-//#if DEBUG
-//@Published var mockLocation: CLLocationCoordinate2D? = nil
-//#endif
-
+    private let smoother = LocationSmoother(limit: 5)
+    
+    //#if DEBUG
+    //@Published var mockLocation: CLLocationCoordinate2D? = nil
+    //#endif
+    
     init(address: String,
          infos: LegInfo,
          context: DetailRouteContext,
@@ -141,74 +142,57 @@ final class DetailRouteViewModel: BaseViewModel {
     }
     
     func requestPermissionAndStartTracking() {
-            Task {
-                let status = await authorizationUseCase.askLocationPermission()
-                guard status == .authorizedAlways || status == .authorizedWhenInUse else { return }
-
-                streamTask?.cancel()
-                streamTask = Task {
-                    for await location in streamUseCase.startUpdate() {
-                        let coord = CLLocationCoordinate2D(
-                            latitude: location.coordinate.latitude,
-                            longitude: location.coordinate.longitude
-                        )
-                        await MainActor.run { self.currentLocation = coord }
+        Task {
+            let status = await authorizationUseCase.askLocationPermission()
+            guard status == .authorizedAlways || status == .authorizedWhenInUse else { return }
+            
+            streamTask?.cancel()
+            streamTask = Task {
+                for await location in streamUseCase.startUpdate() {
+                    guard location.horizontalAccuracy < 150 else { continue }
+                    
+                    // 항상 Smoothing 적용
+                    let smoothedCoord = smoother.smooth(location.coordinate)
+                    
+                    var finalCoord = smoothedCoord
+                    
+                    // 알람이 울린 상태라면 스냅 적용
+                    let isAlarmFired = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue) ?? false
+                    
+                    if isAlarmFired && !legtPathInfo.isEmpty {
+                        let allCoords = legtPathInfo.flatMap { convertShapeToCoords($0.passShape ?? "") }
+                        finalCoord = smoother.snap(current: smoothedCoord, polyline: allCoords)
                     }
+                    
+                    await MainActor.run { self.currentLocation = finalCoord }
                 }
             }
         }
+    }
     
     func startHeading() {
-            headingManager.onHeading = { [weak self] h in
-                DispatchQueue.main.async { self?.deviceHeading = h }
-            }
-            headingManager.start()
+        headingManager.onHeading = { [weak self] h in
+            DispatchQueue.main.async { self?.deviceHeading = h }
         }
-
-        func stopHeading() {
-            headingManager.stop()
-        }
-
-        func stopTracking() {
-            streamTask?.cancel()
-            streamUseCase.stopUpdate()
-            headingManager.stop()
-        }
-
-        deinit {
-            stopTracking()
-            stopBusPolling()
-            stopSubwayPolling()
-        }
+        headingManager.start()
+    }
     
-//    func requestPermissionAndStartTracking() {
-//        Task {
-//            let status = await authorizationUseCase.askLocationPermission()
-//            guard status == .authorizedAlways || status == .authorizedWhenInUse else { return }
-//
-//            streamTask = Task { [weak self] in
-//                guard let self else { return }
-//
-//                for await location in streamUseCase.startUpdate() {
-//                    let real = CLLocationCoordinate2D(
-//                        latitude: location.coordinate.latitude,
-//                        longitude: location.coordinate.longitude
-//                    )
-//
-//                    #if DEBUG
-//                    // ✅ 디버그에선 mock 있으면 그걸로 덮어씀
-//                    if let mock = self.mockLocation {
-//                        self.currentLocation = mock
-//                    } else {
-//                        self.currentLocation = real
-//                    }
-//                    #else
-//                    self.currentLocation = real
-//                    #endif
-//                }
-//            }
-//        }
-//    }
+    func stopHeading() {
+        headingManager.stop()
+    }
+    
+    func stopTracking() {
+        streamTask?.cancel()
+        streamUseCase.stopUpdate()
+        headingManager.stop()
+    }
+    
+    deinit {
+        stopTracking()
+        stopBusPolling()
+        stopSubwayPolling()
+    }
+
     
     func setupLocation() {
         requestPermissionAndStartTracking()
@@ -318,6 +302,18 @@ final class DetailRouteViewModel: BaseViewModel {
                 // 실패 시 기존 유지
                 print("실시간 지하철 조회 실패: \(route), \(error)")
             }
+        }
+    }
+}
+
+extension DetailRouteViewModel {
+    private func convertShapeToCoords(_ shape: String) -> [CLLocationCoordinate2D] {
+        shape.split(separator: " ").compactMap { pair in
+            let parts = pair.split(separator: ",")
+            guard parts.count == 2,
+                  let lon = Double(parts[0]),
+                  let lat = Double(parts[1]) else { return nil }
+            return CLLocationCoordinate2D(latitude: lat, longitude: lon)
         }
     }
 }
