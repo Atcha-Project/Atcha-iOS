@@ -361,6 +361,8 @@ extension MainViewController {
             .sink { [weak self] isFired in
                 guard let self = self else { return }
                 
+                self.lastTrainDepartView.updateUIForAlarmStatus(isFired: isFired)
+                
                 if isFired {
                     // 1. 추적 플래그 ON
                     self.isFollowingUser = true
