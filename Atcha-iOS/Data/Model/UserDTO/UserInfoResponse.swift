@@ -16,7 +16,6 @@ struct UserInfoResponse: Codable {
     let address: String?
     let latitude: Double?
     let longitude: Double?
-    let alarmFrequent: [Int?]
     let appVersion: String
     
     enum CodingKeys: String, CodingKey {
@@ -27,7 +26,6 @@ struct UserInfoResponse: Codable {
         case address
         case latitude = "lat"
         case longitude = "lon"
-        case alarmFrequent = "alertFrequencies"
         case appVersion
     }
 }
@@ -41,6 +39,6 @@ extension UserInfoResponse {
                         providerId: providerId,
                         address: address,
                         coordinate: coordinate,
-                        alarmFrequent: alarmFrequent, appVersion: appVersion)
+                        appVersion: appVersion)
     }
 }
