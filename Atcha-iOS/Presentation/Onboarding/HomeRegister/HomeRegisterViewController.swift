@@ -10,15 +10,9 @@ import SnapKit
 import CoreLocation
 
 final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel> {
-    var onBackTapped: (() -> Void)?
-    
     private lazy var navigationBar: TitleNavigationBar = AtchaNavigationBar.title("우리집 설정", shouldShowCloseButton: false, onBack: { [weak self] in
         guard let self else { return }
-        if self.viewModel.context == .home {
-            self.onBackTapped?()
-        } else {
-            self.navigationController?.popViewController(animated: true)
-        }
+        self.navigationController?.popViewController(animated: true)
     })
     private let titleLabel = UILabel()
     
@@ -45,15 +39,8 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
         //            viewModel.requestAuth()
         //        }
         
-        navigationController?.interactivePopGestureRecognizer?.isEnabled = false
         AmplitudeManager.shared.trackScreen(.home_register)
     }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-            super.viewWillDisappear(animated)
-            
-            navigationController?.interactivePopGestureRecognizer?.isEnabled = true
-        }
     
     // MARK: - ViewModel 바인딩
     private func bindViewModel() {

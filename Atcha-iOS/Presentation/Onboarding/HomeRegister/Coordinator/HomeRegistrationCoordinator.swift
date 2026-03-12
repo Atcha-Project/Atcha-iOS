@@ -13,8 +13,7 @@ final class HomeRegistrationCoordinator {
     private let navigationController: UINavigationController
     private let diContainer: HomeRegisterDIContainer // 전용 컨테이너로 교체
     private var cancellables = Set<AnyCancellable>()
-    
-    var onFinish: (() -> Void)?
+
     
     init(navigationController: UINavigationController,
          diContainer: HomeRegisterDIContainer) {
@@ -31,13 +30,6 @@ final class HomeRegistrationCoordinator {
         }
         
         let viewController = diContainer.makeHomeRegisterViewController(viewModel: viewModel)
-        
-        // Root인 이 화면에서 뒤로갈 때만 코디네이터 종료 알림
-        viewController.onBackTapped = { [weak self] in
-            guard let self = self else { return }
-            self.navigationController.popViewController(animated: true)
-            self.onFinish?()
-        }
         
         navigationController.pushViewController(viewController, animated: true)
     }

@@ -201,6 +201,8 @@ final class MainViewController: BaseViewController<MainViewModel>,
             }
         }
         
+        self.viewModel.refreshCurrentMapCenterData()
+        
         AmplitudeManager.shared.trackScreen(.main)
     }
     
