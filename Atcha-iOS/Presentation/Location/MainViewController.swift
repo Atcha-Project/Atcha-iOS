@@ -388,6 +388,12 @@ extension MainViewController {
     
     private func handleSearchViewAction(_ action: LastTrainSearchBottomView.Action) {
         switch action {
+        case .homeChangeTapped:
+            if viewModel.isGuest {
+                presentLoginAlert()
+            } else {
+                viewModel.handleRoute(route: .changeHome)
+            }
         case .currentTapped:
             if viewModel.isGuest {
                 presentLoginAlert()

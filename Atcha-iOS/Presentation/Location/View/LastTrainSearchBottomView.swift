@@ -12,6 +12,7 @@ final class LastTrainSearchBottomView: UIView {
     enum Action {
         case currentTapped
         case searchTapped
+        case homeChangeTapped
     }
     
     let actionPublisher = PassthroughSubject<Action, Never>()
@@ -141,7 +142,8 @@ extension LastTrainSearchBottomView {
     @objc private func handleSearchTap() {
         actionPublisher.send(.searchTapped)
     }
-    
+
     @objc private func handleDestinationTap() {
+        actionPublisher.send(.homeChangeTapped)
     }
 }

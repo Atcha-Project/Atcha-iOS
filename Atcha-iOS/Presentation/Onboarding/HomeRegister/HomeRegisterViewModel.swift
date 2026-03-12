@@ -11,6 +11,7 @@ import CoreLocation
 enum HomeRegisterContext {
     case onboarding
     case myPage
+    case home
 }
 
 enum LocationSelectionState {

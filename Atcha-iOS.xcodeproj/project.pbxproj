@@ -153,6 +153,7 @@
 		6DC3BF682E0721F300831470 /* LoginDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DC3BF672E0721F300831470 /* LoginDTO.swift */; };
 		6DC617A72F60EB1A002DD641 /* LocationSmoother.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DC617A62F60EB1A002DD641 /* LocationSmoother.swift */; };
 		6DC617A92F610238002DD641 /* HomeArrivalManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DC617A82F610238002DD641 /* HomeArrivalManager.swift */; };
+		6DC617AD2F62EB59002DD641 /* HomeRegistrationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DC617AC2F62EB59002DD641 /* HomeRegistrationCoordinator.swift */; };
 		6DD632B12E4F8A9F00C6A66E /* CheckServiceRegionRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DD632B02E4F8A9F00C6A66E /* CheckServiceRegionRequest.swift */; };
 		6DD632B62E52E23A00C6A66E /* ProximityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DD632B52E52E23A00C6A66E /* ProximityManager.swift */; };
 		6DD632B92E52E8E300C6A66E /* ProximityViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DD632B82E52E8E300C6A66E /* ProximityViewController.swift */; };
@@ -476,6 +477,7 @@
 		6DC3BF672E0721F300831470 /* LoginDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginDTO.swift; sourceTree = "<group>"; };
 		6DC617A62F60EB1A002DD641 /* LocationSmoother.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationSmoother.swift; sourceTree = "<group>"; };
 		6DC617A82F610238002DD641 /* HomeArrivalManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeArrivalManager.swift; sourceTree = "<group>"; };
+		6DC617AC2F62EB59002DD641 /* HomeRegistrationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeRegistrationCoordinator.swift; sourceTree = "<group>"; };
 		6DD632B02E4F8A9F00C6A66E /* CheckServiceRegionRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckServiceRegionRequest.swift; sourceTree = "<group>"; };
 		6DD632B52E52E23A00C6A66E /* ProximityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProximityManager.swift; sourceTree = "<group>"; };
 		6DD632B82E52E8E300C6A66E /* ProximityViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProximityViewController.swift; sourceTree = "<group>"; };
@@ -691,6 +693,7 @@
 		6D1EE2D62E08E4AB00F7BBF1 /* HomeRegister */ = {
 			isa = PBXGroup;
 			children = (
+				6DC617AB2F62EB4B002DD641 /* Coordinator */,
 				6D1EE2D92E08E4E000F7BBF1 /* HomeRegisterViewController.swift */,
 				6D1EE2DB2E08E4EA00F7BBF1 /* HomeRegisterViewModel.swift */,
 			);
@@ -1113,6 +1116,21 @@
 			path = Login;
 			sourceTree = "<group>";
 		};
+		6DC617AA2F62E931002DD641 /* ChangeHome */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = ChangeHome;
+			sourceTree = "<group>";
+		};
+		6DC617AB2F62EB4B002DD641 /* Coordinator */ = {
+			isa = PBXGroup;
+			children = (
+				6DC617AC2F62EB59002DD641 /* HomeRegistrationCoordinator.swift */,
+			);
+			path = Coordinator;
+			sourceTree = "<group>";
+		};
 		6DD632AE2E4F8A6600C6A66E /* SearchLocation */ = {
 			isa = PBXGroup;
 			children = (
@@ -1311,6 +1329,7 @@
 		B65C12D82E042A320016D2F0 /* DIContainer */ = {
 			isa = PBXGroup;
 			children = (
+				6DC617AA2F62E931002DD641 /* ChangeHome */,
 				6D61ABE62F57174500111C9B /* Intro */,
 				B61C44962E40340C00285A4B /* LockScreen */,
 				6D2B8CB62E39C87F00608104 /* BusInfo */,
@@ -2150,6 +2169,7 @@
 				6DB7636D2E45C69400D06A49 /* AlarmRepository.swift in Sources */,
 				6DB7636F2E45C6D100D06A49 /* AlarmRepositoryImpl.swift in Sources */,
 				B65C12E22E042D400016D2F0 /* FetchUserUseCase.swift in Sources */,
+				6DC617AD2F62EB59002DD641 /* HomeRegistrationCoordinator.swift in Sources */,
 				B6EDD73C2E0D87F2006170DF /* FileStorageImpl.swift in Sources */,
 				B6793D4B2E3493D6001BE9F5 /* AtcahaInsetLabel.swift in Sources */,
 				6D2B8CB52E39AC7200608104 /* BusPositionInfoResponse.swift in Sources */,

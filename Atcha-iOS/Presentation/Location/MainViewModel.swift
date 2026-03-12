@@ -478,6 +478,8 @@ extension MainViewModel {
 extension MainViewModel {
     func handleRoute(route: MainRoute) {
         switch route {
+        case .changeHome:
+            routeHandler?(.changeHome)
         case .changeCourse:
             routeHandler?(.changeCourse(location: Location(
                 name: lastReverseGeocode?.name,

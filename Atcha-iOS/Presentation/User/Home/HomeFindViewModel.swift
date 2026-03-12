@@ -79,7 +79,7 @@ final class HomeFindViewModel: BaseViewModel {
         case .onboarding:
             saveCurrentLoaction()
             signUp()
-        case .myPage:
+        case .myPage, .home:
             guard let currentLocation,
                   let address else {
                 print("집주소 변경 불가: 값 없음")

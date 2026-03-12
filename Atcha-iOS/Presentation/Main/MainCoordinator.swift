@@ -15,6 +15,7 @@ final class MainCoordinator {
     private var myPageCoordinator: MyPageCoordinator?
     private var busDetailCoordinator: BusDetailCoordinator?
     private var loginCoordinator: LoginCoordinator?
+    private var homeRegisterCoordinator: HomeRegistrationCoordinator?
     
     private var mainViewModel: MainViewModel?
     
@@ -53,6 +54,17 @@ final class MainCoordinator {
     
     private func handle(route: MainRoute) {
         switch route {
+        case .changeHome:
+            let homeDI = diContainer.makeHomeRegisterDIContainer()
+            let coordinator = HomeRegistrationCoordinator(navigationController: navigationController, diContainer: homeDI)
+            
+            self.homeRegisterCoordinator = coordinator // 강한 참조 유지
+            coordinator.onFinish = { [weak self] in
+                self?.homeRegisterCoordinator = nil // 여기서 해제
+                self?.mainViewModel?.refreshCurrentMapCenterData() // 집 위치 바뀌었으니 메인 갱신
+            }
+            coordinator.start()
+            
         case .myPage:
             let myPageDI = diContainer.makeMyPageDIContainer()
             let myPageCoordinator = MyPageCoordinator(
