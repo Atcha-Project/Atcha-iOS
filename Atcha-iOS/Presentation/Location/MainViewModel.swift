@@ -95,7 +95,10 @@ final class MainViewModel: BaseViewModel{
             .debounce(for: .seconds(0.3), scheduler: RunLoop.main)
             .sink { [weak self] loc in
                 guard let self = self else { return }
-                Task { await self.updateAddressOnly(for: loc) }
+                Task {
+                    await self.updateAddressOnly(for: loc)
+                    await self.refreshRegionAndFareForCurrentAddress()
+                }
             }
             .store(in: &cancellables)
         $isGuest
@@ -106,13 +109,13 @@ final class MainViewModel: BaseViewModel{
             }
             .store(in: &cancellables)
         
-        $address
-            .compactMap { $0 }
-            .removeDuplicates()
-            .sink { [weak self] _ in
-                Task { await self?.refreshRegionAndFareForCurrentAddress() }
-            }
-            .store(in: &cancellables)
+//        $address
+//            .compactMap { $0 }
+//            .removeDuplicates()
+//            .sink { [weak self] _ in
+//                Task { await self?.refreshRegionAndFareForCurrentAddress() }
+//            }
+//            .store(in: &cancellables)
     }
     
     private func updateAddressOnly(for location: CLLocationCoordinate2D) async {
@@ -123,9 +126,8 @@ final class MainViewModel: BaseViewModel{
         } catch { print("❌ 역지오코딩 실패: \(error)") }
     }
     
-    private func refreshRegionAndFareForCurrentAddress() async {
+    func refreshRegionAndFareForCurrentAddress() async {
         self.taxiFare = nil
-        
         guard let lat = lastReverseGeocode?.lat,
               let lon = lastReverseGeocode?.lon else { return }
         

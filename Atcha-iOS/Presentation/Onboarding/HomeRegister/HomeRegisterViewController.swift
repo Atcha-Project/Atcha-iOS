@@ -17,7 +17,6 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
         if self.viewModel.context == .home {
             self.onBackTapped?()
         } else {
-            // 기존 마이페이지나 온보딩 흐름은 그대로 유지 (직접 pop)
             self.navigationController?.popViewController(animated: true)
         }
     })
@@ -46,8 +45,15 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
         //            viewModel.requestAuth()
         //        }
         
+        navigationController?.interactivePopGestureRecognizer?.isEnabled = false
         AmplitudeManager.shared.trackScreen(.home_register)
     }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+            super.viewWillDisappear(animated)
+            
+            navigationController?.interactivePopGestureRecognizer?.isEnabled = true
+        }
     
     // MARK: - ViewModel 바인딩
     private func bindViewModel() {

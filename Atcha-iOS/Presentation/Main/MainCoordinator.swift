@@ -61,7 +61,7 @@ final class MainCoordinator {
             self.homeRegisterCoordinator = coordinator // 강한 참조 유지
             coordinator.onFinish = { [weak self] in
                 self?.homeRegisterCoordinator = nil // 여기서 해제
-                self?.mainViewModel?.refreshCurrentMapCenterData() // 집 위치 바뀌었으니 메인 갱신
+                self?.mainViewModel?.refreshCurrentMapCenterData()
             }
             coordinator.start()
             
