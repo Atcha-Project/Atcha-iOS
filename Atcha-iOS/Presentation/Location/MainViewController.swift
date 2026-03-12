@@ -608,6 +608,9 @@ extension MainViewController {
                 guard let self = self else { return }
                 self.updateAddress(addr)
                 
+                self.latestIsServiceRegion = nil
+                self.latestFareString = nil
+                
                 if self.hasShownInitialBalloon {
                     if self.latestIsServiceRegion == false {
                         self.showOrUpdatePreBalloon(
@@ -855,6 +858,7 @@ extension MainViewController {
                     
                 case .some(false):
                     // 서비스 지역을 벗어남 (울산 등)
+                    self.latestFareString = nil
                     self.lastTrainSearchView.updateSearchEnabled(false)
                     if previous == nil {
                         self.showInitialPreAlarmBalloons(force: true)

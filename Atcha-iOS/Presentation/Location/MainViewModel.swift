@@ -124,6 +124,8 @@ final class MainViewModel: BaseViewModel{
     }
     
     private func refreshRegionAndFareForCurrentAddress() async {
+        self.taxiFare = nil
+        
         guard let lat = lastReverseGeocode?.lat,
               let lon = lastReverseGeocode?.lon else { return }
         
