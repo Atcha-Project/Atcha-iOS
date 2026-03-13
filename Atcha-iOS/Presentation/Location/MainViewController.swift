@@ -201,6 +201,8 @@ final class MainViewController: BaseViewController<MainViewModel>,
             }
         }
         
+        self.viewModel.refreshCurrentMapCenterData()
+        
         AmplitudeManager.shared.trackScreen(.main)
     }
     
@@ -388,6 +390,12 @@ extension MainViewController {
     
     private func handleSearchViewAction(_ action: LastTrainSearchBottomView.Action) {
         switch action {
+        case .homeChangeTapped:
+            if viewModel.isGuest {
+                presentLoginAlert()
+            } else {
+                viewModel.handleRoute(route: .changeHome)
+            }
         case .currentTapped:
             if viewModel.isGuest {
                 presentLoginAlert()
@@ -608,11 +616,9 @@ extension MainViewController {
                 guard let self = self else { return }
                 self.updateAddress(addr)
                 
-                self.latestIsServiceRegion = nil
-                self.latestFareString = nil
-                
                 if self.hasShownInitialBalloon {
                     if self.latestIsServiceRegion == false {
+                        self.latestFareString = nil
                         self.showOrUpdatePreBalloon(
                             .text(
                                 top: (self.preSessionShowTopLine ?? true) ? "지도를 움직여 출발지를 설정해요" : nil,
@@ -788,7 +794,13 @@ extension MainViewController {
         Publishers.CombineLatest(viewModel.$taxiFare, viewModel.$isGuest)
             .receive(on: RunLoop.main)
             .sink { [weak self] fare, isGuest in
-                guard let self = self, let fare = fare else { return }
+                guard let self = self else { return }
+                
+                guard let fare = fare else {
+                    self.latestFareString = nil
+                    self.viewModel.taxiFare = nil
+                    return
+                }
                 
                 let fareInt = Int(fare)
                 let fareStr = self.decimalFormatter.string(from: NSNumber(value: fareInt)) ?? "\(fareInt)"
@@ -859,6 +871,7 @@ extension MainViewController {
                 case .some(false):
                     // 서비스 지역을 벗어남 (울산 등)
                     self.latestFareString = nil
+                    self.viewModel.taxiFare = nil
                     self.lastTrainSearchView.updateSearchEnabled(false)
                     if previous == nil {
                         self.showInitialPreAlarmBalloons(force: true)

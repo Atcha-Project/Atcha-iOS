@@ -80,7 +80,7 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
                     )
                     if ok {
                         self.viewModel.handleRegister()
-                        if viewModel.context == .myPage {
+                        if viewModel.context == .myPage || viewModel.context == .home {
                             self.navigationController?.popToViewController(ofType: HomeRegisterViewController.self)
                         }
                     } else {

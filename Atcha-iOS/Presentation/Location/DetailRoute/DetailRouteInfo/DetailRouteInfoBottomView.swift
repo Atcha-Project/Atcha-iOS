@@ -377,15 +377,19 @@ extension DetailRouteInfoBottomView {
         }
     }
     
-    func updateProximityHighlight(nearLegIDs: Set<UUID>) {
+    func updateProximityHighlight(nearLegIDs: Set<UUID>, departedLegIDs: Set<UUID> = []) {
         let actualNearIDs = isAlarmFired ? nearLegIDs : []
+        let actualDepartedIDs = isAlarmFired ? departedLegIDs : []
         currentNearLegIDs = actualNearIDs
         
         for cell in collectionView.visibleCells {
             if let busCell = cell as? DetailRouteBusCell,
                let leg = busCell.currentLegTrafficInfo {
+                
+                let hasDeparted = actualDepartedIDs.contains(leg.id)
+                
                 if actualNearIDs.contains(leg.id) {
-                    busCell.isNowUserLocationArrived()
+                    busCell.isNowUserLocationArrived(hasDeparted: hasDeparted)
                 } else {
                     busCell.stopArrivedEffectIfNeeded()
                 }
@@ -393,8 +397,10 @@ extension DetailRouteInfoBottomView {
             
             if let subwayCell = cell as? DetailRouteSubwayCell,
                let leg = subwayCell.currentLegTrafficInfo {
+                let hasDeparted = actualDepartedIDs.contains(leg.id)
+                
                 if actualNearIDs.contains(leg.id) {
-                    subwayCell.isNowUserLocationArrived()
+                    subwayCell.isNowUserLocationArrived(hasDeparted: hasDeparted)
                 } else {
                     subwayCell.stopArrivedEffectIfNeeded()
                 }

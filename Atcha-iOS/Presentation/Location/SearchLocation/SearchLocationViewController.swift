@@ -34,6 +34,11 @@ final class SearchLocationViewController: BaseViewController<SearchLocationViewM
         AmplitudeManager.shared.trackScreen(.home_search)
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        view.endEditing(true)
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         

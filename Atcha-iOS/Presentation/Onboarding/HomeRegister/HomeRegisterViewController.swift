@@ -12,7 +12,7 @@ import CoreLocation
 final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel> {
     private lazy var navigationBar: TitleNavigationBar = AtchaNavigationBar.title("우리집 설정", shouldShowCloseButton: false, onBack: { [weak self] in
         guard let self else { return }
-        navigationController?.popViewController(animated: true)
+        self.navigationController?.popViewController(animated: true)
     })
     private let titleLabel = UILabel()
     
@@ -23,7 +23,7 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
     private let locationAddressLabel = UILabel()
     
     private let currentLocationButton = UIButton()
- 
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
@@ -31,13 +31,13 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
         setupAutoLayout()
         addGesture()
     }
-        
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-//        if viewModel.context == .onboarding {
-//            viewModel.requestAuth()
-//        }
+        //        if viewModel.context == .onboarding {
+        //            viewModel.requestAuth()
+        //        }
         
         AmplitudeManager.shared.trackScreen(.home_register)
     }
@@ -65,8 +65,8 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
             .compactMap { $0 }
             .sink { [weak self] location in
                 guard let self else { return }
-
-                if self.viewModel.context == .myPage {
+                
+                if self.viewModel.context == .myPage || self.viewModel.context == .home {
                     AtchaToast(message: "집 주소가 변경되었어요").show(in: self.view)
                 }
             }
@@ -89,7 +89,7 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
                 make.leading.trailing.equalToSuperview().inset(16)
                 make.height.equalTo(50)
             }
-        case .myPage:
+        case .myPage, .home:
             titleLabel.snp.remakeConstraints { make in
                 make.height.equalTo(0)
             }

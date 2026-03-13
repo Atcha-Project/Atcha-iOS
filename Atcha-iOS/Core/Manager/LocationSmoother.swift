@@ -12,18 +12,23 @@ import MapKit
 final class LocationSmoother {
     private var buffer: [CLLocationCoordinate2D] = []
     private let bufferLimit: Int
-
+    
     init(limit: Int = 5) {
         self.bufferLimit = limit
     }
-
+    
+    func reset(_ coordinate: CLLocationCoordinate2D) {
+        buffer.removeAll()
+        buffer.append(coordinate)
+    }
+    
     func smooth(_ next: CLLocationCoordinate2D) -> CLLocationCoordinate2D {
         buffer.append(next)
         if buffer.count > bufferLimit { buffer.removeFirst() }
-
+        
         let avgLat = buffer.map { $0.latitude }.reduce(0, +) / Double(buffer.count)
         let avgLon = buffer.map { $0.longitude }.reduce(0, +) / Double(buffer.count)
-
+        
         return CLLocationCoordinate2D(latitude: avgLat, longitude: avgLon)
     }
 }

@@ -83,6 +83,10 @@ final class DetailRouteBusCell: UICollectionViewCell {
     private var isArrivedEffectOn = false
     private var isAlarmFired: Bool = false
     
+    private var hasMetZero: Bool = false
+    private var isBoarded: Bool = false
+    private var hasDepartedStartStation: Bool = false
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
@@ -114,6 +118,10 @@ final class DetailRouteBusCell: UICollectionViewCell {
         
         isAlarmFired = false
         busTimerStackView.isHidden = true
+        
+        hasMetZero = false
+        isBoarded = false
+        hasDepartedStartStation = false
     }
     
     override func preferredLayoutAttributesFitting(
@@ -354,12 +362,24 @@ final class DetailRouteBusCell: UICollectionViewCell {
         }
     }
     
-    func isNowUserLocationArrived() {
-        if isArrivedEffectOn { return }
+    func isNowUserLocationArrived(hasDeparted: Bool = false) {
+        // 정류장에 도착해서 0초(도착)를 본 적이 있을 때만 '출발'을 인정합니다.
+        if hasDeparted && hasMetZero {
+            self.hasDepartedStartStation = true
+        }
+        
+        if isArrivedEffectOn {
+            // 출발 상태가 들어왔다면 라벨 갱신 (탑승 완료 띄우기)
+            if self.hasDepartedStartStation { updateBusTimerLabels() }
+            return
+        }
+        
         isArrivedEffectOn = true
         animationView.isHidden = false
         animationView.startAnimationIfNeeded(forceRestart: true)
         backgroundColor = UIColor.opacity100
+        
+        updateBusTimerLabels()
     }
     
     func stopArrivedEffectIfNeeded() {
@@ -479,28 +499,30 @@ extension DetailRouteBusCell {
     }
     
     // 1초마다 감소
-    private func decrementRemainingTime() {
-        guard !currentBusInfo.isEmpty else {
-            stopCountdownTimer()
-            return
+        private func decrementRemainingTime() {
+            guard !currentBusInfo.isEmpty else {
+                stopCountdownTimer()
+                return
+            }
+            
+            for i in 0..<currentBusInfo.count {
+                guard let time = currentBusInfo[i].remainingTime else { continue }
+                currentBusInfo[i].remainingTime = time - 1
+            }
+            
+            // 문제 발생 부분!
+            // 0보다 큰 것만 남기면 타이머가 0초에서 리스트에서 사라져 버려서
+            // -60초(1분) 대기 조건이나 탑승 완료 판정을 탈 수가 없습니다.
+            currentBusInfo = currentBusInfo.filter { ($0.remainingTime ?? -1) > 0 }
+            
+            if currentBusInfo.isEmpty {
+                stopCountdownTimer()
+                busTimerFirstLabel.attributedText = AtchaFont.B6_R_14("도착 또는 출발", color: .widearea)
+                return
+            }
+            
+            updateBusTimerLabels()
         }
-        
-        for i in 0..<currentBusInfo.count {
-            guard let time = currentBusInfo[i].remainingTime else { continue }
-            currentBusInfo[i].remainingTime = time - 1
-        }
-        
-        currentBusInfo = currentBusInfo.filter { ($0.remainingTime ?? -1) > 0 }
-        
-        if currentBusInfo.isEmpty {
-            stopCountdownTimer()
-            busTimerFirstLabel.attributedText = AtchaFont.B6_R_14("도착 또는 출발", color: .widearea)
-            //            busTimerSecondLabel.text = ""
-            return
-        }
-        
-        updateBusTimerLabels()
-    }
     
     private func updateBusTimerLabels() {
         
@@ -512,15 +534,42 @@ extension DetailRouteBusCell {
         busTimerStackView.isHidden = false
         
         func labelText(for info: RealTimeBusArrival) -> NSAttributedString {
+            if self.isBoarded {
+                return AtchaFont.B6_R_14("탑승 완료", color: .gray300)
+            }
+            
             if info.busStatus == .end {
                 return AtchaFont.B6_R_14("운행 종료", color: .gray)
             }
             
             guard let remaining = info.remainingTime else {
-                return AtchaFont.B6_R_14("", color: .gray300)
+                // 예외처리: API 갱신으로 정보가 날아갔는데 0초를 본 적이 있다면 탑승으로 간주
+                if self.hasMetZero {
+                    self.isBoarded = true
+                    return AtchaFont.B6_R_14("탑승 완료", color: .gray300)
+                } else {
+                    return AtchaFont.B6_R_14("", color: .gray300)
+                }
             }
             
-            if remaining <= 120 {
+            if remaining <= 0 {
+                self.hasMetZero = true
+            }
+            
+            if self.hasMetZero {
+                // (1) 도착 후 60초가 지났거나
+                // (2) 0초를 봤는데 API가 갱신되었거나
+                // (3) 정류장에서 150m 멀어짐을 감지했을 때
+                if remaining <= -60 || (remaining > 0 && self.isArrivedEffectOn) || self.hasDepartedStartStation {
+                    self.isBoarded = true
+                    self.stopCountdownTimer() // 버스 타이머 멈춤
+                    return AtchaFont.B6_R_14("탑승 완료", color: .gray300)
+                }
+            }
+            
+            if remaining <= 0 {
+                return AtchaFont.B6_R_14("도착 또는 출발", color: .widearea)
+            } else if remaining <= 120 {
                 return AtchaFont.B6_R_14("곧 도착", color: .widearea)
             } else {
                 return AtchaFont.B6_R_14(formatSecondsToHMS(remaining), color: .widearea)

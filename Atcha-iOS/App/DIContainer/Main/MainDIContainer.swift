@@ -48,6 +48,10 @@ final class MainDIContainer {
         LoginDIContainer(apiService: apiService)
     }()
     
+    private lazy var homeRegisterDI: HomeRegisterDIContainer = {
+        HomeRegisterDIContainer(apiService: apiService, locationStateHolder: locationStateHolder)
+    }()
+    
     init(apiService: APIService, locationStateHolder: LocationStateHolder) {
         self.apiService = apiService
         self.locationStateHolder = locationStateHolder
@@ -128,3 +132,10 @@ extension MainDIContainer{
     }
 }
 
+
+// MARK: - HomeRegister
+extension MainDIContainer{
+    func makeHomeRegisterDIContainer() -> HomeRegisterDIContainer {
+        return homeRegisterDI
+    }
+}
