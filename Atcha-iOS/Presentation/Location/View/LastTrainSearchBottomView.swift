@@ -45,6 +45,13 @@ final class LastTrainSearchBottomView: UIView {
         return stack
     }()
     
+    private let arrivalImageView: UIImageView = {
+        let iv = UIImageView(image: .chevronRight)
+        iv.tintColor = AtchaColor.neutral
+        iv.contentMode = .scaleAspectFit
+        return iv
+    }()
+    
     private let searchButton: AtchaButton = AtchaButton(text: "막차 검색하기",
                                                         size: .h52,
                                                         style: .filled(.disabled),
@@ -81,7 +88,7 @@ final class LastTrainSearchBottomView: UIView {
         currentLocationLabel.attributedText = AtchaFont.B1_R_17(lineHeight: 0, "현위치: 조회 중..", color: .main)
         arrivalLocationLabel.attributedText = AtchaFont.B1_R_17(lineHeight: 0, "도착지: 우리집", color: .gray200)
         
-        addSubViews(currentLocationView, arrivalLocationView, searchButton)
+        addSubViews(currentLocationView, arrivalLocationView, searchButton, arrivalImageView)
         
         let tap = UITapGestureRecognizer(target: self, action: #selector(handleCurrentTap))
         currentLocationView.isUserInteractionEnabled = true
@@ -90,6 +97,9 @@ final class LastTrainSearchBottomView: UIView {
         let arrivalTap = UITapGestureRecognizer(target: self, action: #selector(handleDestinationTap))
         arrivalLocationView.isUserInteractionEnabled = true
         arrivalLocationView.addGestureRecognizer(arrivalTap)
+        
+        arrivalImageView.isUserInteractionEnabled = true
+        arrivalImageView.addGestureRecognizer(arrivalTap)
         
         searchButton.addTarget(self, action: #selector(handleSearchTap), for: .touchUpInside)
     }
@@ -113,6 +123,12 @@ final class LastTrainSearchBottomView: UIView {
             make.horizontalEdges.equalToSuperview().inset(16)
             make.top.equalTo(currentLocationView.snp.bottom).inset(-8)
             make.height.equalTo(48)
+        }
+        
+        arrivalImageView.snp.makeConstraints { make in
+            make.trailing.equalTo(arrivalLocationView.snp.trailing).inset(8)
+            make.centerY.equalTo(arrivalLocationView)
+            make.height.width.equalTo(20)
         }
         
         searchButton.snp.makeConstraints { make in
