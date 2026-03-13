@@ -300,7 +300,5 @@ extension PermissionViewController {
         }
 
         viewModel.startPermissionFlow()
-        AmplitudeManager.shared.track(.permission_setting)
-        AmplitudeManager.shared.timerStart("signup_dwell")
     }
 }

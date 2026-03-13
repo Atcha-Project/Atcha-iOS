@@ -80,7 +80,7 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        AmplitudeManager.shared.trackScreen(.course_search)
+        amp_track(.course_search_view)
         AmplitudeManager.shared.timerStart("alarm_dwell")
     }
     
@@ -277,7 +277,7 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
             let busInfo: [BusDetailInfo] = model.course.toBusInfos()
             viewModel.getDetailTapped?(viewModel.startAddress, LegInfo(pathInfo: pathInfo, trafficInfo: tafficInfo, busInfo: busInfo))
             viewModel.saveStartInfo(model.course.routeId ?? "")
-            AmplitudeManager.shared.track(.course_detail_click)
+            amp_track(.course_detail_click)
         }
         
         return cell
@@ -347,7 +347,8 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
     
     @objc private func didTapRouteStack() {
         viewModel.didTapRouteLabelStack()
-        AmplitudeManager.shared.track(.course_change_click)
+        
+        amp_track(.course_modify_click)
     }
 }
 
@@ -394,12 +395,10 @@ extension CourseSearchViewController {
             UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.popRegister.rawValue)
             
             let dwellSeconds = AmplitudeManager.shared.timerEndSeconds("alarm_dwell")
-            AmplitudeManager.shared.track(
-                .long_interval_alarm_register,
-                props(
-                    AmplitudeProperty.dwellTime(seconds: dwellSeconds)
-                )
-            )
+            
+            self.amp_track(.long_interval_alarm_register, properties: props(
+                AmplitudeProperty.dwellTime(seconds: dwellSeconds)
+            ))
         }, for: .touchUpInside)
         
         popupVC.cancelButton.addAction(UIAction { [weak self, weak popupVC] _ in
@@ -424,12 +423,10 @@ extension CourseSearchViewController {
             UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.popRegister.rawValue)
             
             let dwellSeconds = AmplitudeManager.shared.timerEndSeconds("alarm_dwell")
-            AmplitudeManager.shared.track(
-                .another_alarm_register,
-                props(
-                    AmplitudeProperty.dwellTime(seconds: dwellSeconds)
-                )
-            )
+            self.amp_track(.another_alarm_register, properties: props(
+                AmplitudeProperty.dwellTime(seconds: dwellSeconds)
+            ))
+            
             
         }, for: .touchUpInside)
         
@@ -498,7 +495,10 @@ extension CourseSearchViewController {
                     
                     // 앰플리튜드 트래킹 및 메인 이동
                     let dwellSeconds = AmplitudeManager.shared.timerEndSeconds("alarm_dwell")
-                    AmplitudeManager.shared.track(.alarm_register, props(AmplitudeProperty.dwellTime(seconds: dwellSeconds)))
+                    
+                    self.amp_track(.alarm_register, properties: props(
+                        AmplitudeProperty.dwellTime(seconds: dwellSeconds)
+                    ))
                     self.navigationController?.popToRootViewController(animated: true)
                 }
             }

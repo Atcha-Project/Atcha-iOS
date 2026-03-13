@@ -35,11 +35,14 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        //        if viewModel.context == .onboarding {
-        //            viewModel.requestAuth()
-        //        }
-        
-        AmplitudeManager.shared.trackScreen(.home_register)
+        switch viewModel.context {
+        case .home:
+            amp_track(.home_register_view, properties: props(AmplitudeProperty.entryPoint(.main)))
+        case .myPage:
+            amp_track(.home_register_view, properties: props(AmplitudeProperty.entryPoint(.mypage)))
+        case .onboarding:
+            amp_track(.home_register_view, properties: props(AmplitudeProperty.entryPoint(.signup)))
+        }
     }
     
     // MARK: - ViewModel 바인딩
@@ -206,7 +209,6 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
         ensureLocationPermissionOrShowToast()
         
         viewModel.routeHandler?(.searchAdress)
-        AmplitudeManager.shared.track(.search_location_click)
     }
     
     // MARK: - 현위치 찾기
@@ -214,7 +216,6 @@ final class HomeRegisterViewController: BaseViewController<HomeRegisterViewModel
         ensureLocationPermissionOrShowToast()
         viewModel.locationStateHolder.clear()
         viewModel.routeHandler?(.homeRegister(useDeviceLocation: true))
-        AmplitudeManager.shared.track(.current_location_click)
     }
     
     // MARK: - UI 렌더링

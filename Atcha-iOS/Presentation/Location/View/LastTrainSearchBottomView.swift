@@ -158,13 +158,19 @@ final class LastTrainSearchBottomView: UIView {
 extension LastTrainSearchBottomView {
     @objc private func handleCurrentTap() {
         actionPublisher.send(.currentTapped)
+        
+        AmplitudeManager.shared.track(.departure_modify_click)
     }
     
     @objc private func handleSearchTap() {
         actionPublisher.send(.searchTapped)
+        
+        AmplitudeManager.shared.track(.course_search_click)
     }
     
     @objc private func handleDestinationTap() {
         actionPublisher.send(.homeChangeTapped)
+        
+        AmplitudeManager.shared.track(.home_modify_click)
     }
 }

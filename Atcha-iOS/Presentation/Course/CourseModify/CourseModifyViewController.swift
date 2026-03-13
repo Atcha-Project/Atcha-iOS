@@ -54,7 +54,7 @@ final class CourseModifyViewController: BaseViewController<CourseModifyViewModel
             view.keyboardLayoutGuide.followsUndockedKeyboard = true
         }
         
-        AmplitudeManager.shared.trackScreen(.origin_search)
+        amp_track(.departure_modify_view)
     }
     
     override func viewWillAppear(_ animated: Bool) {

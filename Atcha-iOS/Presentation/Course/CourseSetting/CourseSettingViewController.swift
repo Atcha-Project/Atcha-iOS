@@ -16,7 +16,7 @@ final class CourseSettingViewController: BaseViewController<CourseSettingViewMod
     private let mapContainerView: TMapContainerView = TMapContainerView()
     private let settingBottomView: OriginSettingBottomView = OriginSettingBottomView()
     private let flagImageView: UIImageView = UIImageView()
-    private let currentLoactionButton: UIButton = UIButton()
+    private let currentLocationButton: UIButton = UIButton()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,14 +28,16 @@ final class CourseSettingViewController: BaseViewController<CourseSettingViewMod
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        AmplitudeManager.shared.trackScreen(.origin_setting)
+        super.viewDidAppear(animated)
+        
+        amp_track(.departure_setting_view)
     }
     
     private func setupUI() {
         view.addSubViews(
             mapContainerView,
             flagImageView,
-            currentLoactionButton,
+            currentLocationButton,
             settingBottomView,
             backButton
         )
@@ -43,7 +45,7 @@ final class CourseSettingViewController: BaseViewController<CourseSettingViewMod
         mapContainerView.delegate = self
         flagImageView.image = UIImage.settingLocationMark
         flagImageView.isUserInteractionEnabled = false
-        configureButton(currentLoactionButton, imageName: "mylocation-filled", action: #selector(didTapLocationButton))
+        configureButton(currentLocationButton, imageName: "mylocation-filled", action: #selector(didTapLocationButton))
         backButton.setImage(UIImage.chevronLeft, for: .normal)
         backButton.tintColor = .white
         backButton.backgroundColor = .black
@@ -140,7 +142,7 @@ final class CourseSettingViewController: BaseViewController<CourseSettingViewMod
             make.width.equalTo(48)
         }
         
-        currentLoactionButton.snp.makeConstraints { make in
+        currentLocationButton.snp.makeConstraints { make in
             make.bottom.equalTo(settingBottomView.snp.top).inset(-16)
             make.trailing.equalToSuperview().inset(16)
             make.size.equalTo(40)
@@ -179,6 +181,8 @@ extension CourseSettingViewController {
     @objc private func didTapLocationButton() {
         ensureLocationPermissionOrShowToast()
         viewModel.setupLocation()
+        
+        amp_track(.current_location_click)
     }
     
     private func setupBackButton() {

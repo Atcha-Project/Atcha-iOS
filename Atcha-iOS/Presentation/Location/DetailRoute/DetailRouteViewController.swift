@@ -77,7 +77,7 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        AmplitudeManager.shared.trackScreen(.course_detail)
+        amp_track(.course_detail_view)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -248,7 +248,7 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         
         bottomSheet.onBusDetail = { [weak self] info in
             self?.viewModel.onBusDetail?(info)
-            AmplitudeManager.shared.track(.bus_detail_click)
+            self?.amp_track(.bus_detail_click)
         }
         
         bottomSheet.getNewBusRealTime = { [weak self] in
@@ -540,10 +540,9 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
                     self.viewModel.getAlarmTapped?(self.viewModel.address, self.viewModel.infos)
                     
                     let dwellSeconds = AmplitudeManager.shared.timerEndSeconds("alarm_dwell")
-                    AmplitudeManager.shared.track(
-                        .another_alarm_register,
-                        props(AmplitudeProperty.dwellTime(seconds: dwellSeconds))
-                    )
+                    self.amp_track(.alarm_register, properties: props(
+                        AmplitudeProperty.dwellTime(seconds: dwellSeconds)
+                    ))
                     
                     // 등록 완료 후 메인 지도로 이동 (필요시 호출)
                     self.navigationController?.popToMainViewControllerNoAnimation()
@@ -616,6 +615,8 @@ extension DetailRouteViewController {
             make.top.equalToSuperview()
             make.bottom.equalToSuperview().inset(200)
         }
+        
+        amp_track(.current_location_click)
     }
     
     @objc private func didTapReload() {
@@ -630,7 +631,7 @@ extension DetailRouteViewController {
         }
         
         viewModel.fetchInfo()
-        AmplitudeManager.shared.track(.course_refresh_click)
+        amp_track(.course_refresh_click)
     }
 }
 
@@ -674,12 +675,10 @@ extension DetailRouteViewController {
             UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.popRegister.rawValue)
             
             let dwellSeconds = AmplitudeManager.shared.timerEndSeconds("alarm_dwell")
-            AmplitudeManager.shared.track(
-                .another_alarm_register,
-                props(
-                    AmplitudeProperty.dwellTime(seconds: dwellSeconds)
-                )
-            )
+            self.amp_track(.long_interval_alarm_register, properties: props(
+                AmplitudeProperty.dwellTime(seconds: dwellSeconds)
+            ))
+            
         }, for: .touchUpInside)
         
         popupVC.cancelButton.addAction(UIAction { [weak self, weak popupVC] _ in
@@ -703,12 +702,10 @@ extension DetailRouteViewController {
             UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.popRegister.rawValue)
             
             let dwellSeconds = AmplitudeManager.shared.timerEndSeconds("alarm_dwell")
-            AmplitudeManager.shared.track(
-                .another_alarm_register,
-                props(
-                    AmplitudeProperty.dwellTime(seconds: dwellSeconds)
-                )
-            )
+            self.amp_track(.another_alarm_register, properties: props(
+                AmplitudeProperty.dwellTime(seconds: dwellSeconds)
+            ))
+            
         }, for: .touchUpInside)
         
         popupVC.cancelButton.addAction(UIAction { [weak self, weak popupVC] _ in

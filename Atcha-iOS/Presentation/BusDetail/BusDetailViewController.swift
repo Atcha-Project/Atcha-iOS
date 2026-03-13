@@ -72,7 +72,7 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
             }
         }
         
-        AmplitudeManager.shared.trackScreen(.bus_detail)
+        amp_track(.bus_detail_view)
     }
     
     override func viewDidDisappear(_ animated: Bool) {
@@ -148,7 +148,7 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
     private func bindActions() {
         headerView.onInfoTap = { [weak self] in
             self?.viewModel.didTapInfo()
-            AmplitudeManager.shared.track(.bus_info_click)
+            self?.amp_track(.bus_info_click)
         }
     }
     
@@ -285,6 +285,8 @@ class BusDetailViewController: BaseViewController<BusDetailViewModel> {
         refreshButton.start()
         showLoadingOnce()
         viewModel.refresh()
+        
+        amp_track(.bus_refresh_click)
     }
     
     private func itemAt(_ indexPath: IndexPath) -> BusRouteStationList? {

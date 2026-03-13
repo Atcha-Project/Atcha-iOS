@@ -108,6 +108,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
     //    }
     
     var shouldShowWelcomeToast: Bool = false
+    private var hasShownAlarmRegisteredToast = false
     
     // MARK: - Life Cycle
     
@@ -203,7 +204,16 @@ final class MainViewController: BaseViewController<MainViewModel>,
         
         self.viewModel.refreshCurrentMapCenterData()
         
-        AmplitudeManager.shared.trackScreen(.main)
+        let isGuest = UserDefaultsWrapper.shared.bool(
+            forKey: UserDefaultsWrapper.Key.isGuest.rawValue
+        ) ?? false
+        
+        if isGuest {
+            amp_track(.main_view, properties: props(AmplitudeProperty.userStatus(.guest)))
+        } else {
+            amp_track(.main_view, properties: props(AmplitudeProperty.userStatus(.member)))
+        }
+        
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -393,28 +403,27 @@ extension MainViewController {
         case .homeChangeTapped:
             if viewModel.isGuest {
                 presentLoginAlert()
+                amp_track(.login_view, properties: props(AmplitudeProperty.entryPoint(.home_modify)))
             } else {
                 viewModel.handleRoute(route: .changeHome)
             }
         case .currentTapped:
             if viewModel.isGuest {
                 presentLoginAlert()
+                amp_track(.login_view, properties: props(AmplitudeProperty.entryPoint(.departure)))
             } else {
-                AmplitudeManager.shared.track(.origin_search_click)
-                
                 viewModel.handleRoute(route: .changeCourse(
                     location: Location(name: "", lat: 0.0, lon: 0.0, businessCategory: "", address: "", radius: "")))
             }
         case .searchTapped:
             if viewModel.isGuest {
                 presentLoginAlert()
+                amp_track(.login_view, properties: props(AmplitudeProperty.entryPoint(.course_search)))
             } else {
                 guard let startCoord = mapContainerView.tMapWrapper.mapView.getCenter() else {
                     view.showToast(message: "현재 위치를 확인 중이에요. 잠시 후 다시 시도해 주세요.")
                     return
                 }
-                
-                AmplitudeManager.shared.track(.course_search_click)
                 
                 let wrapper = UserDefaultsWrapper.shared
                 let endLatStr = wrapper.string(forKey: UserDefaultsWrapper.Key.homeLat.rawValue) ?? "37.554722"
@@ -453,14 +462,17 @@ extension MainViewController {
             self.showOrUpdateImmediateBalloon(
                 .text(top: nil, bottom: "위치를 변경하려면 알람을 종료해야 해요")
             )
-            AmplitudeManager.shared.track(.course_click)
+            
+            amp_track(.course_click)
+            
         case .reloadTapped:
             viewModel.refreshDepatrueTime()
         case .timeTapped:
             self.showOrUpdateImmediateBalloon(
                 .text(top: "이때 자리에서 출발하면 돼요", bottom: "교통 상황에 따라 시간이 달라질 수 있어요")
             )
-            AmplitudeManager.shared.track(.origin_time_click)
+            
+            amp_track(.departure_time_click)
         }
     }
     
@@ -492,6 +504,8 @@ extension MainViewController {
             
             self.viewModel.alarmDelete()
             self.exitButtonTapped()
+            
+            amp_track(.alarm_force_stop)
         }, for: .touchUpInside)
         
         popupVC.modalPresentationStyle = .overFullScreen
@@ -507,6 +521,7 @@ extension MainViewController {
         // 4. 알람 해제 시 1번(초기 상태)으로 돌아감
         isFollowingUser = false
         shouldCenterToCurrentLocationOnce = true
+        hasShownAlarmRegisteredToast = false
         
         // 이번 한 번은 프리 말풍선 자동 표시를 건너뛰도록 플래그 세팅
         deferPreBalloonOnce = true
@@ -774,9 +789,10 @@ extension MainViewController {
             guard gen == self.setupGen, self.viewModel.bottomType == .departure else { return }
             guard let first = self.postAlarmMessages.first else { return }
             
-            if !wasAlarmRegisteredOnLaunch {
+            if !wasAlarmRegisteredOnLaunch && !hasShownAlarmRegisteredToast {
                 DispatchQueue.main.asyncAfter(deadline: .now() + popToastDelay) {
                     self.view.showToast(message: "알람이 등록되었습니다.")
+                    self.hasShownAlarmRegisteredToast = true // 띄웠다고 표시!
                     UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.popRegister.rawValue)
                 }
             }
@@ -1017,8 +1033,11 @@ extension MainViewController {
     @objc private func didTapMyPageButton() {
         if viewModel.isGuest {
             presentLoginAlert()
+            
+            amp_track(.login_view, properties: props(AmplitudeProperty.entryPoint(.mypage)))
         } else {
             viewModel.handleRoute(route: .myPage)
+            amp_track(.mypage_click)
         }
     }
     
@@ -1036,6 +1055,8 @@ extension MainViewController {
             shouldCenterToCurrentLocationOnce = true
             viewModel.setupLocation()
         }
+        
+        amp_track(.current_location_click)
     }
     
     private func safeStartJump() {
@@ -1056,7 +1077,7 @@ extension MainViewController {
         case .pre:
             print("")
         case .next:
-            AmplitudeManager.shared.track(.character_click)
+            amp_track(.character_click)
             let now = CACurrentMediaTime()
             let shouldRefreshFare = (now - lastFareRefreshTime) > fareRefreshInterval
             
@@ -1441,6 +1462,8 @@ extension MainViewController {
                 self.viewModel.alarmDelete()
                 self.exitButtonTapped()
                 
+                amp_track(.alarm_arrive_stop)
+                
                 // 3. 안내용 팝업 띄우기 (화면 이동이 끝난 0.3초 뒤에 띄워서 자연스럽게)
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                     self.showArrivalPopup()
@@ -1480,6 +1503,8 @@ extension MainViewController {
                 // 2. 백그라운드 취소 로직
                 self.viewModel.alarmDelete()
                 self.exitButtonTapped()
+                
+                amp_track(.alarm_timeout_stop)
                 
                 if let coord = self.viewModel.currentLocation {
                     self.mapContainerView.setupCenter(location: coord)

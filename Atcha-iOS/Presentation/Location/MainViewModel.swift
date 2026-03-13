@@ -372,7 +372,7 @@ final class MainViewModel: BaseViewModel{
                 let _ = try await alarmUseCase.alarmDelete(request)
                 wrapper.remove(forKey: UserDefaultsWrapper.Key.lastRouteId.rawValue)
                 print("알람 취소 성공")
-                AmplitudeManager.shared.track(.alarm_cancel)
+                
             } catch {
                 print("알람 취소 실패: \(error)")
             }
