@@ -48,7 +48,7 @@ final class LockViewController: BaseViewController<LockViewModel> {
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        AmplitudeManager.shared.trackScreen(.alarm)
+        amp_track(.alarm_view)
     }
     
     // MARK: - ViewModel 바인딩
@@ -154,7 +154,7 @@ final class LockViewController: BaseViewController<LockViewModel> {
             forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue
         )
         
-        AmplitudeManager.shared.track(.start_click)
+        amp_track(.start_click)
     }
     
     @objc private func detailRouteTapped() {
@@ -166,7 +166,7 @@ final class LockViewController: BaseViewController<LockViewModel> {
         let lon = wrapper.string(forKey: UserDefaultsWrapper.Key.startLon.rawValue) ?? ""
         let address = wrapper.string(forKey: UserDefaultsWrapper.Key.startAddress.rawValue) ?? ""
         
-        AmplitudeManager.shared.track(.later_course_click)
+        amp_track(.later_course_click)
         viewModel.routerHandler?(.courseSearch(startLat: lat, startLon: lon, startAddress: address))
     }
     

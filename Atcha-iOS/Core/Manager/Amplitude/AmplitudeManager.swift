@@ -124,8 +124,8 @@ private extension AmplitudeManager {
 
 // MARK: - UIKit convenience
 extension UIViewController {
-    func amp_track(_ event: AmplitudeEvent, props: [String: Any?] = [:]) {
-        AmplitudeManager.shared.track(event, props)
+    func amp_track(_ event: AmplitudeEvent, properties: [String: Any?] = [:]) {
+        AmplitudeManager.shared.track(event, properties)
     }
 }
 

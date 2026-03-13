@@ -38,7 +38,7 @@ final class MyPageViewController: BaseViewController<MyPageViewModel> {
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        AmplitudeManager.shared.trackScreen(.mypage)
+        amp_track(.mypage_view)
     }
     
     private func setupUI() {
@@ -93,6 +93,8 @@ final class MyPageViewController: BaseViewController<MyPageViewModel> {
     
     @objc func bannerTapped() {
         viewModel.bannerTapped()
+        
+        amp_track(.feedback)
     }
 }
 
@@ -134,6 +136,7 @@ extension MyPageViewController: UICollectionViewDelegate,
             viewModel.navigationTarget.send(.notification)
         case .term:
             viewModel.navigationTarget.send(.term)
+            amp_track(.term)
         case .version:
             viewModel.navigationTarget.send(.versionUpdate)
         }

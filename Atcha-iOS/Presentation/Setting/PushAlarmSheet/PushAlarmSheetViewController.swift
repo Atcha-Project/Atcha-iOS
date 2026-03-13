@@ -236,8 +236,24 @@ extension PushAlarmSheetViewController {
             AlarmManager.shared.setAlarmOption(option)
             AlarmManager.shared.setAlarmArmed(true)
             isConfirmed = true
+            
+            amp_track(
+                .alarm_alert_type_setting, properties:
+                props(
+                    AmplitudeProperty.alertType(self.mapAlertType(option))
+                )
+            )
         }
+        
         dismissSheet()
+    }
+    
+    private func mapAlertType(_ option: PushAlarmOption) -> AlertType {
+        switch option {
+        case .onlyVibration: return .onlyVibration
+        case .onlySound:     return .onlySound
+        case .both:          return .soundAndVibration
+        }
     }
     
     @objc private func sliderChanged(_ sender: UISlider) {

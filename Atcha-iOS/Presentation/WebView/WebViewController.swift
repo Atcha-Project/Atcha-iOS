@@ -54,7 +54,7 @@ final class WebViewController: BaseViewController<BaseViewModel> {
     
     override func viewDidAppear(_ animated: Bool) {
         if type == .term {
-            AmplitudeManager.shared.trackScreen(.terms)
+            amp_track(.term)
         }
     }
     

@@ -16,7 +16,7 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
     private let bottomView: HomeRegisterBottomView = HomeRegisterBottomView()
     private let flagImageView: UIImageView = UIImageView()
     private let backButton: UIButton = UIButton()
-    private let loactionButton: UIButton = UIButton()
+    private let locationButton: UIButton = UIButton()
     private let exitButton: UIButton = UIButton()
 
     var routeHandler: ((HomeRouter) -> Void)?
@@ -47,7 +47,7 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
         view.addSubViews(mapContainerView,
                          flagImageView,
                          bottomView,
-                         loactionButton,
+                         locationButton,
                          backButton)
         
         mapContainerView.delegate = self
@@ -58,7 +58,7 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
         backButton.clipsToBounds = true
         backButton.setCornerRadius(18)
         
-        configureButton(loactionButton,
+        configureButton(locationButton,
                         imageName: "mylocation-filled",
                         action: #selector(didTapLocationButton))
     }
@@ -145,7 +145,7 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
             make.width.equalTo(48)
         }
         
-        loactionButton.snp.makeConstraints { make in
+        locationButton.snp.makeConstraints { make in
             make.bottom.equalTo(bottomView.snp.top).inset(-16)
             make.trailing.equalToSuperview().inset(16)
             make.width.height.equalTo(40)
@@ -205,6 +205,8 @@ extension HomeFindViewController {
     @objc private func didTapLocationButton() {
         ensureLocationPermissionOrShowToast()
         viewModel.setupLocation()
+        
+        amp_track(.current_location_click)
     }
 }
 

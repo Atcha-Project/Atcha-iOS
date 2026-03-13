@@ -206,11 +206,11 @@ final class MainViewController: BaseViewController<MainViewModel>,
         let isGuest = UserDefaultsWrapper.shared.bool(
                     forKey: UserDefaultsWrapper.Key.isGuest.rawValue
                 ) ?? false
-        
+
         if isGuest {
-            amp_track(.main_view, props: props(AmplitudeProperty.userStatus(.guest)))
+            amp_track(.main_view, properties: props(AmplitudeProperty.userStatus(.guest)))
         } else {
-            amp_track(.main_view, props: props(AmplitudeProperty.userStatus(.member)))
+            amp_track(.main_view, properties: props(AmplitudeProperty.userStatus(.member)))
         }
         
     }
@@ -402,12 +402,14 @@ extension MainViewController {
         case .homeChangeTapped:
             if viewModel.isGuest {
                 presentLoginAlert()
+                amp_track(.login_view, properties: props(AmplitudeProperty.entryPoint(.home_modify)))
             } else {
                 viewModel.handleRoute(route: .changeHome)
             }
         case .currentTapped:
             if viewModel.isGuest {
                 presentLoginAlert()
+                amp_track(.login_view, properties: props(AmplitudeProperty.entryPoint(.departure)))
             } else {
                 viewModel.handleRoute(route: .changeCourse(
                     location: Location(name: "", lat: 0.0, lon: 0.0, businessCategory: "", address: "", radius: "")))
@@ -415,6 +417,7 @@ extension MainViewController {
         case .searchTapped:
             if viewModel.isGuest {
                 presentLoginAlert()
+                amp_track(.login_view, properties: props(AmplitudeProperty.entryPoint(.course_search)))
             } else {
                 guard let startCoord = mapContainerView.tMapWrapper.mapView.getCenter() else {
                     view.showToast(message: "현재 위치를 확인 중이에요. 잠시 후 다시 시도해 주세요.")
@@ -1027,6 +1030,8 @@ extension MainViewController {
     @objc private func didTapMyPageButton() {
         if viewModel.isGuest {
             presentLoginAlert()
+            
+            amp_track(.login_view, properties: props(AmplitudeProperty.entryPoint(.mypage)))
         } else {
             viewModel.handleRoute(route: .myPage)
             amp_track(.mypage_click)
@@ -1453,6 +1458,8 @@ extension MainViewController {
                 // 2. 백그라운드에서 즉시 알람 종료 통신 및 지도/UI 초기화 실행
                 self.viewModel.alarmDelete()
                 self.exitButtonTapped()
+                
+                amp_track(.alarm_arrive_stop)
                 
                 // 3. 안내용 팝업 띄우기 (화면 이동이 끝난 0.3초 뒤에 띄워서 자연스럽게)
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {

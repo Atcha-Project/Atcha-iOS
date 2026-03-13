@@ -9,70 +9,81 @@ import Foundation
 
 enum AmplitudeEvent: String {
     // MARK: - 온보딩
-    case intro_view = "intro_view"
-    case intro_start_click = "intro_start_click"
+    case intro_view = "인트로_진입"
+    case intro_start_click = "인트로_시작_클릭"
     
     // MARK: - 메인
-    case main_view = "main_view" // 1. 비로그인 진입 2. 로그인 진입
-    case mypage_click = "mypage_click"
-    case current_location_click = "current_location_click"
+    case main_view = "메인_진입" // 1. 비로그인 진입 2. 로그인 진입
+    case mypage_click = "마이페이지_클릭"
+    case current_location_click = "현재_위치_버튼_클릭"
     
-    case departure_change_click = "departure_change_click"
-    case home_change_click = "home_change_click"
-    case course_search_click = "course_search_click"
+    case departure_modify_click = "출발지_수정_클릭"
+    case home_modify_click = "집주소_수정_클릭"
+    case course_search_click = "막차_검색하기_클릭"
     
-    case login_click = "login_click"
-    case home_register_view = "home_register_view" // 1.가입 2.메인 3.설정
-    case home_setting_view = "home_setting_view"
-    case home_setting_click = "home_search_click"
+    case login_view = "로그인_진입" // 1. 마이페이지 2.출발지 수정 3.집주소 수정 4.막차검색하기
+    case login_click = "로그인_클릭"
+    case home_register_view = "집주소_등록_진입" // 1.가입 2.메인 3.설정
+    case home_search_view = "집주소_검색_진입"
+    case home_setting_view = "집주소_설정_진입"
+    case home_setting_click = "집주소_설정_클릭"
+    case signup = "회원가입"
     
-    case character_click = "character_click"
-    case alarm_force_stop = "alarm_force_stop"
-    case alarm_timeout_stop = "alarm_timeout_stop"
-    case departure_time_click = "departure_time_click"
-    case course_click = "course_click"
+    case character_click = "캐릭터_클릭"
+    case alarm_force_stop = "알람_강제_종료"
+    case alarm_timeout_stop = "알람_타임아웃_종료"
+    case alarm_arrive_stop = "알람_도착_종료"
+    case departure_time_click = "출발시간_영역_클릭"
+    case course_click = "경로_영역_클릭"
     
-    
-    // MARK: - 마이페이지
-    case signup = "signup"
-    case search_location_click = "search_location_click"
-    
-    case origin_search_click = "origin_search_click"
-    case my_page_click = "my_page_click"
-    case alarm_cancel = "alarm_cancel"
-
     
     // MARK: - 마이페이지
-    case logout = "logout"
-    case withdraw = "withdraw"
-    case alarm_alert_type_setting = "alarm_alert_type_setting"
-    case home_register = "home_register"
+    case mypage_view = "마이페이지_진입"
+    case logout = "로그아웃"
+    case withdraw = "회원탈퇴"
+    case alarm_alert_type_setting = "알람설정"
+    case term = "약관동의_진입"
+    case feedback = "피드백_진입"
     
-    // MARK: - 경로 탐색
-    case course_change_click = "course_change_click"
-    case course_detail_click = "course_detail_click"
-    case bus_detail_click = "bus_detail_click"
-    case bus_info_click = "bus_info_click"
-    case long_interval_alarm_register = "long_interval_alarm_register"
-    case alarm_register = "alarm_register"
-    case another_alarm_register = "another_alarm_register"
-    case course_refresh_click = "course_refresh_click"
-    
-    // MARK: - 경로 수정
-    case origin_setting = "origin_setting"
     
     // MARK: - 알람화면
-    case start_click = "start_click"
-    case later_course_click = "later_course_click"
+    case alarm_view = "알람_진입"
+    case start_click = "출발하기_클릭"
+    case later_course_click = "늦은_경로_확인하기_클릭"
+    
+    
+    // MARK: - 경로 탐색
+    case course_search_view = "경로_탐색_진입"
+    case course_modify_click = "경로_수정_클릭"
+    case alarm_register = "알람_등록" // 1. 경로 탐색 2.경로 상세
+    case another_alarm_register = "다른_알람_등록"
+    case long_interval_alarm_register = "배차_긴_알람_등록"
+    case course_detail_click = "경로_상세_영역_클릭"
+    
+    // MARK: - 경로 상세
+    case course_detail_view = "경로_상세_진입"
+    case course_refresh_click = "경로_새로고침_클릭"
+    case bus_detail_view = "버스_상세_진입"
+    case bus_detail_click = "버스_상세_클릭"
+    case bus_info_click = "버스_정보_클릭"
+    case bus_info_view = "버스_정보_진입"
+    case bus_refresh_click = "버스_새로고침_클릭"
+    case bus_info_refresh_click = "버스_정보_새로고침_클릭"
+    
+    
+    // MARK: - 경로 수정
+    case departure_modify_view = "출발지_수정_진입"
+    case departure_setting_view = "출발지_설정_진입"
+    case departure_setting_click = "출발지_설정_클릭"
 }
 
 enum AmplitudePropertyKey: String {
-    case alertType = "alert_type"
-    case dwellTime = "dwell_time"
-    case withdrawReason = "withdraw_reason"
-    case social = "social"
-    case userStatus = "userStatus"
-    case entryPoint = "entryPoint"
+    case alertType = "알람_방식"
+    case dwellTime = "알람_등록_시간"
+    case withdrawReason = "탈퇴_사유"
+    case social = "로그인_방식"
+    case userStatus = "로그인_상태"
+    case entryPoint = "진입_경로"
 }
 
 enum AmplitudeProperty {
@@ -117,17 +128,20 @@ enum WithdrawReason: String {
 }
 
 enum SocialType: String {
-    case kakao = "kakao"
-    case apple = "apple"
+    case kakao = "카카오"
+    case apple = "애플"
 }
 
 enum UserStatus: String {
-    case guest = "guest"
-    case member = "member"
+    case guest = "게스트"
+    case member = "로그인"
 }
 
 enum EntryPoint: String {
-    case signup = "signup"
-    case main = "main"
-    case mypage = "mypage"
+    case signup = "회원가입"
+    case main = "메인"
+    case mypage = "마이페이지"
+    case departure = "출발지_수정"
+    case home_modify = "집주소_수정"
+    case course_search = "막차_검색하기"
 }

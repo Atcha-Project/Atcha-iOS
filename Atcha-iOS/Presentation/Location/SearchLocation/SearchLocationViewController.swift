@@ -31,7 +31,7 @@ final class SearchLocationViewController: BaseViewController<SearchLocationViewM
             view.keyboardLayoutGuide.followsUndockedKeyboard = true
         }
         
-        AmplitudeManager.shared.trackScreen(.home_search)
+        amp_track(.home_search_view)
     }
     
     override func viewWillDisappear(_ animated: Bool) {

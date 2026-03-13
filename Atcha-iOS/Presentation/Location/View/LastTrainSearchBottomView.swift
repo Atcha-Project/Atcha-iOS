@@ -159,7 +159,7 @@ extension LastTrainSearchBottomView {
     @objc private func handleCurrentTap() {
         actionPublisher.send(.currentTapped)
         
-        AmplitudeManager.shared.track(.departure_change_click)
+        AmplitudeManager.shared.track(.departure_modify_click)
     }
     
     @objc private func handleSearchTap() {
@@ -171,6 +171,6 @@ extension LastTrainSearchBottomView {
     @objc private func handleDestinationTap() {
         actionPublisher.send(.homeChangeTapped)
         
-        AmplitudeManager.shared.track(.home_change_click)
+        AmplitudeManager.shared.track(.home_modify_click)
     }
 }
