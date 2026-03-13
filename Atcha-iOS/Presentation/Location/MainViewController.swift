@@ -108,6 +108,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
     //    }
     
     var shouldShowWelcomeToast: Bool = false
+    private var hasShownAlarmRegisteredToast = false
     
     // MARK: - Life Cycle
     
@@ -204,9 +205,9 @@ final class MainViewController: BaseViewController<MainViewModel>,
         self.viewModel.refreshCurrentMapCenterData()
         
         let isGuest = UserDefaultsWrapper.shared.bool(
-                    forKey: UserDefaultsWrapper.Key.isGuest.rawValue
-                ) ?? false
-
+            forKey: UserDefaultsWrapper.Key.isGuest.rawValue
+        ) ?? false
+        
         if isGuest {
             amp_track(.main_view, properties: props(AmplitudeProperty.userStatus(.guest)))
         } else {
@@ -520,6 +521,7 @@ extension MainViewController {
         // 4. 알람 해제 시 1번(초기 상태)으로 돌아감
         isFollowingUser = false
         shouldCenterToCurrentLocationOnce = true
+        hasShownAlarmRegisteredToast = false
         
         // 이번 한 번은 프리 말풍선 자동 표시를 건너뛰도록 플래그 세팅
         deferPreBalloonOnce = true
@@ -787,9 +789,10 @@ extension MainViewController {
             guard gen == self.setupGen, self.viewModel.bottomType == .departure else { return }
             guard let first = self.postAlarmMessages.first else { return }
             
-            if !wasAlarmRegisteredOnLaunch {
+            if !wasAlarmRegisteredOnLaunch && !hasShownAlarmRegisteredToast {
                 DispatchQueue.main.asyncAfter(deadline: .now() + popToastDelay) {
                     self.view.showToast(message: "알람이 등록되었습니다.")
+                    self.hasShownAlarmRegisteredToast = true // 띄웠다고 표시!
                     UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.popRegister.rawValue)
                 }
             }
