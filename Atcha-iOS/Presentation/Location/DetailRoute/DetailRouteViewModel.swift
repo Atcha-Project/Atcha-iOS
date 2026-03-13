@@ -43,6 +43,7 @@ final class DetailRouteViewModel: BaseViewModel {
     
     @Published private(set) var context: DetailRouteContext
     @Published var nearLegIDs: Set<UUID> = []
+    @Published var departedLegIDs: Set<UUID> = []
     
     @Published var deviceHeading: CLLocationDirection?
     private let headingManager = HeadingManager()
@@ -379,8 +380,25 @@ extension DetailRouteViewModel {
                 picked = [first]
             }
             
+            var departed: Set<UUID> = []
+            if let activeID = picked.first,
+               let leg = orderedLegs.first(where: { $0.id == activeID }),
+               let firstStop = leg.passStopList?.first,
+               let latStr = firstStop.lat, let lat = Double(latStr),
+               let lonStr = firstStop.lon, let lon = Double(lonStr) {
+                
+                let startLoc = CLLocation(latitude: lat, longitude: lon)
+                let currentLoc = CLLocation(latitude: coord.latitude, longitude: coord.longitude)
+                
+                // 첫 정류장에서 300m 이상 벗어났다면 '출발(탑승)'한 것으로 간주
+                if currentLoc.distance(from: startLoc) > 300 {
+                    departed.insert(activeID)
+                }
+            }
+            
             DispatchQueue.main.async {
                 self.nearLegIDs = picked
+                self.departedLegIDs = departed
             }
         }
     }

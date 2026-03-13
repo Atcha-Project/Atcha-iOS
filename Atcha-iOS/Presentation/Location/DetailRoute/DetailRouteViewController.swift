@@ -227,12 +227,22 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             .sink { [weak self] address in self?.bottomSheet.setupStartAddress(address) }
             .store(in: &cancellables)
         
-        viewModel.$nearLegIDs
+        //        viewModel.$nearLegIDs
+        //            .receive(on: RunLoop.main)
+        //            .sink { [weak self] near in
+        //                guard let self = self else { return }
+        //                let idsToHighlight = self.isAlarmFired ? near : []
+        //                self.bottomSheet.updateProximityHighlight(nearLegIDs: idsToHighlight)
+        //            }
+        //            .store(in: &cancellables)
+        Publishers.CombineLatest(viewModel.$nearLegIDs, viewModel.$departedLegIDs)
             .receive(on: RunLoop.main)
-            .sink { [weak self] near in
+            .sink { [weak self] near, departed in
                 guard let self = self else { return }
-                let idsToHighlight = self.isAlarmFired ? near : []
-                self.bottomSheet.updateProximityHighlight(nearLegIDs: idsToHighlight)
+                let actualNear = self.isAlarmFired ? near : []
+                let actualDeparted = self.isAlarmFired ? departed : []
+                
+                self.bottomSheet.updateProximityHighlight(nearLegIDs: actualNear, departedLegIDs: actualDeparted)
             }
             .store(in: &cancellables)
         
