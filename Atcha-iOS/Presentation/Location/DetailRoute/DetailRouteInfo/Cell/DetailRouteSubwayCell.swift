@@ -73,6 +73,10 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
     var currentLegTrafficInfo: LegTrafficInfo? = nil
     private var isArrivedEffectOn = false
     private var isAlarmFired: Bool = false
+    private var hasMetZero: Bool = false
+    private var isBoarded: Bool = false
+    private var hasDepartedStartStation: Bool = false
+    
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -108,6 +112,10 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
         currentRemainingSec = nil
         isAlarmFired = false
         subwayTimerLabel.isHidden = true
+        
+        hasMetZero = false
+        isBoarded = false
+        hasDepartedStartStation = false
     }
     
     override func preferredLayoutAttributesFitting(
@@ -313,6 +321,9 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
         //        }
         
         self.subwayTimerLabel.isHidden = !isAlarmFired
+        if isAlarmFired && currentRemainingSec != nil {
+            updateSubwayTimerLabel()
+        }
     }
     
     private func addStationNameLabel(info: [PassStopList]) {
@@ -325,12 +336,23 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
         }
     }
     
-    func isNowUserLocationArrived() {
-        if isArrivedEffectOn { return }
+    func isNowUserLocationArrived(hasDeparted: Bool = false) {
+        if hasDeparted && hasMetZero {
+            self.hasDepartedStartStation = true
+        }
+        
+        if isArrivedEffectOn {
+            // 출발 상태가 들어왔다면 라벨 갱신 (탑승 완료 띄우기)
+            if self.hasDepartedStartStation { updateSubwayTimerLabel() }
+            return
+        }
+        
         isArrivedEffectOn = true
         animationView.isHidden = false
         animationView.startAnimationIfNeeded(forceRestart: true)
         backgroundColor = UIColor.opacity100
+        
+        updateSubwayTimerLabel()
     }
     
     func stopArrivedEffectIfNeeded() {
@@ -478,17 +500,14 @@ extension DetailRouteSubwayCell {
             return
         }
         
+        // 무조건 1초씩 뺌 (음수 허용)
         let next = sec - 1
         currentRemainingSec = next
         
-        if next <= 0 {
-            currentRemainingSec = 0
-            updateSubwayTimerLabel()
-            stopSubwayCountdownTimer()
-            return
-        }
+        updateSubwayTimerLabel() // 라벨 업데이트 (판정은 여기서 알아서 함)
         
-        updateSubwayTimerLabel()
+        // 탑승 완료 자물쇠가 잠기면 타이머 정지
+        if isBoarded { stopSubwayCountdownTimer() }
     }
     
     private func updateSubwayTimerLabel() {
@@ -500,12 +519,38 @@ extension DetailRouteSubwayCell {
         
         subwayTimerLabel.isHidden = false
         
-        guard let sec = currentRemainingSec else {
-            subwayTimerLabel.attributedText = AtchaFont.B6_R_14("", color: .widearea)
+        if isBoarded {
+            subwayTimerLabel.attributedText = AtchaFont.B6_R_14("탑승 완료", color: .gray300)
             return
         }
         
-        if sec == 0 {
+        guard let sec = currentRemainingSec else {
+            if hasMetZero {
+                isBoarded = true
+                subwayTimerLabel.attributedText = AtchaFont.B6_R_14("탑승 완료", color: .gray300)
+            } else {
+                subwayTimerLabel.attributedText = AtchaFont.B6_R_14("", color: .widearea)
+            }
+            return
+        }
+        
+        if sec <= 0 {
+            hasMetZero = true
+        }
+        
+        if hasMetZero {
+            // (1) 역에서 150m 이상 멀어짐 (ViewModel에서 알려줌)
+            // (2) 0초 도달 후 1분(-60초)이 경과함
+            // (3) 아직 애니메이션 켜져 있는데 API가 다음 배차(sec > 0)로 갱신됨
+            if self.hasDepartedStartStation || sec <= -60 || (sec > 0 && isArrivedEffectOn) {
+                isBoarded = true // 자물쇠 딸깍
+                subwayTimerLabel.attributedText = AtchaFont.B6_R_14("탑승 완료", color: .gray300)
+                stopSubwayCountdownTimer() // 타이머 종료
+                return
+            }
+        }
+        
+        if sec <= 0 {
             subwayTimerLabel.attributedText = AtchaFont.B6_R_14("도착 또는 출발", color: .widearea)
             return
         }

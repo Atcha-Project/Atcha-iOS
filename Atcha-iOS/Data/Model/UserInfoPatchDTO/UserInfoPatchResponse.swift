@@ -13,5 +13,4 @@ struct UserInfoPatchResponse: Codable {
     let address: String?
     let lat: Double?
     let lon: Double?
-    let alertFrequencies: [Int]?
 }

@@ -9,12 +9,13 @@ import UIKit
 import TMapSDK
 import Foundation
 
-final class MainCoordinator {
+final class MainCoordinator: NSObject {
     private let navigationController: UINavigationController
     private let diContainer: MainDIContainer
     private var myPageCoordinator: MyPageCoordinator?
     private var busDetailCoordinator: BusDetailCoordinator?
     private var loginCoordinator: LoginCoordinator?
+    private var homeRegisterCoordinator: HomeRegistrationCoordinator?
     
     private var mainViewModel: MainViewModel?
     
@@ -27,6 +28,8 @@ final class MainCoordinator {
          diContainer: MainDIContainer) {
         self.navigationController = navigationController
         self.diContainer = diContainer
+        super.init()
+        self.navigationController.delegate = self
     }
     
     func start(info: LegInfo? = nil,
@@ -53,6 +56,13 @@ final class MainCoordinator {
     
     private func handle(route: MainRoute) {
         switch route {
+        case .changeHome:
+            let homeDI = diContainer.makeHomeRegisterDIContainer()
+            let coordinator = HomeRegistrationCoordinator(navigationController: navigationController, diContainer: homeDI)
+            
+            self.homeRegisterCoordinator = coordinator
+            coordinator.start()
+            
         case .myPage:
             let myPageDI = diContainer.makeMyPageDIContainer()
             let myPageCoordinator = MyPageCoordinator(
@@ -74,6 +84,8 @@ final class MainCoordinator {
             myPageCoordinator.withdrawFinish = { [weak self] in
                 DispatchQueue.main.async {
                     self?.withdrawFinish?()
+                    
+                    self?.myPageCoordinator = nil
                 }
             }
             
@@ -241,6 +253,10 @@ final class MainCoordinator {
             self.navigationController.pushViewController(modifyVC, animated: true)
             
         case .detailRoute(let address, let infos, let context):
+            if navigationController.topViewController is DetailRouteViewController {
+                print("이미 상세 경로 화면입니다. 중복 push를 방지합니다.")
+                return
+            }
             let routeDI = diContainer.makeRouteDIContainer()
             let vm = routeDI.makeDetailRouteViewModel(address: address, infos: infos, context: context)
             let vc = routeDI.makeDetailRouteViewController(viewModel: vm)
@@ -285,6 +301,8 @@ final class MainCoordinator {
                                                           startLon: startLon,
                                                           startAddress: startAddress))
                     }
+                case .dismissLockScreen:
+                    self?.navigationController.dismiss(animated: true)
                 default: do {}
                 }
             }
@@ -303,13 +321,6 @@ final class MainCoordinator {
             dismissPresentedIfNeeded {
                 DispatchQueue.global(qos: .utility).async {
                     self.mainViewModel?.showLockView = false
-                    self.mainViewModel?.showAlarmStopPopUpView = true
-                    
-                    AlarmManager.shared.sendBackgroundPush(
-                        title: "출발 알람이 자동 종료되었어요",
-                        body: "클릭해서 경로 재탐색하기"
-                    )
-                    
                 }
             }
         case .loginSheet:
@@ -329,7 +340,7 @@ final class MainCoordinator {
                         self.mainViewModel?.isGuest = newGuestStatus
                         
                         if isExist {
-//                            self.mainViewModel?.setupLocation()
+                            //                            self.mainViewModel?.setupLocation()
                             self.mainViewModel?.refreshCurrentMapCenterData()
                         } else {
                             self.routeToOnboarding?()
@@ -376,5 +387,24 @@ extension UINavigationController {
                 popToRootViewController(animated: true)
             }
         }
+    }
+}
+
+extension MainCoordinator: UINavigationControllerDelegate {
+    func navigationController(_ navigationController: UINavigationController,
+                              didShow viewController: UIViewController,
+                              animated: Bool) {
+        
+        guard viewController is MainViewController else { return }
+        
+        clearChildCoordinators()
+        mainViewModel?.refreshCurrentMapCenterData()
+    }
+    
+    private func clearChildCoordinators() {
+        self.myPageCoordinator = nil
+        self.busDetailCoordinator = nil
+        self.loginCoordinator = nil
+        self.homeRegisterCoordinator = nil
     }
 }

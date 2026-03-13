@@ -11,6 +11,7 @@ import CoreLocation
 enum HomeRegisterContext {
     case onboarding
     case myPage
+    case home
 }
 
 enum LocationSelectionState {
@@ -51,28 +52,35 @@ final class HomeRegisterViewModel: BaseViewModel {
     private func setupInitialState() {
         let defaults = UserDefaultsWrapper.shared
         
+        // 1. 이름과 주소가 이미 있다면 (직접 등록했던 유저) 바로 표시
         if let buildingName = defaults.string(forKey: UserDefaultsWrapper.Key.buildingName.rawValue),
            let address = defaults.string(forKey: UserDefaultsWrapper.Key.homeAddress.rawValue) {
             self.selectedState = .selected(name: buildingName, address: address)
-        }  else {
-            if let lat = defaults.double(forKey: UserDefaultsWrapper.Key.homeLat.rawValue),
-               let lon = defaults.double(forKey: UserDefaultsWrapper.Key.homeLon.rawValue) {
-                Task {
-                    if let location = try? await fetchCurrentAddress(lat: lat, lon: lon) {
-                        let name = location.name ?? ""
-                        let address = location.address ?? ""
-                        
-                        defaults.set(name, forKey: UserDefaultsWrapper.Key.buildingName.rawValue)
-                        defaults.set(address, forKey: UserDefaultsWrapper.Key.homeAddress.rawValue)
-                        
-                        await MainActor.run {
-                            self.selectedState = .selected(name: name, address: address)
-                        }
+            return
+        }
+        
+        // 2. 이름은 없지만 좌표는 있다면 (방금 로그인한 유저)
+        let lat = defaults.double(forKey: UserDefaultsWrapper.Key.homeLat.rawValue)
+        let lon = defaults.double(forKey: UserDefaultsWrapper.Key.homeLon.rawValue)
+        
+        if let lat, let lon, lat != 0.0 && lon != 0.0 {
+            // 이름이 없으니 좌표로 이름을 새로 따와서 채워주기
+            Task {
+                if let location = try? await fetchCurrentAddress(lat: lat, lon: lon) {
+                    let name = location.name ?? ""
+                    let addr = location.address ?? ""
+                    
+                    // 따온 이름을 저장해두기 (다음엔 1번 조건에서 걸리도록)
+                    defaults.set(name, forKey: UserDefaultsWrapper.Key.buildingName.rawValue)
+                    defaults.set(addr, forKey: UserDefaultsWrapper.Key.homeAddress.rawValue)
+                    
+                    await MainActor.run {
+                        self.selectedState = .selected(name: name, address: addr)
                     }
                 }
-            } else {
-                self.selectedState = LocationSelectionState.none
             }
+        } else {
+            self.selectedState = LocationSelectionState.none
         }
     }
     

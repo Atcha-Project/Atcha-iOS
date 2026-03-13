@@ -206,6 +206,19 @@ extension LastTrainDepartBottomView {
             }
         }
     }
+    
+    
+    func updateUIForAlarmStatus(isFired: Bool) {
+        if isFired {
+            // 알람 울린 후: 도착 예정 시간 모드
+            trainTimeLabel.attributedText = AtchaFont.B4_R_15("우리집 도착 예정시간", color: .white)
+            trainRigtImageView.isHidden = true
+        } else {
+            // 알람 울리기 전: 출발 시간 모드 (기본값)
+            trainTimeLabel.attributedText = AtchaFont.B4_R_15("출발시간", color: .white)
+            trainRigtImageView.isHidden = false
+        }
+    }
 }
 
 extension LastTrainDepartBottomView {

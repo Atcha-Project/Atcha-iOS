@@ -79,6 +79,12 @@ final class IntroViewController: BaseViewController<IntroViewModel> {
         autoScrollTimer = nil
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+    
+        amp_track(.intro_view)
+    }
+    
     private func setupUI() {
         view.addSubViews(backgroundImageView, pageControl, collectionView, guestLoginButton)
         
@@ -184,6 +190,8 @@ extension IntroViewController {
     // MARK: - Actions
     @objc private func didTapGuestLogin() {
         viewModel.guestLoginTapped()
+        
+        amp_track(.intro_start_click)
     }
 }
 

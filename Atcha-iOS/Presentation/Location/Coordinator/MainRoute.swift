@@ -16,4 +16,5 @@ enum MainRoute {
     case proximity // 가까운 거리 알림 모달
     case dismissLockScreen
     case loginSheet
+    case changeHome
 }

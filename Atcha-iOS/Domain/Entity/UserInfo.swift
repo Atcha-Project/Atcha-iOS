@@ -13,6 +13,5 @@ struct UserInfo {
     let providerId: String?
     let address: String?
     let coordinate: CLLocationCoordinate2D?
-    let alarmFrequent: [Int?]
     let appVersion: String
 }
