@@ -13,14 +13,14 @@ import UIKit
 final class AmplitudeManager {
     static let shared = AmplitudeManager()
     private init() {}
-
+    
     private let queue = DispatchQueue(label: "amp.manager.queue")
     private var client: Amplitude?
-
+    
     private var timers: [String: Date] = [:]
-
+    
     // MARK: Public API
-
+    
     func start(
         userId: Int? = nil,
         autocapture: AutocaptureOptions = [.sessions, .appLifecycles],
@@ -32,13 +32,13 @@ final class AmplitudeManager {
             assertionFailure("[AmplitudeManager] Missing AMPLITUDE_API_KEY. Check Info.plist + xcconfig mapping.")
             return
         }
-
+        
         let config = Configuration(
             apiKey: apiKey,
             logLevel: logLevel,
             autocapture: autocapture
         )
-
+        
         queue.sync {
             let c = Amplitude(configuration: config)
             if let uid = userId {
@@ -47,18 +47,18 @@ final class AmplitudeManager {
             self.client = c
         }
     }
-
+    
     func bindUser(id: String) {
         queue.async { [weak self] in
             guard let self, let client = self.client else { return }
             client.setUserId(userId: "USER_ID: \(id)")
         }
     }
-
+    
     func track(_ event: AmplitudeEvent, _ properties: [String: Any?] = [:]) {
         track(event.rawValue, properties)
     }
-
+    
     func track(_ event: String, _ properties: [String: Any?] = [:]) {
         queue.async { [weak self] in
             guard let self, let client = self.client else { return }
@@ -66,13 +66,7 @@ final class AmplitudeManager {
             client.track(eventType: event, eventProperties: props)
         }
     }
-
-    func trackScreen(_ screen: ScreenName, _ properties: [String: Any?] = [:]) {
-        var props = properties
-        props[AmplitudePropertyKey.screenName.rawValue] = screen.rawValue
-        track("screen_view", props)
-    }
-
+    
     func identify(
         set: [String: Any?] = [:],
         add: [String: Double] = [:],
@@ -91,25 +85,25 @@ final class AmplitudeManager {
             client.identify(identify: i)
         }
     }
-
+    
     func setUserProperties(_ properties: [String: Any?]) {
         identify(set: properties)
     }
-
+    
     func reset() {
         queue.async { [weak self] in
             guard let self, let client = self.client else { return }
             client.reset()
         }
     }
-
+    
     func flush() {
         queue.async { [weak self] in
             guard let self, let client = self.client else { return }
             client.flush()
         }
     }
-
+    
     var deviceId: String? {
         queue.sync { client?.getDeviceId() }
     }
@@ -120,7 +114,7 @@ private extension AmplitudeManager {
     static func readApiKey() -> String? {
         Bundle.main.object(forInfoDictionaryKey: "AMPLITUDE_API_KEY") as? String
     }
-
+    
     static func clean(_ dict: [String: Any?]) -> [String: Any] {
         var out: [String: Any] = [:]
         dict.forEach { k, v in if let v = v { out[k] = v } }
@@ -130,8 +124,8 @@ private extension AmplitudeManager {
 
 // MARK: - UIKit convenience
 extension UIViewController {
-    func amp_trackScreen(_ screen: ScreenName, extra: [String: Any?] = [:]) {
-        AmplitudeManager.shared.trackScreen(screen, extra)
+    func amp_track(_ event: AmplitudeEvent, props: [String: Any?] = [:]) {
+        AmplitudeManager.shared.track(event, props)
     }
 }
 
@@ -140,7 +134,7 @@ extension AmplitudeManager {
     func timerStart(_ key: String) {
         queue.async { [weak self] in self?.timers[key] = Date() }
     }
-
+    
     /// 타이머 종료(초 단위 반환). 없으면 0
     @discardableResult
     func timerEndSeconds(_ key: String) -> Int {
@@ -149,7 +143,7 @@ extension AmplitudeManager {
         guard let s = start else { return 0 }
         return Int(Date().timeIntervalSince(s).rounded())
     }
-
+    
     /// 사용자 프로퍼티 값을 누적(+)
     func incrementUserProperty(_ key: String, by value: Double = 1) {
         queue.async { [weak self] in
@@ -168,3 +162,4 @@ func props(_ items: (String, Any)... ) -> AmpProps {
     items.forEach { dict[$0.0] = $0.1 }
     return dict
 }
+

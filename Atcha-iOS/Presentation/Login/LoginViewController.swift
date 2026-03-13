@@ -174,6 +174,8 @@ extension LoginViewController {
     @objc private func didTapKakaoLoginButton() {
         print("카카오 로그인 버튼 터치됨")
         viewModel.kakaoLoginTapped()
+        
+        amp_track(.login_click, props: props(AmplitudeProperty.social(.kakao)))
     }
     
     @objc private func didTapAppleLoginButton() {
@@ -183,6 +185,8 @@ extension LoginViewController {
         ) { [weak self] delegate in
             self?.appleLoginDelegateWrapper = delegate
         }
+        
+        amp_track(.login_click, props: props(AmplitudeProperty.social(.apple)))
     }
 }
 
