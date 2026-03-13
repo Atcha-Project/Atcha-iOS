@@ -34,15 +34,10 @@ final class LastTrainSearchBottomView: UIView {
         return stack
     }()
     
-    private lazy var arrivalLocationView: UIStackView = {
-        let stack = UIStackView(arrangedSubviews: [arrivalDotView, arrivalLocationLabel])
-        stack.axis = .horizontal
-        stack.alignment = .center
-        stack.spacing = 8
-        stack.backgroundColor = .clear
-        stack.isLayoutMarginsRelativeArrangement = true
-        stack.layoutMargins = UIEdgeInsets(top: 12, left: 12, bottom: 12, right: 12)
-        return stack
+    private let arrivalLocationView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .clear
+        return view
     }()
     
     private let arrivalImageView: UIImageView = {
@@ -88,7 +83,9 @@ final class LastTrainSearchBottomView: UIView {
         currentLocationLabel.attributedText = AtchaFont.B1_R_17(lineHeight: 0, "현위치: 조회 중..", color: .main)
         arrivalLocationLabel.attributedText = AtchaFont.B1_R_17(lineHeight: 0, "도착지: 우리집", color: .gray200)
         
-        addSubViews(currentLocationView, arrivalLocationView, searchButton, arrivalImageView)
+        arrivalLocationView.addSubViews(arrivalDotView, arrivalLocationLabel, arrivalImageView)
+        
+        addSubViews(currentLocationView, arrivalLocationView, searchButton)
         
         let tap = UITapGestureRecognizer(target: self, action: #selector(handleCurrentTap))
         currentLocationView.isUserInteractionEnabled = true
@@ -97,9 +94,6 @@ final class LastTrainSearchBottomView: UIView {
         let arrivalTap = UITapGestureRecognizer(target: self, action: #selector(handleDestinationTap))
         arrivalLocationView.isUserInteractionEnabled = true
         arrivalLocationView.addGestureRecognizer(arrivalTap)
-        
-        arrivalImageView.isUserInteractionEnabled = true
-        arrivalImageView.addGestureRecognizer(arrivalTap)
         
         searchButton.addTarget(self, action: #selector(handleSearchTap), for: .touchUpInside)
     }
@@ -121,13 +115,24 @@ final class LastTrainSearchBottomView: UIView {
         
         arrivalLocationView.snp.makeConstraints { make in
             make.horizontalEdges.equalToSuperview().inset(16)
-            make.top.equalTo(currentLocationView.snp.bottom).inset(-8)
+            make.top.equalTo(currentLocationView.snp.bottom).offset(8)
             make.height.equalTo(48)
         }
         
+        arrivalDotView.snp.makeConstraints { make in
+            make.width.height.equalTo(4)
+            make.leading.equalToSuperview().offset(12)
+            make.centerY.equalToSuperview()
+        }
+        
+        arrivalLocationLabel.snp.makeConstraints { make in
+            make.leading.equalTo(arrivalDotView.snp.trailing).offset(8)
+            make.centerY.equalToSuperview()
+        }
+        
         arrivalImageView.snp.makeConstraints { make in
-            make.trailing.equalTo(arrivalLocationView.snp.trailing).inset(8)
-            make.centerY.equalTo(arrivalLocationView)
+            make.trailing.equalToSuperview().inset(8)
+            make.centerY.equalToSuperview()
             make.height.width.equalTo(20)
         }
         
@@ -158,7 +163,7 @@ extension LastTrainSearchBottomView {
     @objc private func handleSearchTap() {
         actionPublisher.send(.searchTapped)
     }
-
+    
     @objc private func handleDestinationTap() {
         actionPublisher.send(.homeChangeTapped)
     }
