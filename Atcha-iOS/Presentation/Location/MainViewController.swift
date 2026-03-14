@@ -968,7 +968,7 @@ extension MainViewController {
             }
             
         } else if cycle == 1 {
-            showTransientBalloon(isFare: false, text: "시간에 맞춰 알림을 드릴게요")
+            showTransientBalloon(isFare: false, text: "시간에 맞춰 알람을 드릴게요")
             postAlarmTapIndex += 1
             
         } else {

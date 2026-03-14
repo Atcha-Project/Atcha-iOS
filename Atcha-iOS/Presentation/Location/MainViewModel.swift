@@ -230,11 +230,14 @@ final class MainViewModel: BaseViewModel{
             }
             
             self.startHeading()
+            streamTask?.cancel()
             
             streamTask = Task {
                 for await location in streamUseCase.startUpdate() {
                     let now = Date()
                     // 앱 최초 실행 시 빠른 위치 탐색을 위해 nil이면 999.0(강제 탈출 모드) 세팅
+                    let isInitialTracking = !self.didSendInitialLocation
+                    
                     let timeGap = self.lastValidTime != nil ? now.timeIntervalSince(self.lastValidTime!) : 999.0
                     let isRecovering = timeGap > 60.0
                     
@@ -248,8 +251,9 @@ final class MainViewModel: BaseViewModel{
                     
                     if isRecovering {
                         self.consecutiveValidCount += 1
+                        let requiredCount = isInitialTracking ? 1 : 3
                         
-                        if self.consecutiveValidCount >= 3 {
+                        if self.consecutiveValidCount >= requiredCount {
                             smoother.reset(location.coordinate)
                             
                             self.lastValidTime = now
@@ -410,6 +414,15 @@ final class MainViewModel: BaseViewModel{
         if let alarmObserver { NotificationCenter.default.removeObserver(alarmObserver) }
         if let refreshUpdateToken { NotificationCenter.default.removeObserver(refreshUpdateToken) }
     }
+    
+    func resetLocationState() {
+            self.lastValidTime = nil
+            self.didSendInitialLocation = false
+            self.consecutiveValidCount = 0
+            self.currentLocation = nil
+            self.selectedLocation = nil
+            self.streamTask?.cancel()
+        }
 }
 
 // MARK: - Alarm

@@ -76,6 +76,8 @@ final class MainCoordinator: NSObject {
                     
                     self.mainViewModel?.isGuest = true
                     self.mainViewModel?.bottomType = .search
+                    self.mainViewModel?.resetLocationState()
+                    
                     self.navigationController.popToRootViewController(animated: true)
                     
                     self.myPageCoordinator = nil
@@ -83,6 +85,7 @@ final class MainCoordinator: NSObject {
             }
             myPageCoordinator.withdrawFinish = { [weak self] in
                 DispatchQueue.main.async {
+                    self?.mainViewModel?.resetLocationState()
                     self?.withdrawFinish?()
                     
                     self?.myPageCoordinator = nil
