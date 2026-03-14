@@ -567,7 +567,6 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             
             // 2. 좌표가 있다면 '애니메이션 없이' 즉시 현위치로 이동
             if let currentCoord = viewModel.currentLocation {
-                mapContainerView.setupCenter(location: currentCoord) // setupZoomCenter 대신 setupCenter(이동만)
                 mapContainerView.setupZoomCenter(location: currentCoord) // 필요 시 줌까지
             }
         } else {
@@ -647,7 +646,6 @@ extension DetailRouteViewController {
         if isAlarmFired {
             if let currentCoord = viewModel.currentLocation {
                 // 애니메이션 없이 즉시 이동하여 '깜빡임' 방지
-                mapContainerView.setupCenter(location: currentCoord)
                 mapContainerView.setupZoomCenter(location: currentCoord)
             }
         }
