@@ -89,9 +89,9 @@ final class MainViewController: BaseViewController<MainViewModel>,
         super.viewDidLoad()
         
         if !UserDefaults.standard.bool(forKey: "IsAppFirstLaunchedEver") {
-                    self.isFirstVisit = true
-                    UserDefaults.standard.set(true, forKey: "IsAppFirstLaunchedEver")
-                }
+            self.isFirstVisit = true
+            UserDefaults.standard.set(true, forKey: "IsAppFirstLaunchedEver")
+        }
         
         wasAlarmRegisteredOnLaunch = UserDefaultsWrapper.shared.bool(
             forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue
@@ -164,24 +164,24 @@ final class MainViewController: BaseViewController<MainViewModel>,
         if shouldShowWelcomeToast {
             shouldShowWelcomeToast = false
             
-            // 토스트를 띄우고, 사라진 다음에 말풍선을 띄우도록 통일
-            showToastAndThen(message: "집 주소가 등록되었어요", delay: 2.5) { [weak self] in
-                guard let self = self else { return }
-                let status = CLLocationManager.authorizationStatus()
-                if status != .authorizedAlways && status != .authorizedWhenInUse {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                        self.ensureLocationPermissionOrShowToast()
-                    }
+            
+            self.view.showToast(message: "집 주소가 등록되었어요")
+            
+            
+            let status = CLLocationManager.authorizationStatus()
+            if status != .authorizedAlways && status != .authorizedWhenInUse {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
+                    self?.ensureLocationPermissionOrShowToast()
                 }
-                
-                // 토스트 끝나면 고정 말풍선 호출
-                if self.viewModel.bottomType == .search || self.viewModel.bottomType == nil {
-                    self.showOrUpdatePersistentBalloon(
-                        isFirstVisit: self.shouldShowTopLineInSearch,
-                        isServiceRegion: self.latestIsServiceRegion ?? false,
-                        fareStr: self.latestFareString
-                    )
-                }
+            }
+            
+            // 즉시 말풍선 업데이트 (1줄짜리로 자연스럽게 나타남)
+            if self.viewModel.bottomType == .search || self.viewModel.bottomType == nil {
+                self.showOrUpdatePersistentBalloon(
+                    isFirstVisit: self.isFirstVisit,
+                    isServiceRegion: self.latestIsServiceRegion ?? false,
+                    fareStr: self.latestFareString
+                )
             }
         }
         
