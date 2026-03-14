@@ -82,6 +82,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
     
     private var isFirstVisit: Bool = false
     private var isShowingToast = false
+    private var balloonHideWorkItem: DispatchWorkItem?
     
     // MARK: - Life Cycle
     
@@ -1167,6 +1168,8 @@ extension MainViewController {
     private func showSequentialBalloons() {
         guard !isShowingToast else { return } // 토스트 떠있으면 무조건 무시!
         
+        balloonHideWorkItem?.cancel()
+        
         safeStartJump()
         ballonView.layer.removeAllAnimations()
         ballonView.isHidden = false
@@ -1177,16 +1180,18 @@ extension MainViewController {
         // 1. 위가 먼저 나타나고 '1.0초' 뒤 아래가 나타남
         ballonView.animateStaggered(secondaryDelay: 1.0, fade: 0.3)
         
-        // 2. 첫 번째(위)가 뜬 지 '2.0초' 뒤에 사라지기 시작함
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
-            // 3. 위쪽이 사라지고 '1.0초' 뒤에 아래쪽도 사라짐
+        let workItem = DispatchWorkItem { [weak self] in
             self?.ballonView.animateHideStaggered(secondaryDelay: 1.0, fade: 0.3)
         }
+        
+        balloonHideWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: workItem)
     }
     
     // 4. 휘발형 (캐릭터 탭, locationTapped)
     private func showTransientBalloon(isFare: Bool, text: String) {
         guard !isShowingToast else { return } // 토스트 떠있으면 무조건 무시!
+        balloonHideWorkItem?.cancel()
         
         safeStartJump()
         ballonView.layer.removeAllAnimations()
@@ -1202,9 +1207,11 @@ extension MainViewController {
         // 한 줄만 즉시/스태거로 띄움
         ballonView.animateStaggered(secondaryDelay: 0, fade: 0.25)
         
-        // 2초 뒤 자동 숨김으로 수정
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
+        let workItem = DispatchWorkItem { [weak self] in
             self?.ballonView.animateHideStaggered(secondaryDelay: 0, fade: 0.25)
         }
+        
+        balloonHideWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: workItem)
     }
 }
