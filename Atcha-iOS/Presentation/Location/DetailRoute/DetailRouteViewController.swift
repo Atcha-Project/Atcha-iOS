@@ -604,6 +604,8 @@ extension DetailRouteViewController {
     @objc private func didTapLocationButton() {
         ensureLocationPermissionOrShowToast()
         
+        viewModel.forceLocationSnap()
+        
         isFollowingUser = true
         shouldCenterToCurrentLocationOnce = true
         viewModel.startHeading()

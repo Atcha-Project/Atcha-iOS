@@ -906,6 +906,8 @@ extension MainViewController {
     @objc private func didTapLocationButton() {
         guard ensureLocationPermissionOrShowToast() else { return }
         
+        viewModel.forceLocationSnap()
+        
         isFollowingUser = true
         viewModel.startHeading()
         

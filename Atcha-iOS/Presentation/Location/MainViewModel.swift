@@ -423,6 +423,12 @@ final class MainViewModel: BaseViewModel{
         self.selectedLocation = nil
         self.streamTask?.cancel()
     }
+    
+    func forceLocationSnap() {
+        self.didSendInitialLocation = false
+        self.lastValidTime = nil
+        self.consecutiveValidCount = 0
+    }
 }
 
 // MARK: - Alarm
