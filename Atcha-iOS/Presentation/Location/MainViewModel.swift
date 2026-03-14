@@ -416,13 +416,13 @@ final class MainViewModel: BaseViewModel{
     }
     
     func resetLocationState() {
-            self.lastValidTime = nil
-            self.didSendInitialLocation = false
-            self.consecutiveValidCount = 0
-            self.currentLocation = nil
-            self.selectedLocation = nil
-            self.streamTask?.cancel()
-        }
+        self.lastValidTime = nil
+        self.didSendInitialLocation = false
+        self.consecutiveValidCount = 0
+        self.currentLocation = nil
+        self.selectedLocation = nil
+        self.streamTask?.cancel()
+    }
 }
 
 // MARK: - Alarm
