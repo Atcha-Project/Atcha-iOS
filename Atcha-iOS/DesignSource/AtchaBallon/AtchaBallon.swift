@@ -9,8 +9,8 @@ import UIKit
 import SnapKit
 
 final class AtchaBallon: UIView {
-    private let topLabel: AtcahaInsetLabel = AtcahaInsetLabel()
-    private let bottomLabel: AtcahaInsetLabel = AtcahaInsetLabel()
+    var topLabel: AtcahaInsetLabel = AtcahaInsetLabel()
+    var bottomLabel: AtcahaInsetLabel = AtcahaInsetLabel()
     private let triangeImageView: UIImageView = UIImageView()
     private lazy var containerStackView: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [topLabel, bottomLabel])
@@ -184,3 +184,38 @@ final class AtchaBallon: UIView {
         }
 }
 
+extension AtchaBallon {
+    // 내부 뷰를 초기화 (모두 투명하게)
+    func resetAndHideAll() {
+        self.layer.removeAllAnimations()
+        self.topLabel.alpha = 0
+        self.bottomLabel.alpha = 0
+        self.triangeImageView.alpha = 0
+        self.isHidden = false
+    }
+
+    // Top 라벨 서서히 표시/숨김
+    func setTopVisible(_ isVisible: Bool, duration: TimeInterval = 0.3) {
+        self.topLabel.isHidden = false
+        UIView.animate(withDuration: duration) {
+            self.topLabel.alpha = isVisible ? 1 : 0
+        }
+    }
+
+    // Bottom 라벨(과 삼각형) 서서히 표시/숨김
+    func setBottomVisible(_ isVisible: Bool, duration: TimeInterval = 0.3) {
+        self.bottomLabel.isHidden = false
+        UIView.animate(withDuration: duration) {
+            self.bottomLabel.alpha = isVisible ? 1 : 0
+            self.triangeImageView.alpha = isVisible ? 1 : 0
+        }
+    }
+    
+    // 택시비 AttributedString 생성 헬퍼
+    static func makeFareAttributedString(fareStr: String) -> NSAttributedString {
+        let gray = NSMutableAttributedString(string: "여기서 막차 놓치면 택시비 ", attributes: [.foregroundColor: UIColor.gray100])
+        let white = NSMutableAttributedString(string: "약 \(fareStr)", attributes: [.foregroundColor: UIColor.white])
+        gray.append(white)
+        return gray
+    }
+}
