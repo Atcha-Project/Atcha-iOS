@@ -336,14 +336,14 @@ final class MainCoordinator: NSObject {
             
             loginCoordinator.onFinishWithExistUser = { [weak self] isExist in
                 DispatchQueue.main.async {
-                    self?.navigationController.dismiss(animated: true) {
-                        guard let self = self else { return }
-                        
-                        let newGuestStatus = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.isGuest.rawValue) ?? false
-                        self.mainViewModel?.isGuest = newGuestStatus
+                    guard let self = self else { return }
+                    
+                    UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.isGuest.rawValue)
+                    self.mainViewModel?.isGuest = false
+                    
+                    self.navigationController.dismiss(animated: true) {
                         
                         if isExist {
-                            //                            self.mainViewModel?.setupLocation()
                             self.mainViewModel?.refreshCurrentMapCenterData()
                         } else {
                             self.routeToOnboarding?()

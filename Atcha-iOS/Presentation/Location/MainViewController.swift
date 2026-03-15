@@ -722,17 +722,13 @@ extension MainViewController {
                 }
                 
                 // 검색 모드일 때는 즉시 말풍선 글자 업데이트
-                if self.viewModel.bottomType == .search {
-                    let isService = self.latestIsServiceRegion
-                    
-                    // 핵심: 회원이면서 서비스 지역인데 아직 택시비가 없으면(로딩중) 업데이트 생략!
-                    if isService != true || isGuest || self.latestFareString != nil {
-                        self.showOrUpdatePersistentBalloon(
-                            isFirstVisit: self.isFirstVisit,
-                            isServiceRegion: isService,
-                            fareStr: self.latestFareString
-                        )
-                    }
+                if self.viewModel.bottomType == .search || self.viewModel.bottomType == nil {
+                    // 방해물(업데이트 생략 조건문) 제거! 이제 무조건 뷰를 업데이트합니다.
+                    self.showOrUpdatePersistentBalloon(
+                        isFirstVisit: self.isFirstVisit,
+                        isServiceRegion: self.latestIsServiceRegion,
+                        fareStr: self.latestFareString
+                    )
                 }
             }
             .store(in: &cancellables)
@@ -758,17 +754,13 @@ extension MainViewController {
                 }
                 
                 // 검색 모드일 때는 즉시 말풍선 글자 업데이트
-                if ok != nil && self.viewModel.bottomType == .search {
-                    let isService = ok
-                    
-                    // 핵심: 회원이면서 서비스 지역인데 아직 택시비가 없으면(로딩중) 업데이트 생략!
-                    if isService != true || self.viewModel.isGuest || self.latestFareString != nil {
-                        self.showOrUpdatePersistentBalloon(
-                            isFirstVisit: self.isFirstVisit,
-                            isServiceRegion: isService,
-                            fareStr: self.latestFareString
-                        )
-                    }
+                if self.viewModel.bottomType == .search || self.viewModel.bottomType == nil {
+                    // 방해물(업데이트 생략 조건문) 제거!
+                    self.showOrUpdatePersistentBalloon(
+                        isFirstVisit: self.isFirstVisit,
+                        isServiceRegion: ok,
+                        fareStr: self.latestFareString
+                    )
                 }
             }
             .store(in: &cancellables)
