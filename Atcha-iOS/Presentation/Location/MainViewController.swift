@@ -1148,17 +1148,30 @@ extension MainViewController {
     }
     
     // 1 & 2. 알람 등록 전 (고정형) - 위치 이동시 글자만 바뀜
-    private func showOrUpdatePersistentBalloon(isFirstVisit: Bool, isServiceRegion: Bool?, fareStr: String?) { // 타입 Bool? 로 변경
+    private func showOrUpdatePersistentBalloon(isFirstVisit: Bool, isServiceRegion: Bool?, fareStr: String?) {
         guard !isShowingToast else { return }
         
-        let displayFare = viewModel.isGuest ? "???원" : "\(fareStr ?? "???")원"
         let topText = "지도를 움직여 출발지를 설정해요"
         
-        // 확실하게 false일 때만 지역 제한 문구 노출, nil(로딩중)이거나 true면 택시비 안내
         if isServiceRegion == false {
+            // 1. 확실하게 서비스 지역이 아닐 때
             ballonView.setupTitle(topMessage: isFirstVisit ? topText : nil, bottomMessage: "서울, 경기, 인천 내에서만 사용할 수 있어요")
+            
         } else {
-            ballonView.separationTitle(grayMessage: "여기서 막차 놓치면 택시비 ", whiteMessage: "약 \(displayFare)", showTopLine: isFirstVisit)
+            // 2. 서비스 지역이거나 로딩 중일 때
+            if viewModel.isGuest {
+                // 비회원: ???원 유지 (색상 분리)
+                ballonView.separationTitle(grayMessage: "여기서 막차 놓치면 택시비 ", whiteMessage: "약 ???원", showTopLine: isFirstVisit)
+            } else {
+                // 회원
+                if let fare = fareStr {
+                    // 요금 조회가 완료되었을 때 (색상 분리)
+                    ballonView.separationTitle(grayMessage: "여기서 막차 놓치면 택시비 ", whiteMessage: "약 \(fare)원", showTopLine: isFirstVisit)
+                } else {
+                    // 요금 조회 중일 때 (단일 색상으로 '계산중...' 표시)
+                    ballonView.separationTitle(grayMessage: "여기서 막차 놓치면 택시비 계산중...", whiteMessage: "", showTopLine: isFirstVisit)
+                }
+            }
         }
         
         if ballonView.isHidden || ballonView.alpha == 0 {
