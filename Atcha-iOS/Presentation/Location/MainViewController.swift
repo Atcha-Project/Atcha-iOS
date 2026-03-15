@@ -938,6 +938,9 @@ extension MainViewController {
         
         let cycle = postAlarmTapIndex % 3
         
+        // 추가: 현재 알람이 울린 상태인지 확인
+        let isAlarmFired = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue) ?? false
+        
         if cycle == 0 {
             // 요금 정보 표시 (동적 로딩)
             let now = CACurrentMediaTime()
@@ -967,12 +970,19 @@ extension MainViewController {
                 let fareStr = latestFareString ?? "???"
                 let displayFare = viewModel.isGuest ? "???원" : "\(fareStr)원"
                 showTransientBalloon(isFare: true, text: displayFare)
-                postAlarmTapIndex += 1
+                self.postAlarmTapIndex += 1
             }
             
         } else if cycle == 1 {
-            showTransientBalloon(isFare: false, text: "시간에 맞춰 알람을 드릴게요")
-            postAlarmTapIndex += 1
+            // 수정: 알람이 울렸다면 이 메시지를 건너뛰고 다음 메시지를 띄움
+            if isAlarmFired {
+                showTransientBalloon(isFare: false, text: "교통 상황에 따라 시간이 달라질 수 있어요")
+                // cycle 1을 건너뛰었으므로 다음 탭이 cycle 0(택시비)으로 돌아가도록 index를 2 올려줌
+                postAlarmTapIndex += 2
+            } else {
+                showTransientBalloon(isFare: false, text: "시간에 맞춰 알림을 드릴게요")
+                postAlarmTapIndex += 1
+            }
             
         } else {
             showTransientBalloon(isFare: false, text: "교통 상황에 따라 시간이 달라질 수 있어요")
