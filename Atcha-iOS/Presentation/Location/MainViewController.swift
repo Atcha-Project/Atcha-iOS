@@ -180,7 +180,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
             if self.viewModel.bottomType == .search || self.viewModel.bottomType == nil {
                 self.showOrUpdatePersistentBalloon(
                     isFirstVisit: self.isFirstVisit,
-                    isServiceRegion: self.latestIsServiceRegion ?? false,
+                    isServiceRegion: self.latestIsServiceRegion,
                     fareStr: self.latestFareString
                 )
             }
@@ -688,10 +688,10 @@ extension MainViewController {
             mapContainerView.beforeUserMarker()
             updateAtchaImageConstraint(relativeTo: lastTrainSearchView)
             
-            let isService = self.latestIsServiceRegion ?? false
+            let isService = self.latestIsServiceRegion
             
             // 여기도 동일하게 로딩중 무시 조건 적용
-            if !isService || self.viewModel.isGuest || self.latestFareString != nil {
+            if isService != true || self.viewModel.isGuest || self.latestFareString != nil {
                 showOrUpdatePersistentBalloon(
                     isFirstVisit: self.isFirstVisit,
                     isServiceRegion: isService,
@@ -723,10 +723,10 @@ extension MainViewController {
                 
                 // 검색 모드일 때는 즉시 말풍선 글자 업데이트
                 if self.viewModel.bottomType == .search {
-                    let isService = self.latestIsServiceRegion ?? false
+                    let isService = self.latestIsServiceRegion
                     
                     // 핵심: 회원이면서 서비스 지역인데 아직 택시비가 없으면(로딩중) 업데이트 생략!
-                    if !isService || isGuest || self.latestFareString != nil {
+                    if isService != true || isGuest || self.latestFareString != nil {
                         self.showOrUpdatePersistentBalloon(
                             isFirstVisit: self.isFirstVisit,
                             isServiceRegion: isService,
@@ -759,10 +759,10 @@ extension MainViewController {
                 
                 // 검색 모드일 때는 즉시 말풍선 글자 업데이트
                 if ok != nil && self.viewModel.bottomType == .search {
-                    let isService = ok ?? false
+                    let isService = ok
                     
                     // 핵심: 회원이면서 서비스 지역인데 아직 택시비가 없으면(로딩중) 업데이트 생략!
-                    if !isService || self.viewModel.isGuest || self.latestFareString != nil {
+                    if isService != true || self.viewModel.isGuest || self.latestFareString != nil {
                         self.showOrUpdatePersistentBalloon(
                             isFirstVisit: self.isFirstVisit,
                             isServiceRegion: isService,
@@ -1148,30 +1148,27 @@ extension MainViewController {
     }
     
     // 1 & 2. 알람 등록 전 (고정형) - 위치 이동시 글자만 바뀜
-    private func showOrUpdatePersistentBalloon(isFirstVisit: Bool, isServiceRegion: Bool, fareStr: String?) {
-        guard !isShowingToast else { return } // 토스트 떠있으면 무조건 무시!
+    private func showOrUpdatePersistentBalloon(isFirstVisit: Bool, isServiceRegion: Bool?, fareStr: String?) { // 타입 Bool? 로 변경
+        guard !isShowingToast else { return }
         
         let displayFare = viewModel.isGuest ? "???원" : "\(fareStr ?? "???")원"
         let topText = "지도를 움직여 출발지를 설정해요"
         
-        // 말풍선 내용 세팅
-        if isServiceRegion {
-            ballonView.separationTitle(grayMessage: "여기서 막차 놓치면 택시비 ", whiteMessage: "약 \(displayFare)", showTopLine: isFirstVisit)
-        } else {
+        // 확실하게 false일 때만 지역 제한 문구 노출, nil(로딩중)이거나 true면 택시비 안내
+        if isServiceRegion == false {
             ballonView.setupTitle(topMessage: isFirstVisit ? topText : nil, bottomMessage: "서울, 경기, 인천 내에서만 사용할 수 있어요")
+        } else {
+            ballonView.separationTitle(grayMessage: "여기서 막차 놓치면 택시비 ", whiteMessage: "약 \(displayFare)", showTopLine: isFirstVisit)
         }
         
-        // 이미 떠 있으면 텍스트만 업데이트, 아니면 새로 등장
         if ballonView.isHidden || ballonView.alpha == 0 {
             safeStartJump() // 무조건 점프!
             ballonView.isHidden = false
             ballonView.alpha = 1
             
-            // 처음 뜰 때는 서서히 애니메이션 적용 (두 줄이면 0.8초 딜레이 뒤 아래쪽 등장)
             let delay: TimeInterval = isFirstVisit ? 0.8 : 0.0
             ballonView.animateStaggered(secondaryDelay: delay, fade: 0.3)
         } else {
-            // 이미 떠있는 상태면 위치 이동으로 인한 글자 업데이트이므로 즉시 바꿈
             ballonView.revealImmediately()
         }
     }
