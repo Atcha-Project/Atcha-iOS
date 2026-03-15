@@ -241,7 +241,13 @@ final class MainViewModel: BaseViewModel{
                     let timeGap = self.lastValidTime != nil ? now.timeIntervalSince(self.lastValidTime!) : 999.0
                     let isRecovering = timeGap > 60.0
                     
-                    let accuracyThreshold = isRecovering ? 300.0 : 150.0
+                    let accuracyThreshold: CLLocationAccuracy
+                    
+                    if isInitialTracking {
+                        accuracyThreshold = 1000.0 // 시청 탈출용 널널한 기준
+                    } else {
+                        accuracyThreshold = isRecovering ? 300.0 : 150.0 // 회원님의 지하철 복구 로직 유지!
+                    }
                     
                     // 정확도 필터링
                     guard location.horizontalAccuracy < accuracyThreshold else {
