@@ -55,8 +55,14 @@ final class DetailRouteViewModel: BaseViewModel {
     @Published var isRefreshing: Bool = false
     
     private var lastValidTime: Date? = nil
-    private var consecutiveValidCount = 0
+    private var didSendInitialLocation = false
     
+    private var consecutiveValidCount = 0
+    func forceLocationSnap() {
+        self.didSendInitialLocation = false
+        self.lastValidTime = nil
+        self.consecutiveValidCount = 0
+    }
     //#if DEBUG
     //@Published var mockLocation: CLLocationCoordinate2D? = nil
     //#endif
@@ -204,10 +210,19 @@ final class DetailRouteViewModel: BaseViewModel {
             streamTask = Task {
                 for await location in streamUseCase.startUpdate() {
                     let now = Date()
+                    
+                    let isInitialTracking = !self.didSendInitialLocation
+                    
                     let timeGap = self.lastValidTime != nil ? now.timeIntervalSince(self.lastValidTime!) : 999.0
                     let isRecovering = timeGap > 60.0
                     
-                    let accuracyThreshold = isRecovering ? 300.0 : 150.0
+                    let accuracyThreshold: CLLocationAccuracy
+                    
+                    if isInitialTracking {
+                        accuracyThreshold = 1000.0 // 시청 탈출용 널널한 기준
+                    } else {
+                        accuracyThreshold = isRecovering ? 300.0 : 150.0 // 회원님의 지하철 복구 로직 유지!
+                    }
                     
                     guard location.horizontalAccuracy < accuracyThreshold else {
                         self.consecutiveValidCount = 0
@@ -218,7 +233,9 @@ final class DetailRouteViewModel: BaseViewModel {
                         // 지상 탈출이 의심될 때: 바로 안 믿고 카운터를 올립니다.
                         self.consecutiveValidCount += 1
                         
-                        if self.consecutiveValidCount >= 3 {
+                        let requiredCount = isInitialTracking ? 1 : 3
+                        
+                        if self.consecutiveValidCount >= requiredCount {
                             // 3번 연속(약 3초) 정상 신호가 들어왔다? 이건 100% 진짜 지상이다!
                             smoother.reset(location.coordinate)
                             
@@ -252,6 +269,9 @@ final class DetailRouteViewModel: BaseViewModel {
                     
                     await MainActor.run {
                         self.currentLocation = capturedCoord
+                        if !self.didSendInitialLocation {
+                            self.didSendInitialLocation = true
+                        }
                         HomeArrivalManager.shared.checkHomeArrival(currentCoord: capturedCoord)
                     }
                     
