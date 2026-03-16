@@ -82,6 +82,8 @@ enum AtchaColor{
         static let remainTime = UIColor(named: "remainTime")!
         static let paddingLabel = UIColor(named: "paddingLabel")!
     }
+    
+    static let neutral = UIColor(named: "neutral")
     // MARK: - 사용 예시
     //
     // titleLabel.textColor = AtchaColor.gray900

@@ -54,7 +54,23 @@ final class SplashViewModel: BaseViewModel {
     func fetchUserInfo() {
         Task {
             do {
-                let _ = try await fetchUserUseCase.excute()
+                let response = try await fetchUserUseCase.excute()
+                if let lat = response?.coordinate?.latitude,
+                   let lon = response?.coordinate?.longitude,
+                   let id = response?.id{
+                    UserDefaultsWrapper.shared.set(lat, forKey: UserDefaultsWrapper.Key.homeLat.rawValue)
+                    UserDefaultsWrapper.shared.set(lon, forKey: UserDefaultsWrapper.Key.homeLon.rawValue)
+                    UserDefaultsWrapper.shared.set(id, forKey: UserDefaultsWrapper.Key.userId
+                        .rawValue)
+                    UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.reVisit
+                        .rawValue)
+                    
+                    AmplitudeManager.shared.bindUser(id: String(id))
+                    AmplitudeManager.shared.flush()
+                }
+                
+                UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.isGuest.rawValue)
+                
             } catch {
                 print("유저정보 패치 실패")
             }

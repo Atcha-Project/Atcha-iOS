@@ -72,13 +72,6 @@ final class PushAlarmViewModel: BaseViewModel {
                     UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.reVisit
                         .rawValue)
                     
-                    let dwellSeconds = AmplitudeManager.shared.timerEndSeconds("signup_dwell")
-                    AmplitudeManager.shared.track(
-                        .signup,
-                        props(
-                            AmplitudeProperty.dwellTime(seconds: dwellSeconds)
-                        )
-                    )
                     print("회원가입 lat/lon 저장 완료: \(lat), \(lon)")
                 } else {
                     print("회원가입 응답에 lat/lon 없음")

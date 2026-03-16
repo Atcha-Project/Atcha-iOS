@@ -71,7 +71,7 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        AmplitudeManager.shared.trackScreen(.bus_info)
+        amp_track(.bus_info_view)
     }
     
     override func viewDidDisappear(_ animated: Bool) {
@@ -332,5 +332,7 @@ class BusInfoViewController: BaseViewController<BusInfoViewModel> {
         refreshButton.start()
         showLoadingOnce()
         viewModel.refresh()
+        
+        amp_track(.bus_info_refresh_click)
     }
 }

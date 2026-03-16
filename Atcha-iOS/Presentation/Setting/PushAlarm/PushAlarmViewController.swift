@@ -33,8 +33,8 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
         if let selectedOption = self.selectedOption {
             AlarmManager.shared.setAlarmOption(selectedOption)
             
-            AmplitudeManager.shared.track(
-                .alarm_alert_type_setting,
+            amp_track(
+                .alarm_alert_type_setting, properties:
                 props(
                     AmplitudeProperty.alertType(self.mapAlertType(selectedOption))
                 )
@@ -52,12 +52,6 @@ final class PushAlarmViewController: BaseViewController<PushAlarmViewModel> {
         }
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        
-        AmplitudeManager.shared.trackScreen(.alarm_setting)
-        
-    }
     
     override func viewDidLoad() {
         super.viewDidLoad()

@@ -8,42 +8,89 @@
 import Foundation
 
 enum AmplitudeEvent: String {
-    case permission_setting = "permission_setting"
-    case search_location_click = "search_location_click"
-    case current_location_click = "current_location_click"
-    case home_register = "home_register"
-    case alarm_alert_type_setting = "alarm_alert_type_setting"
-    case signup = "signup"
-    case course_search_click = "course_search_click"
-    case origin_search_click = "origin_search_click"
-    case origin_setting = "origin_setting"
-    case course_change_click = "course_change_click"
-    case course_detail_toggle_click = "course_detail_toggle_click"
-    case course_detail_click = "course_detail_click"
-    case bus_detail_click = "bus_detail_click"
-    case bus_info_click = "bus_info_click"
-    case long_interval_alarm_register = "long_interval_alarm_register"
-    case alarm_register = "alarm_register"
-    case character_click = "character_click"
-    case origin_time_click = "origin_time_click"
-    case course_click = "course_click"
-    case course_refresh_click = "course_refresh_click"
-    case start_click = "start_click"
-    case later_course_click = "later_course_click"
-    case another_alarm_register = "another_alarm_register"
-    case logout = "logout"
-    case withdraw = "withdraw"
-    case alarm_cancel = "alarm_cancel"
+    // MARK: - 온보딩
+    case intro_view = "인트로_진입"
+    case intro_start_click = "인트로_시작_클릭"
+    
+    // MARK: - 메인
+    case main_view = "메인_진입" // 1. 비로그인 진입 2. 로그인 진입
+    case mypage_click = "마이페이지_클릭"
+    case current_location_click = "현재_위치_버튼_클릭"
+    
+    case departure_modify_click = "출발지_수정_클릭"
+    case home_modify_click = "집주소_수정_클릭"
+    case course_search_click = "막차_검색하기_클릭"
+    
+    case login_view = "로그인_진입" // 1. 마이페이지 2.출발지 수정 3.집주소 수정 4.막차검색하기
+    case login_click = "로그인_클릭"
+    case home_register_view = "집주소_등록_진입" // 1.가입 2.메인 3.설정
+    case home_search_view = "집주소_검색_진입"
+    case home_setting_view = "집주소_설정_진입"
+    case home_setting_click = "집주소_설정_클릭"
+    case signup = "회원가입"
+    
+    case character_click = "캐릭터_클릭"
+    case alarm_force_stop = "알람_강제_종료"
+    case alarm_timeout_stop = "알람_타임아웃_종료"
+    case alarm_arrive_stop = "알람_도착_종료"
+    case departure_time_click = "출발시간_영역_클릭"
+    case course_click = "경로_영역_클릭"
+    
+    
+    // MARK: - 마이페이지
+    case mypage_view = "마이페이지_진입"
+    case logout = "로그아웃"
+    case withdraw = "회원탈퇴"
+    case alarm_alert_type_setting = "알람설정"
+    case term = "약관동의_진입"
+    case feedback = "피드백_진입"
+    
+    
+    // MARK: - 알람화면
+    case alarm_view = "알람_진입"
+    case start_click = "출발하기_클릭"
+    case later_course_click = "늦은_경로_확인하기_클릭"
+    
+    
+    // MARK: - 경로 탐색
+    case course_search_view = "경로_탐색_진입"
+    case course_modify_click = "경로_수정_클릭"
+    case alarm_register = "알람_등록" // 1. 경로 탐색 2.경로 상세
+    case another_alarm_register = "다른_알람_등록"
+    case long_interval_alarm_register = "배차_긴_알람_등록"
+    case course_detail_click = "경로_상세_영역_클릭"
+    
+    // MARK: - 경로 상세
+    case course_detail_view = "경로_상세_진입"
+    case course_refresh_click = "경로_새로고침_클릭"
+    case bus_detail_view = "버스_상세_진입"
+    case bus_detail_click = "버스_상세_클릭"
+    case bus_info_click = "버스_정보_클릭"
+    case bus_info_view = "버스_정보_진입"
+    case bus_refresh_click = "버스_새로고침_클릭"
+    case bus_info_refresh_click = "버스_정보_새로고침_클릭"
+    
+    
+    // MARK: - 경로 수정
+    case departure_modify_view = "출발지_수정_진입"
+    case departure_setting_view = "출발지_설정_진입"
+    case departure_setting_click = "출발지_설정_클릭"
 }
 
 enum AmplitudePropertyKey: String {
-    case alertType = "alert_type"
-    case dwellTime = "dwell_time"
-    case screenName = "screen_name"
-    case withdrawReason = "withdraw_reason"
+    case alertType = "알람_방식"
+    case dwellTime = "알람_등록_시간"
+    case withdrawReason = "탈퇴_사유"
+    case social = "로그인_방식"
+    case userStatus = "로그인_상태"
+    case entryPoint = "진입_경로"
 }
 
 enum AmplitudeProperty {
+    static func social(_ social: SocialType) -> (String, Any) {
+        (AmplitudePropertyKey.social.rawValue, social.rawValue)
+    }
+    
     static func alertType(_ type: AlertType) -> (String, Any) {
         (AmplitudePropertyKey.alertType.rawValue, type.rawValue)
     }
@@ -52,32 +99,17 @@ enum AmplitudeProperty {
         (AmplitudePropertyKey.dwellTime.rawValue, seconds)
     }
     
-    static func screenName(_ screen: ScreenName) -> (String, Any) {
-        (AmplitudePropertyKey.screenName.rawValue, screen.rawValue)
+    static func userStatus(_ userStatus: UserStatus) -> (String, Any) {
+        (AmplitudePropertyKey.userStatus.rawValue, userStatus.rawValue)
     }
     
     static func withdrawReason(_ reason: WithdrawReason) -> (String, Any) {
         (AmplitudePropertyKey.withdrawReason.rawValue, reason.rawValue)
     }
-}
-
-enum ScreenName: String {
-    case home_register = "우리집 등록"
-    case home_search = "우리집 검색"
-    case home_setting = "우리집 설정"
-    case alarm_setting = "알람 설정"
-    case mypage = "마이페이지"
-    case account = "내 계정"
-    case withdraw = "계정 탈퇴"
-    case terms = "약관"
-    case main = "메인"
-    case course_search = "경로 탐색"
-    case course_detail = "상세 경로"
-    case origin_search = "출발지 검색"
-    case origin_setting = "출발지 설정"
-    case alarm = "알람"
-    case bus_detail = "버스 경로"
-    case bus_info = "버스 정보"
+    
+    static func entryPoint(_ entryPoint: EntryPoint) -> (String, Any) {
+        (AmplitudePropertyKey.entryPoint.rawValue, entryPoint.rawValue)
+    }
 }
 
 enum AlertType: String {
@@ -93,4 +125,23 @@ enum WithdrawReason: String {
     case hard_to_find = "막차를 찾기가 번거로워요"
     case dont_know_how = "앱 사용법을 모르겠어요"
     case map_app_enough = "기존에 쓰던 지도 앱으로 충분해요"
+}
+
+enum SocialType: String {
+    case kakao = "카카오"
+    case apple = "애플"
+}
+
+enum UserStatus: String {
+    case guest = "게스트"
+    case member = "로그인"
+}
+
+enum EntryPoint: String {
+    case signup = "회원가입"
+    case main = "메인"
+    case mypage = "마이페이지"
+    case departure = "출발지_수정"
+    case home_modify = "집주소_수정"
+    case course_search = "막차_검색하기"
 }

@@ -16,7 +16,7 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
     private let bottomView: HomeRegisterBottomView = HomeRegisterBottomView()
     private let flagImageView: UIImageView = UIImageView()
     private let backButton: UIButton = UIButton()
-    private let loactionButton: UIButton = UIButton()
+    private let locationButton: UIButton = UIButton()
     private let exitButton: UIButton = UIButton()
 
     var routeHandler: ((HomeRouter) -> Void)?
@@ -34,7 +34,7 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        AmplitudeManager.shared.trackScreen(.home_setting)
+        amp_track(.home_setting_view)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -47,7 +47,7 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
         view.addSubViews(mapContainerView,
                          flagImageView,
                          bottomView,
-                         loactionButton,
+                         locationButton,
                          backButton)
         
         mapContainerView.delegate = self
@@ -58,7 +58,7 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
         backButton.clipsToBounds = true
         backButton.setCornerRadius(18)
         
-        configureButton(loactionButton,
+        configureButton(locationButton,
                         imageName: "mylocation-filled",
                         action: #selector(didTapLocationButton))
     }
@@ -80,14 +80,14 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
                     )
                     if ok {
                         self.viewModel.handleRegister()
-                        if viewModel.context == .myPage {
+                        if viewModel.context == .myPage || viewModel.context == .home {
                             self.navigationController?.popToViewController(ofType: HomeRegisterViewController.self)
                         }
                     } else {
                         AtchaToast(message: "앗차는 현재 서울, 경기, 인천에서만 이용 가능해요")
                             .show(in: self.view)
                     }
-                    
+                    amp_track(.home_setting_click)
                     self.bottomView.isUserInteractionEnabled = true
                 }
             }
@@ -145,7 +145,7 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
             make.width.equalTo(48)
         }
         
-        loactionButton.snp.makeConstraints { make in
+        locationButton.snp.makeConstraints { make in
             make.bottom.equalTo(bottomView.snp.top).inset(-16)
             make.trailing.equalToSuperview().inset(16)
             make.width.height.equalTo(40)
@@ -205,6 +205,8 @@ extension HomeFindViewController {
     @objc private func didTapLocationButton() {
         ensureLocationPermissionOrShowToast()
         viewModel.setupLocation()
+        
+        amp_track(.current_location_click)
     }
 }
 

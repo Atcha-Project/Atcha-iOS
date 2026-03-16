@@ -32,7 +32,6 @@ final class MainViewModel: BaseViewModel{
     
     @Published var bottomType: MapBottomType?
     @Published var showLockView: Bool = false
-    @Published var showAlarmStopPopUpView: Bool = false
     
     @Published var departureStr: String?
     //    @Published var currentCourse: CLLocationDirection?
@@ -56,6 +55,10 @@ final class MainViewModel: BaseViewModel{
     
     @Published var showLocationDeniedAlert: Bool = false
     @Published var isGuest: Bool = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.isGuest.rawValue) ?? false
+    private var didSendInitialLocation = false
+    private let smoother = LocationSmoother(limit: 5)
+    private var lastValidTime: Date? = nil
+    private var consecutiveValidCount = 0
     
     init(authorizationUseCase: RequestLocationAuthorizationUseCase,
          streamUseCase: ObserveLocationStreamUseCase,
@@ -94,7 +97,10 @@ final class MainViewModel: BaseViewModel{
             .debounce(for: .seconds(0.3), scheduler: RunLoop.main)
             .sink { [weak self] loc in
                 guard let self = self else { return }
-                Task { await self.updateAddressOnly(for: loc) }
+                Task {
+                    await self.updateAddressOnly(for: loc)
+                    await self.refreshRegionAndFareForCurrentAddress()
+                }
             }
             .store(in: &cancellables)
         $isGuest
@@ -105,13 +111,13 @@ final class MainViewModel: BaseViewModel{
             }
             .store(in: &cancellables)
         
-        $address
-            .compactMap { $0 }
-            .removeDuplicates()
-            .sink { [weak self] _ in
-                Task { await self?.refreshRegionAndFareForCurrentAddress() }
-            }
-            .store(in: &cancellables)
+        //        $address
+        //            .compactMap { $0 }
+        //            .removeDuplicates()
+        //            .sink { [weak self] _ in
+        //                Task { await self?.refreshRegionAndFareForCurrentAddress() }
+        //            }
+        //            .store(in: &cancellables)
     }
     
     private func updateAddressOnly(for location: CLLocationCoordinate2D) async {
@@ -122,7 +128,8 @@ final class MainViewModel: BaseViewModel{
         } catch { print("❌ 역지오코딩 실패: \(error)") }
     }
     
-    private func refreshRegionAndFareForCurrentAddress() async {
+    func refreshRegionAndFareForCurrentAddress() async {
+        self.taxiFare = nil
         guard let lat = lastReverseGeocode?.lat,
               let lon = lastReverseGeocode?.lon else { return }
         
@@ -133,7 +140,7 @@ final class MainViewModel: BaseViewModel{
             await MainActor.run { self.isServiceRegion = ok }
         } catch { print("서비스 지역 확인 실패: \(error)") }
         
-
+        
         guard self.isServiceRegion == true, !isGuest else { return }
         let req = FetchTaxiFareRequest(
             originLat: lastReverseGeocode?.lat,
@@ -223,19 +230,71 @@ final class MainViewModel: BaseViewModel{
             }
             
             self.startHeading()
+            streamTask?.cancel()
             
             streamTask = Task {
-                var didSendInitialLocation = false
                 for await location in streamUseCase.startUpdate() {
-                    let newLocation = CLLocationCoordinate2D(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
+                    let now = Date()
+                    // 앱 최초 실행 시 빠른 위치 탐색을 위해 nil이면 999.0(강제 탈출 모드) 세팅
+                    let isInitialTracking = !self.didSendInitialLocation
                     
-                    // 내 진짜 GPS 위치는 계속 업데이트
-                    self.currentLocation = newLocation
+                    let timeGap = self.lastValidTime != nil ? now.timeIntervalSince(self.lastValidTime!) : 999.0
+                    let isRecovering = timeGap > 60.0
                     
-                    // [수정]: 지도의 중심(selectedLocation)은 "앱 최초 진입 시" 딱 1번만 GPS 위치로 맞춰줍니다.
-                    if !didSendInitialLocation {
-                        self.selectedLocation = newLocation
-                        didSendInitialLocation = true
+                    let accuracyThreshold: CLLocationAccuracy
+                    
+                    if isInitialTracking {
+                        accuracyThreshold = 1000.0 // 시청 탈출용 널널한 기준
+                    } else {
+                        accuracyThreshold = isRecovering ? 300.0 : 150.0 // 회원님의 지하철 복구 로직 유지!
+                    }
+                    
+                    // 정확도 필터링
+                    guard location.horizontalAccuracy < accuracyThreshold else {
+                        self.consecutiveValidCount = 0
+                        continue
+                    }
+                    
+                    if isRecovering {
+                        self.consecutiveValidCount += 1
+                        let requiredCount = isInitialTracking ? 1 : 3
+                        
+                        if self.consecutiveValidCount >= requiredCount {
+                            smoother.reset(location.coordinate)
+                            
+                            self.lastValidTime = now
+                            self.consecutiveValidCount = 0
+                        } else {
+                            continue
+                        }
+                    } else {
+                        self.lastValidTime = now
+                        self.consecutiveValidCount = 0
+                    }
+                    // 이동 평균 필터링 (항상 적용하여 부드러운 움직임 확보)
+                    let smoothedCoord = smoother.smooth(location.coordinate)
+                    
+                    var finalCoord = smoothedCoord
+                    
+                    // 알람이 울린 후(`isAlarmFired`)에만 경로 스냅 적용
+                    let isAlarmFired = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue) ?? false
+                    
+                    if isAlarmFired, let path = self.legInfo?.pathInfo {
+                        let allCoords = path.flatMap { convertShapeToCoords($0.passShape ?? "") }
+                        if !allCoords.isEmpty {
+                            finalCoord = smoother.snap(current: smoothedCoord, polyline: allCoords)
+                        }
+                    }
+                    
+                    let capturedCoord = finalCoord
+                    
+                    await MainActor.run {
+                        self.currentLocation = capturedCoord
+                        if !didSendInitialLocation {
+                            self.selectedLocation = capturedCoord
+                            didSendInitialLocation = true
+                        }
+                        HomeArrivalManager.shared.checkHomeArrival(currentCoord: capturedCoord)
                     }
                 }
             }
@@ -323,7 +382,7 @@ final class MainViewModel: BaseViewModel{
                 let _ = try await alarmUseCase.alarmDelete(request)
                 wrapper.remove(forKey: UserDefaultsWrapper.Key.lastRouteId.rawValue)
                 print("알람 취소 성공")
-                AmplitudeManager.shared.track(.alarm_cancel)
+                
             } catch {
                 print("알람 취소 실패: \(error)")
             }
@@ -361,6 +420,21 @@ final class MainViewModel: BaseViewModel{
         if let alarmObserver { NotificationCenter.default.removeObserver(alarmObserver) }
         if let refreshUpdateToken { NotificationCenter.default.removeObserver(refreshUpdateToken) }
     }
+    
+    func resetLocationState() {
+        self.lastValidTime = nil
+        self.didSendInitialLocation = false
+        self.consecutiveValidCount = 0
+        self.currentLocation = nil
+        self.selectedLocation = nil
+        self.streamTask?.cancel()
+    }
+    
+    func forceLocationSnap() {
+        self.didSendInitialLocation = false
+        self.lastValidTime = nil
+        self.consecutiveValidCount = 0
+    }
 }
 
 // MARK: - Alarm
@@ -380,7 +454,7 @@ extension MainViewModel {
                 showLockView = true
                 AlarmManager.shared.startAlarm(title: "눌러서 출발 알람 끄기",
                                                body: "자리에서 일어나야 할 시간이에요!")
-                startAlarmTimeoutTimer()
+                //                startAlarmTimeoutTimer()
                 stopAlarmTimer()
             } else {
                 print("미래")
@@ -458,6 +532,8 @@ extension MainViewModel {
 extension MainViewModel {
     func handleRoute(route: MainRoute) {
         switch route {
+        case .changeHome:
+            routeHandler?(.changeHome)
         case .changeCourse:
             routeHandler?(.changeCourse(location: Location(
                 name: lastReverseGeocode?.name,
@@ -467,15 +543,14 @@ extension MainViewModel {
                 address: lastReverseGeocode?.address,
                 radius: lastReverseGeocode?.radius)))
             
-        case .courseSearch:
-            guard let currentLocation else { return }
-            let lat: String = "\(currentLocation.latitude)"
-            let lon: String = "\(currentLocation.longitude)"
-            let address: String = address ?? ""
+        case .courseSearch(let startLat, let startLon, _):
             
-            routeHandler?(.courseSearch(startLat: lat,
-                                        startLon: lon,
-                                        startAddress: address))
+            routeHandler?(.courseSearch(
+                startLat: (lastReverseGeocode?.lat).map { String($0) } ?? startLat,
+                startLon: (lastReverseGeocode?.lon).map { String($0) } ?? startLon,
+                startAddress: address ?? lastReverseGeocode?.address ?? ""
+            ))
+            
         case .myPage:
             routeHandler?(.myPage)
             
@@ -587,32 +662,21 @@ extension MainViewModel {
     }
 }
 
-// MARK: - 2분 타임아웃
 extension MainViewModel {
-    private func startAlarmTimeoutTimer() {
-        alarmTimeoutCancellable?.cancel()
-        
-        let task = Task { [weak self] in
-            guard let self else { return }
-            
-            do {
-                try await Task.sleep(nanoseconds: 120 * 1_000_000_000)
-            } catch {
-                return
-            }
-            
-            guard !Task.isCancelled else { return }
-            
-            await MainActor.run {
-                self.routeHandler?(.dismissLockScreen)
-            }
-        }
-        
-        alarmTimeoutCancellable = AnyCancellable { task.cancel() }
-    }
-    
     func stopAlarmTimeoutTimer() {
         alarmTimeoutCancellable?.cancel()
         alarmTimeoutCancellable = nil
+    }
+}
+
+extension MainViewModel {
+    private func convertShapeToCoords(_ shape: String) -> [CLLocationCoordinate2D] {
+        shape.split(separator: " ").compactMap { pair in
+            let parts = pair.split(separator: ",")
+            guard parts.count == 2,
+                  let lon = Double(parts[0]),
+                  let lat = Double(parts[1]) else { return nil }
+            return CLLocationCoordinate2D(latitude: lat, longitude: lon)
+        }
     }
 }

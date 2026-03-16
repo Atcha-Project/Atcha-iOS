@@ -73,13 +73,11 @@ final class HomeFindViewModel: BaseViewModel {
     }
     
     func handleRegister() {
-        AmplitudeManager.shared.track(.home_register)
-        
         switch context {
         case .onboarding:
             saveCurrentLoaction()
             signUp()
-        case .myPage:
+        case .myPage, .home:
             guard let currentLocation,
                   let address else {
                 print("집주소 변경 불가: 값 없음")
@@ -270,12 +268,8 @@ extension HomeFindViewModel {
                     UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.reVisit
                         .rawValue)
                     
-                    let dwellSeconds = AmplitudeManager.shared.timerEndSeconds("signup_dwell")
                     AmplitudeManager.shared.track(
-                        .signup,
-                        props(
-                            AmplitudeProperty.dwellTime(seconds: dwellSeconds)
-                        )
+                        .signup
                     )
                     print("회원가입 lat/lon 저장 완료: \(lat), \(lon)")
                     UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.isGuest.rawValue)

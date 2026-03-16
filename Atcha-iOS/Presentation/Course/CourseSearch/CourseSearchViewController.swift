@@ -65,6 +65,7 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
     private let noSearchStack: UIStackView = UIStackView()
     private let noSearchImageView: UIImageView = UIImageView()
     private let noSearchLabel: UILabel = UILabel()
+    private var previousLatestId: String?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -79,7 +80,7 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        AmplitudeManager.shared.trackScreen(.course_search)
+        amp_track(.course_search_view)
         AmplitudeManager.shared.timerStart("alarm_dwell")
     }
     
@@ -276,7 +277,7 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
             let busInfo: [BusDetailInfo] = model.course.toBusInfos()
             viewModel.getDetailTapped?(viewModel.startAddress, LegInfo(pathInfo: pathInfo, trafficInfo: tafficInfo, busInfo: busInfo))
             viewModel.saveStartInfo(model.course.routeId ?? "")
-            AmplitudeManager.shared.track(.course_detail_click)
+            amp_track(.course_detail_click)
         }
         
         return cell
@@ -284,13 +285,37 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
     
     // MARK: - Course Snapshot 갱신
     private func applySnapshot(courses: [CourseUIModel]) {
-        var snapshot = Snapshot()
+        // 1. 지금 들어온 데이터 중 1등(가장 늦은 막차)이 누구인지 확인
+        let currentLatestId = viewModel.latestDepartureCourseId(in: courses)
         
+        var snapshot = Snapshot()
         snapshot.appendSections([.courseList])
-        if !courses.isEmpty {
-            snapshot.appendItems(courses, toSection: .courseList)
+        snapshot.appendItems(courses, toSection: .courseList)
+        
+        // 2. 만약 1등이 바뀌었다면? (예: 원래 A였는데 더 늦은 B가 들어옴)
+        if let lastId = previousLatestId, lastId != currentLatestId {
+            
+            // [중요] 모든 셀이 아니라, 딱 '이전 1등'과 '현재 1등'만 다시 그리라고 명령합니다.
+            var itemsToUpdate: [CourseUIModel] = []
+            
+            // 이전 1등이었던 셀 (이제 배지를 떼야 함)
+            if let oldItem = courses.first(where: { $0.id == lastId }) {
+                itemsToUpdate.append(oldItem)
+            }
+            // 새로운 1등인 셀 (이제 배지를 달아야 함)
+            if let newItem = courses.first(where: { $0.id == currentLatestId }) {
+                itemsToUpdate.append(newItem)
+            }
+            
+            if #available(iOS 15.0, *), !itemsToUpdate.isEmpty {
+                snapshot.reconfigureItems(itemsToUpdate)
+            }
         }
         
+        // 3. 상태 저장 및 스냅샷 적용
+        previousLatestId = currentLatestId
+        
+        // animatingDifferences를 true로 두면 1 ( ) 2 사이에 부드럽게 slide-in 됩니다.
         dataSource.apply(snapshot, animatingDifferences: true)
     }
     
@@ -322,7 +347,8 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
     
     @objc private func didTapRouteStack() {
         viewModel.didTapRouteLabelStack()
-        AmplitudeManager.shared.track(.course_change_click)
+        
+        amp_track(.course_modify_click)
     }
 }
 
@@ -362,19 +388,17 @@ extension CourseSearchViewController {
         let popupVC = AtchaPopupViewController(viewModel: popupVM)
         
         popupVC.confirmButton.addAction(UIAction { [weak popupVC] _ in
-            popupVC?.dismiss(animated: true)
+            popupVC?.dismiss(animated: false)
             
             self.viewModel.alarmRegister(alarmRequest)
             self.viewModel.getAlarmTapped?(alarmTapped.0, alarmTapped.1)
             UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.popRegister.rawValue)
             
             let dwellSeconds = AmplitudeManager.shared.timerEndSeconds("alarm_dwell")
-            AmplitudeManager.shared.track(
-                .long_interval_alarm_register,
-                props(
-                    AmplitudeProperty.dwellTime(seconds: dwellSeconds)
-                )
-            )
+            
+            self.amp_track(.long_interval_alarm_register, properties: props(
+                AmplitudeProperty.dwellTime(seconds: dwellSeconds)
+            ))
         }, for: .touchUpInside)
         
         popupVC.cancelButton.addAction(UIAction { [weak self, weak popupVC] _ in
@@ -392,19 +416,17 @@ extension CourseSearchViewController {
         let popupVC = AtchaPopupViewController(viewModel: popupVM)
         
         popupVC.confirmButton.addAction(UIAction { [weak popupVC] _ in
-            popupVC?.dismiss(animated: true)
+            popupVC?.dismiss(animated: false)
             
             self.viewModel.alarmRegister(alarmRequest)
             self.viewModel.getAlarmTapped?(alarmTapped.0, alarmTapped.1)
             UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.popRegister.rawValue)
             
             let dwellSeconds = AmplitudeManager.shared.timerEndSeconds("alarm_dwell")
-            AmplitudeManager.shared.track(
-                .another_alarm_register,
-                props(
-                    AmplitudeProperty.dwellTime(seconds: dwellSeconds)
-                )
-            )
+            self.amp_track(.another_alarm_register, properties: props(
+                AmplitudeProperty.dwellTime(seconds: dwellSeconds)
+            ))
+            
             
         }, for: .touchUpInside)
         
@@ -473,7 +495,10 @@ extension CourseSearchViewController {
                     
                     // 앰플리튜드 트래킹 및 메인 이동
                     let dwellSeconds = AmplitudeManager.shared.timerEndSeconds("alarm_dwell")
-                    AmplitudeManager.shared.track(.alarm_register, props(AmplitudeProperty.dwellTime(seconds: dwellSeconds)))
+                    
+                    self.amp_track(.alarm_register, properties: props(
+                        AmplitudeProperty.dwellTime(seconds: dwellSeconds)
+                    ))
                     self.navigationController?.popToRootViewController(animated: true)
                 }
             }
