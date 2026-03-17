@@ -58,6 +58,7 @@
 		6D5E03CA2E2882290065AFBE /* Course.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5E03C92E2882290065AFBE /* Course.swift */; };
 		6D5E03CD2E2882BB0065AFBE /* CourseSearchRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5E03CC2E2882BB0065AFBE /* CourseSearchRequest.swift */; };
 		6D5E03D02E28853E0065AFBE /* CourseSearchResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5E03CF2E28853E0065AFBE /* CourseSearchResponse.swift */; };
+		6D6056C72F6A18BF0026FA9D /* DiscordWebhookManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6056C62F6A18BF0026FA9D /* DiscordWebhookManager.swift */; };
 		6D61ABE32F57158000111C9B /* IntroViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D61ABE22F57158000111C9B /* IntroViewController.swift */; };
 		6D61ABE52F57158700111C9B /* IntroViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D61ABE42F57158700111C9B /* IntroViewModel.swift */; };
 		6D61ABE82F57174D00111C9B /* IntroDIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D61ABE72F57174D00111C9B /* IntroDIContainer.swift */; };
@@ -394,6 +395,7 @@
 		6D5E03C92E2882290065AFBE /* Course.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Course.swift; sourceTree = "<group>"; };
 		6D5E03CC2E2882BB0065AFBE /* CourseSearchRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseSearchRequest.swift; sourceTree = "<group>"; };
 		6D5E03CF2E28853E0065AFBE /* CourseSearchResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseSearchResponse.swift; sourceTree = "<group>"; };
+		6D6056C62F6A18BF0026FA9D /* DiscordWebhookManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscordWebhookManager.swift; sourceTree = "<group>"; };
 		6D61ABE22F57158000111C9B /* IntroViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroViewController.swift; sourceTree = "<group>"; };
 		6D61ABE42F57158700111C9B /* IntroViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroViewModel.swift; sourceTree = "<group>"; };
 		6D61ABE72F57174D00111C9B /* IntroDIContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroDIContainer.swift; sourceTree = "<group>"; };
@@ -869,6 +871,31 @@
 			path = CourseSearchDTO;
 			sourceTree = "<group>";
 		};
+		6D6056C32F6A188F0026FA9D /* Discord */ = {
+			isa = PBXGroup;
+			children = (
+				6D6056C62F6A18BF0026FA9D /* DiscordWebhookManager.swift */,
+			);
+			path = Discord;
+			sourceTree = "<group>";
+		};
+		6D6056C42F6A18960026FA9D /* Alarm */ = {
+			isa = PBXGroup;
+			children = (
+				B61C448D2E3F57B600285A4B /* AlarmManager.swift */,
+			);
+			path = Alarm;
+			sourceTree = "<group>";
+		};
+		6D6056C52F6A18A20026FA9D /* Location */ = {
+			isa = PBXGroup;
+			children = (
+				6DC617A62F60EB1A002DD641 /* LocationSmoother.swift */,
+				6DC617A82F610238002DD641 /* HomeArrivalManager.swift */,
+			);
+			path = Location;
+			sourceTree = "<group>";
+		};
 		6D61ABE12F5714EF00111C9B /* Intro */ = {
 			isa = PBXGroup;
 			children = (
@@ -1199,12 +1226,12 @@
 		B61C448A2E3F57A900285A4B /* Manager */ = {
 			isa = PBXGroup;
 			children = (
+				6D6056C52F6A18A20026FA9D /* Location */,
+				6D6056C42F6A18960026FA9D /* Alarm */,
+				6D6056C32F6A188F0026FA9D /* Discord */,
 				6D26DFA62F289E58005097A4 /* HeadingManager */,
 				6DADA5952EA09B9500CA9BE2 /* Amplitude */,
-				B61C448D2E3F57B600285A4B /* AlarmManager.swift */,
 				6DD632B72E52E8D000C6A66E /* Proximity */,
-				6DC617A62F60EB1A002DD641 /* LocationSmoother.swift */,
-				6DC617A82F610238002DD641 /* HomeArrivalManager.swift */,
 			);
 			path = Manager;
 			sourceTree = "<group>";
@@ -2276,6 +2303,7 @@
 				6D368BB22E03BD2C00144EE7 /* SearchTextField.swift in Sources */,
 				B65C12E02E042D260016D2F0 /* UserRepository.swift in Sources */,
 				B6713CC02E129ABC00AF8486 /* RequestLocationAuthorizationRepositoryImpl.swift in Sources */,
+				6D6056C72F6A18BF0026FA9D /* DiscordWebhookManager.swift in Sources */,
 				6D368BA82E02E92000144EE7 /* BackOnlyNavigationBar.swift in Sources */,
 				6D368BB42E03BE9A00144EE7 /* AtchaTextField.swift in Sources */,
 				B673C48F2E0424F600EE4AD0 /* SplashViewController.swift in Sources */,
