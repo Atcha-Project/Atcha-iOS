@@ -15,17 +15,17 @@ private let insecureSession = Session(serverTrustManager: trustManager)
 
 final class APIServiceImpl: APIService {
     private let session: Session
-
+    
     /// 기본 초기화 - SSL 우회 세션 사용
     init(session: Session = insecureSession) {
         self.session = session
     }
-
+    
     func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T {
         guard let url = URL(string: NetworkConstant.baseURL + endpoint.path) else {
             throw APIError.invalidURL
         }
-
+        
         return try await withCheckedThrowingContinuation { continuation in
             session.request(url, method: endpoint.method, parameters: endpoint.parameters, encoding: endpoint.encoding, headers: endpoint.headers)
                 .validate()
@@ -36,7 +36,7 @@ final class APIServiceImpl: APIService {
                         continuation.resume(returning: APIEmptyResponse() as! T)
                         return
                     }
-
+                    
                     switch response.result {
                     case .success(let apiResponse):
                         if apiResponse.responseCode == "SUCCESS" {
@@ -48,10 +48,14 @@ final class APIServiceImpl: APIService {
                                 continuation.resume(throwing: APIError.noData)
                             }
                         } else {
-                            continuation.resume(throwing: APIError.serverError(statusCode: response.response?.statusCode ?? -1))
+                            let error = APIError.serverError(statusCode: response.response?.statusCode ?? -1)
+                            NotificationCenter.default.post(name: .apiErrorOccurred, object: error)
+                            continuation.resume(throwing: error)
                         }
                     case .failure(let error):
-                        continuation.resume(throwing: APIError.unknown(error: error))
+                        let apiError = APIError.unknown(error: error)
+                        NotificationCenter.default.post(name: .apiErrorOccurred, object: apiError)
+                        continuation.resume(throwing: apiError)
                     }
                 }
         }
@@ -66,7 +70,7 @@ extension APIServiceImpl {
         guard let url = URL(string: NetworkConstant.baseURL + endpoint.path) else {
             throw APIError.invalidURL
         }
-
+        
         return try await withCheckedThrowingContinuation { continuation in
             session.request(
                 url,
@@ -83,7 +87,7 @@ extension APIServiceImpl {
                     continuation.resume(returning: APIEmptyResponse() as! T)
                     return
                 }
-
+                
                 switch response.result {
                 case .success(let apiResponse):
                     if apiResponse.responseCode == "SUCCESS" {
@@ -95,11 +99,15 @@ extension APIServiceImpl {
                             continuation.resume(throwing: APIError.noData)
                         }
                     } else {
-                        continuation.resume(throwing: APIError.serverError(statusCode: response.response?.statusCode ?? -1))
+                        let error = APIError.serverError(statusCode: response.response?.statusCode ?? -1)
+                        NotificationCenter.default.post(name: .apiErrorOccurred, object: error)
+                        continuation.resume(throwing: error)
                     }
-
+                    
                 case .failure(let error):
-                    continuation.resume(throwing: APIError.unknown(error: error))
+                    let apiError = APIError.unknown(error: error)
+                    NotificationCenter.default.post(name: .apiErrorOccurred, object: apiError)
+                    continuation.resume(throwing: apiError)
                 }
             }
         }
