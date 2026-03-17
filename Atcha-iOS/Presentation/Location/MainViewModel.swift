@@ -111,13 +111,17 @@ final class MainViewModel: BaseViewModel{
             }
             .store(in: &cancellables)
         
-        //        $address
-        //            .compactMap { $0 }
-        //            .removeDuplicates()
-        //            .sink { [weak self] _ in
-        //                Task { await self?.refreshRegionAndFareForCurrentAddress() }
-        //            }
-        //            .store(in: &cancellables)
+        UserDefaultsWrapper.shared.legInfoPublisher
+                .compactMap { $0 }
+                .receive(on: RunLoop.main)
+                .sink { [weak self] newInfo in
+                    guard let self = self else { return }
+                    
+                    if self.legInfo != newInfo {
+                        self.drawRoute(address: self.addressDesc, info: newInfo)
+                    }
+                }
+                .store(in: &cancellables)
     }
     
     private func updateAddressOnly(for location: CLLocationCoordinate2D) async {
