@@ -11,7 +11,7 @@ final class DiscordWebhookManager {
     static let shared = DiscordWebhookManager()
     private init() {}
 
-    private let webhookURLString = "https://discord.com/api/webhooks/1483605689031983336/gqPjN3OU9ciMCF5qgPodT_KV3fE1giuuD6M4ODCJdenNru8UHezuYZfWBfc4Vnj4GWIZ"
+    private let webhookURLString = "https://discord.com/api/webhooks/1418789389923913758/AKnOWLlcYPFR4gVlvpKIBNEi1IdutibBCu8M2FLP2c2MDomxcBAvSLAm1lpB4WMWCeUm"
 
     func sendErrorLog(
         statusCode: Int,

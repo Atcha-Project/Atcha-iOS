@@ -32,15 +32,14 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
             "/auth/check",
             "/auth/login",
             "/app/version",
-            "/locations",
             "/locations/is-service-region",
             "/api/locations/rgeo"
         ]
         
-        if publicPaths.contains(where: { path.contains($0) }) {
-            completion(.success(request))
-            return
-        }
+        if publicPaths.contains(where: { path.hasSuffix($0) }) {
+                completion(.success(request))
+                return
+            }
         
         if path.contains("/auth/logout") {
             if let refreshToken = tokenStorage.refreshToken {

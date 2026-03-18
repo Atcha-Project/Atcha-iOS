@@ -8,16 +8,10 @@
 import Alamofire
 import Foundation
 
-private let trustManager = ServerTrustManager(evaluators: [
-    "atcha.p-e.kr": DisabledTrustEvaluator()
-])
-private let insecureSession = Session(serverTrustManager: trustManager)
-
 final class APIServiceImpl: APIService, @unchecked Sendable {
     private let session: Session
     
-    /// 기본 초기화 - SSL 우회 세션 사용
-    init(session: Session = insecureSession) {
+    init(session: Session) {
         self.session = session
     }
     
@@ -117,7 +111,7 @@ extension APIServiceImpl {
         let method = endpoint.method.rawValue.uppercased()
         let path = endpoint.path
         let requestHeaders = endpoint.headers?.dictionary ?? [:]
-
+        
         var responseCode = "UNKNOWN"
         var serverMessage = "(메시지 없음)"
         var serverPath = path
