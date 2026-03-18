@@ -51,7 +51,7 @@ final class MainDIContainer {
         }()
     
     private lazy var homeRegisterDI: HomeRegisterDIContainer = {
-        HomeRegisterDIContainer(apiService: apiService, locationStateHolder: locationStateHolder)
+        HomeRegisterDIContainer(apiService: apiService, locationStateHolder: locationStateHolder, tokenStorage: tokenStorage)
     }()
     
     init(apiService: APIService, locationStateHolder: LocationStateHolder, tokenStorage: TokenStorage) { 
