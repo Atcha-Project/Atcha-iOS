@@ -37,7 +37,8 @@ final class AppCompositionRoot {
         self.locationStateHolder = LocationStateHolder()
         
         // Features
-        self.splashDIContainer = SplashDIContainer(apiService: apiService)
+        self.splashDIContainer = SplashDIContainer(apiService: apiService,
+                                                   tokenStorage: tokenStorage)
         self.loginDIContainer = LoginDIContainer(apiService: apiService, tokenStorage: tokenStorage)
         self.onboardingDIContainer = OnboardingDIContainer(apiService: apiService,
                                                            locationStateHolder: locationStateHolder)

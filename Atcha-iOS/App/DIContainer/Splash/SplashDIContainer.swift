@@ -10,16 +10,18 @@ import Foundation
 
 final class SplashDIContainer {
     private let apiService: APIService
-
-    init(apiService: APIService) {
+    private let tokenStorage: TokenStorage
+    
+    init(apiService: APIService, tokenStorage: TokenStorage) {
         self.apiService = apiService
+        self.tokenStorage = tokenStorage
     }
     
     func makeFetchUserUseCase() -> FetchUserUseCase {
         let repository: UserRepository = UserRepositoryImpl(apiService: apiService)
         return FetchUserUseCaseImpl(repositoy: repository)
     }
-
+    
     func makeCheckAppVersionUseCase() -> CheckAppVersionUseCase {
         let repository = AppVersionRepositoryImpl(apiService: apiService)
         return CheckAppVersionUseCaseImpl(repository: repository)
@@ -29,17 +31,20 @@ final class SplashDIContainer {
         let repository = AppVersionRepositoryImpl(apiService: apiService)
         return UpdateAppVersionUseCaseImpl(repository: repository)
     }
-
+    
     func makeSplashViewModel() -> SplashViewModel {
-        SplashViewModel(fetchUserUseCase: makeFetchUserUseCase(),
-                        checkAppVersionUseCase: makeCheckAppVersionUseCase(),
-                        updateAppVersionUseCase: makeUpdateAppVersionUseCase())
+        return SplashViewModel(
+            fetchUserUseCase: makeFetchUserUseCase(),
+            checkAppVersionUseCase: makeCheckAppVersionUseCase(),
+            updateAppVersionUseCase: makeUpdateAppVersionUseCase(),
+            tokenStorage: tokenStorage
+        )
     }
     
     func makeSplashViewController(viewModel: SplashViewModel) -> SplashViewController {
         return SplashViewController(viewModel: viewModel)
     }
-
+    
     func makeSplashCoordinator(navigationController: UINavigationController) -> SplashCoordinator {
         SplashCoordinator(navigationController: navigationController,
                           diContainer: self)
