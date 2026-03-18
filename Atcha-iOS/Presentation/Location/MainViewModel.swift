@@ -159,6 +159,7 @@ final class MainViewModel: BaseViewModel{
     }
     
     func drawRoute(address: String?, info: LegInfo?) {
+        
         guard let address, let info else { return }
         addressDesc = address
         legInfo = info

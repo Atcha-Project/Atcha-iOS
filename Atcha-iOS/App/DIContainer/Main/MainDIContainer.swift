@@ -11,6 +11,8 @@ import Foundation
 final class MainDIContainer {
     private let apiService: APIService
     private let locationStateHolder: LocationStateHolder
+    private let tokenStorage: TokenStorage
+    
     private lazy var searchAddressUseCase = SearchAddressUseCaseImpl(repository: AddressRepositoryImpl(apiService: apiService))
     private lazy var requestUseCase = RequestLocationAuthorizationUseCaseImpl(repository: PermissionRepositoryImpl())
     private lazy var streamUseCase = ObserLocationStreamUseCaseImpl(repository: LocationStreamRepositoryImpl())
@@ -45,17 +47,18 @@ final class MainDIContainer {
     }()
     
     private lazy var loginDI: LoginDIContainer = {
-        LoginDIContainer(apiService: apiService)
-    }()
+            LoginDIContainer(apiService: apiService, tokenStorage: tokenStorage)
+        }()
     
     private lazy var homeRegisterDI: HomeRegisterDIContainer = {
         HomeRegisterDIContainer(apiService: apiService, locationStateHolder: locationStateHolder)
     }()
     
-    init(apiService: APIService, locationStateHolder: LocationStateHolder) {
-        self.apiService = apiService
-        self.locationStateHolder = locationStateHolder
-    }
+    init(apiService: APIService, locationStateHolder: LocationStateHolder, tokenStorage: TokenStorage) { 
+            self.apiService = apiService
+            self.locationStateHolder = locationStateHolder
+            self.tokenStorage = tokenStorage
+        }
     
     func makeMainiewModel() -> MainViewModel {
         let fetchTaxiFareUseCase = FetchTaxiFareUseCaseImpl(repository: FetchTaxiFareRepositoryImpl(apiService: apiService))
