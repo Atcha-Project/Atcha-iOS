@@ -32,8 +32,7 @@ final class BusInfoRepositoryImpl: BusInfoRepository {
             Endpoint(
                 path: "/routes/user-routes/bus-arrival",
                 method: .get,
-                parameters: ["routeName" : request],
-                headers: ["Authorization": "Bearer \(AppDIContainer.shared.tokenStorage.accessToken ?? "")"]
+                parameters: ["routeName" : request]
             )
         )
     }

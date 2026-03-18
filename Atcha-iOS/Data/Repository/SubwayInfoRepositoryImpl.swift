@@ -12,6 +12,7 @@ final class SubwayInfoRepositoryImpl: SubwayInfoRepository {
     
     private let apiService: APIService
     
+    
     init(apiService: APIService) {
         self.apiService = apiService
     }
@@ -23,7 +24,6 @@ final class SubwayInfoRepositoryImpl: SubwayInfoRepository {
             method: .get,
             parameters: ["routeName": request.routeName],
             encoding: URLEncoding.queryString,
-            headers: ["Authorization": "Bearer \(AppDIContainer.shared.tokenStorage.accessToken ?? "")"],
         )
         
         let result: [SubwayRealTimeInfoResponse] = try await apiService.request(endpoint)

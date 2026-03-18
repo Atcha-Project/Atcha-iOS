@@ -32,7 +32,7 @@ final class AppCompositionRoot {
         // Core
         self.tokenStorage = TokenStorageImpl()
         self.networkDIContainer = NetworkDIContainer(tokenStorage: tokenStorage)
-        self.apiService = networkDIContainer.makeAPIService()
+        self.apiService = networkDIContainer.makeAPIService(useInterceptor: true)
         self.noHeaderApiService = networkDIContainer.makeAPIService(useInterceptor: false)
         self.locationStateHolder = LocationStateHolder()
         
