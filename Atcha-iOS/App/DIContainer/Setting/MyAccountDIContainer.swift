@@ -12,7 +12,7 @@ final class MyAccountDIContainer {
     private let tokenStorage: TokenStorage
     private let locationStateHolder: LocationStateHolder
     
-    private lazy var repository: UserRepository = UserRepositoryImpl(apiService: apiService)
+    private lazy var repository: UserRepository = UserRepositoryImpl(apiService: apiService, tokenStorage: tokenStorage)
     
     init(apiService: APIService,
          tokenStorage: TokenStorage,

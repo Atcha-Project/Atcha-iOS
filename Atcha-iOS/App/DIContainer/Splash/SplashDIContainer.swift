@@ -18,7 +18,7 @@ final class SplashDIContainer {
     }
     
     func makeFetchUserUseCase() -> FetchUserUseCase {
-        let repository: UserRepository = UserRepositoryImpl(apiService: apiService)
+        let repository: UserRepository = UserRepositoryImpl(apiService: apiService, tokenStorage: tokenStorage)
         return FetchUserUseCaseImpl(repositoy: repository)
     }
     

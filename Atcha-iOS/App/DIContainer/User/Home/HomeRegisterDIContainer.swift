@@ -22,7 +22,7 @@ final class HomeRegisterDIContainer {
     
     private lazy var authorizationRequestUseCase = RequestLocationAuthorizationUseCaseImpl(repository: PermissionRepositoryImpl())
     private lazy var addressRepository: AddressRepository = AddressRepositoryImpl(apiService: apiService)
-    private lazy var userRepository: UserRepository = UserRepositoryImpl(apiService: apiService)
+    private lazy var userRepository: UserRepository = UserRepositoryImpl(apiService: apiService, tokenStorage: tokenStorage)
     private lazy var searchAddressUseCase: SearchAddressUseCase = SearchAddressUseCaseImpl(repository: addressRepository)
     private lazy var homePatchUseCase: HomePatchUseCase = HomePatchUseCaseImpl(repository: userRepository)
     private lazy var streamUseCase: ObserveLocationStreamUseCase = ObserLocationStreamUseCaseImpl(repository: LocationStreamRepositoryImpl())
