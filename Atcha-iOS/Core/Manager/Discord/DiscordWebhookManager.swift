@@ -41,7 +41,6 @@ final class DiscordWebhookManager {
             bodyText = "None"
         }
 
-        // ✅ query parameters JSON 변환
         let paramsText: String
         if let params = requestParameters,
            let data = try? JSONSerialization.data(withJSONObject: params, options: .prettyPrinted),
@@ -66,7 +65,7 @@ final class DiscordWebhookManager {
                     ["name": "Request Parameters", "value": paramsText,                      "inline": false],  
                     ["name": "Request Body",       "value": bodyText,                        "inline": false]
                 ],
-                "footer": ["text": "발생 시각: \(Date().description)"]
+                "footer": ["text": "발생 시각: \(Date().kstString)"]
             ]]
         ]
 
@@ -76,5 +75,15 @@ final class DiscordWebhookManager {
         request.httpBody = try? JSONSerialization.data(withJSONObject: payload)
 
         URLSession.shared.dataTask(with: request).resume()
+    }
+}
+
+private extension Date {
+    var kstString: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
+        formatter.locale = Locale(identifier: "ko_KR")
+        return formatter.string(from: self) + " KST"
     }
 }
