@@ -11,22 +11,60 @@ final class DiscordWebhookManager {
     static let shared = DiscordWebhookManager()
     private init() {}
 
-    // 디스코드 채널 설정에서 만든 Webhook URL
     private let webhookURLString = "https://discord.com/api/webhooks/1483605689031983336/gqPjN3OU9ciMCF5qgPodT_KV3fE1giuuD6M4ODCJdenNru8UHezuYZfWBfc4Vnj4GWIZ"
 
-    func sendErrorLog(statusCode: Int, message: String) {
+    func sendErrorLog(
+        statusCode: Int,
+        method: String,
+        path: String,
+        responseCode: String,
+        message: String,
+        requestHeaders: [String: String],
+        requestBody: [String: Any]? = nil,
+        requestParameters: [String: Any]? = nil
+    ) {
         guard let url = URL(string: webhookURLString) else { return }
 
-        // 디코가 좋아하는 JSON 형식 (Embed를 쓰면 더 예쁘게 나옵니다)
+        // Authorization 토큰 앞 30자만 노출
+        let headersText = requestHeaders.map { key, value in
+            let safeValue = key == "Authorization" ? String(value.prefix(30)) + "..." : value
+            return "\(key): \(safeValue)"
+        }.joined(separator: "\n")
+
+        // body JSON 변환
+        let bodyText: String
+        if let body = requestBody,
+           let data = try? JSONSerialization.data(withJSONObject: body, options: .prettyPrinted),
+           let str = String(data: data, encoding: .utf8) {
+            bodyText = "```json\n\(str)\n```"
+        } else {
+            bodyText = "None"
+        }
+
+        // ✅ query parameters JSON 변환
+        let paramsText: String
+        if let params = requestParameters,
+           let data = try? JSONSerialization.data(withJSONObject: params, options: .prettyPrinted),
+           let str = String(data: data, encoding: .utf8) {
+            paramsText = "```json\n\(str)\n```"
+        } else {
+            paramsText = "None"
+        }
+
         let payload: [String: Any] = [
             "content": "🚨 [Atcha-iOS] API 에러 발생!",
             "embeds": [[
                 "title": "서버 에러 상세 보고",
-                "color": 16711680, // 빨간색
+                "color": 16711680,
                 "fields": [
-                    ["name": "Status Code", "value": "\(statusCode)", "inline": true],
-                    ["name": "App Version", "value": AppInfoProvider.currentVersion, "inline": true],
-                    ["name": "Error Message", "value": message, "inline": false]
+                    ["name": "Method & Path",     "value": "`\(method) \(path)`",          "inline": false],
+                    ["name": "HTTP Status",        "value": "\(statusCode)",                 "inline": true],
+                    ["name": "responseCode",       "value": responseCode,                    "inline": true],
+                    ["name": "App Version",        "value": AppInfoProvider.currentVersion,  "inline": true],
+                    ["name": "Error Message",      "value": message,                         "inline": false],
+                    ["name": "Request Headers",    "value": "```\n\(headersText)\n```",      "inline": false],
+                    ["name": "Request Parameters", "value": paramsText,                      "inline": false],  
+                    ["name": "Request Body",       "value": bodyText,                        "inline": false]
                 ],
                 "footer": ["text": "발생 시각: \(Date().description)"]
             ]]
@@ -37,7 +75,6 @@ final class DiscordWebhookManager {
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try? JSONSerialization.data(withJSONObject: payload)
 
-        // 백그라운드에서 조용히 전송
         URLSession.shared.dataTask(with: request).resume()
     }
 }

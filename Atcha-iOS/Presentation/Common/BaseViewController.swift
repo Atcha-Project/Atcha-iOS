@@ -223,19 +223,7 @@ class BaseViewController<VM: BaseViewModel>: UIViewController {
     
     @objc private func handleServerError(_ notification: Notification) {
         guard self.presentedViewController == nil else { return }
-        
-        // 알림에 실려온 에러 정보를 꺼냅니다.
-        if let error = notification.object as? APIError {
-            let statusCode = if case let .serverError(code) = error { code } else { -1 }
-            
-            // 1. 디스코드로 웹훅 발송
-            DiscordWebhookManager.shared.sendErrorLog(
-                statusCode: statusCode,
-                message: "\(error)"
-            )
-        }
 
-        // 2. 사용자에게는 팝업 노출
         DispatchQueue.main.async { [weak self] in
             self?.showAtchaErrorPopup()
         }
