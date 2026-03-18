@@ -10,28 +10,31 @@ import Foundation
 
 final class MyPageDIContainer {
     private let apiService: APIService
+    private let tokenStorage: TokenStorage
     private let locationStateHolder: LocationStateHolder
     
     var signoutFinish: (() -> Void)?
     
     private lazy var homeDI: HomeRegisterDIContainer = {
-        HomeRegisterDIContainer(apiService: apiService, locationStateHolder: locationStateHolder)
+        HomeRegisterDIContainer(apiService: apiService, locationStateHolder: locationStateHolder, tokenStorage: tokenStorage)
     }()
     private lazy var pushDI: PushRegisterDIContainer = {
         PushRegisterDIContainer(apiService: apiService, locationStateHolder: locationStateHolder)
     }()
     private lazy var myAccountDI: MyAccountDIContainer = {
-        MyAccountDIContainer(apiService: apiService)
+        MyAccountDIContainer(apiService: apiService, tokenStorage: tokenStorage, locationStateHolder: locationStateHolder)
     }()
     private lazy var alarmSettingDI: AlarmSettingDIContainer = {
         AlarmSettingDIContainer()
     }()
     
     init(apiService: APIService,
-         locationStateHolder: LocationStateHolder) {
-        self.apiService = apiService
-        self.locationStateHolder = locationStateHolder
-    }
+             tokenStorage: TokenStorage,
+             locationStateHolder: LocationStateHolder) {
+            self.apiService = apiService
+            self.tokenStorage = tokenStorage
+            self.locationStateHolder = locationStateHolder
+        }
     
     func makeMyPageViewModel() -> MyPageViewModel {
         MyPageViewModel()
