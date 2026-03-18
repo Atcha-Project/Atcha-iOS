@@ -41,7 +41,7 @@ final class AppCompositionRoot {
                                                    tokenStorage: tokenStorage)
         self.loginDIContainer = LoginDIContainer(apiService: apiService, tokenStorage: tokenStorage)
         self.onboardingDIContainer = OnboardingDIContainer(apiService: apiService,
-                                                           locationStateHolder: locationStateHolder)
+                                                           locationStateHolder: locationStateHolder, tokenStorage: tokenStorage)
         self.mainDIContainer = MainDIContainer(apiService: apiService,
                                                locationStateHolder: locationStateHolder,
                                                tokenStorage: tokenStorage)

@@ -19,7 +19,7 @@ final class MyPageDIContainer {
         HomeRegisterDIContainer(apiService: apiService, locationStateHolder: locationStateHolder, tokenStorage: tokenStorage)
     }()
     private lazy var pushDI: PushRegisterDIContainer = {
-        PushRegisterDIContainer(apiService: apiService, locationStateHolder: locationStateHolder)
+        PushRegisterDIContainer(apiService: apiService, locationStateHolder: locationStateHolder, tokenStorage: tokenStorage)
     }()
     private lazy var myAccountDI: MyAccountDIContainer = {
         MyAccountDIContainer(apiService: apiService, tokenStorage: tokenStorage, locationStateHolder: locationStateHolder)

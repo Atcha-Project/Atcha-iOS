@@ -28,11 +28,16 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
         var request = urlRequest
         let path = request.url?.path ?? ""
         
-        //        if request.value(forHTTPHeaderField: "Authorization") != nil {
-        //            completion(.success(request)); return
-        //        }
+        let publicPaths = [
+            "/auth/check",
+            "/auth/login",
+            "/app/version",
+            "/locations",
+            "/locations/is-service-region",
+            "/api/locations/rgeo"
+        ]
         
-        if path.contains("/auth/check") || path.contains("/auth/login") {
+        if publicPaths.contains(where: { path.contains($0) }) {
             completion(.success(request))
             return
         }
