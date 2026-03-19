@@ -29,13 +29,15 @@ final class HomeFindViewModel: BaseViewModel {
     private let locationStateHolder: LocationStateHolder
     private let streamUseCase: ObserveLocationStreamUseCase
     private let signUpUseCase: SignUpUseCase
+    private var tokenStorage: TokenStorage
     
     init(context: HomeRegisterContext,
          searchAddressUseCase: SearchAddressUseCase,
          homePatchUseCase: HomePatchUseCase,
          locationStateHolder: LocationStateHolder,
          streamUseCase: ObserveLocationStreamUseCase,
-         signUpUseCase: SignUpUseCase) {
+         signUpUseCase: SignUpUseCase,
+         tokenStorage: TokenStorage) {
         
         self.context = context
         self.searchAddressUseCase = searchAddressUseCase
@@ -43,6 +45,7 @@ final class HomeFindViewModel: BaseViewModel {
         self.signUpUseCase = signUpUseCase
         self.locationStateHolder = locationStateHolder
         self.streamUseCase = streamUseCase
+        self.tokenStorage = tokenStorage
         self.buildingName = locationStateHolder.buildingName
         self.address = locationStateHolder.address
         
@@ -110,13 +113,13 @@ final class HomeFindViewModel: BaseViewModel {
             isInitialReqeust = true
             return
         }
-
+        
         if let saved = locationStateHolder.currentLocation {
             currentLocation = saved
-
+            
             let hasPresetText = (locationStateHolder.address?.isEmpty == false) ||
-                                (locationStateHolder.buildingName?.isEmpty == false)
-
+            (locationStateHolder.buildingName?.isEmpty == false)
+            
             if !hasPresetText {
                 Task { @MainActor in
                     await refreshAddress()
@@ -134,7 +137,7 @@ final class HomeFindViewModel: BaseViewModel {
                     latitude: location.coordinate.latitude,
                     longitude: location.coordinate.longitude
                 )
-                await self.refreshAddress()  
+                await self.refreshAddress()
                 break
             }
         }
@@ -189,7 +192,7 @@ final class HomeFindViewModel: BaseViewModel {
     @MainActor
     func applyDefaultLocationIfPermissionDenied() async {
         self.currentLocation = defaultCoord
-
+        
         do {
             let addr = try await fetchCurrentAddress(
                 lat: defaultCoord.latitude,
@@ -233,7 +236,7 @@ extension HomeFindViewModel {
             return
         }
         
-        guard let fcmToken = AppDIContainer.shared.tokenStorage.fcmToken else {
+        guard let fcmToken = tokenStorage.fcmToken else {
             print("FCM 토큰이 없습니다.")
             return
         }
@@ -256,8 +259,8 @@ extension HomeFindViewModel {
             do {
                 let response = try await signUpUseCase.excute(request)
                 
-                AppDIContainer.shared.tokenStorage.accessToken = response.accessToken
-                AppDIContainer.shared.tokenStorage.refreshToken = response.refreshToken
+                self.tokenStorage.accessToken = response.accessToken
+                self.tokenStorage.refreshToken = response.refreshToken
                 
                 UserDefaultsWrapper.shared.set(response.id, forKey: UserDefaultsWrapper.Key.userId.rawValue)
                 if let lat = response.lat, let lon = response.lon, let id = response.id {

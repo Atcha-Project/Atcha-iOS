@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 final public class UserDefaultsWrapper {
     private init() {}
@@ -13,6 +14,10 @@ final public class UserDefaultsWrapper {
     
     private let userDefaults: UserDefaults = .standard
     
+    private let legInfoSubject = PassthroughSubject<LegInfo?, Never>()
+    var legInfoPublisher: AnyPublisher<LegInfo?, Never> {
+        legInfoSubject.eraseToAnyPublisher()
+    }
     
     // MARK: - 저장
     public func set(_ value: Int, forKey key: String) {
@@ -42,6 +47,10 @@ final public class UserDefaultsWrapper {
     public func set<T: Encodable>(_ value: T, forKey key: String) {
         if let data = try? JSONEncoder().encode(value) {
             userDefaults.set(data, forKey: key)
+        }
+        
+        if key == Key.legInfo.rawValue, let info = value as? LegInfo {
+            legInfoSubject.send(info)
         }
     }
     

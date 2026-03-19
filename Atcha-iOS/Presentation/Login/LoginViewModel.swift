@@ -10,10 +10,12 @@ import AuthenticationServices
 
 final class LoginViewModel: BaseViewModel {
     private let loginUseCase: LoginUseCase
+    private var tokenStorage: TokenStorage
     
-    init(loginUseCase: LoginUseCase) {
-        self.loginUseCase = loginUseCase
-    }
+    init(loginUseCase: LoginUseCase, tokenStorage: TokenStorage) {
+           self.loginUseCase = loginUseCase
+           self.tokenStorage = tokenStorage
+       }
     
     var isExistUser: ((Bool) -> Void)?
     var loginCancelled: (() -> Void)?
@@ -54,32 +56,30 @@ extension LoginViewModel {
                        type: LoginType) async {
         let request: LoginRequest = LoginRequest(accessToken: token,
                                                  provider: type.rawValue)
-        Task {
-            do {
-                let response = try await loginUseCase.login(request)
+        do {
+            let response = try await loginUseCase.login(request)
+            
+            tokenStorage.accessToken = response.accessToken
+            tokenStorage.refreshToken = response.refreshToken
+            
+            if let lat = response.latitude,
+               let lon = response.longitude,
+               let id = response.id {
+                UserDefaultsWrapper.shared.set(lat, forKey: UserDefaultsWrapper.Key.homeLat.rawValue)
+                UserDefaultsWrapper.shared.set(lon, forKey: UserDefaultsWrapper.Key.homeLon.rawValue)
+                UserDefaultsWrapper.shared.set(id, forKey: UserDefaultsWrapper.Key.userId
+                    .rawValue)
+                UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.reVisit
+                    .rawValue)
                 
-                AppDIContainer.shared.tokenStorage.accessToken = response.accessToken
-                AppDIContainer.shared.tokenStorage.refreshToken = response.refreshToken
-                
-                if let lat = response.latitude,
-                   let lon = response.longitude,
-                   let id = response.id {
-                    UserDefaultsWrapper.shared.set(lat, forKey: UserDefaultsWrapper.Key.homeLat.rawValue)
-                    UserDefaultsWrapper.shared.set(lon, forKey: UserDefaultsWrapper.Key.homeLon.rawValue)
-                    UserDefaultsWrapper.shared.set(id, forKey: UserDefaultsWrapper.Key.userId
-                        .rawValue)
-                    UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.reVisit
-                        .rawValue)
-                    
-                    AmplitudeManager.shared.bindUser(id: String(id))
-                    AmplitudeManager.shared.flush()
-                }
-                
-                UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.isGuest.rawValue)
-                print("로그인 완료")
-            } catch {
-                print("로그인 실패: \(error.localizedDescription)")
+                AmplitudeManager.shared.bindUser(id: String(id))
+                AmplitudeManager.shared.flush()
             }
+            
+            UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.isGuest.rawValue)
+            print("로그인 완료")
+        } catch {
+            print("로그인 실패: \(error.localizedDescription)")
         }
     }
     

@@ -28,92 +28,107 @@ protocol TokenStorage {
 
 final class TokenStorageImpl: TokenStorage {
     private let keychain = KeychainWrapper()
+    private var cachedAccessToken: String?
+        private var cachedRefreshToken: String?
+        private var cachedFCMToken: String?
     
     private let accessTokenKey: KeychainWrapper.Key = "accessToken"
     private let refreshTokenKey: KeychainWrapper.Key = "refreshToken"
     private let fcmTokenKey: KeychainWrapper.Key = "fcmToken"
     
     var accessToken: String? {
-        get { keychain.string(forKey: accessTokenKey.rawValue) }
-        set {
-            if let token = newValue {
-                keychain.set(token, forKey: accessTokenKey.rawValue)
-            } else {
-                keychain.remove(forKey: accessTokenKey.rawValue)
+            get {
+                if let cached = cachedAccessToken { return cached }
+                let token = keychain.string(forKey: accessTokenKey.rawValue)
+                cachedAccessToken = token
+                return token
+            }
+            set {
+                cachedAccessToken = newValue
+                if let token = newValue { keychain.set(token, forKey: accessTokenKey.rawValue) }
+                else { keychain.remove(forKey: accessTokenKey.rawValue) }
             }
         }
-    }
-    
-    var refreshToken: String? {
-        get { keychain.string(forKey: refreshTokenKey.rawValue) }
-        set {
-            if let token = newValue {
-                keychain.set(token, forKey: refreshTokenKey.rawValue)
-            } else {
-                keychain.remove(forKey: refreshTokenKey.rawValue)
+        
+        var refreshToken: String? {
+            get {
+                if let cached = cachedRefreshToken { return cached }
+                let token = keychain.string(forKey: refreshTokenKey.rawValue)
+                cachedRefreshToken = token
+                return token
+            }
+            set {
+                cachedRefreshToken = newValue
+                if let token = newValue { keychain.set(token, forKey: refreshTokenKey.rawValue) }
+                else { keychain.remove(forKey: refreshTokenKey.rawValue) }
             }
         }
-    }
-    
-    var fcmToken: String? {
-        get { keychain.string(forKey: fcmTokenKey.rawValue) }
-        set {
-            if let token = newValue {
-                keychain.set(token, forKey: fcmTokenKey.rawValue)
-            } else {
-                keychain.remove(forKey: fcmTokenKey.rawValue)
+        
+        var fcmToken: String? {
+            get {
+                if let cached = cachedFCMToken { return cached }
+                let token = keychain.string(forKey: fcmTokenKey.rawValue)
+                cachedFCMToken = token
+                return token
+            }
+            set {
+                cachedFCMToken = newValue
+                if let token = newValue { keychain.set(token, forKey: fcmTokenKey.rawValue) }
+                else { keychain.remove(forKey: fcmTokenKey.rawValue) }
             }
         }
-    }
 }
 
 // MARK: - Delete
 extension TokenStorageImpl {
+    // 프로퍼티 setter를 사용하면 캐시와 키체인이 동시에 지워집니다!
     func clearAllTokens() {
-        keychain.remove(forKey: accessTokenKey.rawValue)
-        keychain.remove(forKey: refreshTokenKey.rawValue)
-//        keychain.remove(forKey: fcmTokenKey.rawValue)
+        self.accessToken = nil
+        self.refreshToken = nil
+        // self.fcmToken = nil // 기존 로직처럼 FCM 토큰은 유지
     }
     
     func clearAccessToken() {
-        keychain.remove(forKey: accessTokenKey.rawValue)
+        self.accessToken = nil
     }
     
     func clearRefreshToken() {
-        keychain.remove(forKey: refreshTokenKey.rawValue)
+        self.refreshToken = nil
     }
     
     func clearFCMToken() {
-        keychain.remove(forKey: fcmTokenKey.rawValue)
+        self.fcmToken = nil
     }
 }
 
 // MARK: - Update
 extension TokenStorageImpl {
+    // 프로퍼티 setter를 사용하면 캐시와 키체인이 동시에 업데이트됩니다!
     func updateAccessToken(_ token: String) {
-        keychain.set(token, forKey: accessTokenKey.rawValue)
+        self.accessToken = token
     }
     
     func updateRefreshToken(_ token: String) {
-        keychain.set(token, forKey: refreshTokenKey.rawValue)
+        self.refreshToken = token
     }
     
     func updateFCMToken(_ token: String) {
-        keychain.set(token, forKey: fcmTokenKey.rawValue)
+        self.fcmToken = token
     }
 }
 
 // MARK: - Check
 extension TokenStorageImpl {
+    // 메모리 캐시까지 확인하도록 getter를 통과하게 만듭니다.
     func hasAccessToken() -> Bool {
-        return keychain.string(forKey: accessTokenKey.rawValue) != nil
+        return self.accessToken != nil
     }
     
     func hasRefreshToken() -> Bool {
-        return keychain.string(forKey: refreshTokenKey.rawValue) != nil
+        return self.refreshToken != nil
     }
     
     func hasFCMToken() -> Bool {
-        return keychain.string(forKey: fcmTokenKey.rawValue) != nil
+        return self.fcmToken != nil
     }
 }

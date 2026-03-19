@@ -23,7 +23,7 @@ final class DetailRouteViewModel: BaseViewModel {
     private let alarmUseCase: AlarmUseCase
     private var streamTask: Task<Void, Never>?
     
-    let infos: LegInfo
+    var infos: LegInfo
     var onBusDetail: ((BusDetailInfo) -> Void)?
     var getAlarmTapped: ((String, LegInfo) -> Void)?
     
@@ -87,6 +87,29 @@ final class DetailRouteViewModel: BaseViewModel {
         super.init()
         self.fetchInfo()
         self.requestPermissionAndStartTracking()
+        bindUserDefaults()
+    }
+    
+    private func bindUserDefaults() {
+        UserDefaultsWrapper.shared.legInfoPublisher
+            .compactMap { $0 } // nil이 아닐 때만
+            .removeDuplicates()
+            .receive(on: RunLoop.main)
+            .sink { [weak self] newInfo in
+                print("새로운 경로 정보 감지됨: UI 업데이트 시작")
+                self?.updateWithNewInfo(newInfo)
+            }
+            .store(in: &cancellables)
+    }
+    
+    private func updateWithNewInfo(_ info: LegInfo) {
+        // 1. 데이터 갱신
+        self.infos = info
+        self.legtPathInfo = info.pathInfo
+        self.legTrafficInfo = info.trafficInfo
+        
+        // 2. 경로선 다시 그리기 위해 딕셔너리 갱신 로직 등 실행
+        self.fetchInfo()
     }
     
     func fetchInfo() {
