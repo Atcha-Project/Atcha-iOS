@@ -12,6 +12,7 @@ final class SubwayInfoRepositoryImpl: SubwayInfoRepository {
     
     private let apiService: APIService
     
+    
     init(apiService: APIService) {
         self.apiService = apiService
     }
@@ -22,10 +23,11 @@ final class SubwayInfoRepositoryImpl: SubwayInfoRepository {
             path: "/routes/user-routes/subway-arrival",
             method: .get,
             parameters: ["routeName": request.routeName],
-            encoding: URLEncoding.queryString
+            encoding: URLEncoding.queryString,
         )
         
         let result: [SubwayRealTimeInfoResponse] = try await apiService.request(endpoint)
         return result
     }
 }
+

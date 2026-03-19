@@ -9,10 +9,16 @@ import Foundation
 
 final class WithdrawViewModel: BaseViewModel {
     var signOutFinish: (() -> Void)?
-    
+    private let tokenStorage: TokenStorage
+    private let locationStateHolder: LocationStateHolder
     private let signOutUseCase: SignOutUseCase
-    init(signOutUseCase: SignOutUseCase) {
+    
+    init(signOutUseCase: SignOutUseCase,
+         tokenStorage: TokenStorage,
+         locationStateHolder: LocationStateHolder) {
         self.signOutUseCase = signOutUseCase
+        self.tokenStorage = tokenStorage
+        self.locationStateHolder = locationStateHolder
     }
     
     func signOutTapped(_ request: WithdrawRequest) {
@@ -28,9 +34,9 @@ final class WithdrawViewModel: BaseViewModel {
                 )
                 AmplitudeManager.shared.reset()
                 
-                AppDIContainer.shared.tokenStorage.clearAllTokens()
+                tokenStorage.clearAllTokens()
                 UserDefaultsWrapper.shared.removeAll()
-                AppDIContainer.shared.locationStateHolder.clear()
+                locationStateHolder.clear()
                 UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.hasSeenIntro.rawValue)
                 signOutFinish?()
             } catch {

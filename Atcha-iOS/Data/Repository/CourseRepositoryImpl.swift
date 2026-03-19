@@ -10,38 +10,18 @@ import Alamofire
 
 final class CourseRepositoryImpl: CourseRepository {
     private let apiService: APIService
+    private var tokenStorage: TokenStorage
     
-    init(apiService: APIService) {
+    init(apiService: APIService, tokenStorage: TokenStorage) {
         self.apiService = apiService
+        self.tokenStorage = tokenStorage
     }
     
     func courseSearch(_ routeId: String) async throws -> CourseSearchResponse {
-        guard let token = AppDIContainer.shared.tokenStorage.accessToken else {
-            throw NSError(domain: "CourseRepository", code: 401, userInfo: [NSLocalizedDescriptionKey: "인증 토큰이 없습니다."])
-        }
-        
-        let headers: HTTPHeaders = [
-            "Authorization": "Bearer \(token)"
-        ]
-        
-        return try await apiService.request(
-            Endpoint(
-                path: "/routes/last-routes/\(routeId)",
-                method: .get,
-                headers: headers
-            )
-        )
+        return try await apiService.request(Endpoint(path: "/routes/last-routes/\(routeId)", method: .get))
     }
     
     func courseSearch(_ request: CourseSearchRequest) async throws -> [CourseSearchResponse] {
-        guard let token = AppDIContainer.shared.tokenStorage.accessToken else {
-            throw NSError(domain: "CourseRepository", code: 401, userInfo: [NSLocalizedDescriptionKey: "인증 토큰이 없습니다."])
-        }
-        
-        let headers: HTTPHeaders = [
-            "Authorization": "Bearer \(token)"
-        ]
-        
         return try await apiService.request(
             Endpoint(
                 path: "/routes/last-routes",
@@ -51,8 +31,7 @@ final class CourseRepositoryImpl: CourseRepository {
                     "startLon": request.startLon,
                     "endLat": request.endLat,
                     "endLon": request.endLon
-                ],
-                headers: headers
+                ]
             )
         )
     }
@@ -69,7 +48,7 @@ final class CourseRepositoryImpl: CourseRepository {
         _ request: CourseSearchRequest,
         continuation: AsyncThrowingStream<CourseSearchResponse, Error>.Continuation
     ) async {
-        guard let token = AppDIContainer.shared.tokenStorage.accessToken else {
+        guard let token = tokenStorage.accessToken else {
             continuation.finish(throwing: NSError(domain: "CourseRepository", code: 401, userInfo: [NSLocalizedDescriptionKey: "인증 토큰이 없습니다."]))
             return
         }
@@ -96,8 +75,8 @@ final class CourseRepositoryImpl: CourseRepository {
             // 401 외의 코드도 명확히 분기
             if http.statusCode == 401 {
                 if let tokens = await refreshToken() {
-                    AppDIContainer.shared.tokenStorage.accessToken = tokens.accessToken
-                    if let rt = tokens.refreshToken { AppDIContainer.shared.tokenStorage.refreshToken = rt }
+                    tokenStorage.accessToken = tokens.accessToken
+                    if let rt = tokens.refreshToken { tokenStorage.refreshToken = rt }
                     print("재발급 성공 → 스트림 재연결")
                     await startStream(request, continuation: continuation)
                     return
@@ -152,7 +131,7 @@ final class CourseRepositoryImpl: CourseRepository {
     
     
     private func refreshToken() async -> (accessToken: String, refreshToken: String?)? {
-        guard let refreshToken = AppDIContainer.shared.tokenStorage.refreshToken else {
+        guard let refreshToken = tokenStorage.refreshToken else {
             print("refreshToken 없음")
             SessionController.shared.expireAndRouteToLogin()
             return nil
@@ -169,7 +148,7 @@ final class CourseRepositoryImpl: CourseRepository {
             let (data, response) = try await URLSession.shared.data(for: request)
             guard let http = response as? HTTPURLResponse else {
                 print("reissue: HTTPURLResponse 아님")
-//                SessionController.shared.expireAndRouteToLogin()
+                //                SessionController.shared.expireAndRouteToLogin()
                 return nil
             }
             
@@ -187,19 +166,19 @@ final class CourseRepositoryImpl: CourseRepository {
                 let decoded = try decoder.decode(APIResponse<RefreshTokenResponse>.self, from: data)
                 guard let result = decoded.result else {
                     print("reissue: result nil (responseCode=\(decoded.responseCode))")
-//                    SessionController.shared.expireAndRouteToLogin()
+                    //                    SessionController.shared.expireAndRouteToLogin()
                     return nil
                 }
                 return (accessToken: result.accessToken, refreshToken: result.refreshToken)
             } catch {
                 print("reissue 디코딩 실패:", error)
-//                SessionController.shared.expireAndRouteToLogin()
+                //                SessionController.shared.expireAndRouteToLogin()
                 return nil
             }
             
         } catch {
             print("reissue 네트워크 오류:", error)
-//            SessionController.shared.expireAndRouteToLogin()
+            //            SessionController.shared.expireAndRouteToLogin()
             return nil
         }
     }

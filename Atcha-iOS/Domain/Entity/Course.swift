@@ -128,13 +128,13 @@ struct Legs: Codable, Hashable {
     }
 }
 
-struct LegInfo: Codable {
+struct LegInfo: Codable, Equatable {
     let pathInfo: [LegPathInfo]
     let trafficInfo: [LegTrafficInfo]
     let busInfo: [BusDetailInfo]
 }
 
-struct LegTrafficInfo: Hashable, Codable {
+struct LegTrafficInfo: Hashable, Codable, Equatable {
     var id: UUID = UUID()
     let distance: Int?
     let departureDateTime: String?
@@ -258,7 +258,7 @@ extension AddressInfo {
     }
 }
 
-struct PassStopList: Codable, Hashable {
+struct PassStopList: Codable, Hashable, Equatable {
     let index: Int?
     let stationName: String?
     let lon: String?
@@ -272,13 +272,13 @@ struct Step: Codable, Hashable{
     let linestring: String?
 }
 
-struct TargetBusStation: Codable, Hashable {
+struct TargetBusStation: Codable, Hashable, Equatable {
     let busStationId: String?
     let busStationNumber: String?
     let busStationName: String?
 }
 
-enum TransportMode: String, Codable {
+enum TransportMode: String, Codable, Equatable {
     case walk = "WALK"
     case bus = "BUS"
     case subway = "SUBWAY"
@@ -353,7 +353,7 @@ struct LegPathInfo: Codable, Equatable {
     let passShape: String?
 }
 
-struct BusDetailInfo: Codable {
+struct BusDetailInfo: Codable, Equatable {
     let routeName: String?
     let start: AddressInfo?
     let passStations: [PassStations]?

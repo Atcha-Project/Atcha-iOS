@@ -11,21 +11,26 @@ import Foundation
 final class MainDIContainer {
     private let apiService: APIService
     private let locationStateHolder: LocationStateHolder
+    private let tokenStorage: TokenStorage
+    
     private lazy var searchAddressUseCase = SearchAddressUseCaseImpl(repository: AddressRepositoryImpl(apiService: apiService))
     private lazy var requestUseCase = RequestLocationAuthorizationUseCaseImpl(repository: PermissionRepositoryImpl())
     private lazy var streamUseCase = ObserLocationStreamUseCaseImpl(repository: LocationStreamRepositoryImpl())
     private lazy var busInfoUseCase = BusInfoUseCaseImpl(repository: BusInfoRepositoryImpl(apiService: apiService))
     private lazy var alarmUseCase = AlarmUseCaseImpl(repository: AlarmRepositoryImpl(apiService: apiService))
-    private lazy var courseUseCase = CourseUseCaseImpl(repository: CourseRepositoryImpl(apiService: apiService))
+    private lazy var courseUseCase = CourseUseCaseImpl(repository: CourseRepositoryImpl(apiService: apiService, tokenStorage: tokenStorage))
     
     private lazy var myPageDI: MyPageDIContainer = {
         MyPageDIContainer(apiService: apiService,
-                          locationStateHolder: locationStateHolder)
+                          tokenStorage: tokenStorage, locationStateHolder: locationStateHolder)
     }()
     
     private lazy var courseDI: CourseDIContainer = {
-        CourseDIContainer(apiService: apiService,
-                          locationStateHolder: locationStateHolder)
+        CourseDIContainer(
+            apiService: apiService,
+            locationStateHolder: locationStateHolder,
+            tokenStorage: tokenStorage
+        )
     }()
     
     private lazy var rotueDI: RouteDIContainer = {
@@ -45,16 +50,17 @@ final class MainDIContainer {
     }()
     
     private lazy var loginDI: LoginDIContainer = {
-        LoginDIContainer(apiService: apiService)
+        LoginDIContainer(apiService: apiService, tokenStorage: tokenStorage)
     }()
     
     private lazy var homeRegisterDI: HomeRegisterDIContainer = {
-        HomeRegisterDIContainer(apiService: apiService, locationStateHolder: locationStateHolder)
+        HomeRegisterDIContainer(apiService: apiService, locationStateHolder: locationStateHolder, tokenStorage: tokenStorage)
     }()
     
-    init(apiService: APIService, locationStateHolder: LocationStateHolder) {
+    init(apiService: APIService, locationStateHolder: LocationStateHolder, tokenStorage: TokenStorage) {
         self.apiService = apiService
         self.locationStateHolder = locationStateHolder
+        self.tokenStorage = tokenStorage
     }
     
     func makeMainiewModel() -> MainViewModel {

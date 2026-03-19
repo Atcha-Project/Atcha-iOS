@@ -45,6 +45,7 @@ class BaseViewController<VM: BaseViewModel>: UIViewController {
         setupBindings()
         setupKeyboardDismiss()
         observeNetwork()
+        setupErrorObserver()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -209,6 +210,40 @@ class BaseViewController<VM: BaseViewModel>: UIViewController {
     func hideReconnectView() {
         reconnectView?.removeFromSuperview()
         reconnectView = nil
+    }
+    
+    private func setupErrorObserver() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleServerError(_:)),
+            name: .apiErrorOccurred,
+            object: nil
+        )
+    }
+    
+    @objc private func handleServerError(_ notification: Notification) {
+        guard self.presentedViewController == nil else { return }
+
+        DispatchQueue.main.async { [weak self] in
+            self?.showAtchaErrorPopup()
+        }
+    }
+    
+    private func showAtchaErrorPopup() {
+        // 이전에 만드신 앗차팝업 호출 (에러 케이스용)
+        let popupVM = AtchaPopupViewModel(info: .serverError) // Enum에 .serverError 추가 필요
+        let popupVC = AtchaPopupViewController(viewModel: popupVM)
+        
+        popupVC.confirmButton.addAction(UIAction { [weak popupVC] _ in
+            popupVC?.dismiss(animated: false)
+        }, for: .touchUpInside)
+        
+        popupVC.modalPresentationStyle = .overFullScreen
+        self.present(popupVC, animated: false)
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self, name: .apiErrorOccurred, object: nil)
     }
 }
 
