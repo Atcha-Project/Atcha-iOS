@@ -461,7 +461,7 @@ extension DetailRouteSubwayCell {
             return
         }
         
-        if let destination = matched.destination {
+        if let destination = matched.destination, destination != "" {
             subwayDirectionLabel.attributedText = AtchaFont.B6_R_14("\(destination)행", color: .white)
         } else {
             subwayDirectionLabel.attributedText = AtchaFont.B6_R_14("", color: .white)
