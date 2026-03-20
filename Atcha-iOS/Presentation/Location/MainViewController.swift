@@ -605,33 +605,69 @@ extension MainViewController {
             .store(in: &cancellables)
     }
     
+//    private func bindLegPathUpdates() {
+//        viewModel.$legInfo
+//            .receive(on: DispatchQueue.main)
+//            .combineLatest(viewModel.$bottomType)
+//            .sink { [weak self] info, bottomType in
+//                self?.commonAlarmSetupView()
+//                self?.addRouteLine(pathInfos: info?.pathInfo ?? [])
+//                
+//                switch bottomType {
+//                case .departure:
+//                    self?.shouldCenterToCurrentLocationOnce = false
+//                    self?.lastTrainDepartView.setupLegInfo(info: info)
+//                default: do {}
+//                }
+//                
+//                self?.setupBottomType(bottomType)
+//            }
+//            .store(in: &cancellables)
+//        
+//        viewModel.$bottomType
+//            .removeDuplicates()
+//            .receive(on: RunLoop.main)
+//            .sink { [weak self] type in
+//                self?.setupBottomType(type)
+//            }
+//            .store(in: &cancellables)
+//        
+//        viewModel.$departureTime
+//            .compactMap { $0 }
+//            .receive(on: RunLoop.main)
+//            .sink { [weak self] time in
+//                self?.lastTrainDepartView.refreshDepartureTime(departureStr: time)
+//            }
+//            .store(in: &cancellables)
+//    }
+
     private func bindLegPathUpdates() {
-        viewModel.$legInfo
-            .receive(on: DispatchQueue.main)
-            .combineLatest(viewModel.$bottomType)
-            .sink { [weak self] info, bottomType in
-                self?.commonAlarmSetupView()
-                self?.addRouteLine(pathInfos: info?.pathInfo ?? [])
-                
-                switch bottomType {
-                case .departure:
-                    self?.shouldCenterToCurrentLocationOnce = false
-                    self?.lastTrainDepartView.setupLegInfo(info: info)
-                default: do {}
-                }
-                
-                self?.setupBottomType(bottomType)
+        //  1. 경로 정보, 2. 알람 실행 여부, 3. 현재 바텀 뷰 타입을 묶어서 감시
+        Publishers.CombineLatest3(
+            viewModel.$legInfo,
+            UserDefaults.standard.publisher(for: \.departureAlarmDidFire).removeDuplicates(),
+            viewModel.$bottomType
+        )
+        .receive(on: RunLoop.main)
+        .sink { [weak self] info, isFired, bottomType in
+            guard let self = self else { return }
+            
+            // 지도 경로 선 그리기 및 뷰 설정
+            self.commonAlarmSetupView()
+            self.addRouteLine(pathInfos: info?.pathInfo ?? [])
+            
+            // 핵심: 알람 상태(isFired)를 setupLegInfo에 함께 전달
+            if bottomType == .departure {
+                // LastTrainDepartBottomView의 데이터를 업데이트
+                self.lastTrainDepartView.setupLegInfo(info: info, isFired: isFired)
             }
-            .store(in: &cancellables)
+            
+            // 바텀 뷰 노출/숨김 처리
+            self.setupBottomType(bottomType)
+        }
+        .store(in: &cancellables)
         
-        viewModel.$bottomType
-            .removeDuplicates()
-            .receive(on: RunLoop.main)
-            .sink { [weak self] type in
-                self?.setupBottomType(type)
-            }
-            .store(in: &cancellables)
-        
+        // departureTime 바인딩 (서버에서 실시간 시간이 갱신될 때를 위해 유지)
         viewModel.$departureTime
             .compactMap { $0 }
             .receive(on: RunLoop.main)

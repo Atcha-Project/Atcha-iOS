@@ -164,9 +164,9 @@ final class MainViewModel: BaseViewModel{
         addressDesc = address
         legInfo = info
         
-        let wrapper = UserDefaultsWrapper.shared
-        wrapper.set(address, forKey: UserDefaultsWrapper.Key.addressDesc.rawValue)
-        wrapper.set(info, forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
+//        let wrapper = UserDefaultsWrapper.shared
+//        wrapper.set(address, forKey: UserDefaultsWrapper.Key.addressDesc.rawValue)
+//        wrapper.set(info, forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
         setupLegInfo(info: info)
     }
     
