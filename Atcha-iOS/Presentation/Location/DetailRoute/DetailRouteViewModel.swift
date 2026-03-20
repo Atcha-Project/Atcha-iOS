@@ -481,3 +481,20 @@ extension DetailRouteViewModel {
         return best
     }
 }
+
+
+extension DetailRouteViewModel {
+    private func checkAndStopPolling(error: Error) -> Bool {
+        if let apiError = error as? APIError {
+            if case .serverError(_, let code) = apiError {
+                let stopCodes = ["URT_001", "LRT_001", "LRT_003"]
+                
+                if let code = code, stopCodes.contains(code) {
+                    self.stopPolling()
+                    return true
+                }
+            }
+        }
+        return false
+    }
+}

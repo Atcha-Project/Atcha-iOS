@@ -44,7 +44,7 @@ final class APIServiceImpl: APIService, @unchecked Sendable {
                         } else {
                             self.handleFailure(response: response, endpoint: endpoint, continuation: continuation)
                         }
-                    case .failure(let error):
+                    case .failure(_):
                         self.handleFailure(response: response, endpoint: endpoint, continuation: continuation)
                     }
                 }
@@ -92,7 +92,7 @@ extension APIServiceImpl {
                         self.handleFailure(response: response, endpoint: endpoint, requestBody: body.toDictionary(), continuation: continuation)
                     }
                     
-                case .failure(let error):
+                case .failure(_):
                     self.handleFailure(response: response, endpoint: endpoint, requestBody: body.toDictionary(), continuation: continuation)
                 }
             }
@@ -134,7 +134,8 @@ extension APIServiceImpl {
             requestParameters: endpoint.parameters // GET query params
         )
         
-        let apiError = APIError.serverError(statusCode: statusCode)
+        let apiError = APIError.serverError(statusCode: statusCode, responseCode: responseCode)
+        
         NotificationCenter.default.post(name: .apiErrorOccurred, object: apiError)
         continuation.resume(throwing: apiError)
     }
