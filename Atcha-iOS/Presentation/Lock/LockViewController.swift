@@ -168,6 +168,11 @@ final class LockViewController: BaseViewController<LockViewModel> {
         
         amp_track(.later_course_click)
         viewModel.routerHandler?(.courseSearch(startLat: lat, startLon: lon, startAddress: address, context: .afterReigster))
+        
+        UserDefaultsWrapper.shared.set(
+            true,
+            forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue
+        )
     }
     
     private func observeAlarmTimeout() {

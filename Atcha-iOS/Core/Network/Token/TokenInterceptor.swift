@@ -33,7 +33,8 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
             "/auth/login",
             "/app/version",
             "/locations/is-service-region",
-            "/api/locations/rgeo"
+            "/api/locations/rgeo",
+            "/auth/reissue"
         ]
         
         if publicPaths.contains(where: { path.hasSuffix($0) }) {
