@@ -31,6 +31,11 @@ struct RouteRanks {
     let transferCount: Int               // 환승 횟수
 }
 
+enum CourseSearchContext {
+    case beforeRegister
+    case afterReigster
+}
+
 final class CourseSearchViewModel: BaseViewModel {
     @Published var courses: [CourseUIModel] = []
     private var allCourses: [CourseUIModel] = []
@@ -53,18 +58,22 @@ final class CourseSearchViewModel: BaseViewModel {
     private let cutoffHour = 3 // 새벽 3시까지 검색
     private var anchorDate: Date? // 검색 시작 시 고정
     
+    @Published private(set) var context: CourseSearchContext
+    
     init(
         courseUseCase: CourseUseCase,
         alarmUseCase: AlarmUseCase,
         startLat: String,
         startLon: String,
-        startAddress: String
+        startAddress: String,
+        context: CourseSearchContext
     ) {
         self.courseUseCase = courseUseCase
         self.alarmUseCase = alarmUseCase
         self.startLat = startLat
         self.startLon = startLon
         self.startAddress = startAddress
+        self.context = context
         super.init()
     }
     

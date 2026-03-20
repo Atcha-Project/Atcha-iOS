@@ -13,7 +13,6 @@ import TMapSDK
 
 final class MainViewModel: BaseViewModel{
     private var alarmTimerCancellable: AnyCancellable?
-    private var alarmFinishCancellable: AnyCancellable?
     private var alarmTimeoutCancellable: AnyCancellable?
     private var alarmObserver: NSObjectProtocol?
     private var refreshUpdateToken: NSObjectProtocol?
@@ -60,6 +59,14 @@ final class MainViewModel: BaseViewModel{
     private var lastValidTime: Date? = nil
     private var consecutiveValidCount = 0
     
+    private static let isoDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        formatter.locale = Locale(identifier: "ko_KR") // 혹은 .current
+        return formatter
+    }()
+    private var cachedPathCoordinates: [CLLocationCoordinate2D] = []
+    
     init(authorizationUseCase: RequestLocationAuthorizationUseCase,
          streamUseCase: ObserveLocationStreamUseCase,
          fetchTaxiFareUseCase: FetchTaxiFareUseCase,
@@ -79,6 +86,7 @@ final class MainViewModel: BaseViewModel{
         
         super.init()
         observeGlobalRefresh()
+        restoreAlarmState()
         self.bind()
     }
     
@@ -112,16 +120,16 @@ final class MainViewModel: BaseViewModel{
             .store(in: &cancellables)
         
         UserDefaultsWrapper.shared.legInfoPublisher
-                .compactMap { $0 }
-                .receive(on: RunLoop.main)
-                .sink { [weak self] newInfo in
-                    guard let self = self else { return }
-                    
-                    if self.legInfo != newInfo {
-                        self.drawRoute(address: self.addressDesc, info: newInfo)
-                    }
+            .compactMap { $0 }
+            .receive(on: RunLoop.main)
+            .sink { [weak self] newInfo in
+                guard let self = self else { return }
+                
+                if self.legInfo != newInfo {
+                    self.drawRoute(address: self.addressDesc, info: newInfo)
                 }
-                .store(in: &cancellables)
+            }
+            .store(in: &cancellables)
     }
     
     private func updateAddressOnly(for location: CLLocationCoordinate2D) async {
@@ -171,27 +179,28 @@ final class MainViewModel: BaseViewModel{
     }
     
     private func setupLegInfo(info: LegInfo?) {
-        let routeId = info?.pathInfo.first?.routeId
-        
-        guard let info, let departureStr = info.pathInfo.first?.departureDateTime,
+        guard let info,
+              let departureStr = info.pathInfo.first?.departureDateTime,
               let totalTime = info.trafficInfo.first?.totalTime else { return }
         
         self.departureStr = departureStr
         
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-        formatter.locale = .current
+        UserDefaultsWrapper.shared.set(info, forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
         
-        guard let departureDate = formatter.date(from: departureStr) else { return }
+        guard let departureDate = Self.isoDateFormatter.date(from: departureStr) else { return }
         let minutes = parseTotalTimeToMinutes(totalTime)
-        
         guard let arrivalDate = Calendar.current.date(byAdding: .minute, value: minutes, to: departureDate) else { return }
         
-        print("departureDate : \(departureDate)")
-        print("arrivalDate : \(arrivalDate)")
         let wrapper = UserDefaultsWrapper.shared
-        wrapper.set(departureStr, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
-        wrapper.set(arrivalDate, forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue)
+        let savedArrival = wrapper.object(forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue, of: Date.self)
+        
+        
+        if savedArrival != arrivalDate {
+            AlarmManager.shared.scheduleArrivalTimeout(at: arrivalDate)
+            wrapper.set(departureStr, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
+            wrapper.set(arrivalDate, forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue)
+            self.cachedPathCoordinates = info.pathInfo.flatMap { convertShapeToCoords($0.passShape ?? "") }
+        }
     }
     
     private func parseTotalTimeToMinutes(_ time: String) -> Int {
@@ -284,11 +293,8 @@ final class MainViewModel: BaseViewModel{
                     // 알람이 울린 후(`isAlarmFired`)에만 경로 스냅 적용
                     let isAlarmFired = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue) ?? false
                     
-                    if isAlarmFired, let path = self.legInfo?.pathInfo {
-                        let allCoords = path.flatMap { convertShapeToCoords($0.passShape ?? "") }
-                        if !allCoords.isEmpty {
-                            finalCoord = smoother.snap(current: smoothedCoord, polyline: allCoords)
-                        }
+                    if isAlarmFired && !self.cachedPathCoordinates.isEmpty {
+                        finalCoord = smoother.snap(current: smoothedCoord, polyline: self.cachedPathCoordinates)
                     }
                     
                     let capturedCoord = finalCoord
@@ -347,7 +353,6 @@ final class MainViewModel: BaseViewModel{
         wrapper.set(body, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
         
         fetchDetailRoute()
-        stopFinishAlarmTimer()
         startAlarmTimer()
         checkAlarmTime()
         
@@ -369,7 +374,7 @@ final class MainViewModel: BaseViewModel{
                                                trafficInfo: trafficInfo,
                                                busInfo: busInfo)
                 wrapper.set(legInfo, forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
-                drawRoute(address: addressDesc, info: legInfo)
+                self.drawRoute(address: self.addressDesc, info: legInfo)
             } catch {
                 print("routeId 조회 대실패 ㅠㅠ!!")
             }
@@ -378,6 +383,11 @@ final class MainViewModel: BaseViewModel{
     
     // MARK: - 알림 취소
     func alarmDelete() {
+        
+        stopAlarmTimer()
+        
+        AlarmManager.shared.cancelArrivalTimeout()
+        
         let wrapper = UserDefaultsWrapper.shared
         let savedLastRouteId: String? = wrapper.string(
             forKey: UserDefaultsWrapper.Key.lastRouteId.rawValue)
@@ -497,38 +507,11 @@ extension MainViewModel {
             .sink { [weak self] _ in
                 self?.checkAlarmTime()
             }
-        
-        alarmFinishCancellable = Timer
-            .publish(every: 60.0, on: .main, in: .common)
-            .autoconnect()
-            .sink { [weak self] _ in
-                guard let self else { return }
-                if let arrivalTime = UserDefaultsWrapper.shared.object(
-                    forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue,
-                    of: Date.self
-                ) {
-                    let now = Date()
-                    let thirtyMinutesLater = arrivalTime.addingTimeInterval(30 * 60) // 30분 후
-                    
-                    print("departure Time : \(arrivalTime)")
-                    print("30분 후 시각 : \(thirtyMinutesLater)")
-                    
-                    if now >= thirtyMinutesLater {
-                        stopFinishAlarmTimer()
-                        bottomType = .search
-                    }
-                }
-            }
     }
     
     private func stopAlarmTimer() {
         alarmTimerCancellable?.cancel()
         alarmTimerCancellable = nil
-    }
-    
-    func stopFinishAlarmTimer() {
-        alarmFinishCancellable?.cancel()
-        alarmFinishCancellable = nil
     }
 }
 
@@ -548,19 +531,19 @@ extension MainViewModel {
                 address: lastReverseGeocode?.address,
                 radius: lastReverseGeocode?.radius)))
             
-        case .courseSearch(let startLat, let startLon, _):
+        case .courseSearch(let startLat, let startLon, _, _):
             
             routeHandler?(.courseSearch(
                 startLat: (lastReverseGeocode?.lat).map { String($0) } ?? startLat,
                 startLon: (lastReverseGeocode?.lon).map { String($0) } ?? startLon,
-                startAddress: address ?? lastReverseGeocode?.address ?? ""
+                startAddress: address ?? lastReverseGeocode?.address ?? "",
+                context: .beforeRegister
             ))
             
         case .myPage:
             routeHandler?(.myPage)
             
         case .detailRoute:
-            fetchDetailRoute() // 이걸 통신을 할까 말까
             let wrapper = UserDefaultsWrapper.shared
             guard let info = wrapper.object(forKey: UserDefaultsWrapper.Key.legInfo.rawValue,
                                             of: LegInfo.self),
@@ -682,6 +665,63 @@ extension MainViewModel {
                   let lon = Double(parts[0]),
                   let lat = Double(parts[1]) else { return nil }
             return CLLocationCoordinate2D(latitude: lat, longitude: lon)
+        }
+    }
+}
+
+extension MainViewModel {
+    func restoreAlarmState() {
+        let wrapper = UserDefaultsWrapper.shared
+        
+        // 1. 알람이 등록되어 있는지 확인
+        guard wrapper.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) == true else { return }
+        
+        // 2. 데이터 가져오기
+        guard let departureStr = wrapper.string(forKey: UserDefaultsWrapper.Key.departureTime.rawValue),
+              let arrivalDate = wrapper.object(forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue, of: Date.self) else { return }
+        
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
+        
+        guard let departureDate = formatter.date(from: departureStr) else { return }
+        
+        let now = Date()
+        let timeoutDate = arrivalDate.addingTimeInterval(10 * 60)
+        
+        // --- 분기 처리 ---
+        
+        if now < departureDate {
+            // [Case 1] 아직 출발 전
+            startAlarmTimer()
+            
+        } else if now >= departureDate && now < timeoutDate {
+            // [Case 2] 이동 중 (핵심!)
+            
+            // 중요: 이미 알람이 울린 것으로 간주하여 플래그 세팅 (경로 스냅핑 활성화)
+            wrapper.set(true, forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue)
+            AlarmManager.shared.scheduleArrivalTimeout(at: arrivalDate)
+            
+            if let savedLegInfo = wrapper.object(forKey: UserDefaultsWrapper.Key.legInfo.rawValue, of: LegInfo.self) {
+                self.legInfo = savedLegInfo // Published 변수 복구
+                
+                let coords = savedLegInfo.pathInfo.flatMap { convertShapeToCoords($0.passShape ?? "") }
+                self.cachedPathCoordinates = coords
+            }
+            
+            self.showLockView = false // 잠금화면 보이지 않음
+            self.bottomType = .departure // 하단 바를 '안내 중' 상태로 변경
+            
+            
+            if let current = self.currentLocation {
+                HomeArrivalManager.shared.checkHomeArrival(currentCoord: current)
+            }
+            
+        } else if now >= timeoutDate {
+            // [Case 3] 이미 한참 지남
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                NotificationCenter.default.post(name: NSNotification.Name("scheduledArrivalDidTimeout"), object: nil)
+            }
         }
     }
 }

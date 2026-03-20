@@ -93,11 +93,12 @@ final class MainCoordinator: NSObject {
             }
             
             myPageCoordinator.start()
-        case let .courseSearch(startLat, startLon, startAddress):
+        case let .courseSearch(startLat, startLon, startAddress, context):
             let courseDI = diContainer.makeCourseDIContainer()
             let vm = courseDI.makeCourseSearchViewModel(startLat: startLat,
                                                         startLon: startLon,
-                                                        startAddress: startAddress)
+                                                        startAddress: startAddress,
+                                                        context: context)
             let vc = courseDI.makeCourseSearchViewController(viewModel: vm)
             vm.getAlarmTapped = { [weak self] address, infos in
                 guard let self else { return }
@@ -130,7 +131,8 @@ final class MainCoordinator: NSObject {
                         let searchVM = courseDI.makeCourseSearchViewModel(
                             startLat: "\(coordinate.latitude)",
                             startLon: "\(coordinate.longitude)",
-                            startAddress: locationInfo.name ?? "주소 없음"
+                            startAddress: locationInfo.name ?? "주소 없음",
+                            context: .beforeRegister
                         )
                         
                         searchVM.getAlarmTapped = { [weak self] address, infos in
@@ -192,7 +194,8 @@ final class MainCoordinator: NSObject {
                     let searchVM = courseDI.makeCourseSearchViewModel(
                         startLat: "\(coordinate.latitude)",
                         startLon: "\(coordinate.longitude)",
-                        startAddress: locationInfo.name ?? "주소 없음"
+                        startAddress: locationInfo.name ?? "주소 없음",
+                        context: .beforeRegister
                     )
                     
                     searchVM.getAlarmTapped = { [weak self] address, infos in
@@ -234,7 +237,8 @@ final class MainCoordinator: NSObject {
                 let searchVM = courseDI.makeCourseSearchViewModel(
                     startLat: "\(coordinate.latitude)",
                     startLon: "\(coordinate.longitude)",
-                    startAddress: locationInfo.name ?? "주소 없음"
+                    startAddress: locationInfo.name ?? "주소 없음",
+                    context: .beforeRegister
                 )
                 
                 searchVM.getAlarmTapped = { [weak self] address, infos in
@@ -298,11 +302,22 @@ final class MainCoordinator: NSObject {
                                                          infos: info,
                                                          context: .afterReigster))
                     }
-                case .courseSearch(let startLat, let startLon, let startAddress):
-                    self?.navigationController.dismiss(animated: false) {
-                        self?.handle(route: .courseSearch(startLat: startLat,
-                                                          startLon: startLon,
-                                                          startAddress: startAddress))
+                case .courseSearch(let startLat, let startLon, let startAddress, _):
+                    self?.navigationController.dismiss(animated: false) { [weak self] in
+                        guard let self = self else { return }
+                        
+                        let wrapper = UserDefaultsWrapper.shared
+                        let currentInfo = wrapper.object(forKey: UserDefaultsWrapper.Key.legInfo.rawValue, of: LegInfo.self)
+                        let currentAddress = wrapper.string(forKey: UserDefaultsWrapper.Key.addressDesc.rawValue) ?? ""
+                        
+                        if let info = currentInfo {
+                            self.handle(route: .detailRoute(address: currentAddress, infos: info, context: .afterReigster))
+                        }
+                        
+                        self.handle(route: .courseSearch(startLat: startLat,
+                                                         startLon: startLon,
+                                                         startAddress: startAddress,
+                                                         context: .afterReigster))
                     }
                 case .dismissLockScreen:
                     self?.navigationController.dismiss(animated: true)

@@ -44,7 +44,7 @@ final class APIServiceImpl: APIService, @unchecked Sendable {
                         } else {
                             self.handleFailure(response: response, endpoint: endpoint, continuation: continuation)
                         }
-                    case .failure(let error):
+                    case .failure(_):
                         self.handleFailure(response: response, endpoint: endpoint, continuation: continuation)
                     }
                 }
@@ -92,7 +92,7 @@ extension APIServiceImpl {
                         self.handleFailure(response: response, endpoint: endpoint, requestBody: body.toDictionary(), continuation: continuation)
                     }
                     
-                case .failure(let error):
+                case .failure(_):
                     self.handleFailure(response: response, endpoint: endpoint, requestBody: body.toDictionary(), continuation: continuation)
                 }
             }
@@ -110,7 +110,7 @@ extension APIServiceImpl {
         let statusCode = response.response?.statusCode ?? -1
         let method = endpoint.method.rawValue.uppercased()
         let path = endpoint.path
-        let requestHeaders = endpoint.headers?.dictionary ?? [:]
+        let actualSentHeaders = response.request?.allHTTPHeaderFields ?? [:]
         
         var responseCode = "UNKNOWN"
         var serverMessage = "(메시지 없음)"
@@ -129,12 +129,13 @@ extension APIServiceImpl {
             path: serverPath,
             responseCode: responseCode,
             message: serverMessage,
-            requestHeaders: requestHeaders,
+            requestHeaders: actualSentHeaders,
             requestBody: requestBody,              // POST/PUT body
             requestParameters: endpoint.parameters // GET query params
         )
         
-        let apiError = APIError.serverError(statusCode: statusCode)
+        let apiError = APIError.serverError(statusCode: statusCode, responseCode: responseCode)
+        
         NotificationCenter.default.post(name: .apiErrorOccurred, object: apiError)
         continuation.resume(throwing: apiError)
     }

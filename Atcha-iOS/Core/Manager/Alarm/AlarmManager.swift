@@ -34,6 +34,7 @@ final class AlarmManager {
     private var isPreviewing = false
     private var hapticEngine: CHHapticEngine?
     private var autoStopWorkItem: DispatchWorkItem?
+    private var arrivalTimeoutWorkItem: DispatchWorkItem?
     
     // MARK: - Init
     private init() {
@@ -454,6 +455,7 @@ extension AlarmManager {
 enum AlarmNotificationID {
     static let autoStopInfo = "atcha.alarm.autostop"
     static let tenMinutesBefore = "atcha.alarm.tenMinutesBefore"
+    static let scheduledArrivalTimeout = "atcha.arrival.timeout"
 }
 
 extension AlarmManager {
@@ -638,5 +640,53 @@ extension AlarmManager {
         
         autoStopWorkItem = workItem
         DispatchQueue.main.asyncAfter(deadline: .now() + 120.0, execute: workItem)
+    }
+}
+
+extension AlarmManager {
+    
+    // 도착 10분 후 자동 종료 예약 함수
+    func scheduleArrivalTimeout(at arrivalDate: Date) {
+        // 기존에 예약된 게 있다면 먼저 취소
+        cancelArrivalTimeout()
+        
+        let timeoutDate = arrivalDate.addingTimeInterval(10 * 60) // 도착 시간 + 10분
+        let timeInterval = timeoutDate.timeIntervalSinceNow
+        
+        // 만약 이미 시간이 지났다면 예약하지 않음
+        guard timeInterval > 0 else { return }
+        
+        // 1. 백그라운드용 로컬 푸시 예약 (시스템이 정확한 시간에 띄워줌)
+        let content = UNMutableNotificationContent()
+        content.title = "막차 안내 종료"
+        content.body = "예정된 도착 시간이 지나 알람이 자동으로 종료됐어요"
+        content.sound = .default
+        
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: timeInterval, repeats: false)
+        let request = UNNotificationRequest(
+            identifier: AlarmNotificationID.scheduledArrivalTimeout,
+            content: content,
+            trigger: trigger
+        )
+        UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
+        
+        // 2. 포그라운드(앱이 켜져 있을 때) 로직 처리를 위한 WorkItem
+        let workItem = DispatchWorkItem {
+            print(" 도착 10분 초과: 자동 종료 실행")
+            // 메인 화면 등에 신호를 보내서 팝업을 띄우고 상태를 정리함
+            NotificationCenter.default.post(name: NSNotification.Name("scheduledArrivalDidTimeout"), object: nil)
+        }
+        
+        // 변수를 따로 저장해두어야 나중에 취소(reset)가 가능합니다.
+        // (클래스 상단에 private var arrivalTimeoutWorkItem: DispatchWorkItem? 를 선언해두세요)
+        self.arrivalTimeoutWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + timeInterval, execute: workItem)
+    }
+    
+    // 예약 취소 함수 (집에 도착하거나 수동 종료했을 때 호출 필수!)
+    func cancelArrivalTimeout() {
+        arrivalTimeoutWorkItem?.cancel()
+        arrivalTimeoutWorkItem = nil
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [AlarmNotificationID.scheduledArrivalTimeout])
     }
 }
