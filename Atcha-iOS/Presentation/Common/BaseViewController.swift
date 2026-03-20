@@ -9,6 +9,10 @@ import UIKit
 import Combine
 import CoreLocation
 
+private struct ErrorState {
+    static var isShowing500Error = false
+}
+
 class BaseViewController<VM: BaseViewModel>: UIViewController {
     var activePermissionToast: AtchaActionToast?
     var activeAlarmPermissionToast: AtchaActionToast?
@@ -229,7 +233,7 @@ class BaseViewController<VM: BaseViewModel>: UIViewController {
         if case .serverError(let statusCode) = apiError {
             
             // 3. 500번대 에러인 경우에만 팝업 노출
-            if (500...599).contains(statusCode) {
+            if (500...599).contains(statusCode) && !ErrorState.isShowing500Error {
                 guard self.presentedViewController == nil else { return }
                 
                 DispatchQueue.main.async { [weak self] in
@@ -243,11 +247,14 @@ class BaseViewController<VM: BaseViewModel>: UIViewController {
     }
     
     private func showAtchaErrorPopup() {
+        ErrorState.isShowing500Error = true
+        
         // 이전에 만드신 앗차팝업 호출 (에러 케이스용)
         let popupVM = AtchaPopupViewModel(info: .serverError) // Enum에 .serverError 추가 필요
         let popupVC = AtchaPopupViewController(viewModel: popupVM)
         
         popupVC.confirmButton.addAction(UIAction { [weak popupVC] _ in
+            ErrorState.isShowing500Error = false
             popupVC?.dismiss(animated: false)
         }, for: .touchUpInside)
         
