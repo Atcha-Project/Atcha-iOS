@@ -37,9 +37,23 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // This occurs shortly after the scene enters the background, or when its session is discarded.
         // Release any resources associated with this scene that can be re-created the next time the scene connects.
         // The scene may re-connect later, as its session was not necessarily discarded (see `application:didDiscardSceneSessions` instead).
-        if let _: LegInfo = UserDefaultsWrapper.shared.object(forKey: UserDefaultsWrapper.Key.legInfo.rawValue, of: LegInfo.self) {
-            AlarmManager.shared.sendBackgroundPush(title: "앗차를 다시 켜주세요",
-                                                   body: "제 시간에 출발 시간을 알려드릴 수 있도록 앱을 다시 실행해 주세요.")
+        
+        let wrapper = UserDefaultsWrapper.shared
+        
+        if let _: LegInfo = wrapper.object(forKey: UserDefaultsWrapper.Key.legInfo.rawValue, of: LegInfo.self) {
+            let didFire = wrapper.bool(forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue) ?? false
+            
+            if didFire {
+                AlarmManager.shared.sendBackgroundPush(
+                    title: "앗차를 다시 켜주세요",
+                    body: "목적지까지 안내할 수 있도록 앱을 다시 실행해 주세요"
+                )
+            } else {
+                AlarmManager.shared.sendBackgroundPush(
+                    title: "앗차를 다시 켜주세요",
+                    body: "제 시간에 출발 시간을 알려드릴 수 있도록 앱을 다시 실행해 주세요."
+                )
+            }
         }
     }
     
