@@ -187,6 +187,8 @@ final class MainViewModel: BaseViewModel{
         
         guard let arrivalDate = Calendar.current.date(byAdding: .minute, value: minutes, to: departureDate) else { return }
         
+        AlarmManager.shared.scheduleArrivalTimeout(at: arrivalDate)
+        
         print("departureDate : \(departureDate)")
         print("arrivalDate : \(arrivalDate)")
         let wrapper = UserDefaultsWrapper.shared
@@ -378,6 +380,12 @@ final class MainViewModel: BaseViewModel{
     
     // MARK: - 알림 취소
     func alarmDelete() {
+        
+        stopAlarmTimer()
+        stopFinishAlarmTimer()
+        
+        AlarmManager.shared.cancelArrivalTimeout()
+        
         let wrapper = UserDefaultsWrapper.shared
         let savedLastRouteId: String? = wrapper.string(
             forKey: UserDefaultsWrapper.Key.lastRouteId.rawValue)
