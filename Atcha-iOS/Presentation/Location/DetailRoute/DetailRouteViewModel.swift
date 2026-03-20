@@ -58,6 +58,9 @@ final class DetailRouteViewModel: BaseViewModel {
     private var didSendInitialLocation = false
     
     private var consecutiveValidCount = 0
+    
+    private var isCalculatingProximity = false
+    
     func forceLocationSnap() {
         self.didSendInitialLocation = false
         self.lastValidTime = nil
@@ -166,6 +169,7 @@ final class DetailRouteViewModel: BaseViewModel {
     
     @MainActor
     func refreshAllRealTimeData() async {
+        guard !isRefreshing else { return }
         guard !busRoutes.isEmpty || !subwayRoutes.isEmpty else { return }
         
         isRefreshing = true // 애니메이션 시작 신호
@@ -401,7 +405,9 @@ extension DetailRouteViewModel {
 extension DetailRouteViewModel {
     /// 현재 좌표를 기준으로 가장 가까운 경로를 찾아 nearLegIDs를 업데이트합니다.
     func calculateProximity(coord: CLLocationCoordinate2D?) {
-        guard let coord = coord else { return }
+        guard let coord = coord, !isCalculatingProximity else { return }
+        
+        isCalculatingProximity = true
         
         let threshold: CLLocationDistance = 150
         let polylines = self.legPolylineById
@@ -442,6 +448,7 @@ extension DetailRouteViewModel {
             DispatchQueue.main.async {
                 self.nearLegIDs = picked
                 self.departedLegIDs = departed
+                self.isCalculatingProximity = false
             }
         }
     }

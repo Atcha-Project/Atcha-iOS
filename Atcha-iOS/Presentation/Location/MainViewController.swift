@@ -714,7 +714,6 @@ extension MainViewController {
             }
             
         case .search:
-            viewModel.stopFinishAlarmTimer()
             lastTrainSearchView.isHidden = false
             flagImageView.isHidden = false
             

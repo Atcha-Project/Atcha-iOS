@@ -59,6 +59,14 @@ final class MainViewModel: BaseViewModel{
     private var lastValidTime: Date? = nil
     private var consecutiveValidCount = 0
     
+    private static let isoDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        formatter.locale = Locale(identifier: "ko_KR") // 혹은 .current
+        return formatter
+    }()
+    private var cachedPathCoordinates: [CLLocationCoordinate2D] = []
+    
     init(authorizationUseCase: RequestLocationAuthorizationUseCase,
          streamUseCase: ObserveLocationStreamUseCase,
          fetchTaxiFareUseCase: FetchTaxiFareUseCase,
@@ -157,43 +165,42 @@ final class MainViewModel: BaseViewModel{
             await MainActor.run { self.taxiFare = fare }
         } catch { print("택시비 조회 실패: \(error)") }
     }
-    
+
     func drawRoute(address: String?, info: LegInfo?) {
         
         guard let address, let info else { return }
         addressDesc = address
         legInfo = info
         
-        //        let wrapper = UserDefaultsWrapper.shared
-        //        wrapper.set(address, forKey: UserDefaultsWrapper.Key.addressDesc.rawValue)
-        //        wrapper.set(info, forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
+        let wrapper = UserDefaultsWrapper.shared
+        wrapper.set(address, forKey: UserDefaultsWrapper.Key.addressDesc.rawValue)
+        wrapper.set(info, forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
         setupLegInfo(info: info)
     }
     
     private func setupLegInfo(info: LegInfo?) {
-        let routeId = info?.pathInfo.first?.routeId
-        
-        guard let info, let departureStr = info.pathInfo.first?.departureDateTime,
+        guard let info,
+              let departureStr = info.pathInfo.first?.departureDateTime,
               let totalTime = info.trafficInfo.first?.totalTime else { return }
         
         self.departureStr = departureStr
         
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-        formatter.locale = .current
+        UserDefaultsWrapper.shared.set(info, forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
         
-        guard let departureDate = formatter.date(from: departureStr) else { return }
+        guard let departureDate = Self.isoDateFormatter.date(from: departureStr) else { return }
         let minutes = parseTotalTimeToMinutes(totalTime)
-        
         guard let arrivalDate = Calendar.current.date(byAdding: .minute, value: minutes, to: departureDate) else { return }
         
-        AlarmManager.shared.scheduleArrivalTimeout(at: arrivalDate)
-        
-        print("departureDate : \(departureDate)")
-        print("arrivalDate : \(arrivalDate)")
         let wrapper = UserDefaultsWrapper.shared
-        wrapper.set(departureStr, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
-        wrapper.set(arrivalDate, forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue)
+        let savedArrival = wrapper.object(forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue, of: Date.self)
+        
+        
+        if savedArrival != arrivalDate {
+            AlarmManager.shared.scheduleArrivalTimeout(at: arrivalDate)
+            wrapper.set(departureStr, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
+            wrapper.set(arrivalDate, forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue)
+            self.cachedPathCoordinates = info.pathInfo.flatMap { convertShapeToCoords($0.passShape ?? "") }
+        }
     }
     
     private func parseTotalTimeToMinutes(_ time: String) -> Int {
@@ -286,11 +293,8 @@ final class MainViewModel: BaseViewModel{
                     // 알람이 울린 후(`isAlarmFired`)에만 경로 스냅 적용
                     let isAlarmFired = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue) ?? false
                     
-                    if isAlarmFired, let path = self.legInfo?.pathInfo {
-                        let allCoords = path.flatMap { convertShapeToCoords($0.passShape ?? "") }
-                        if !allCoords.isEmpty {
-                            finalCoord = smoother.snap(current: smoothedCoord, polyline: allCoords)
-                        }
+                    if isAlarmFired && !self.cachedPathCoordinates.isEmpty {
+                        finalCoord = smoother.snap(current: smoothedCoord, polyline: self.cachedPathCoordinates)
                     }
                     
                     let capturedCoord = finalCoord
@@ -370,7 +374,7 @@ final class MainViewModel: BaseViewModel{
                                                trafficInfo: trafficInfo,
                                                busInfo: busInfo)
                 wrapper.set(legInfo, forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
-                drawRoute(address: addressDesc, info: legInfo)
+                self.drawRoute(address: self.addressDesc, info: legInfo)
             } catch {
                 print("routeId 조회 대실패 ㅠㅠ!!")
             }
@@ -540,7 +544,6 @@ extension MainViewModel {
             routeHandler?(.myPage)
             
         case .detailRoute:
-            fetchDetailRoute() // 이걸 통신을 할까 말까
             let wrapper = UserDefaultsWrapper.shared
             guard let info = wrapper.object(forKey: UserDefaultsWrapper.Key.legInfo.rawValue,
                                             of: LegInfo.self),
