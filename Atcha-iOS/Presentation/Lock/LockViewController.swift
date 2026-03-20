@@ -167,7 +167,7 @@ final class LockViewController: BaseViewController<LockViewModel> {
         let address = wrapper.string(forKey: UserDefaultsWrapper.Key.startAddress.rawValue) ?? ""
         
         amp_track(.later_course_click)
-        viewModel.routerHandler?(.courseSearch(startLat: lat, startLon: lon, startAddress: address))
+        viewModel.routerHandler?(.courseSearch(startLat: lat, startLon: lon, startAddress: address, context: .afterReigster))
     }
     
     private func observeAlarmTimeout() {

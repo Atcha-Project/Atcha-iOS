@@ -24,7 +24,7 @@ final class CourseDIContainer {
         self.tokenStorage = tokenStorage
     }
     
-    func makeCourseSearchViewModel(startLat: String, startLon: String, startAddress: String) -> CourseSearchViewModel {
+    func makeCourseSearchViewModel(startLat: String, startLon: String, startAddress: String, context: CourseSearchContext) -> CourseSearchViewModel {
         let courseUseCase = CourseUseCaseImpl(
             repository: CourseRepositoryImpl(apiService: apiService, tokenStorage: tokenStorage)
         )
@@ -35,7 +35,8 @@ final class CourseDIContainer {
                                      alarmUseCase: alarmUseCase,
                                      startLat: startLat,
                                      startLon: startLon,
-                                     startAddress: startAddress)
+                                     startAddress: startAddress,
+                                     context: context)
     }
     
     func makeCourseSearchViewController(viewModel: CourseSearchViewModel) -> UIViewController {

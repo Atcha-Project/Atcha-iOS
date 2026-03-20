@@ -548,12 +548,13 @@ extension MainViewModel {
                 address: lastReverseGeocode?.address,
                 radius: lastReverseGeocode?.radius)))
             
-        case .courseSearch(let startLat, let startLon, _):
+        case .courseSearch(let startLat, let startLon, _, _):
             
             routeHandler?(.courseSearch(
                 startLat: (lastReverseGeocode?.lat).map { String($0) } ?? startLat,
                 startLon: (lastReverseGeocode?.lon).map { String($0) } ?? startLon,
-                startAddress: address ?? lastReverseGeocode?.address ?? ""
+                startAddress: address ?? lastReverseGeocode?.address ?? "",
+                context: .beforeRegister
             ))
             
         case .myPage:

@@ -417,7 +417,7 @@ extension MainViewController {
                 }
                 
                 viewModel.handleRoute(route: .courseSearch(
-                    startLat: String(startCoord.latitude), startLon: String(startCoord.longitude), startAddress: ""
+                    startLat: String(startCoord.latitude), startLon: String(startCoord.longitude), startAddress: "", context: .beforeRegister
                 ))
             }
         }
