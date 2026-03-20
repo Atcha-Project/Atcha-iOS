@@ -165,7 +165,7 @@ final class MainViewModel: BaseViewModel{
             await MainActor.run { self.taxiFare = fare }
         } catch { print("택시비 조회 실패: \(error)") }
     }
-
+    
     func drawRoute(address: String?, info: LegInfo?) {
         
         guard let address, let info else { return }
@@ -701,7 +701,14 @@ extension MainViewModel {
             // 중요: 이미 알람이 울린 것으로 간주하여 플래그 세팅 (경로 스냅핑 활성화)
             wrapper.set(true, forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue)
             AlarmManager.shared.scheduleArrivalTimeout(at: arrivalDate)
-            // 소리 알람(AlarmManager.startAlarm)은 호출하지 않음!
+            
+            if let savedLegInfo = wrapper.object(forKey: UserDefaultsWrapper.Key.legInfo.rawValue, of: LegInfo.self) {
+                self.legInfo = savedLegInfo // Published 변수 복구
+                
+                let coords = savedLegInfo.pathInfo.flatMap { convertShapeToCoords($0.passShape ?? "") }
+                self.cachedPathCoordinates = coords
+            }
+            
             self.showLockView = false // 잠금화면 보이지 않음
             self.bottomType = .departure // 하단 바를 '안내 중' 상태로 변경
             
