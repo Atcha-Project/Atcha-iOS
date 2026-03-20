@@ -311,6 +311,7 @@ extension MainViewController {
         bindPermissionAlert()
         bindAlarmFireStatus()
         observeArrival()
+        observeScheduledArrivalTimeout()
         observeAlarmTimeout()
     }
     
@@ -417,7 +418,7 @@ extension MainViewController {
                 }
                 
                 viewModel.handleRoute(route: .courseSearch(
-                    startLat: String(startCoord.latitude), startLon: String(startCoord.longitude), startAddress: ""
+                    startLat: String(startCoord.latitude), startLon: String(startCoord.longitude), startAddress: "", context: .beforeRegister
                 ))
             }
         }
@@ -474,7 +475,7 @@ extension MainViewController {
             popupVC?.dismiss(animated: false)
             
             self.viewModel.alarmDelete()
-            self.exitButtonTapped()
+            self.exitButtonTapped(showToast: true)
             
             amp_track(.alarm_force_stop)
         }, for: .touchUpInside)
@@ -483,7 +484,7 @@ extension MainViewController {
         present(popupVC, animated: false)
     }
     
-    private func exitButtonTapped() {
+    private func exitButtonTapped(showToast: Bool) {
         // 가장 먼저 토스트 표시 상태로 변경 (이후 2.5초간 호출되는 모든 말풍선 로직 차단됨)
         isShowingToast = true
         
@@ -518,14 +519,16 @@ extension MainViewController {
         
         UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue)
         
-        // 토스트 띄우고 토스트 사라진 후 고정형 말풍선 띄우기 (재방문 상태)
-        showToastAndThen(message: "알람이 종료되었어요", delay: 2.5) { [weak self] in
-            guard let self = self else { return }
-            self.showOrUpdatePersistentBalloon(
-                isFirstVisit: false,
-                isServiceRegion: self.latestIsServiceRegion ?? false,
-                fareStr: self.latestFareString
-            )
+        if showToast {
+            // 토스트 띄우고 토스트 사라진 후 고정형 말풍선 띄우기 (재방문 상태)
+            showToastAndThen(message: "알람이 종료되었어요", delay: 2.5) { [weak self] in
+                guard let self = self else { return }
+                self.showOrUpdatePersistentBalloon(
+                    isFirstVisit: false,
+                    isServiceRegion: self.latestIsServiceRegion ?? false,
+                    fareStr: self.latestFareString
+                )
+            }
         }
     }
     
@@ -605,33 +608,69 @@ extension MainViewController {
             .store(in: &cancellables)
     }
     
+    //    private func bindLegPathUpdates() {
+    //        viewModel.$legInfo
+    //            .receive(on: DispatchQueue.main)
+    //            .combineLatest(viewModel.$bottomType)
+    //            .sink { [weak self] info, bottomType in
+    //                self?.commonAlarmSetupView()
+    //                self?.addRouteLine(pathInfos: info?.pathInfo ?? [])
+    //
+    //                switch bottomType {
+    //                case .departure:
+    //                    self?.shouldCenterToCurrentLocationOnce = false
+    //                    self?.lastTrainDepartView.setupLegInfo(info: info)
+    //                default: do {}
+    //                }
+    //
+    //                self?.setupBottomType(bottomType)
+    //            }
+    //            .store(in: &cancellables)
+    //
+    //        viewModel.$bottomType
+    //            .removeDuplicates()
+    //            .receive(on: RunLoop.main)
+    //            .sink { [weak self] type in
+    //                self?.setupBottomType(type)
+    //            }
+    //            .store(in: &cancellables)
+    //
+    //        viewModel.$departureTime
+    //            .compactMap { $0 }
+    //            .receive(on: RunLoop.main)
+    //            .sink { [weak self] time in
+    //                self?.lastTrainDepartView.refreshDepartureTime(departureStr: time)
+    //            }
+    //            .store(in: &cancellables)
+    //    }
+    
     private func bindLegPathUpdates() {
-        viewModel.$legInfo
-            .receive(on: DispatchQueue.main)
-            .combineLatest(viewModel.$bottomType)
-            .sink { [weak self] info, bottomType in
-                self?.commonAlarmSetupView()
-                self?.addRouteLine(pathInfos: info?.pathInfo ?? [])
-                
-                switch bottomType {
-                case .departure:
-                    self?.shouldCenterToCurrentLocationOnce = false
-                    self?.lastTrainDepartView.setupLegInfo(info: info)
-                default: do {}
-                }
-                
-                self?.setupBottomType(bottomType)
+        //  1. 경로 정보, 2. 알람 실행 여부, 3. 현재 바텀 뷰 타입을 묶어서 감시
+        Publishers.CombineLatest3(
+            viewModel.$legInfo,
+            UserDefaults.standard.publisher(for: \.departureAlarmDidFire).removeDuplicates(),
+            viewModel.$bottomType
+        )
+        .receive(on: RunLoop.main)
+        .sink { [weak self] info, isFired, bottomType in
+            guard let self = self else { return }
+            
+            // 지도 경로 선 그리기 및 뷰 설정
+            self.commonAlarmSetupView()
+            self.addRouteLine(pathInfos: info?.pathInfo ?? [])
+            
+            // 핵심: 알람 상태(isFired)를 setupLegInfo에 함께 전달
+            if bottomType == .departure {
+                // LastTrainDepartBottomView의 데이터를 업데이트
+                self.lastTrainDepartView.setupLegInfo(info: info, isFired: isFired)
             }
-            .store(in: &cancellables)
+            
+            // 바텀 뷰 노출/숨김 처리
+            self.setupBottomType(bottomType)
+        }
+        .store(in: &cancellables)
         
-        viewModel.$bottomType
-            .removeDuplicates()
-            .receive(on: RunLoop.main)
-            .sink { [weak self] type in
-                self?.setupBottomType(type)
-            }
-            .store(in: &cancellables)
-        
+        // departureTime 바인딩 (서버에서 실시간 시간이 갱신될 때를 위해 유지)
         viewModel.$departureTime
             .compactMap { $0 }
             .receive(on: RunLoop.main)
@@ -675,7 +714,6 @@ extension MainViewController {
             }
             
         case .search:
-            viewModel.stopFinishAlarmTimer()
             lastTrainSearchView.isHidden = false
             flagImageView.isHidden = false
             
@@ -1067,7 +1105,7 @@ extension MainViewController {
                 
                 self.navigationController?.popToRootViewController(animated: true)
                 self.viewModel.alarmDelete()
-                self.exitButtonTapped()
+                self.exitButtonTapped(showToast: false)
                 
                 amp_track(.alarm_arrive_stop)
                 
@@ -1103,7 +1141,7 @@ extension MainViewController {
                 
                 self.navigationController?.popToRootViewController(animated: true)
                 self.viewModel.alarmDelete()
-                self.exitButtonTapped()
+                self.exitButtonTapped(showToast: false)
                 
                 amp_track(.alarm_timeout_stop)
                 
@@ -1119,6 +1157,44 @@ extension MainViewController {
                 }
             }
             .store(in: &cancellables)
+    }
+    
+    
+    private func observeScheduledArrivalTimeout() {
+        NotificationCenter.default.publisher(for: NSNotification.Name("scheduledArrivalDidTimeout"))
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+                
+                // 10분 지났을 때도 상세화면에서 메인으로 강제 복귀!
+                self.navigationController?.popToRootViewController(animated: true)
+                
+                self.viewModel.alarmDelete()
+                self.exitButtonTapped(showToast: false)
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    self.showScheduledArrivalPopup()
+                }
+            }
+            .store(in: &cancellables)
+    }
+    
+    private func showScheduledArrivalPopup() {
+        if presentedViewController is AtchaPopupViewController { return }
+        
+        let popupVM = AtchaPopupViewModel(info: .scheduledArrive)
+        let popupVC = AtchaPopupViewController(viewModel: popupVM)
+        
+        popupVC.modalPresentationStyle = .overFullScreen
+        popupVC.modalTransitionStyle = .crossDissolve
+        
+        popupVC.confirmButton.addAction(UIAction { [weak popupVC] _ in
+            popupVC?.dismiss(animated: false)
+            HomeArrivalManager.shared.reset()
+            AlarmManager.shared.cancelArrivalTimeout()
+        }, for: .touchUpInside)
+        
+        self.present(popupVC, animated: false)
     }
 }
 

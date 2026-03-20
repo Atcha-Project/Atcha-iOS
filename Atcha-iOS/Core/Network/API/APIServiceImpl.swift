@@ -8,24 +8,18 @@
 import Alamofire
 import Foundation
 
-private let trustManager = ServerTrustManager(evaluators: [
-    "atcha.p-e.kr": DisabledTrustEvaluator()
-])
-private let insecureSession = Session(serverTrustManager: trustManager)
-
-final class APIServiceImpl: APIService {
+final class APIServiceImpl: APIService, @unchecked Sendable {
     private let session: Session
-
-    /// 기본 초기화 - SSL 우회 세션 사용
-    init(session: Session = insecureSession) {
+    
+    init(session: Session) {
         self.session = session
     }
-
+    
     func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T {
         guard let url = URL(string: NetworkConstant.baseURL + endpoint.path) else {
             throw APIError.invalidURL
         }
-
+        
         return try await withCheckedThrowingContinuation { continuation in
             session.request(url, method: endpoint.method, parameters: endpoint.parameters, encoding: endpoint.encoding, headers: endpoint.headers)
                 .validate()
@@ -36,7 +30,7 @@ final class APIServiceImpl: APIService {
                         continuation.resume(returning: APIEmptyResponse() as! T)
                         return
                     }
-
+                    
                     switch response.result {
                     case .success(let apiResponse):
                         if apiResponse.responseCode == "SUCCESS" {
@@ -48,10 +42,10 @@ final class APIServiceImpl: APIService {
                                 continuation.resume(throwing: APIError.noData)
                             }
                         } else {
-                            continuation.resume(throwing: APIError.serverError(statusCode: response.response?.statusCode ?? -1))
+                            self.handleFailure(response: response, endpoint: endpoint, continuation: continuation)
                         }
-                    case .failure(let error):
-                        continuation.resume(throwing: APIError.unknown(error: error))
+                    case .failure(_):
+                        self.handleFailure(response: response, endpoint: endpoint, continuation: continuation)
                     }
                 }
         }
@@ -66,7 +60,7 @@ extension APIServiceImpl {
         guard let url = URL(string: NetworkConstant.baseURL + endpoint.path) else {
             throw APIError.invalidURL
         }
-
+        
         return try await withCheckedThrowingContinuation { continuation in
             session.request(
                 url,
@@ -83,7 +77,7 @@ extension APIServiceImpl {
                     continuation.resume(returning: APIEmptyResponse() as! T)
                     return
                 }
-
+                
                 switch response.result {
                 case .success(let apiResponse):
                     if apiResponse.responseCode == "SUCCESS" {
@@ -95,13 +89,54 @@ extension APIServiceImpl {
                             continuation.resume(throwing: APIError.noData)
                         }
                     } else {
-                        continuation.resume(throwing: APIError.serverError(statusCode: response.response?.statusCode ?? -1))
+                        self.handleFailure(response: response, endpoint: endpoint, requestBody: body.toDictionary(), continuation: continuation)
                     }
-
-                case .failure(let error):
-                    continuation.resume(throwing: APIError.unknown(error: error))
+                    
+                case .failure(_):
+                    self.handleFailure(response: response, endpoint: endpoint, requestBody: body.toDictionary(), continuation: continuation)
                 }
             }
         }
+    }
+}
+
+extension APIServiceImpl {
+    private func handleFailure<T>(
+        response: DataResponse<APIResponse<T>, AFError>,
+        endpoint: Endpoint,
+        requestBody: [String: Any]? = nil,
+        continuation: CheckedContinuation<T, Error>
+    ) {
+        let statusCode = response.response?.statusCode ?? -1
+        let method = endpoint.method.rawValue.uppercased()
+        let path = endpoint.path
+        let actualSentHeaders = response.request?.allHTTPHeaderFields ?? [:]
+        
+        var responseCode = "UNKNOWN"
+        var serverMessage = "(메시지 없음)"
+        var serverPath = path
+        
+        if let data = response.data,
+           let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+            responseCode = json["responseCode"] as? String ?? "UNKNOWN"
+            serverMessage = json["message"] as? String ?? "(메시지 없음)"
+            serverPath = json["path"] as? String ?? path
+        }
+        
+        DiscordWebhookManager.shared.sendErrorLog(
+            statusCode: statusCode,
+            method: method,
+            path: serverPath,
+            responseCode: responseCode,
+            message: serverMessage,
+            requestHeaders: actualSentHeaders,
+            requestBody: requestBody,              // POST/PUT body
+            requestParameters: endpoint.parameters // GET query params
+        )
+        
+        let apiError = APIError.serverError(statusCode: statusCode, responseCode: responseCode)
+        
+        NotificationCenter.default.post(name: .apiErrorOccurred, object: apiError)
+        continuation.resume(throwing: apiError)
     }
 }

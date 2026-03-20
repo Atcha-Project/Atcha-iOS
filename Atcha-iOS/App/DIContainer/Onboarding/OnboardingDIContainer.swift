@@ -11,23 +11,30 @@ import Foundation
 final class OnboardingDIContainer {
     private let apiService: APIService
     private let locationStateHolder: LocationStateHolder
+    private let tokenStorage: TokenStorage
     
     private lazy var homeDI: HomeRegisterDIContainer = {
-        HomeRegisterDIContainer(apiService: apiService, locationStateHolder: locationStateHolder)
+        HomeRegisterDIContainer(apiService: apiService,
+                                locationStateHolder: locationStateHolder,
+                                tokenStorage: tokenStorage)
     }()
     
     private lazy var pushDI: PushRegisterDIContainer = {
-        PushRegisterDIContainer(apiService: apiService, locationStateHolder: locationStateHolder)
+        PushRegisterDIContainer(apiService: apiService,
+                                locationStateHolder: locationStateHolder,
+                                tokenStorage: tokenStorage)
     }()
-
+    
     private lazy var permissionDI: PermissionDIContainer = {
         PermissionDIContainer(locationStateHolder: locationStateHolder)
     }()
     
     init(apiService: APIService,
-         locationStateHolder: LocationStateHolder) {
+         locationStateHolder: LocationStateHolder,
+         tokenStorage: TokenStorage) {
         self.apiService = apiService
         self.locationStateHolder = locationStateHolder
+        self.tokenStorage = tokenStorage
     }
     
     func makeHomeRegisterViewModel() -> HomeRegisterViewModel { homeDI.makeHomeRegisterViewModel(context: .onboarding) }

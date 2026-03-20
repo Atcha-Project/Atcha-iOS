@@ -15,7 +15,7 @@ struct BusRealTimeInfoRequest: Codable {
     let passStations: [PassStations]?
 }
 
-struct PassStations: Codable {
+struct PassStations: Codable, Equatable {
     let index: Int?
     let stationName: String?
     let lat: String?

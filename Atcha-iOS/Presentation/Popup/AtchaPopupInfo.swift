@@ -16,17 +16,21 @@ enum AtcahPopuInfo {
     case announeExit
     case alarmTimeout
     case arrive
+    case scheduledArrive
+    case serverError
     
     var title: String {
         switch self {
         case .logout: return "로그아웃하시겠어요?"
         case .withdraw: return "탈퇴하시겠어요?"
         case .alarm: return "막차 알람을 종료할까요?"
-        case .re_register: return "기존 막차 알림을 종료하고\n선택한 알림으로 변경할까요?"
+        case .re_register: return "기존 막차 알림을 종료하고\n선택한 알람으로 변경할까요?"
         case .course : return "배차 간격이 긴 버스가 포함되어\n환승 대기 시간이 길어질 수 있어요.\n막차 알람을 등록할까요?"
         case .announeExit: return ""
         case .alarmTimeout: return "예정된 출발 시간이 지나\n알람이 자동으로 종료됐어요"
         case .arrive: return "목적지 부근에 도착해\n안내를 종료합니다"
+        case .scheduledArrive: return "예정된 도착 시간이 지나\n알람이 자동으로 종료됐어요"
+        case .serverError: return "잠시 후 다시 시도해주세요\n앗차팀에서 확인 및 대응 중입니다"
         }
     }
     
@@ -40,20 +44,22 @@ enum AtcahPopuInfo {
         case .announeExit: return "확인"
         case .alarmTimeout: return "닫기"
         case .arrive: return "확인"
+        case .scheduledArrive: return "닫기"
+        case .serverError: return "확인"
         }
     }
     
     var confrimBackgroundColor: UIColor {
         switch self {
         case .alarm, .re_register, .course, .arrive: return .main
-        case .alarmTimeout: return .gray910
+        case .alarmTimeout, .serverError, .scheduledArrive: return .gray910
         default: return .white
         }
     }
     
     var confrimForegroundColor: UIColor {
         switch self {
-        case .alarmTimeout: return .white
+        case .alarmTimeout, .serverError, .scheduledArrive: return .white
         default: return .black
         }
     }

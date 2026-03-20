@@ -10,16 +10,22 @@ import Foundation
 final class PushRegisterDIContainer {
     private let apiService: APIService
     private let locationStateHolder: LocationStateHolder
+    private let tokenStorage: TokenStorage
     
     init(apiService: APIService,
-         locationStateHolder: LocationStateHolder) {
+         locationStateHolder: LocationStateHolder,
+         tokenStorage: TokenStorage) {
         self.apiService = apiService
         self.locationStateHolder = locationStateHolder
+        self.tokenStorage = tokenStorage
     }
     
     func makePushRegisterViewModel(context: PushAlarmContext) -> PushAlarmViewModel {
-        let signUpUseCase: SignUpUseCase = SignUpUseCaseImpl(repository: UserRepositoryImpl(apiService: apiService))
-        let pushAlarmPatchUseCase: PushAlarmPatchUseCase = PushAlarmPatchUseCaseImpl(repository: UserRepositoryImpl(apiService: apiService))
+        let userRepository = UserRepositoryImpl(apiService: apiService, tokenStorage: tokenStorage)
+        
+        let signUpUseCase: SignUpUseCase = SignUpUseCaseImpl(repository: userRepository)
+        let pushAlarmPatchUseCase: PushAlarmPatchUseCase = PushAlarmPatchUseCaseImpl(repository: userRepository)
+        
         return PushAlarmViewModel(context: context,
                                   signUpUseCase: signUpUseCase,
                                   pushAlarmPatchUseCase: pushAlarmPatchUseCase,

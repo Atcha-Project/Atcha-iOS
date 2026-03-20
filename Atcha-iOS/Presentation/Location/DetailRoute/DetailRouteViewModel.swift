@@ -23,7 +23,7 @@ final class DetailRouteViewModel: BaseViewModel {
     private let alarmUseCase: AlarmUseCase
     private var streamTask: Task<Void, Never>?
     
-    let infos: LegInfo
+    var infos: LegInfo
     var onBusDetail: ((BusDetailInfo) -> Void)?
     var getAlarmTapped: ((String, LegInfo) -> Void)?
     
@@ -58,6 +58,9 @@ final class DetailRouteViewModel: BaseViewModel {
     private var didSendInitialLocation = false
     
     private var consecutiveValidCount = 0
+    
+    private var isCalculatingProximity = false
+    
     func forceLocationSnap() {
         self.didSendInitialLocation = false
         self.lastValidTime = nil
@@ -87,6 +90,29 @@ final class DetailRouteViewModel: BaseViewModel {
         super.init()
         self.fetchInfo()
         self.requestPermissionAndStartTracking()
+        bindUserDefaults()
+    }
+    
+    private func bindUserDefaults() {
+        UserDefaultsWrapper.shared.legInfoPublisher
+            .compactMap { $0 } // nil이 아닐 때만
+            .removeDuplicates()
+            .receive(on: RunLoop.main)
+            .sink { [weak self] newInfo in
+                print("새로운 경로 정보 감지됨: UI 업데이트 시작")
+                self?.updateWithNewInfo(newInfo)
+            }
+            .store(in: &cancellables)
+    }
+    
+    private func updateWithNewInfo(_ info: LegInfo) {
+        // 1. 데이터 갱신
+        self.infos = info
+        self.legtPathInfo = info.pathInfo
+        self.legTrafficInfo = info.trafficInfo
+        
+        // 2. 경로선 다시 그리기 위해 딕셔너리 갱신 로직 등 실행
+        self.fetchInfo()
     }
     
     func fetchInfo() {
@@ -143,6 +169,7 @@ final class DetailRouteViewModel: BaseViewModel {
     
     @MainActor
     func refreshAllRealTimeData() async {
+        guard !isRefreshing else { return }
         guard !busRoutes.isEmpty || !subwayRoutes.isEmpty else { return }
         
         isRefreshing = true // 애니메이션 시작 신호
@@ -378,7 +405,9 @@ extension DetailRouteViewModel {
 extension DetailRouteViewModel {
     /// 현재 좌표를 기준으로 가장 가까운 경로를 찾아 nearLegIDs를 업데이트합니다.
     func calculateProximity(coord: CLLocationCoordinate2D?) {
-        guard let coord = coord else { return }
+        guard let coord = coord, !isCalculatingProximity else { return }
+        
+        isCalculatingProximity = true
         
         let threshold: CLLocationDistance = 150
         let polylines = self.legPolylineById
@@ -419,6 +448,7 @@ extension DetailRouteViewModel {
             DispatchQueue.main.async {
                 self.nearLegIDs = picked
                 self.departedLegIDs = departed
+                self.isCalculatingProximity = false
             }
         }
     }
@@ -456,5 +486,22 @@ extension DetailRouteViewModel {
         }
         
         return best
+    }
+}
+
+
+extension DetailRouteViewModel {
+    private func checkAndStopPolling(error: Error) -> Bool {
+        if let apiError = error as? APIError {
+            if case .serverError(_, let code) = apiError {
+                let stopCodes = ["URT_001", "LRT_001", "LRT_003"]
+                
+                if let code = code, stopCodes.contains(code) {
+                    self.stopPolling()
+                    return true
+                }
+            }
+        }
+        return false
     }
 }

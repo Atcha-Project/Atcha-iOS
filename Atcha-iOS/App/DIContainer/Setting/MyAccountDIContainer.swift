@@ -9,15 +9,27 @@ import Foundation
 
 final class MyAccountDIContainer {
     private let apiService: APIService
-    private lazy var repository: UserRepository = UserRepositoryImpl(apiService: apiService)
-    init(apiService: APIService) {
+    private let tokenStorage: TokenStorage
+    private let locationStateHolder: LocationStateHolder
+    
+    private lazy var repository: UserRepository = UserRepositoryImpl(apiService: apiService, tokenStorage: tokenStorage)
+    
+    init(apiService: APIService,
+         tokenStorage: TokenStorage,
+         locationStateHolder: LocationStateHolder) {
         self.apiService = apiService
+        self.tokenStorage = tokenStorage
+        self.locationStateHolder = locationStateHolder
     }
     
     func makeMyAccountViewModel() -> MyAccountViewModel {
-        
         let logoutUseCase: LogoutuseCase = LogoutuseCaseCaseImpl(repository: repository)
-        return MyAccountViewModel(logoutUseCase: logoutUseCase)
+        
+        return MyAccountViewModel(
+            logoutUseCase: logoutUseCase,
+            tokenStorage: tokenStorage,
+            locationStateHolder: locationStateHolder
+        )
     }
     
     func makeMyAccountViewController(viewModel: MyAccountViewModel) -> MyAccountViewController {
@@ -26,7 +38,7 @@ final class MyAccountDIContainer {
     
     func makeWithdrawViewModel() -> WithdrawViewModel {
         let useCase: SignOutUseCase = SignOutUseCaseImpl(repository: repository)
-        return WithdrawViewModel(signOutUseCase: useCase)
+        return WithdrawViewModel(signOutUseCase: useCase, tokenStorage: tokenStorage, locationStateHolder: locationStateHolder)
     }
     
     func makeWithdrawViewController(viewModel: WithdrawViewModel) -> WithdrawViewController {

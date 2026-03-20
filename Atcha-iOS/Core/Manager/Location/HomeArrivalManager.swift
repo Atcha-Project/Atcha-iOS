@@ -39,6 +39,8 @@ final class HomeArrivalManager {
         if distance <= 50 {
             isArrivalSignalSent = true
             
+            AlarmManager.shared.cancelArrivalTimeout()
+            
             AlarmManager.shared.sendImmediateLocalPush(
                 title: "막차 안내 종료",
                 body: "목적지 부근에 도착했어요",
@@ -51,5 +53,6 @@ final class HomeArrivalManager {
     
     func reset() {
         isArrivalSignalSent = false
+        AlarmManager.shared.cancelArrivalTimeout()
     }
 }

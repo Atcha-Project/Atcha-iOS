@@ -12,9 +12,15 @@ final class MyAccountViewModel: BaseViewModel {
     var signOutFinish: (() -> Void)?
     
     private let logoutUseCase: LogoutuseCase
+    private let tokenStorage: TokenStorage
+    private let locationStateHolder: LocationStateHolder
     
-    init(logoutUseCase: LogoutuseCase) {
+    init(logoutUseCase: LogoutuseCase,
+         tokenStorage: TokenStorage,
+         locationStateHolder: LocationStateHolder) {
         self.logoutUseCase = logoutUseCase
+        self.tokenStorage = tokenStorage
+        self.locationStateHolder = locationStateHolder
     }
     
     func logoutTapped() {
@@ -24,10 +30,9 @@ final class MyAccountViewModel: BaseViewModel {
                 AmplitudeManager.shared.track(.logout)
                 AmplitudeManager.shared.reset()
                 
-                AppDIContainer.shared.tokenStorage.clearAccessToken()
-                AppDIContainer.shared.tokenStorage.clearRefreshToken()
+                tokenStorage.clearAllTokens() 
                 UserDefaultsWrapper.shared.removeAll()
-                AppDIContainer.shared.locationStateHolder.clear()
+                locationStateHolder.clear()
                 
                 UserDefaults.standard.set(true, forKey: "IsAppFirstLaunchedEver")
                 UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.isGuest.rawValue)

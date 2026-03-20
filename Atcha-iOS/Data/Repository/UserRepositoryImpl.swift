@@ -10,9 +10,11 @@ import Alamofire
 
 final class UserRepositoryImpl: UserRepository {
     private let apiService: APIService
+    private let tokenStorage: TokenStorage
     
-    init(apiService: APIService) {
+    init(apiService: APIService, tokenStorage: TokenStorage) {
         self.apiService = apiService
+        self.tokenStorage = tokenStorage
     }
     
     func fetchUser() async throws -> UserInfoResponse {
@@ -54,7 +56,7 @@ final class UserRepositoryImpl: UserRepository {
                 method: .get,
                 parameters: [
                     "provider": "\(request.provider)",
-                    "fcmToken": AppDIContainer.shared.tokenStorage.fcmToken ?? ""
+                    "fcmToken": tokenStorage.fcmToken ?? ""
                 ],
                 headers: ["Authorization": "Bearer \(request.accessToken)"]
             )

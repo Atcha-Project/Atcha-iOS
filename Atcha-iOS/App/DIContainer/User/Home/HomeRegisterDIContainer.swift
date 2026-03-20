@@ -10,16 +10,19 @@ import Foundation
 final class HomeRegisterDIContainer {
     private let locationStateHolder: LocationStateHolder
     private let apiService: APIService
+    private let tokenStorage: TokenStorage
     
     init(apiService: APIService,
-         locationStateHolder: LocationStateHolder) {
+         locationStateHolder: LocationStateHolder,
+         tokenStorage: TokenStorage) {
         self.apiService = apiService
         self.locationStateHolder = locationStateHolder
+        self.tokenStorage = tokenStorage
     }
     
     private lazy var authorizationRequestUseCase = RequestLocationAuthorizationUseCaseImpl(repository: PermissionRepositoryImpl())
     private lazy var addressRepository: AddressRepository = AddressRepositoryImpl(apiService: apiService)
-    private lazy var userRepository: UserRepository = UserRepositoryImpl(apiService: apiService)
+    private lazy var userRepository: UserRepository = UserRepositoryImpl(apiService: apiService, tokenStorage: tokenStorage)
     private lazy var searchAddressUseCase: SearchAddressUseCase = SearchAddressUseCaseImpl(repository: addressRepository)
     private lazy var homePatchUseCase: HomePatchUseCase = HomePatchUseCaseImpl(repository: userRepository)
     private lazy var streamUseCase: ObserveLocationStreamUseCase = ObserLocationStreamUseCaseImpl(repository: LocationStreamRepositoryImpl())
@@ -41,7 +44,8 @@ final class HomeRegisterDIContainer {
         let viewModel = HomeFindViewModel(context: context,
                                           searchAddressUseCase: searchAddressUseCase,
                                           homePatchUseCase: homePatchUseCase,
-                                          locationStateHolder: locationStateHolder, streamUseCase: streamUseCase, signUpUseCase: signUpUseCase)
+                                          locationStateHolder: locationStateHolder, streamUseCase: streamUseCase, signUpUseCase: signUpUseCase,
+                                          tokenStorage: tokenStorage)
         return viewModel
     }
     
