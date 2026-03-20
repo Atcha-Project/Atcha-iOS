@@ -13,7 +13,6 @@ import TMapSDK
 
 final class MainViewModel: BaseViewModel{
     private var alarmTimerCancellable: AnyCancellable?
-    private var alarmFinishCancellable: AnyCancellable?
     private var alarmTimeoutCancellable: AnyCancellable?
     private var alarmObserver: NSObjectProtocol?
     private var refreshUpdateToken: NSObjectProtocol?
@@ -79,6 +78,7 @@ final class MainViewModel: BaseViewModel{
         
         super.init()
         observeGlobalRefresh()
+        restoreAlarmState()
         self.bind()
     }
     
@@ -112,16 +112,16 @@ final class MainViewModel: BaseViewModel{
             .store(in: &cancellables)
         
         UserDefaultsWrapper.shared.legInfoPublisher
-                .compactMap { $0 }
-                .receive(on: RunLoop.main)
-                .sink { [weak self] newInfo in
-                    guard let self = self else { return }
-                    
-                    if self.legInfo != newInfo {
-                        self.drawRoute(address: self.addressDesc, info: newInfo)
-                    }
+            .compactMap { $0 }
+            .receive(on: RunLoop.main)
+            .sink { [weak self] newInfo in
+                guard let self = self else { return }
+                
+                if self.legInfo != newInfo {
+                    self.drawRoute(address: self.addressDesc, info: newInfo)
                 }
-                .store(in: &cancellables)
+            }
+            .store(in: &cancellables)
     }
     
     private func updateAddressOnly(for location: CLLocationCoordinate2D) async {
@@ -164,9 +164,9 @@ final class MainViewModel: BaseViewModel{
         addressDesc = address
         legInfo = info
         
-//        let wrapper = UserDefaultsWrapper.shared
-//        wrapper.set(address, forKey: UserDefaultsWrapper.Key.addressDesc.rawValue)
-//        wrapper.set(info, forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
+        //        let wrapper = UserDefaultsWrapper.shared
+        //        wrapper.set(address, forKey: UserDefaultsWrapper.Key.addressDesc.rawValue)
+        //        wrapper.set(info, forKey: UserDefaultsWrapper.Key.legInfo.rawValue)
         setupLegInfo(info: info)
     }
     
@@ -349,7 +349,6 @@ final class MainViewModel: BaseViewModel{
         wrapper.set(body, forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
         
         fetchDetailRoute()
-        stopFinishAlarmTimer()
         startAlarmTimer()
         checkAlarmTime()
         
@@ -382,7 +381,6 @@ final class MainViewModel: BaseViewModel{
     func alarmDelete() {
         
         stopAlarmTimer()
-        stopFinishAlarmTimer()
         
         AlarmManager.shared.cancelArrivalTimeout()
         
@@ -505,38 +503,11 @@ extension MainViewModel {
             .sink { [weak self] _ in
                 self?.checkAlarmTime()
             }
-        
-        alarmFinishCancellable = Timer
-            .publish(every: 60.0, on: .main, in: .common)
-            .autoconnect()
-            .sink { [weak self] _ in
-                guard let self else { return }
-                if let arrivalTime = UserDefaultsWrapper.shared.object(
-                    forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue,
-                    of: Date.self
-                ) {
-                    let now = Date()
-                    let thirtyMinutesLater = arrivalTime.addingTimeInterval(30 * 60) // 30분 후
-                    
-                    print("departure Time : \(arrivalTime)")
-                    print("30분 후 시각 : \(thirtyMinutesLater)")
-                    
-                    if now >= thirtyMinutesLater {
-                        stopFinishAlarmTimer()
-                        bottomType = .search
-                    }
-                }
-            }
     }
     
     private func stopAlarmTimer() {
         alarmTimerCancellable?.cancel()
         alarmTimerCancellable = nil
-    }
-    
-    func stopFinishAlarmTimer() {
-        alarmFinishCancellable?.cancel()
-        alarmFinishCancellable = nil
     }
 }
 
@@ -691,6 +662,56 @@ extension MainViewModel {
                   let lon = Double(parts[0]),
                   let lat = Double(parts[1]) else { return nil }
             return CLLocationCoordinate2D(latitude: lat, longitude: lon)
+        }
+    }
+}
+
+extension MainViewModel {
+    func restoreAlarmState() {
+        let wrapper = UserDefaultsWrapper.shared
+        
+        // 1. 알람이 등록되어 있는지 확인
+        guard wrapper.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) == true else { return }
+        
+        // 2. 데이터 가져오기
+        guard let departureStr = wrapper.string(forKey: UserDefaultsWrapper.Key.departureTime.rawValue),
+              let arrivalDate = wrapper.object(forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue, of: Date.self) else { return }
+        
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
+        
+        guard let departureDate = formatter.date(from: departureStr) else { return }
+        
+        let now = Date()
+        let timeoutDate = arrivalDate.addingTimeInterval(10 * 60)
+        
+        // --- 분기 처리 ---
+        
+        if now < departureDate {
+            // [Case 1] 아직 출발 전
+            startAlarmTimer()
+            
+        } else if now >= departureDate && now < timeoutDate {
+            // [Case 2] 이동 중 (핵심!)
+            
+            // 중요: 이미 알람이 울린 것으로 간주하여 플래그 세팅 (경로 스냅핑 활성화)
+            wrapper.set(true, forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue)
+            AlarmManager.shared.scheduleArrivalTimeout(at: arrivalDate)
+            // 소리 알람(AlarmManager.startAlarm)은 호출하지 않음!
+            self.showLockView = false // 잠금화면 보이지 않음
+            self.bottomType = .departure // 하단 바를 '안내 중' 상태로 변경
+            
+            
+            if let current = self.currentLocation {
+                HomeArrivalManager.shared.checkHomeArrival(currentCoord: current)
+            }
+            
+        } else if now >= timeoutDate {
+            // [Case 3] 이미 한참 지남
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                NotificationCenter.default.post(name: NSNotification.Name("scheduledArrivalDidTimeout"), object: nil)
+            }
         }
     }
 }
