@@ -13,7 +13,7 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
     
     private lazy var topNavigationBar: CloseOnlyNavigationBar = AtchaNavigationBar.CloseOnly(onClose: {
         [weak self] in
-        self?.navigationController?.popToRootViewController(animated: true)
+        self?.navigateBackByContext()
     })
     private let courseView: UIView = UIView()
     private let routeLabelStack: UIStackView = UIStackView()
@@ -135,6 +135,18 @@ final class CourseSearchViewController: BaseViewController<CourseSearchViewModel
             }
             .store(in: &cancellables)
     }
+    
+    private func navigateBackByContext() {
+        switch viewModel.context {
+        case .beforeRegister:
+            // 등록 전: 홈(지도)으로 완전히 나감
+            self.navigationController?.popToRootViewController(animated: true)
+        case .afterReigster: // 오타 주의: afterReigster (i 누락된 유저님 코드 기준)
+            // 락스크린에서 옴: 바로 아래에 깔린 DetailRoute로 돌아감
+            self.navigationController?.popViewController(animated: true)
+        }
+    }
+    
     // MARK: - 경로탐색 UI
     private func setupUI() {
         view.backgroundColor = AtchaColor.gray950

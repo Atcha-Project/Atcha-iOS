@@ -10,9 +10,9 @@ import Foundation
 final class DiscordWebhookManager {
     static let shared = DiscordWebhookManager()
     private init() {}
-
+    
     private let webhookURLString = "https://discord.com/api/webhooks/1483870710018474066/qyzNBI1Bwr7J5tQDrPx2-mOcej_9yLSOk5Bmlmza2D-4nSWqvWgcMd4CZDziG4vkpKrm"
-
+    
     func sendErrorLog(
         statusCode: Int,
         method: String,
@@ -24,13 +24,12 @@ final class DiscordWebhookManager {
         requestParameters: [String: Any]? = nil
     ) {
         guard let url = URL(string: webhookURLString) else { return }
-
+        
         // Authorization 토큰 앞 30자만 노출
         let headersText = requestHeaders.map { key, value in
-            let safeValue = key == "Authorization" ? String(value.prefix(30)) + "..." : value
-            return "\(key): \(safeValue)"
+            return "\(key): \(value)"
         }.joined(separator: "\n")
-
+        
         // body JSON 변환
         let bodyText: String
         if let body = requestBody,
@@ -40,7 +39,7 @@ final class DiscordWebhookManager {
         } else {
             bodyText = "None"
         }
-
+        
         let paramsText: String
         if let params = requestParameters,
            let data = try? JSONSerialization.data(withJSONObject: params, options: .prettyPrinted),
@@ -49,7 +48,7 @@ final class DiscordWebhookManager {
         } else {
             paramsText = "None"
         }
-
+        
         let payload: [String: Any] = [
             "content": "🚨 [Atcha-iOS] API 에러 발생!",
             "embeds": [[
@@ -62,18 +61,18 @@ final class DiscordWebhookManager {
                     ["name": "App Version",        "value": AppInfoProvider.currentVersion,  "inline": true],
                     ["name": "Error Message",      "value": message,                         "inline": false],
                     ["name": "Request Headers",    "value": "```\n\(headersText)\n```",      "inline": false],
-                    ["name": "Request Parameters", "value": paramsText,                      "inline": false],  
+                    ["name": "Request Parameters", "value": paramsText,                      "inline": false],
                     ["name": "Request Body",       "value": bodyText,                        "inline": false]
                 ],
                 "footer": ["text": "발생 시각: \(Date().kstString)"]
             ]]
         ]
-
+        
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try? JSONSerialization.data(withJSONObject: payload)
-
+        
         URLSession.shared.dataTask(with: request).resume()
     }
 }

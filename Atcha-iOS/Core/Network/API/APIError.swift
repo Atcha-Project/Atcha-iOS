@@ -10,7 +10,7 @@ import Foundation
 enum APIError: Error {
     case invalidURL
     case decodingError
-    case serverError(statusCode: Int)
+    case serverError(statusCode: Int, responseCode: String? = nil)
     case unknown(error: Error)
     case noData
 }

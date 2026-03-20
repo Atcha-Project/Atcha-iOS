@@ -22,7 +22,7 @@ final class LastTrainDepartBottomView: UIView {
     private let titleView: UIView = UIView()
     private let trainTimeLabel: UILabel = UILabel()
     private let trainRigtImageView: UIImageView = UIImageView()
-//    private let reloadImageView: UIImageView = UIImageView()
+    //    private let reloadImageView: UIImageView = UIImageView()
     
     private let timeView: UIView = UIView()
     private let hourTimeLabel: UILabel = UILabel()
@@ -75,11 +75,11 @@ final class LastTrainDepartBottomView: UIView {
         trainRigtImageView.contentMode = .scaleAspectFit
         trainRigtImageView.tintColor = .gray500
         
-//        reloadImageView.image = UIImage.refreshOutlined
-//        reloadImageView.contentMode = .scaleAspectFit
-//        reloadImageView.tintColor = .white
-//        reloadImageView.setContentHuggingPriority(.required, for: .horizontal)
-
+        //        reloadImageView.image = UIImage.refreshOutlined
+        //        reloadImageView.contentMode = .scaleAspectFit
+        //        reloadImageView.tintColor = .white
+        //        reloadImageView.setContentHuggingPriority(.required, for: .horizontal)
+        
         hourTimeLabel.attributedText = AtchaFont.D2_EB_48("--", color: .white)
         minuteTimeLabel.attributedText = AtchaFont.D2_EB_48("--", color: .white)
         hourLabel.attributedText = AtchaFont.B1_R_17("시", color: .white)
@@ -111,11 +111,11 @@ final class LastTrainDepartBottomView: UIView {
             make.size.equalTo(14)
         }
         
-//        reloadImageView.snp.makeConstraints { make in
-//            make.centerY.equalToSuperview()
-//            make.trailing.equalToSuperview()
-//            make.size.equalTo(28)
-//        }
+        //        reloadImageView.snp.makeConstraints { make in
+        //            make.centerY.equalToSuperview()
+        //            make.trailing.equalToSuperview()
+        //            make.size.equalTo(28)
+        //        }
         
         timeView.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(16)
@@ -161,8 +161,8 @@ final class LastTrainDepartBottomView: UIView {
     private func setupActions() {
         exitButton.addTarget(self, action: #selector(handleExitTapped), for: .touchUpInside)
         detailRoadMapButton.addTarget(self, action: #selector(handleDetailRoadTapped), for: .touchUpInside)
-//        reloadImageView.isUserInteractionEnabled = true
-//        reloadImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleReloadTapped)))
+        //        reloadImageView.isUserInteractionEnabled = true
+        //        reloadImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleReloadTapped)))
         timeView.isUserInteractionEnabled = true
         timeView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleTimeTapped)))
         locationLabel.isUserInteractionEnabled = true
@@ -180,17 +180,33 @@ final class LastTrainDepartBottomView: UIView {
 
 // MARK: Binding Leg Info
 extension LastTrainDepartBottomView {
-    func setupLegInfo(info: LegInfo?) {
-        guard let info, let departureStr = info.pathInfo.first?.departureDateTime else { return }
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-        formatter.locale = .current
+    func setupLegInfo(info: LegInfo?, isFired: Bool) {
+        guard let info = info, let timeText = info.trafficInfo.first?.timeText else { return }
         
-        if let _ = formatter.date(from: departureStr) {
-            if let (hour, minute) = departureStr.toHourMinute() {
-                hourTimeLabel.attributedText = AtchaFont.D2_EB_48(hour, color: .white)
-                minuteTimeLabel.attributedText = AtchaFont.D2_EB_48(minute, color: .white)
-            }
+        updateUIForAlarmStatus(isFired: isFired)
+        
+        let times = timeText.components(separatedBy: " ~ ").map { $0.trimmingCharacters(in: .whitespaces) }
+        
+        let targetTime: String
+        
+        if isFired {
+            targetTime = times.count > 1 ? times[1] : (times.first ?? "--:--")
+        } else {
+            targetTime = times.first ?? "--:--"
+        }
+        
+        let timeParts = targetTime.components(separatedBy: ":")
+        if timeParts.count == 2 {
+            let hour = timeParts[0]
+            let minute = timeParts[1]
+            
+            // 5. UI 적용
+            hourTimeLabel.attributedText = AtchaFont.D2_EB_48(hour, color: .white)
+            minuteTimeLabel.attributedText = AtchaFont.D2_EB_48(minute, color: .white)
+        } else {
+            // 파싱 실패 시 기본값
+            hourTimeLabel.attributedText = AtchaFont.D2_EB_48("--", color: .white)
+            minuteTimeLabel.attributedText = AtchaFont.D2_EB_48("--", color: .white)
         }
     }
     
