@@ -154,6 +154,7 @@ final class MainViewModel: BaseViewModel{
         
         
         guard self.isServiceRegion == true, !isGuest else { return }
+        
         let req = FetchTaxiFareRequest(
             originLat: lastReverseGeocode?.lat,
             originLon: lastReverseGeocode?.lon,
@@ -585,6 +586,8 @@ extension MainViewModel {
             
             address = info?.name?.isEmpty == false ? info?.name : info?.address
             
+            guard self.isServiceRegion == true, !isGuest else { return }
+            
             let request = FetchTaxiFareRequest(
                 originLat: info?.lat,
                 originLon: info?.lon,
@@ -605,6 +608,10 @@ extension MainViewModel {
         
         guard let lat = Double(latStr), let lon = Double(lonStr) else {
             throw NSError(domain: "StartCoord", code: -1, userInfo: [NSLocalizedDescriptionKey: "저장된 출발 좌표가 유효하지 않습니다."])
+        }
+        
+        guard self.isServiceRegion == true && !isGuest else {
+            throw NSError(domain: "AuthError", code: 401, userInfo: [NSLocalizedDescriptionKey: "게스트는 요금 조회가 불가능합니다."])
         }
         
         let req = FetchTaxiFareRequest(
@@ -642,6 +649,10 @@ extension MainViewModel {
     }
     
     private func fetchTaxiFare(request: FetchTaxiFareRequest) async throws -> Double {
+        guard self.isServiceRegion == true && !isGuest else {
+            throw NSError(domain: "AuthError", code: 401, userInfo: [NSLocalizedDescriptionKey: "게스트는 요금 조회가 불가능합니다."])
+        }
+        
         return try await fetchTaxiFareUseCase.fetchTaxiFare(request: request)
     }
     
