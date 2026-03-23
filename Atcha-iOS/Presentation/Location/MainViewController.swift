@@ -76,14 +76,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
     
     private var shouldShowMapGuide: Bool {
         if viewModel.isGuest { return false }
-        
-        // 1. 현재 세션에서 아직 드래그를 안 했다면 (온보딩 다녀와도 true 유지)
-        if viewModel.isGuideActiveInSession { return true }
-        
-        // 2. 만약 앱을 껐다 켰다면?
-        // 위 변수는 false가 되지만, 아래 UserDefaults가 이전 실행의 viewDidAppear에서 true가 되었을 것임
-        let isRevisit = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.reVisit.rawValue) ?? false
-        return !isRevisit
+        return viewModel.isGuideActiveInSession
     }
     
     // MARK: - Life Cycle
@@ -1073,16 +1066,23 @@ extension MainViewController: UIGestureRecognizerDelegate {
             viewModel.stopHeading()
         }
         
-        if viewModel.isGuideActiveInSession {
+        let isRevisit = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.reVisit.rawValue) ?? false
+        
+        // 세션 가이드가 켜져 있거나, 혹은 앱 재시작 등으로 인해 아직 reVisit이 기록되지 않은 상태라면
+        if viewModel.isGuideActiveInSession || !isRevisit {
+            
+            // 1. 모든 플래그를 종료 상태로 변경
             viewModel.isGuideActiveInSession = false
             UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.reVisit.rawValue)
             
-            // 문구 즉시 업데이트 (가이드 라인 제거)
+            // 2. 말풍선 즉시 갱신 (가이드 문구가 사라진 버전으로)
             showOrUpdatePersistentBalloon(
                 isFirstVisit: false,
                 isServiceRegion: latestIsServiceRegion,
                 fareStr: latestFareString
             )
+            
+            print("DEBUG: 가이드 종료 및 reVisit 기록 완료")
         }
     }
 }
