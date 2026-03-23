@@ -20,7 +20,7 @@ final class HomeRegisterBottomView: UIView {
     private var currentAddress: String?
     private let nameLabel: UILabel = UILabel()
     private let addressLabel: UILabel = UILabel()
-    private let button: AtchaButton = AtchaButton(text: "우리집 등록",
+    private let button: AtchaButton = AtchaButton(text: "우리집 설정",
                                                   size: .h52, style: .filled(.primary))
     
     private lazy var titleStackView: UIStackView = {

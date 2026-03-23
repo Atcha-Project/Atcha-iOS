@@ -17,7 +17,7 @@ class RegisterLocationViewController: BaseViewController<RegisterLocationViewMod
     private let nameLabel: UILabel = UILabel()
     private let addressLabel: UILabel = UILabel()
     private let currentImage: UIImageView = UIImageView()
-    private let registerButton: AtchaButton = AtchaButton(text: "우리집 등록", size: .h48, style: .filled(.primary))
+    private let registerButton: AtchaButton = AtchaButton(text: "우리집 설정", size: .h48, style: .filled(.primary))
     private var initialCoordinate: CLLocationCoordinate2D
     private let placeName: String
     private let address: String

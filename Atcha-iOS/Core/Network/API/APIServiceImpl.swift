@@ -136,7 +136,7 @@ extension APIServiceImpl {
         
         let apiError = APIError.serverError(statusCode: statusCode, responseCode: responseCode)
         
-        NotificationCenter.default.post(name: .apiErrorOccurred, object: apiError)
+//        NotificationCenter.default.post(name: .apiErrorOccurred, object: apiError)
         continuation.resume(throwing: apiError)
     }
 }
