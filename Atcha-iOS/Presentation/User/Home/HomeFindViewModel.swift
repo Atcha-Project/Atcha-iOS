@@ -270,12 +270,10 @@ extension HomeFindViewModel {
                         .rawValue)
                     UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.reVisit
                         .rawValue)
-                    
+                    UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.isGuest.rawValue)
                     AmplitudeManager.shared.track(
                         .signup
                     )
-                    print("회원가입 lat/lon 저장 완료: \(lat), \(lon)")
-                    UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.isGuest.rawValue)
                 } else {
                     print("회원가입 응답에 lat/lon 없음")
                 }
