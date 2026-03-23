@@ -186,10 +186,6 @@ final class MainViewController: BaseViewController<MainViewModel>,
                 isServiceRegion: self.latestIsServiceRegion,
                 fareStr: self.latestFareString
             )
-            
-            if !viewModel.isGuest {
-                UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.reVisit.rawValue)
-            }
         }
         
         
@@ -1077,11 +1073,11 @@ extension MainViewController: UIGestureRecognizerDelegate {
             viewModel.stopHeading()
         }
         
-        if !viewModel.isGuest && viewModel.isGuideActiveInSession {
+        if viewModel.isGuideActiveInSession {
             viewModel.isGuideActiveInSession = false
             UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.reVisit.rawValue)
             
-            // 말풍선을 즉시 새로고침 (shouldShowMapGuide가 이제 false이므로 윗줄이 사라짐)
+            // 문구 즉시 업데이트 (가이드 라인 제거)
             showOrUpdatePersistentBalloon(
                 isFirstVisit: false,
                 isServiceRegion: latestIsServiceRegion,

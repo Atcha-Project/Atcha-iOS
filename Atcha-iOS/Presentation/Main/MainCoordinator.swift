@@ -353,6 +353,8 @@ final class MainCoordinator: NSObject {
                 DispatchQueue.main.async {
                     guard let self = self else { return }
                     
+                    self.mainViewModel?.isGuideActiveInSession = true
+                    
                     if isExist {
                         UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.isGuest.rawValue)
                         self.mainViewModel?.isGuest = false
