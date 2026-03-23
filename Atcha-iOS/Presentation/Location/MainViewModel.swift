@@ -66,6 +66,7 @@ final class MainViewModel: BaseViewModel{
         return formatter
     }()
     private var cachedPathCoordinates: [CLLocationCoordinate2D] = []
+    var isGuideActiveInSession: Bool = false
     
     init(authorizationUseCase: RequestLocationAuthorizationUseCase,
          streamUseCase: ObserveLocationStreamUseCase,

@@ -352,7 +352,9 @@ final class MainCoordinator: NSObject {
             loginCoordinator.onFinishWithExistUser = { [weak self] isExist in
                 DispatchQueue.main.async {
                     guard let self = self else { return }
+                    self.mainViewModel?.isGuideActiveInSession = true
                     
+                    UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.reVisit.rawValue)
                     UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.isGuest.rawValue)
                     self.mainViewModel?.isGuest = false
                     

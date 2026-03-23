@@ -69,20 +69,22 @@ final class MainViewController: BaseViewController<MainViewModel>,
     
     var shouldShowWelcomeToast: Bool = false
     private var hasShownAlarmRegisteredToast = false
-    private lazy var shouldShowTopLineInSearch: Bool = {
-        let isRevisit = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.reVisit.rawValue) ?? false
-        if !isRevisit {
-            // 처음 방문 시 기기에는 '방문함'으로 저장해두되,
-            // 현재 앱이 켜져있는 이 세션 동안은 계속 true(첫 방문 취급)를 반환하도록 함
-            UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.reVisit.rawValue)
-            return true
-        }
-        return false
-    }()
     
     private var isFirstVisit: Bool = false
     private var isShowingToast = false
     private var balloonHideWorkItem: DispatchWorkItem?
+    
+    private var shouldShowMapGuide: Bool {
+        if viewModel.isGuest { return false }
+        
+        // 1. 현재 세션에서 아직 드래그를 안 했다면 (온보딩 다녀와도 true 유지)
+        if viewModel.isGuideActiveInSession { return true }
+        
+        // 2. 만약 앱을 껐다 켰다면?
+        // 위 변수는 false가 되지만, 아래 UserDefaults가 이전 실행의 viewDidAppear에서 true가 되었을 것임
+        let isRevisit = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.reVisit.rawValue) ?? false
+        return !isRevisit
+    }
     
     // MARK: - Life Cycle
     
@@ -183,6 +185,10 @@ final class MainViewController: BaseViewController<MainViewModel>,
                     isServiceRegion: self.latestIsServiceRegion,
                     fareStr: self.latestFareString
                 )
+                
+                if !viewModel.isGuest {
+                            UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.reVisit.rawValue)
+                        }
             }
         }
         
@@ -693,7 +699,6 @@ extension MainViewController {
         
         switch type {
         case .departure:
-            self.shouldShowTopLineInSearch = false
             lastTrainDepartView.isHidden = false
             viewModel.startAlarmTimer()
             mapContainerView.afterUserMarker()
@@ -1070,6 +1075,18 @@ extension MainViewController: UIGestureRecognizerDelegate {
             shouldCenterToCurrentLocationOnce = false
             viewModel.stopHeading()
         }
+        
+        if !viewModel.isGuest {
+            viewModel.isGuideActiveInSession = false
+            UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.reVisit.rawValue)
+            
+            // 말풍선을 즉시 새로고침 (shouldShowMapGuide가 이제 false이므로 윗줄이 사라짐)
+            showOrUpdatePersistentBalloon(
+                isFirstVisit: false,
+                isServiceRegion: latestIsServiceRegion,
+                fareStr: latestFareString
+            )
+        }
     }
 }
 
@@ -1219,35 +1236,32 @@ extension MainViewController {
     private func showOrUpdatePersistentBalloon(isFirstVisit: Bool, isServiceRegion: Bool?, fareStr: String?) {
         guard !isShowingToast else { return }
         
-        let topText = "지도를 움직여 출발지를 설정해요"
+        // [수정] 우리가 정의한 로그인 기반 가이드 로직 적용
+        let showGuideLine = shouldShowMapGuide
+        let topText: String? = showGuideLine ? "지도를 움직여 출발지를 설정해요" : nil
         
         if isServiceRegion == false {
-            // 1. 확실하게 서비스 지역이 아닐 때
-            ballonView.setupTitle(topMessage: isFirstVisit ? topText : nil, bottomMessage: "서울, 경기, 인천 내에서만 사용할 수 있어요")
-            
+            ballonView.setupTitle(topMessage: topText, bottomMessage: "서울, 경기, 인천 내에서만 사용할 수 있어요")
         } else {
-            // 2. 서비스 지역이거나 로딩 중일 때
             if viewModel.isGuest {
-                // 비회원: ???원 유지 (색상 분리)
-                ballonView.separationTitle(grayMessage: "여기서 막차 놓치면 택시비 ", whiteMessage: "약 ???원", showTopLine: isFirstVisit)
+                // 비로그인: 가이드 없이 ???원만 노출
+                ballonView.separationTitle(grayMessage: "여기서 막차 놓치면 택시비 ", whiteMessage: "약 ???원", showTopLine: false)
             } else {
-                // 회원
+                // 로그인 상태
                 if let fare = fareStr {
-                    // 요금 조회가 완료되었을 때 (색상 분리)
-                    ballonView.separationTitle(grayMessage: "여기서 막차 놓치면 택시비 ", whiteMessage: "약 \(fare)원", showTopLine: isFirstVisit)
+                    ballonView.separationTitle(grayMessage: "여기서 막차 놓치면 택시비 ", whiteMessage: "약 \(fare)원", showTopLine: showGuideLine)
                 } else {
-                    // 요금 조회 중일 때 (단일 색상으로 '계산중...' 표시)
-                    ballonView.separationTitle(grayMessage: "여기서 막차 놓치면 택시비 계산중...", whiteMessage: "", showTopLine: isFirstVisit)
+                    ballonView.separationTitle(grayMessage: "여기서 막차 놓치면 택시비 계산중...", whiteMessage: "", showTopLine: showGuideLine)
                 }
             }
         }
         
+        // 애니메이션 처리
         if ballonView.isHidden || ballonView.alpha == 0 {
-            safeStartJump() // 무조건 점프!
+            safeStartJump()
             ballonView.isHidden = false
             ballonView.alpha = 1
-            
-            let delay: TimeInterval = isFirstVisit ? 0.8 : 0.0
+            let delay: TimeInterval = showGuideLine ? 0.8 : 0.0
             ballonView.animateStaggered(secondaryDelay: delay, fade: 0.3)
         } else {
             ballonView.revealImmediately()
