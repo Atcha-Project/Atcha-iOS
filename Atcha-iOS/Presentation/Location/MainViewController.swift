@@ -177,20 +177,21 @@ final class MainViewController: BaseViewController<MainViewModel>,
                     self?.ensureLocationPermissionOrShowToast()
                 }
             }
+        }
+        
+        // 즉시 말풍선 업데이트 (1줄짜리로 자연스럽게 나타남)
+        if self.viewModel.bottomType == .search || self.viewModel.bottomType == nil {
+            self.showOrUpdatePersistentBalloon(
+                isFirstVisit: self.isFirstVisit,
+                isServiceRegion: self.latestIsServiceRegion,
+                fareStr: self.latestFareString
+            )
             
-            // 즉시 말풍선 업데이트 (1줄짜리로 자연스럽게 나타남)
-            if self.viewModel.bottomType == .search || self.viewModel.bottomType == nil {
-                self.showOrUpdatePersistentBalloon(
-                    isFirstVisit: self.isFirstVisit,
-                    isServiceRegion: self.latestIsServiceRegion,
-                    fareStr: self.latestFareString
-                )
-                
-                if !viewModel.isGuest {
-                            UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.reVisit.rawValue)
-                        }
+            if !viewModel.isGuest {
+                UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.reVisit.rawValue)
             }
         }
+        
         
         self.viewModel.refreshCurrentMapCenterData()
         
@@ -1076,7 +1077,7 @@ extension MainViewController: UIGestureRecognizerDelegate {
             viewModel.stopHeading()
         }
         
-        if !viewModel.isGuest {
+        if !viewModel.isGuest && viewModel.isGuideActiveInSession {
             viewModel.isGuideActiveInSession = false
             UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.reVisit.rawValue)
             
