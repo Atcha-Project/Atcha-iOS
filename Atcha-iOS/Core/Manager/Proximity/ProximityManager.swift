@@ -13,9 +13,9 @@ final class ProximityManager {
 
     // 판별 임계값(미터). 기본 1km.
     private let threshold: CLLocationDistance
-    static let shared = ProximityManager(thresholdMeters: 1_000)
+    static let shared = ProximityManager(thresholdMeters: 800)
 
-    init(thresholdMeters: CLLocationDistance = 1_000) {
+    init(thresholdMeters: CLLocationDistance = 800) {
         self.threshold = thresholdMeters
     }
 

@@ -85,7 +85,7 @@ final class ProximityViewController: BaseViewController<ProximityViewModel> {
         containerView.snp.makeConstraints {
             $0.leading.trailing.equalToSuperview()
             $0.bottom.equalToSuperview()
-            $0.height.equalTo(195)
+            $0.height.equalTo(182)
         }
 
         labelStackView.snp.makeConstraints {
