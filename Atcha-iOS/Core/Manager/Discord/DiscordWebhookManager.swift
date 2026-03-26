@@ -14,6 +14,7 @@ final class DiscordWebhookManager {
     private let webhookURLString = "https://discord.com/api/webhooks/1483870710018474066/qyzNBI1Bwr7J5tQDrPx2-mOcej_9yLSOk5Bmlmza2D-4nSWqvWgcMd4CZDziG4vkpKrm"
     
     func sendErrorLog(
+        baseURL: String,
         statusCode: Int,
         method: String,
         path: String,
@@ -55,6 +56,7 @@ final class DiscordWebhookManager {
                 "title": "서버 에러 상세 보고",
                 "color": 16711680,
                 "fields": [
+                    ["name": "Base URL",      "value": "`\(baseURL)`",           "inline": false],
                     ["name": "Method & Path",     "value": "`\(method) \(path)`",          "inline": false],
                     ["name": "HTTP Status",        "value": "\(statusCode)",                 "inline": true],
                     ["name": "responseCode",       "value": responseCode,                    "inline": true],

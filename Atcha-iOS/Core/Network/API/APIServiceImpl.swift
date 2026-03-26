@@ -124,6 +124,7 @@ extension APIServiceImpl {
         }
         
         DiscordWebhookManager.shared.sendErrorLog(
+            baseURL: NetworkConstant.baseURL,
             statusCode: statusCode,
             method: method,
             path: serverPath,

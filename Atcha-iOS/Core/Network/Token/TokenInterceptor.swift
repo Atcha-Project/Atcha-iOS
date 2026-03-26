@@ -38,9 +38,9 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
         ]
         
         if publicPaths.contains(where: { path.hasSuffix($0) }) {
-                completion(.success(request))
-                return
-            }
+            completion(.success(request))
+            return
+        }
         
         if path.contains("/auth/logout") {
             if let refreshToken = tokenStorage.refreshToken {
@@ -65,7 +65,6 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
             return
         }
         
-        
         let path = request.request?.url?.path ?? "unknown"
         
         if path.contains("/auth/reissue") {
@@ -77,6 +76,8 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
             completion(.doNotRetry)
             return
         }
+        
+        let actualHeaders = request.request?.allHTTPHeaderFields ?? [:]
         
         guard let refreshToken = tokenStorage.refreshToken else {
             SessionController.shared.expireAndRouteToLogin()
@@ -109,12 +110,29 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
                             return
                         }
                         
+                        let successBody = [
+                            "newAccessToken": p.accessToken,
+                            "newRefreshToken": p.refreshToken
+                        ]
+                        
+                        DiscordWebhookManager.shared.sendErrorLog(
+                            baseURL: NetworkConstant.baseURL,
+                            statusCode: 200,
+                            method: "GET",
+                            path: "/auth/reissue",
+                            responseCode: "REISSUE_SUCCESS",
+                            message: "토큰 재발급에 성공하여 새로운 토큰을 수신했습니다.",
+                            requestHeaders: actualHeaders,
+                            requestBody: successBody, // 여기서 받은 토큰 정보를 보냅니다.
+                            requestParameters: nil
+                        )
+                        
                         self.tokenStorage.accessToken = p.accessToken
                         self.tokenStorage.refreshToken = p.refreshToken
                         
                         waiters.forEach { $0(.retry) }
                         
-                    case .failure(let error):
+                    case .failure(_):
                         SessionController.shared.expireAndRouteToLogin()
                         waiters.forEach { $0(.doNotRetry) }
                     }
