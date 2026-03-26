@@ -66,6 +66,7 @@ final class MainViewModel: BaseViewModel{
         return formatter
     }()
     private var cachedPathCoordinates: [CLLocationCoordinate2D] = []
+    var isGuideActiveInSession: Bool = false
     
     init(authorizationUseCase: RequestLocationAuthorizationUseCase,
          streamUseCase: ObserveLocationStreamUseCase,
@@ -230,6 +231,7 @@ final class MainViewModel: BaseViewModel{
         wrapper.remove(forKey: UserDefaultsWrapper.Key.departureTime.rawValue)
         wrapper.remove(forKey: UserDefaultsWrapper.Key.arrivalTime.rawValue)
         wrapper.remove(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue)
+        self.cachedPathCoordinates.removeAll()
     }
     
     func requestPermissionAndStartTracking() {
@@ -364,6 +366,8 @@ final class MainViewModel: BaseViewModel{
         let wrapper = UserDefaultsWrapper.shared
         let routeId = wrapper.string(forKey: UserDefaultsWrapper.Key.lastRouteId.rawValue) ?? ""
         
+        self.cachedPathCoordinates.removeAll()
+        
         Task {
             do {
                 let info = try await courseUseCase.courseSearch(routeId)
@@ -388,6 +392,8 @@ final class MainViewModel: BaseViewModel{
         stopAlarmTimer()
         
         AlarmManager.shared.cancelArrivalTimeout()
+        
+        self.cachedPathCoordinates.removeAll()
         
         let wrapper = UserDefaultsWrapper.shared
         let savedLastRouteId: String? = wrapper.string(

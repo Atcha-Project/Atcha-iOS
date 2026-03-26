@@ -25,7 +25,7 @@ final class TimeBadgeLabel: UIView {
     }
     
     func setText(_ text: String?) {
-        label.attributedText = AtchaFont.M_11(text ?? "", color: .gray200)
+        label.attributedText = AtchaFont.M_11(text ?? "", color: .gray200, alignment: .center)
     }
     
     private func setupUI() {

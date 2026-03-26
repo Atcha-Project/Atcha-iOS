@@ -49,7 +49,7 @@ class BaseViewController<VM: BaseViewModel>: UIViewController {
         setupBindings()
         setupKeyboardDismiss()
         observeNetwork()
-        setupErrorObserver()
+//        setupErrorObserver()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -216,54 +216,54 @@ class BaseViewController<VM: BaseViewModel>: UIViewController {
         reconnectView = nil
     }
     
-    private func setupErrorObserver() {
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(handleServerError(_:)),
-            name: .apiErrorOccurred,
-            object: nil
-        )
-    }
+//    private func setupErrorObserver() {
+//        NotificationCenter.default.addObserver(
+//            self,
+//            selector: #selector(handleServerError(_:)),
+//            name: .apiErrorOccurred,
+//            object: nil
+//        )
+//    }
 
-    @objc private func handleServerError(_ notification: Notification) {
-        // 1. 전달된 오브젝트가 APIError인지 확인
-        guard let apiError = notification.object as? APIError else { return }
-        
-        // 2. 에러 케이스와 상태 코드 추출 (APIError가 statusCode를 가지고 있다고 가정)
-        if case .serverError(let statusCode, _) = apiError {
-            
-            // 3. 500번대 에러인 경우에만 팝업 노출
-            if (500...599).contains(statusCode) && !ErrorState.isShowing500Error {
-                guard self.presentedViewController == nil else { return }
-                
-                DispatchQueue.main.async { [weak self] in
-                    self?.showAtchaErrorPopup()
-                }
-            } else {
-                // 400번대 등 기타 에러는 팝업을 띄우지 않고 로그만 남기거나 별도 처리
-                print("UI 팝업 제외 대상 에러: \(statusCode)")
-            }
-        }
-    }
+//    @objc private func handleServerError(_ notification: Notification) {
+//        // 1. 전달된 오브젝트가 APIError인지 확인
+//        guard let apiError = notification.object as? APIError else { return }
+//        
+//        // 2. 에러 케이스와 상태 코드 추출 (APIError가 statusCode를 가지고 있다고 가정)
+//        if case .serverError(let statusCode, _) = apiError {
+//            
+//            // 3. 500번대 에러인 경우에만 팝업 노출
+//            if (500...599).contains(statusCode) && !ErrorState.isShowing500Error {
+//                guard self.presentedViewController == nil else { return }
+//                
+//                DispatchQueue.main.async { [weak self] in
+//                    self?.showAtchaErrorPopup()
+//                }
+//            } else {
+//                // 400번대 등 기타 에러는 팝업을 띄우지 않고 로그만 남기거나 별도 처리
+//                print("UI 팝업 제외 대상 에러: \(statusCode)")
+//            }
+//        }
+//    }
     
-    private func showAtchaErrorPopup() {
-        ErrorState.isShowing500Error = true
-        
-        // 이전에 만드신 앗차팝업 호출 (에러 케이스용)
-        let popupVM = AtchaPopupViewModel(info: .serverError) // Enum에 .serverError 추가 필요
-        let popupVC = AtchaPopupViewController(viewModel: popupVM)
-        
-        popupVC.confirmButton.addAction(UIAction { [weak popupVC] _ in
-            ErrorState.isShowing500Error = false
-            popupVC?.dismiss(animated: false)
-        }, for: .touchUpInside)
-        
-        popupVC.modalPresentationStyle = .overFullScreen
-        self.present(popupVC, animated: false)
-    }
+//    private func showAtchaErrorPopup() {
+//        ErrorState.isShowing500Error = true
+//        
+//        // 이전에 만드신 앗차팝업 호출 (에러 케이스용)
+//        let popupVM = AtchaPopupViewModel(info: .serverError) // Enum에 .serverError 추가 필요
+//        let popupVC = AtchaPopupViewController(viewModel: popupVM)
+//        
+//        popupVC.confirmButton.addAction(UIAction { [weak popupVC] _ in
+//            ErrorState.isShowing500Error = false
+//            popupVC?.dismiss(animated: false)
+//        }, for: .touchUpInside)
+//        
+//        popupVC.modalPresentationStyle = .overFullScreen
+//        self.present(popupVC, animated: false)
+//    }
     
     deinit {
-        NotificationCenter.default.removeObserver(self, name: .apiErrorOccurred, object: nil)
+//        NotificationCenter.default.removeObserver(self, name: .apiErrorOccurred, object: nil)
     }
 }
 

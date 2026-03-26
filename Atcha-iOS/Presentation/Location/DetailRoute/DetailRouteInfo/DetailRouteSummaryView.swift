@@ -28,7 +28,7 @@ final class DetailRouteSummaryView: UIView {
         summaryLabel.font = .systemFont(ofSize: 14, weight: .regular)
         summaryLabel.textColor = .white
         
-        arrowImageView.image = UIImage(systemName: "chevron.down")
+        arrowImageView.image = UIImage.stationChecronDown
         arrowImageView.contentMode = .scaleAspectFit
         arrowImageView.tintColor = .gray200
         
@@ -50,7 +50,7 @@ final class DetailRouteSummaryView: UIView {
     }
     
     func configure(duration: String, stops: Int) {
-        summaryLabel.attributedText = AtchaFont.B7_M_13("\(duration), \(stops - 1)개 정류장 이동", color: .white)
+        summaryLabel.attributedText = AtchaFont.B6_R_14("\(duration), \(stops - 1)개 정류장 이동", color: .white)
         arrowImageView.isHidden = false
     }
 }

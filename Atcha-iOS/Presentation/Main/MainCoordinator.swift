@@ -353,19 +353,22 @@ final class MainCoordinator: NSObject {
                 DispatchQueue.main.async {
                     guard let self = self else { return }
                     
-                    UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.isGuest.rawValue)
-                    self.mainViewModel?.isGuest = false
+                    self.mainViewModel?.isGuideActiveInSession = true
                     
-                    self.navigationController.dismiss(animated: true) {
+                    if isExist {
+                        UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.isGuest.rawValue)
+                        self.mainViewModel?.isGuest = false
                         
-                        if isExist {
+                        self.navigationController.dismiss(animated: true) {
                             self.mainViewModel?.refreshCurrentMapCenterData()
-                        } else {
-                            self.routeToOnboarding?()
+                            self.loginCoordinator = nil
                         }
                         
-                        // 로그인 코디네이터 메모리 해제
-                        self.loginCoordinator = nil
+                    } else {
+                        self.navigationController.dismiss(animated: true) {
+                            self.routeToOnboarding?()
+                            self.loginCoordinator = nil
+                        }
                     }
                 }
             }

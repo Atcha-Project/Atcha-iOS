@@ -306,14 +306,14 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
         
         let startCombinedLabel = NSMutableAttributedString()
         startCombinedLabel.append(AtchaFont.B3_M_15("\(firstStation.stationName ?? "")역",
-                                                    color: .gray100))
-        startCombinedLabel.append(AtchaFont.B3_M_15(" 승차", color: .gray500))
+                                                    color: .white))
+        startCombinedLabel.append(AtchaFont.B3_M_15(" 승차", color: .gray200))
         startLabel.attributedText = startCombinedLabel
         
         let endCombinedLabel = NSMutableAttributedString()
         endCombinedLabel.append(AtchaFont.B3_M_15("\(lastStation.stationName ?? "")역",
-                                                  color: .gray100))
-        endCombinedLabel.append(AtchaFont.B3_M_15(" 하차", color: .gray500))
+                                                  color: .white))
+        endCombinedLabel.append(AtchaFont.B3_M_15(" 하차", color: .gray200))
         endLabel.attributedText = endCombinedLabel
         
         //        if isCurrentTimeBetween(startTime: info.startTime, endTime: info.endTime) {

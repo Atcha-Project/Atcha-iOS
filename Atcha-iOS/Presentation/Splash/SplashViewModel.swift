@@ -65,9 +65,6 @@ final class SplashViewModel: BaseViewModel {
                     UserDefaultsWrapper.shared.set(lon, forKey: UserDefaultsWrapper.Key.homeLon.rawValue)
                     UserDefaultsWrapper.shared.set(id, forKey: UserDefaultsWrapper.Key.userId
                         .rawValue)
-                    UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.reVisit
-                        .rawValue)
-                    
                     AmplitudeManager.shared.bindUser(id: String(id))
                     AmplitudeManager.shared.flush()
                 }

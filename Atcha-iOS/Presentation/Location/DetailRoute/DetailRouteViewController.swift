@@ -183,7 +183,7 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
             make.width.height.equalTo(40)
         }
         refreshButton.snp.makeConstraints { make in
-            make.size.equalTo(48)
+            make.size.equalTo(52)
             make.trailing.equalToSuperview().inset(16)
             make.bottom.equalTo(view.snp.bottom).inset(40)
         }

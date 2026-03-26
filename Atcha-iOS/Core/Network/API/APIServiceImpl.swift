@@ -124,6 +124,7 @@ extension APIServiceImpl {
         }
         
         DiscordWebhookManager.shared.sendErrorLog(
+            baseURL: NetworkConstant.baseURL,
             statusCode: statusCode,
             method: method,
             path: serverPath,
@@ -136,7 +137,7 @@ extension APIServiceImpl {
         
         let apiError = APIError.serverError(statusCode: statusCode, responseCode: responseCode)
         
-        NotificationCenter.default.post(name: .apiErrorOccurred, object: apiError)
+//        NotificationCenter.default.post(name: .apiErrorOccurred, object: apiError)
         continuation.resume(throwing: apiError)
     }
 }

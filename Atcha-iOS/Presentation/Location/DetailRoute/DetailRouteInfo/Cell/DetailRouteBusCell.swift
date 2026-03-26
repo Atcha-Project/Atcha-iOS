@@ -307,14 +307,14 @@ final class DetailRouteBusCell: UICollectionViewCell {
         
         let startCombinedLabel = NSMutableAttributedString()
         startCombinedLabel.append(AtchaFont.B3_M_15("\(firstStation.stationName ?? "")",
-                                                    color: .gray100))
-        startCombinedLabel.append(AtchaFont.B3_M_15(" 승차", color: .gray500))
+                                                    color: .white))
+        startCombinedLabel.append(AtchaFont.B3_M_15(" 승차", color: .gray200))
         startLabel.attributedText = startCombinedLabel
         
         let endCombinedLabel = NSMutableAttributedString()
         endCombinedLabel.append(AtchaFont.B3_M_15("\(lastStation.stationName ?? "")",
-                                                  color: .gray100))
-        endCombinedLabel.append(AtchaFont.B3_M_15(" 하차", color: .gray500))
+                                                  color: .white))
+        endCombinedLabel.append(AtchaFont.B3_M_15(" 하차", color: .gray200))
         endLabel.attributedText = endCombinedLabel
         
         self.busTimerStackView.isHidden = !isAlarmFired

@@ -72,21 +72,8 @@ final class CourseRepositoryImpl: CourseRepository {
                 throw URLError(.badServerResponse)
             }
             
-            // 401 외의 코드도 명확히 분기
-            if http.statusCode == 401 {
-                if let tokens = await refreshToken() {
-                    tokenStorage.accessToken = tokens.accessToken
-                    if let rt = tokens.refreshToken { tokenStorage.refreshToken = rt }
-                    print("재발급 성공 → 스트림 재연결")
-                    await startStream(request, continuation: continuation)
-                    return
-                } else {
-                    continuation.finish(throwing: NSError(domain: "CourseRepository", code: 401, userInfo: [NSLocalizedDescriptionKey: "토큰 재발급 실패"]))
-                    return
-                }
-            } else if http.statusCode != 200 {
-                // 서버가 JSON 에러 바디를 줄 수 있으니 한번 읽어봄
-                // bytes(for:)는 스트림이므로 바디를 통째로 읽기 어렵다 → 상태만으로 에러 처리
+            // HTTP 401 체크는 제거 (서버가 200으로 주기 때문)
+            if http.statusCode != 200 {
                 continuation.finish(throwing: NSError(domain: "CourseRepository", code: http.statusCode, userInfo: [NSLocalizedDescriptionKey: "SSE 연결 실패 (\(http.statusCode))"]))
                 return
             }
@@ -100,23 +87,41 @@ final class CourseRepositoryImpl: CourseRepository {
                     let events = parser.feed(Data([byte]))
                     for event in events {
                         guard !event.data.isEmpty, let payload = event.data.data(using: .utf8) else { continue }
+                        
+                        // 1. 데이터 내부의 에러 코드 확인 (TOK_001)
+                        if let errorCheck = try? JSONDecoder().decode(SSEErrorPayload.self, from: payload),
+                           errorCheck.responseCode == "TOK_001" {
+                            
+                            if let tokens = await refreshToken() {
+                                tokenStorage.accessToken = tokens.accessToken
+                                if let rt = tokens.refreshToken { tokenStorage.refreshToken = rt }
+                                print("재발급 성공 → 스트림 재연결")
+                                // 현재 스트림을 종료하지 않고 새 연결 시도
+                                await startStream(request, continuation: continuation)
+                                return
+                            } else {
+                                continuation.finish(throwing: NSError(domain: "CourseRepository", code: 401, userInfo: [NSLocalizedDescriptionKey: "토큰 재발급 실패"]))
+                                return
+                            }
+                        }
+                        
+                        // 2. 정상 데이터 디코딩
                         do {
                             let decoded = try JSONDecoder().decode(CourseSearchResponse.self, from: payload)
+                            print("데이터 수신: \(decoded)")
                             continuation.yield(decoded)
                         } catch {
-                            // 서버가 keep-alive ping 이나 텍스트를 보낼 수 있으므로 디코드 실패는 경고만
-                            print("SSE decode 실패:", error, "raw:", event.data)
+                            // 단순 텍스트나 핑 데이터인 경우 무시
+                            print("SSE decode 실패 (데이터 무시):", error, "raw:", event.data)
                         }
                     }
                 }
             } catch {
-                // 실제 네트워크 오류(연결 끊김 등)
                 print("SSE stream read error:", error)
                 continuation.finish(throwing: error)
                 return
             }
             
-            // 서버가 조용히 닫은 케이스
             if !receivedAny {
                 continuation.finish(throwing: NSError(domain: "CourseRepository", code: -1, userInfo: [NSLocalizedDescriptionKey: "SSE에서 응답이 없습니다."]))
                 return
@@ -182,6 +187,9 @@ final class CourseRepositoryImpl: CourseRepository {
             return nil
         }
     }
-    
 }
 
+struct SSEErrorPayload: Decodable {
+    let responseCode: String?
+    let message: String?
+}

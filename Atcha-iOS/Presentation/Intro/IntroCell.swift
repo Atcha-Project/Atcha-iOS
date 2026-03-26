@@ -39,10 +39,10 @@ final class IntroCell: UICollectionViewCell {
     
     private func setupAutoLayout() {
         imageView.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(125.34)
+            make.top.equalToSuperview().offset(125.23)
             make.centerX.equalToSuperview()
             make.horizontalEdges.equalToSuperview()
-            make.height.equalTo(imageView.snp.width).multipliedBy(415.32 / 392.0)
+            make.height.equalTo(imageView.snp.width).multipliedBy(415.55 / 392.0)
         }
         
         titleLabel.snp.makeConstraints { make in

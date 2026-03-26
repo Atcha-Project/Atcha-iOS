@@ -130,7 +130,7 @@ final class CourseCell: UICollectionViewCell {
             departureTimeLabel.layer.borderColor = AtchaColor.gray500.cgColor
         }
         
-        departureLabel.attributedText = AtchaFont.R_13("에 자리에서 출발", color: AtchaColor.gray200)
+        departureLabel.attributedText = AtchaFont.R_13("내 자리에서 출발", color: AtchaColor.gray200)
         
         progressView.configure(infos: course.toLegTrafficInfos())
         courseStepsStackView.configure(legs: course.legs)

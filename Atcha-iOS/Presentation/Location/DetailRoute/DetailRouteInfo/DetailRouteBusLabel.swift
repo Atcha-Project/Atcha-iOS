@@ -32,7 +32,7 @@ final class BusBadgeView: UIView {
         numberLabel.font = .systemFont(ofSize: 20, weight: .bold)
         numberLabel.textColor = .white
         
-        arrowImageView.image = UIImage(systemName: "chevron.right")
+        arrowImageView.image = UIImage.busChevronRight
         arrowImageView.contentMode = .scaleAspectFit
         arrowImageView.tintColor = UIColor.white.withAlphaComponent(0.7)
         
