@@ -186,6 +186,12 @@ final class DetailRouteViewModel: BaseViewModel {
     }
     
     private func startPolling() {
+        let isFired = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue) ?? false
+        guard isFired else {
+            print("알람이 등록되지 않은 상태이므로 폴링을 시작하지 않습니다.")
+            return
+        }
+        
         stopPolling()
         
         pollingTask = Task { [weak self] in
@@ -364,6 +370,7 @@ final class DetailRouteViewModel: BaseViewModel {
             } catch {
                 // 실패 시 기존 값 유지
                 print("실시간 버스 조회 실패: \(route), \(error)")
+                if checkAndStopPolling(error: error) { break }
             }
         }
         
@@ -385,6 +392,7 @@ final class DetailRouteViewModel: BaseViewModel {
             } catch {
                 // 실패 시 기존 유지
                 print("실시간 지하철 조회 실패: \(route), \(error)")
+                if checkAndStopPolling(error: error) { break }
             }
         }
     }
@@ -494,7 +502,7 @@ extension DetailRouteViewModel {
     private func checkAndStopPolling(error: Error) -> Bool {
         if let apiError = error as? APIError {
             if case .serverError(_, let code) = apiError {
-                let stopCodes = ["URT_001", "LRT_001", "LRT_003"]
+                let stopCodes = ["URT_001", "LRT_001", "LRT_003", "REQ_004"]
                 
                 if let code = code, stopCodes.contains(code) {
                     self.stopPolling()

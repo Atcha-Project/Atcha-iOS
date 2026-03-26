@@ -50,7 +50,7 @@ final class RefreshView: UIView {
         }
         animationView.snp.makeConstraints { make in
             make.center.equalTo(refreshImageView)
-            make.size.equalTo(24)
+            make.size.equalTo(36)
         }
     }
 
