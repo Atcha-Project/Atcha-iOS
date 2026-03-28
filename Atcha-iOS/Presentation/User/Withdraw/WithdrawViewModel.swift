@@ -37,6 +37,7 @@ final class WithdrawViewModel: BaseViewModel {
                 tokenStorage.clearAllTokens()
                 UserDefaultsWrapper.shared.removeAll()
                 locationStateHolder.clear()
+                UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.isGuest.rawValue)
                 UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.hasSeenIntro.rawValue)
                 signOutFinish?()
             } catch {

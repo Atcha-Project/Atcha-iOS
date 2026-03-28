@@ -32,12 +32,13 @@ final class SplashDIContainer {
         return UpdateAppVersionUseCaseImpl(repository: repository)
     }
     
-    func makeSplashViewModel() -> SplashViewModel {
+    func makeSplashViewModel(launchType: LaunchType) -> SplashViewModel {
         return SplashViewModel(
             fetchUserUseCase: makeFetchUserUseCase(),
             checkAppVersionUseCase: makeCheckAppVersionUseCase(),
             updateAppVersionUseCase: makeUpdateAppVersionUseCase(),
-            tokenStorage: tokenStorage
+            tokenStorage: tokenStorage,
+            launchType: launchType
         )
     }
     
@@ -45,8 +46,9 @@ final class SplashDIContainer {
         return SplashViewController(viewModel: viewModel)
     }
     
-    func makeSplashCoordinator(navigationController: UINavigationController) -> SplashCoordinator {
+    func makeSplashCoordinator(navigationController: UINavigationController, launchType: LaunchType) -> SplashCoordinator {
         SplashCoordinator(navigationController: navigationController,
-                          diContainer: self)
+                          diContainer: self,
+                          launchType: launchType)
     }
 }

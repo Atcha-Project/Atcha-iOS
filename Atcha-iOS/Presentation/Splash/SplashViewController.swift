@@ -46,23 +46,6 @@ final class SplashViewController: BaseViewController<SplashViewModel> {
     }
     
     private func setupBindings() {
-        viewModel.$isLoading
-            .receive(on: DispatchQueue.main)
-            .sink { isLoading in
-                // 로딩 UI 표시/숨김
-                print("isLoading: \(isLoading)")
-            }
-            .store(in: &cancellables)
-        
-        viewModel.$errorMessage
-            .compactMap { $0 }
-            .receive(on: DispatchQueue.main)
-            .sink { message in
-                // Alert 띄우기
-                print("Error: \(message)")
-            }
-            .store(in: &cancellables)
-        
         viewModel.$appVersionInfo
             .compactMap { $0 }
             .receive(on: DispatchQueue.main)
