@@ -62,7 +62,7 @@ final class SplashViewController: BaseViewController<SplashViewModel> {
             
             // 서버 버전이 앱 버전보다 높다면 업데이트가 필요한 상황
             if isVersion(appVersion, lessThan: serverVersion) {
-                showUpdatePopup(isEssential: true)
+                showUpdatePopup(isEssential: false)
             } else {
                 viewModel.makeInitialFlow()
             }
