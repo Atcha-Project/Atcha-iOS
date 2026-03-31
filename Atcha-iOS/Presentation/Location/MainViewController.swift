@@ -956,6 +956,8 @@ extension MainViewController {
     }
     
     @objc private func handleBallonTap() {
+        safeStartJump()
+        
         // 알람 등록 후(departure 상태)일 때만 반응
         guard viewModel.bottomType == .departure else { return }
         
