@@ -78,6 +78,7 @@ final class MainViewController: BaseViewController<MainViewModel>,
         if viewModel.isGuest { return false }
         return viewModel.isGuideActiveInSession
     }
+    private var guestTapCount = 0
     
     // MARK: - Life Cycle
     
@@ -151,6 +152,12 @@ final class MainViewController: BaseViewController<MainViewModel>,
                     self.shouldCenterToCurrentLocationOnce = true
                 }
             }
+        }
+        
+        self.guestTapCount = 0
+        if viewModel.isGuest {
+            ballonView.isHidden = true
+            ballonView.alpha = 0
         }
     }
     
@@ -229,6 +236,8 @@ final class MainViewController: BaseViewController<MainViewModel>,
         flagImageView.image = UIImage.settingLocationMark
         atchaImageView.isUserInteractionEnabled = true
         atchaImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleBallonTap)))
+        ballonView.isUserInteractionEnabled = true
+        ballonView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleBallonTap)))
         
         ballonView.isHidden = true
         ballonView.alpha = 0
@@ -309,6 +318,7 @@ extension MainViewController {
         observeArrival()
         observeScheduledArrivalTimeout()
         observeAlarmTimeout()
+        observeLoginDismissal()
     }
     
     private func bindPermissionAlert() {
@@ -956,6 +966,13 @@ extension MainViewController {
     }
     
     @objc private func handleBallonTap() {
+        safeStartJump()
+        
+        if viewModel.isGuest {
+            handleGuestBallonTap()
+            return
+        }
+        
         // 알람 등록 후(departure 상태)일 때만 반응
         guard viewModel.bottomType == .departure else { return }
         
@@ -1012,6 +1029,31 @@ extension MainViewController {
         } else {
             showTransientBalloon(isFare: false, text: "교통 상황에 따라 시간이 달라질 수 있어요")
             postAlarmTapIndex += 1
+        }
+    }
+    
+    private func handleGuestBallonTap() {
+        if guestTapCount == 0 {
+            // 첫 번째 터치: "궁금하면 로그인 해봐요!"
+            guestTapCount = 1
+            
+            ballonView.layer.removeAllAnimations()
+            ballonView.isHidden = false
+            ballonView.alpha = 1
+            
+            ballonView.setupTitle(topMessage: nil, bottomMessage: "궁금하면 로그인 해봐요!")
+            ballonView.animateStaggered(secondaryDelay: 0, fade: 0.25)
+            
+        } else {
+            // 두 번째 터치: 로그인 시트 노출
+            guestTapCount = 0 // 카운트 리셋
+            
+            // [중요] 말풍선을 즉시 숨김 상태로 만들어야 시트가 내려간 뒤 다시 Persistent(???원) 메시지가 나타납니다.
+            ballonView.layer.removeAllAnimations()
+            ballonView.isHidden = true
+            ballonView.alpha = 0
+            
+            presentLoginAlert()
         }
     }
 }
@@ -1233,6 +1275,10 @@ extension MainViewController {
     private func showOrUpdatePersistentBalloon(isFirstVisit: Bool, isServiceRegion: Bool?, fareStr: String?) {
         guard !isShowingToast else { return }
         
+        if viewModel.isGuest && guestTapCount == 1 {
+                return
+            }
+        
         // [수정] 우리가 정의한 로그인 기반 가이드 로직 적용
         let showGuideLine = shouldShowMapGuide
         let topText: String? = showGuideLine ? "지도를 움직여 출발지를 설정해요" : nil
@@ -1242,7 +1288,7 @@ extension MainViewController {
         } else {
             if viewModel.isGuest {
                 // 비로그인: 가이드 없이 ???원만 노출
-                ballonView.separationTitle(grayMessage: "여기서 막차 놓치면 택시비 ", whiteMessage: "약 ???원", showTopLine: false)
+                ballonView.separationTitle(grayMessage: "여기서 막차 놓치면 택시비 ", whiteMessage: "???원", showTopLine: false)
             } else {
                 // 로그인 상태
                 if let fare = fareStr {
@@ -1314,5 +1360,26 @@ extension MainViewController {
         
         balloonHideWorkItem = workItem
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: workItem)
+    }
+    
+    private func observeLoginDismissal() {
+        NotificationCenter.default.publisher(for: NSNotification.Name("LoginSheetDismissed"))
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+                
+                // 로그인 시트가 내려갔으니 guestTapCount도 초기화해주는 게 자연스러워요
+                self.guestTapCount = 0
+                
+                // 현재 검색 모드라면 다시 고정 말풍선 노출
+                if self.viewModel.bottomType == .search || self.viewModel.bottomType == nil {
+                    self.showOrUpdatePersistentBalloon(
+                        isFirstVisit: self.isFirstVisit,
+                        isServiceRegion: self.latestIsServiceRegion,
+                        fareStr: self.latestFareString
+                    )
+                }
+            }
+            .store(in: &cancellables)
     }
 }

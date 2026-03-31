@@ -57,8 +57,8 @@ extension AppCompositionRoot: SplashCoordinatorFactory,
                               MainCoordinatorFactory,
                               LockScreenCoordinatorFactory,
                               IntroCoordinatorFactory {
-    func makeSplashCoordinator(navigationController: UINavigationController) -> SplashCoordinator {
-        return splashDIContainer.makeSplashCoordinator(navigationController: navigationController)
+    func makeSplashCoordinator(navigationController: UINavigationController, launchType: LaunchType) -> SplashCoordinator {
+        return splashDIContainer.makeSplashCoordinator(navigationController: navigationController, launchType: launchType)
     }
     
     func makeLoginCoordinator(navigationController: UINavigationController) -> LoginCoordinator {

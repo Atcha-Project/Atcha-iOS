@@ -26,6 +26,8 @@ final class SessionController {
         storage.clearRefreshToken()
         UserDefaultsWrapper.shared.removeAll()
         AppDIContainer.shared.locationStateHolder.clear()
+        UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.isGuest.rawValue)
+        UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.hasSeenIntro.rawValue)
 
         // 로그인 화면으로
         DispatchQueue.main.async { [weak self] in

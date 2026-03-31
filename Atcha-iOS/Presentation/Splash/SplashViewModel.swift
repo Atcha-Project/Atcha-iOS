@@ -7,9 +7,21 @@
 
 import Foundation
 
+enum LaunchType {
+    case main      // 일반 진입 (1.5초 대기)
+    case fast      // 빠른 진입 (0초 대기) - 푸시 알림 등
+    
+    var minimumDelay: Double {
+        switch self {
+        case .main: return 1.2
+        case .fast: return 0.8
+        }
+    }
+}
+
 final class SplashViewModel: BaseViewModel {
     @Published private(set) var appVersionInfo: String?
-    
+    private let launchType: LaunchType
     private let fetchUserUseCase: FetchUserUseCase
     private let checkAppVersionUseCase: CheckAppVersionUseCase
     private let updateAppVersionUseCase: UpdateAppVersionUseCase
@@ -20,24 +32,34 @@ final class SplashViewModel: BaseViewModel {
     init(fetchUserUseCase: FetchUserUseCase,
          checkAppVersionUseCase: CheckAppVersionUseCase,
          updateAppVersionUseCase: UpdateAppVersionUseCase,
-         tokenStorage: TokenStorage) {
+         tokenStorage: TokenStorage,
+         launchType: LaunchType) {
         self.fetchUserUseCase = fetchUserUseCase
         self.checkAppVersionUseCase = checkAppVersionUseCase
         self.updateAppVersionUseCase = updateAppVersionUseCase
         self.tokenStorage = tokenStorage
+        self.launchType = launchType
         super.init()
         
         self.checkAppVersion()
     }
     
     func checkAppVersion() {
-        print(#function)
         Task {
-            setLoading(true)
-            defer { self.setLoading(false) }
+            let startTime = Date()
+            let minDelay = launchType.minimumDelay
+            
             do {
                 let versionInfo = try await checkAppVersionUseCase.execute()
-                appVersionInfo = versionInfo
+                let elapsed = Date().timeIntervalSince(startTime)
+                if elapsed < minDelay {
+                    let remaining = minDelay - elapsed
+                    try? await Task.sleep(nanoseconds: UInt64(remaining * 1_000_000_000))
+                }
+                
+                await MainActor.run {
+                    self.appVersionInfo = versionInfo
+                }
             } catch {
                 handleError(error)
             }

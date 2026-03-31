@@ -203,13 +203,10 @@ final class PushAlarmSheetViewController: BaseViewController<PushAlarmSheetViewM
                 self.selectedOption = option
                 
                 self.updateVolumeSliderVisibility(for: option)
-                // 매니저의 옵션을 먼저 변경한 뒤 미리보기 호출
+                
+                // 매니저에 옵션 먼저 설정
                 AlarmManager.shared.setAlarmOption(option)
-                if option != .onlyVibration {
-                    AlarmManager.shared.previewAlarmVolume(self.volumeSlider.value)
-                } else {
-                    AlarmManager.shared.stopPreview()
-                }
+                AlarmManager.shared.previewAlarmVolume(self.volumeSlider.value)
             }
             
             listView.snp.makeConstraints { $0.height.equalTo(52) }

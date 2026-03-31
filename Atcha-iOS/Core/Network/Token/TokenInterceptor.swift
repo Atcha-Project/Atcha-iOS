@@ -77,8 +77,6 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
             return
         }
         
-        let actualHeaders = request.request?.allHTTPHeaderFields ?? [:]
-        
         guard let refreshToken = tokenStorage.refreshToken else {
             SessionController.shared.expireAndRouteToLogin()
             completion(.doNotRetry)
@@ -109,24 +107,7 @@ final class TokenInterceptor: RequestInterceptor, @unchecked Sendable {
                             waiters.forEach { $0(.doNotRetry) }
                             return
                         }
-                        
-                        let successBody = [
-                            "newAccessToken": p.accessToken,
-                            "newRefreshToken": p.refreshToken
-                        ]
-                        
-                        DiscordWebhookManager.shared.sendErrorLog(
-                            baseURL: NetworkConstant.baseURL,
-                            statusCode: 200,
-                            method: "GET",
-                            path: "/auth/reissue",
-                            responseCode: "REISSUE_SUCCESS",
-                            message: "토큰 재발급에 성공하여 새로운 토큰을 수신했습니다.",
-                            requestHeaders: actualHeaders,
-                            requestBody: successBody, // 여기서 받은 토큰 정보를 보냅니다.
-                            requestParameters: nil
-                        )
-                        
+
                         self.tokenStorage.accessToken = p.accessToken
                         self.tokenStorage.refreshToken = p.refreshToken
                         

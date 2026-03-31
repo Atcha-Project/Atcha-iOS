@@ -25,7 +25,7 @@ class AppFlowCoordinator {
         self.container = container
     }
     
-    func startApp() {
+    func startApp(launchType: LaunchType = .main) {
         let navigationController = UINavigationController()
         window.rootViewController = navigationController
         window.makeKeyAndVisible()
@@ -35,11 +35,14 @@ class AppFlowCoordinator {
             DispatchQueue.main.async {
                 AppDIContainer.shared.tokenStorage.clearAllTokens()
                 UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.hasSeenIntro.rawValue)
-                self?.startApp()
+                self?.startApp(launchType: .fast)
             }
         }
         
-        let splashCoordinator = container.makeSplashCoordinator(navigationController: navigationController)
+        let splashCoordinator = container.makeSplashCoordinator(
+            navigationController: navigationController,
+            launchType: launchType
+        )
         splashCoordinator.routerHandler = { [weak self] router in
             guard let self = self else { return }
             switch router {
@@ -114,7 +117,7 @@ class AppFlowCoordinator {
         mainCoordinator.withdrawFinish = { [weak self] in
             DispatchQueue.main.async {
                 // 앱 데이터를 다 지웠으니, 스플래시부터 앱을 아예 새로 시작(리부팅)합니다!
-                self?.startApp()
+                self?.startApp(launchType: .fast)
             }
         }
         
