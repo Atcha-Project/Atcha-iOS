@@ -236,6 +236,8 @@ final class MainViewController: BaseViewController<MainViewModel>,
         flagImageView.image = UIImage.settingLocationMark
         atchaImageView.isUserInteractionEnabled = true
         atchaImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleBallonTap)))
+        ballonView.isUserInteractionEnabled = true
+        ballonView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleBallonTap)))
         
         ballonView.isHidden = true
         ballonView.alpha = 0
