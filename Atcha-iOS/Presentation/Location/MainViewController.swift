@@ -1041,7 +1041,7 @@ extension MainViewController {
             ballonView.isHidden = false
             ballonView.alpha = 1
             
-            ballonView.setupTitle(topMessage: nil, bottomMessage: "궁금하면 로그인 해봐요!")
+            ballonView.setupTitle(topMessage: nil, bottomMessage: "택시비가 궁금하면 로그인해봐요!")
             ballonView.animateStaggered(secondaryDelay: 0, fade: 0.25)
             
         } else {
