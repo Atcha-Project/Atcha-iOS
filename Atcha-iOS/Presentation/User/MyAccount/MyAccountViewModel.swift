@@ -27,10 +27,17 @@ final class MyAccountViewModel: BaseViewModel {
         Task {
             do {
                 let _ = try await logoutUseCase.excute()
+                
+                let userId = UserDefaultsWrapper.shared.integer(forKey: UserDefaultsWrapper.Key.userId.rawValue) ?? 0
+                DiscordWebhookManager.shared.sendAuthLog(
+                    event: .logout,
+                    userID: String(userId)
+                )
+                
                 AmplitudeManager.shared.track(.logout)
                 AmplitudeManager.shared.reset()
                 
-                tokenStorage.clearAllTokens() 
+                tokenStorage.clearAllTokens()
                 UserDefaultsWrapper.shared.removeAll()
                 locationStateHolder.clear()
                 

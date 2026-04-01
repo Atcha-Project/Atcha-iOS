@@ -11,8 +11,10 @@ final class DiscordWebhookManager {
     static let shared = DiscordWebhookManager()
     private init() {}
     
-    private let webhookURLString = "https://discord.com/api/webhooks/1483870710018474066/qyzNBI1Bwr7J5tQDrPx2-mOcej_9yLSOk5Bmlmza2D-4nSWqvWgcMd4CZDziG4vkpKrm"
+    private let errorWebhookURLString = "https://discord.com/api/webhooks/1483870710018474066/qyzNBI1Bwr7J5tQDrPx2-mOcej_9yLSOk5Bmlmza2D-4nSWqvWgcMd4CZDziG4vkpKrm"
+    private let authWebhookURLString = "https://discord.com/api/webhooks/1488745616485126185/AXfHS732U9-Oo3iMgicAitZh-oNnjE8EAUVapWxg38tmyCpjuHd8R3BaxbcSEr82Y_qu"
     
+    // MARK: - 오류 로그
     func sendErrorLog(
         baseURL: String,
         statusCode: Int,
@@ -24,14 +26,10 @@ final class DiscordWebhookManager {
         requestBody: [String: Any]? = nil,
         requestParameters: [String: Any]? = nil
     ) {
-        guard let url = URL(string: webhookURLString) else { return }
+        guard let url = URL(string: errorWebhookURLString) else { return }
         
-        // Authorization 토큰 앞 30자만 노출
-        let headersText = requestHeaders.map { key, value in
-            return "\(key): \(value)"
-        }.joined(separator: "\n")
+        let headersText = requestHeaders.map { "\($0.key): \($0.value)" }.joined(separator: "\n")
         
-        // body JSON 변환
         let bodyText: String
         if let body = requestBody,
            let data = try? JSONSerialization.data(withJSONObject: body, options: .prettyPrinted),
@@ -54,22 +52,58 @@ final class DiscordWebhookManager {
             "content": "🚨 [Atcha-iOS] API 에러 발생!",
             "embeds": [[
                 "title": "서버 에러 상세 보고",
-                "color": 16711680,
+                "color": 16711680, // 빨강
                 "fields": [
-                    ["name": "Base URL",      "value": "`\(baseURL)`",           "inline": false],
-                    ["name": "Method & Path",     "value": "`\(method) \(path)`",          "inline": false],
-                    ["name": "HTTP Status",        "value": "\(statusCode)",                 "inline": true],
-                    ["name": "responseCode",       "value": responseCode,                    "inline": true],
-                    ["name": "App Version",        "value": AppInfoProvider.currentVersion,  "inline": true],
-                    ["name": "Error Message",      "value": message,                         "inline": false],
-                    ["name": "Request Headers",    "value": "```\n\(headersText)\n```",      "inline": false],
-                    ["name": "Request Parameters", "value": paramsText,                      "inline": false],
-                    ["name": "Request Body",       "value": bodyText,                        "inline": false]
+                    ["name": "Base URL",           "value": "`\(baseURL)`",                  "inline": false],
+                    ["name": "Method & Path",      "value": "`\(method) \(path)`",           "inline": false],
+                    ["name": "HTTP Status",        "value": "\(statusCode)",                  "inline": true],
+                    ["name": "responseCode",       "value": responseCode,                     "inline": true],
+                    ["name": "App Version",        "value": AppInfoProvider.currentVersion,   "inline": true],
+                    ["name": "Error Message",      "value": message,                          "inline": false],
+                    ["name": "Request Headers",    "value": "```\n\(headersText)\n```",       "inline": false],
+                    ["name": "Request Parameters", "value": paramsText,                       "inline": false],
+                    ["name": "Request Body",       "value": bodyText,                         "inline": false]
                 ],
                 "footer": ["text": "발생 시각: \(Date().kstString)"]
             ]]
         ]
         
+        sendToWebhook(url: url, payload: payload)
+    }
+    
+    // MARK: - 로그인/탈퇴 로그
+    func sendAuthLog(event: AuthEvent, userID: String, provider: String? = nil, reason: String? = nil) {
+        guard let url = URL(string: authWebhookURLString) else { return }
+        
+        var fields: [[String: Any]] = [
+            ["name": "이벤트",      "value": event.title,                   "inline": true],
+            ["name": "유저 ID",     "value": "`\(userID)`",                 "inline": true],
+            ["name": "App Version", "value": AppInfoProvider.currentVersion, "inline": true]
+        ]
+        
+        if let provider {
+            fields.append(["name": "로그인 방식", "value": provider, "inline": true])
+        }
+        
+        if let reason {
+            fields.append(["name": "탈퇴 사유", "value": reason, "inline": false])
+        }
+        
+        let payload: [String: Any] = [
+            "content": event.headerMessage,
+            "embeds": [[
+                "title": event.embedTitle,
+                "color": event.color,
+                "fields": fields,
+                "footer": ["text": "발생 시각: \(Date().kstString)"]
+            ]]
+        ]
+        
+        sendToWebhook(url: url, payload: payload)
+    }
+    
+    // MARK: - 공통 전송
+    private func sendToWebhook(url: URL, payload: [String: Any]) {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -79,6 +113,51 @@ final class DiscordWebhookManager {
     }
 }
 
+// MARK: - Auth Event 타입
+enum AuthEvent {
+    case login
+    case signup
+    case logout
+    case withdraw
+    
+    var title: String {
+        switch self {
+        case .login:    return "로그인"
+        case .signup:   return "회원가입"
+        case .logout:   return "로그아웃"
+        case .withdraw: return "회원탈퇴"
+        }
+    }
+    
+    var embedTitle: String {
+        switch self {
+        case .login:    return "로그인 이벤트"
+        case .signup:   return "회원가입 이벤트"
+        case .logout:   return "로그아웃 이벤트"
+        case .withdraw: return "회원탈퇴 이벤트"
+        }
+    }
+    
+    var headerMessage: String {
+        switch self {
+        case .login:    return "✅ [Atcha-iOS] 로그인"
+        case .signup:   return "🎉 [Atcha-iOS] 회원가입"
+        case .logout:   return "👋 [Atcha-iOS] 로그아웃"
+        case .withdraw: return "❌ [Atcha-iOS] 회원탈퇴"
+        }
+    }
+    
+    var color: Int {
+        switch self {
+        case .login:    return 3066993   // 초록
+        case .signup:   return 5814783   // 파랑  
+        case .logout:   return 16776960  // 노랑
+        case .withdraw: return 10038562  // 보라
+        }
+    }
+}
+
+// MARK: - Date Extension
 private extension Date {
     var kstString: String {
         let formatter = DateFormatter()
