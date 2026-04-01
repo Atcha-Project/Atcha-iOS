@@ -11,8 +11,8 @@ final class DiscordWebhookManager {
     static let shared = DiscordWebhookManager()
     private init() {}
     
-    private let errorWebhookURLString = "https://discord.com/api/webhooks/1483870710018474066/qyzNBI1Bwr7J5tQDrPx2-mOcej_9yLSOk5Bmlmza2D-4nSWqvWgcMd4CZDziG4vkpKrm"
-    private let authWebhookURLString = "https://discord.com/api/webhooks/1488745616485126185/AXfHS732U9-Oo3iMgicAitZh-oNnjE8EAUVapWxg38tmyCpjuHd8R3BaxbcSEr82Y_qu"
+    private let errorWebhookURLString = AppConfig.errorWebhookURL
+    private let authWebhookURLString = AppConfig.authWebhookURL
     
     // MARK: - 오류 로그
     func sendErrorLog(
