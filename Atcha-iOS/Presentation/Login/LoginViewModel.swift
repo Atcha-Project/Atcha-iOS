@@ -74,6 +74,12 @@ extension LoginViewModel {
                 
                 AmplitudeManager.shared.bindUser(id: String(id))
                 AmplitudeManager.shared.flush()
+                
+                DiscordWebhookManager.shared.sendAuthLog(
+                    event: .login,
+                    userID: String(id),
+                    provider: type == .kakao ? "카카오" : "애플"
+                )
             }
             
             UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.isGuest.rawValue)
