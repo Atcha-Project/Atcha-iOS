@@ -80,7 +80,7 @@ final class AtchaPopupViewController: BaseViewController<AtchaPopupViewModel> {
         confirmButton.setAttributedTitle(confirmAttr, for: .normal)
         confirmButton.backgroundColor = info.confrimBackgroundColor
         
-        if info != .alarmTimeout || info != .arrive || info != .serverError || info != .scheduledArrive {
+        if info != .alarmTimeout || info != .arrive || info != .serverError || info != .scheduledArrive || info != .update_essential {
             let cancelAttr = AtchaFont.B5_SB_14(info.cancelTitle, color: info.cancelForegroundColor)
             cancelButton.setAttributedTitle(cancelAttr, for: .normal)
             cancelButton.backgroundColor = info.cancelBackgroundColor
@@ -93,7 +93,7 @@ final class AtchaPopupViewController: BaseViewController<AtchaPopupViewModel> {
             $0.removeFromSuperview()
         }
         
-        if info == .alarmTimeout || info == .arrive || info == .serverError || info == .scheduledArrive {
+        if info == .alarmTimeout || info == .arrive || info == .serverError || info == .scheduledArrive || info == .update_essential {
             buttonStackView.addArrangedSubview(confirmButton)
         } else {
             buttonStackView.addArrangedSubview(cancelButton)

@@ -274,6 +274,12 @@ extension HomeFindViewModel {
                     AmplitudeManager.shared.track(
                         .signup
                     )
+                    
+                    DiscordWebhookManager.shared.sendAuthLog(
+                        event: .signup,
+                        userID: String(id),
+                        provider: provider == 0 ? "카카오" : "애플"
+                    )
                 } else {
                     print("회원가입 응답에 lat/lon 없음")
                 }

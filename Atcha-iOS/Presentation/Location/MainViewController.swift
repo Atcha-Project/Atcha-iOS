@@ -78,6 +78,8 @@ final class MainViewController: BaseViewController<MainViewModel>,
         if viewModel.isGuest { return false }
         return viewModel.isGuideActiveInSession
     }
+    private var guestTapCount = 0
+    private var guestLoginWorkItem: DispatchWorkItem?
     
     // MARK: - Life Cycle
     
@@ -151,6 +153,12 @@ final class MainViewController: BaseViewController<MainViewModel>,
                     self.shouldCenterToCurrentLocationOnce = true
                 }
             }
+        }
+        
+        self.guestTapCount = 0
+        if viewModel.isGuest {
+            ballonView.isHidden = true
+            ballonView.alpha = 0
         }
     }
     
@@ -229,6 +237,8 @@ final class MainViewController: BaseViewController<MainViewModel>,
         flagImageView.image = UIImage.settingLocationMark
         atchaImageView.isUserInteractionEnabled = true
         atchaImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleBallonTap)))
+        ballonView.isUserInteractionEnabled = true
+        ballonView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleBallonTap)))
         
         ballonView.isHidden = true
         ballonView.alpha = 0
@@ -309,6 +319,7 @@ extension MainViewController {
         observeArrival()
         observeScheduledArrivalTimeout()
         observeAlarmTimeout()
+        observeLoginDismissal()
     }
     
     private func bindPermissionAlert() {
@@ -768,27 +779,28 @@ extension MainViewController {
     }
     
     private func bindServiceRegionUpdates() {
-        viewModel.$isServiceRegion
-            .removeDuplicates()
+        // isServiceRegion과 isGuest 상태를 결합하여 판단
+        Publishers.CombineLatest(viewModel.$isServiceRegion, viewModel.$isGuest)
+            .removeDuplicates { $0.0 == $1.0 && $0.1 == $1.1 }
             .receive(on: RunLoop.main)
-            .sink { [weak self] ok in
+            .sink { [weak self] ok, isGuest in
                 guard let self = self else { return }
                 self.latestIsServiceRegion = ok
                 
-                switch ok {
-                case .some(true):
-                    self.lastTrainSearchView.updateSearchEnabled(true)
-                case .some(false):
+                // 핵심 로직:
+                // 1. 게스트 모드라면 지역에 상관없이 항상 활성화 (로그인 시트 유도)
+                // 2. 회원 모드라면 서비스 지역(ok == true)일 때만 활성화
+                let shouldEnableSearch = isGuest || (ok == true)
+                self.lastTrainSearchView.updateSearchEnabled(shouldEnableSearch)
+                
+                // 서비스 지역이 아닐 때의 데이터 정리
+                if ok == false {
                     self.latestFareString = nil
                     self.viewModel.taxiFare = nil
-                    self.lastTrainSearchView.updateSearchEnabled(false)
-                case .none:
-                    self.lastTrainSearchView.updateSearchEnabled(false)
                 }
                 
-                // 검색 모드일 때는 즉시 말풍선 글자 업데이트
+                // 검색 모드일 때 말풍선 업데이트 로직 유지
                 if self.viewModel.bottomType == .search || self.viewModel.bottomType == nil {
-                    // 방해물(업데이트 생략 조건문) 제거!
                     self.showOrUpdatePersistentBalloon(
                         isFirstVisit: self.isFirstVisit,
                         isServiceRegion: ok,
@@ -956,62 +968,103 @@ extension MainViewController {
     }
     
     @objc private func handleBallonTap() {
-        // 알람 등록 후(departure 상태)일 때만 반응
+        safeStartJump() // 캐릭터 점프
+        
+        // 1. 게스트 모드일 때
+        if viewModel.isGuest {
+            // [요청사항 반영] 서비스 지역 외라면 즉시 로그인 시트 노출 (1-tap)
+            if latestIsServiceRegion == false {
+                presentLoginAlert()
+                return
+            }
+            
+            // 서비스 지역 내라면 문구 노출 후 2초 뒤 자동 로그인 (handleGuestBallonTap으로 이동)
+            handleGuestBallonTap()
+            return
+        }
+        
+        // 2. 회원 모드일 때 (알람 등록된 상태에서만 동작)
         guard viewModel.bottomType == .departure else { return }
         
         amp_track(.character_click)
-        
+        let isAlarmFired = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue) ?? false
         let cycle = postAlarmTapIndex % 3
         
-        // 추가: 현재 알람이 울린 상태인지 확인
-        let isAlarmFired = UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue) ?? false
-        
         if cycle == 0 {
-            // 요금 정보 표시 (동적 로딩)
-            let now = CACurrentMediaTime()
-            if (now - lastFareRefreshTime) > fareRefreshInterval && !isFetchingFare {
-                isFetchingFare = true
-                Task {
-                    defer { Task { @MainActor in self.isFetchingFare = false } }
-                    do {
-                        let fare = try await viewModel.fetchFareForRegisteredStart()
-                        let fareInt = Int(fare)
-                        let fareStr = self.decimalFormatter.string(from: NSNumber(value: fareInt)) ?? "\(fareInt)"
-                        await MainActor.run {
-                            self.latestFareString = fareStr
-                            self.lastFareRefreshTime = CACurrentMediaTime()
-                            let displayFare = self.viewModel.isGuest ? "???원" : "\(fareStr)원"
-                            self.showTransientBalloon(isFare: true, text: displayFare)
-                            self.postAlarmTapIndex += 1
-                        }
-                    } catch {
-                        await MainActor.run {
-                            self.showTransientBalloon(isFare: false, text: "택시비 조회에 실패했어요")
-                            self.postAlarmTapIndex += 1
-                        }
-                    }
-                }
-            } else {
-                let fareStr = latestFareString ?? "???"
-                let displayFare = viewModel.isGuest ? "???원" : "\(fareStr)원"
-                showTransientBalloon(isFare: true, text: displayFare)
-                self.postAlarmTapIndex += 1
-            }
-            
+            handleMemberFareTap() // 요금 정보 조회/표시 로직
         } else if cycle == 1 {
-            // 수정: 알람이 울렸다면 이 메시지를 건너뛰고 다음 메시지를 띄움
             if isAlarmFired {
                 showTransientBalloon(isFare: false, text: "교통 상황에 따라 시간이 달라질 수 있어요")
-                // cycle 1을 건너뛰었으므로 다음 탭이 cycle 0(택시비)으로 돌아가도록 index를 2 올려줌
                 postAlarmTapIndex += 2
             } else {
                 showTransientBalloon(isFare: false, text: "시간에 맞춰 알림을 드릴게요")
                 postAlarmTapIndex += 1
             }
-            
         } else {
             showTransientBalloon(isFare: false, text: "교통 상황에 따라 시간이 달라질 수 있어요")
             postAlarmTapIndex += 1
+        }
+    }
+
+    /// 게스트 전용: 서비스 지역 내(서울/경기/인천)에서 문구 노출 후 2초 뒤 자동 로그인
+    private func handleGuestBallonTap() {
+        // 기존에 예약된 타이머가 있다면 취소 (중복 실행 방지)
+        guestLoginWorkItem?.cancel()
+        
+        ballonView.layer.removeAllAnimations()
+        ballonView.isHidden = false
+        ballonView.alpha = 1
+        
+        ballonView.setupTitle(topMessage: nil, bottomMessage: "택시비가 궁금하면 로그인해봐요!")
+        ballonView.animateStaggered(secondaryDelay: 0, fade: 0.25)
+        
+        let workItem = DispatchWorkItem { [weak self] in
+            guard let self = self, self.viewModel.isGuest else { return }
+            
+            // 현재 떠있는 화면이 없을 때만 로그인 시트 노출
+            if self.presentedViewController == nil {
+                self.presentLoginAlert()
+            }
+        }
+        
+        self.guestLoginWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: workItem)
+    }
+
+    /// 회원 전용: 실시간 택시 요금 조회 로직
+    private func handleMemberFareTap() {
+        let now = CACurrentMediaTime()
+        
+        if (now - lastFareRefreshTime) < fareRefreshInterval || isFetchingFare {
+            let fareStr = latestFareString ?? "???"
+            showTransientBalloon(isFare: true, text: "\(fareStr)원")
+            postAlarmTapIndex += 1
+        } else {
+            isFetchingFare = true
+            Task { [weak self] in // weak self 추가
+                guard let self = self else { return }
+                defer {
+                    Task { @MainActor in self.isFetchingFare = false }
+                }
+                
+                do {
+                    let fare = try await viewModel.fetchFareForRegisteredStart()
+                    let fareInt = Int(fare)
+                    let fareStr = self.decimalFormatter.string(from: NSNumber(value: fareInt)) ?? "\(fareInt)"
+                    
+                    await MainActor.run {
+                        self.latestFareString = fareStr
+                        self.lastFareRefreshTime = CACurrentMediaTime()
+                        self.showTransientBalloon(isFare: true, text: "\(fareStr)원")
+                        self.postAlarmTapIndex += 1
+                    }
+                } catch {
+                    await MainActor.run {
+                        self.showTransientBalloon(isFare: false, text: "택시비 조회에 실패했어요")
+                        self.postAlarmTapIndex += 1
+                    }
+                }
+            }
         }
     }
 }
@@ -1242,7 +1295,7 @@ extension MainViewController {
         } else {
             if viewModel.isGuest {
                 // 비로그인: 가이드 없이 ???원만 노출
-                ballonView.separationTitle(grayMessage: "여기서 막차 놓치면 택시비 ", whiteMessage: "약 ???원", showTopLine: false)
+                ballonView.separationTitle(grayMessage: "여기서 막차 놓치면 택시비 ", whiteMessage: "???원", showTopLine: false)
             } else {
                 // 로그인 상태
                 if let fare = fareStr {
@@ -1314,5 +1367,26 @@ extension MainViewController {
         
         balloonHideWorkItem = workItem
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: workItem)
+    }
+    
+    private func observeLoginDismissal() {
+        NotificationCenter.default.publisher(for: NSNotification.Name("LoginSheetDismissed"))
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+                
+                // 로그인 시트가 내려갔으니 guestTapCount도 초기화해주는 게 자연스러워요
+                self.guestTapCount = 0
+                
+                // 현재 검색 모드라면 다시 고정 말풍선 노출
+                if self.viewModel.bottomType == .search || self.viewModel.bottomType == nil {
+                    self.showOrUpdatePersistentBalloon(
+                        isFirstVisit: self.isFirstVisit,
+                        isServiceRegion: self.latestIsServiceRegion,
+                        fareStr: self.latestFareString
+                    )
+                }
+            }
+            .store(in: &cancellables)
     }
 }

@@ -178,11 +178,6 @@ final class IntroViewController: BaseViewController<IntroViewModel> {
         label.snp.makeConstraints { make in
             make.center.equalToSuperview()
         }
-        
-        button.snp.makeConstraints { make in
-            make.horizontalEdges.equalToSuperview().inset(15)
-            make.height.equalTo(56)
-        }
     }
 }
 

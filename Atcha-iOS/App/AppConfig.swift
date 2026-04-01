@@ -21,4 +21,6 @@ enum AppConfig {
     static var kakaoInitKey: String { required("KAKAO_INIT_KEY") }
     static var tmapApiKey: String { required("TMAP_API_KEY") }
     static var amplitudeApiKey: String { required("AMPLITUDE_API_KEY") }
+    static var errorWebhookURL: String { required("ERROR_WEBHOOK_URL") }
+    static var authWebhookURL: String { required("AUTH_WEBHOOK_URL") }
 }

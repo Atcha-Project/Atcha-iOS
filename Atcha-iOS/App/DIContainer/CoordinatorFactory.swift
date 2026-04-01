@@ -13,7 +13,7 @@ import Foundation
 /// to avoid service locator style lookups and to enable constructor injection of dependencies.
 
 protocol SplashCoordinatorFactory {
-    func makeSplashCoordinator(navigationController: UINavigationController) -> SplashCoordinator
+    func makeSplashCoordinator(navigationController: UINavigationController, launchType: LaunchType) -> SplashCoordinator
 }
 
 protocol LoginCoordinatorFactory {
@@ -45,8 +45,8 @@ extension AppDIContainer: SplashCoordinatorFactory,
                           MainCoordinatorFactory,
                           LockScreenCoordinatorFactory,
                           IntroCoordinatorFactory {
-    func makeSplashCoordinator(navigationController: UINavigationController) -> SplashCoordinator {
-        return splashDIContainer.makeSplashCoordinator(navigationController: navigationController)
+    func makeSplashCoordinator(navigationController: UINavigationController, launchType: LaunchType) -> SplashCoordinator {
+        return splashDIContainer.makeSplashCoordinator(navigationController: navigationController, launchType: launchType)
     }
     
     func makeLoginCoordinator(navigationController: UINavigationController) -> LoginCoordinator {

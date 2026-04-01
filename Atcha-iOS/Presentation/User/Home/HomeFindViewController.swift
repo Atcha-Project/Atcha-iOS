@@ -51,7 +51,7 @@ final class HomeFindViewController: BaseViewController<HomeFindViewModel>,
                          backButton)
         
         mapContainerView.delegate = self
-        flagImageView.image = UIImage.settingLocationMark
+        flagImageView.image = UIImage.settingHomeMark
         backButton.setImage(UIImage.chevronLeft, for: .normal)
         backButton.tintColor = .white
         backButton.backgroundColor = .black

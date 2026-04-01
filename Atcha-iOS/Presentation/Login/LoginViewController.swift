@@ -245,6 +245,7 @@ extension LoginViewController {
             self.containerView.transform = CGAffineTransform(translationX: 0, y: self.sheetHeight)
         }) { _ in
             self.dismiss(animated: false) {
+                NotificationCenter.default.post(name: NSNotification.Name("LoginSheetDismissed"), object: nil)
                 self.viewModel.loginCancelled?()
             }
         }

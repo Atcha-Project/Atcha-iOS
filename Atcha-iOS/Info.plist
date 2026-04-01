@@ -67,7 +67,11 @@
 	<string>$(AMPLITUDE_API_KEY)</string>
 	<key>API_BASE_URL</key>
 	<string>$(API_BASE_URL)</string>
-    <key>ITSAppUsesNonExemptEncryption</key>
-    <false/>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>AUTH_WEBHOOK_URL</key>
+	<string>$(AUTH_WEBHOOK_URL)</string>
+	<key>ERROR_WEBHOOK_URL</key>
+	<string>$(ERROR_WEBHOOK_URL)</string>
 </dict>
 </plist>

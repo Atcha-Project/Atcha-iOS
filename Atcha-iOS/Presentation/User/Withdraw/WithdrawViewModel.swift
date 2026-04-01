@@ -28,6 +28,14 @@ final class WithdrawViewModel: BaseViewModel {
                 let reason = request.reason?
                     .trimmingCharacters(in: .whitespacesAndNewlines)
                 
+                let userId = UserDefaultsWrapper.shared.integer(forKey: UserDefaultsWrapper.Key.userId.rawValue) ?? 0
+                
+                DiscordWebhookManager.shared.sendAuthLog(
+                    event: .withdraw,
+                    userID: String(userId),
+                    reason: reason
+                )
+                
                 AmplitudeManager.shared.track(
                     .withdraw,
                     [AmplitudePropertyKey.withdrawReason.rawValue: reason ?? "unknown"]
@@ -37,6 +45,7 @@ final class WithdrawViewModel: BaseViewModel {
                 tokenStorage.clearAllTokens()
                 UserDefaultsWrapper.shared.removeAll()
                 locationStateHolder.clear()
+                UserDefaultsWrapper.shared.set(true, forKey: UserDefaultsWrapper.Key.isGuest.rawValue)
                 UserDefaultsWrapper.shared.set(false, forKey: UserDefaultsWrapper.Key.hasSeenIntro.rawValue)
                 signOutFinish?()
             } catch {
