@@ -969,6 +969,12 @@ extension MainViewController {
         safeStartJump()
         
         if viewModel.isGuest {
+            if latestIsServiceRegion == false {
+                presentLoginAlert()
+                return
+            }
+            
+            // 서비스 지역 내라면 기존의 2-tap 로직(문구 노출 후 로그인) 유지
             handleGuestBallonTap()
             return
         }
@@ -1276,8 +1282,8 @@ extension MainViewController {
         guard !isShowingToast else { return }
         
         if viewModel.isGuest && guestTapCount == 1 {
-                return
-            }
+            return
+        }
         
         // [수정] 우리가 정의한 로그인 기반 가이드 로직 적용
         let showGuideLine = shouldShowMapGuide
