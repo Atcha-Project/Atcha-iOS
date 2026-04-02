@@ -1028,7 +1028,7 @@ extension MainViewController {
         }
         
         self.guestLoginWorkItem = workItem
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: workItem)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0, execute: workItem)
     }
 
     /// 회원 전용: 실시간 택시 요금 조회 로직
