@@ -114,4 +114,6 @@ StageConfig.xcconfig
 LiveConfig.xcconfig
 BaseConfig.xcconfig
 
+.claude
+
 Atcha-iOS/DesignSource/AtchaImage/Icon.xcassets/Onboarding/.DS_Store
