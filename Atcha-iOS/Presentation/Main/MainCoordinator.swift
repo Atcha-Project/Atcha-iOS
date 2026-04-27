@@ -320,7 +320,12 @@ final class MainCoordinator: NSObject {
                                                          context: .afterReigster))
                     }
                 case .dismissLockScreen:
-                    self?.navigationController.dismiss(animated: true)
+                    self?.mainViewModel?.stopAlarmTimeoutTimer()
+                    self?.navigationController.dismiss(animated: true) { [weak self] in
+                        self?.mainViewModel?.alarmDelete()
+                        self?.mainViewModel?.bottomType = .search
+                        self?.mainViewModel?.removeLegInfoAndAddress()
+                    }
                 default: do {}
                 }
             }

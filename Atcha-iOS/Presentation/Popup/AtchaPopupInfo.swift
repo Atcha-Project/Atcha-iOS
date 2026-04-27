@@ -20,6 +20,7 @@ enum AtcahPopuInfo {
     case serverError
     case update_essential
     case update_recommended
+    case alarm_cancel
     
     var title: String {
         switch self {
@@ -35,6 +36,7 @@ enum AtcahPopuInfo {
         case .serverError: return "잠시 후 다시 시도해주세요\n앗차팀에서 확인 및 대응 중입니다"
         case .update_essential: return "더 좋아진 앗차를 사용하기 위해\n업데이트가 필요해요"
         case .update_recommended: return "더 좋아진 앗차를 사용하기 위해\n업데이트를 권장해요"
+        case .alarm_cancel: return "알람을 종료할까요?"
         }
     }
     
@@ -52,12 +54,13 @@ enum AtcahPopuInfo {
         case .serverError: return "확인"
         case .update_essential: return "업데이트"
         case .update_recommended: return "업데이트"
+        case .alarm_cancel: return "종료하기"
         }
     }
     
     var confrimBackgroundColor: UIColor {
         switch self {
-        case .alarm, .re_register, .course, .arrive: return .main
+        case .alarm, .re_register, .course, .arrive, .alarm_cancel: return .main
         case .alarmTimeout, .serverError, .scheduledArrive: return .gray910
         default: return .white
         }
@@ -73,7 +76,7 @@ enum AtcahPopuInfo {
     var cancelTitle: String {
         switch self {
         case .alarm, .re_register: return "돌아가기"
-        case .course: return "돌아가기"
+        case .course, .alarm_cancel: return "돌아가기"
         case .update_recommended: return "나중에"
         default: return "취소"
         }

@@ -15,6 +15,7 @@ final class LockViewController: BaseViewController<LockViewModel> {
     private let titleLabel: UILabel = UILabel()
     private let taxiFareLabel: UILabel = UILabel()
     private let startButton: AtchaButton = AtchaButton(text: "출발하기", size: .h52, style: .filled(.primary))
+    private let cancelImageView: UIImageView = UIImageView()
     private let detailRouteButton: AtchaButton = AtchaButton(text: "더 늦은 경로 확인하기", size: .h52, style: .filled(.opacity))
     private let bottomStack: UIStackView = UIStackView()
     private var lottieAnimationView: LottieAnimationView = LottieAnimationView(name: "Alarm")
@@ -71,7 +72,7 @@ final class LockViewController: BaseViewController<LockViewModel> {
     
     // MARK: - Lock UI
     private func setupUI() {
-        view.addSubViews(backgroundImageView, lottieAnimationView, gradientView, logoImageView, titleLabel, taxiFareLabel, bottomStack)
+        view.addSubViews(backgroundImageView, lottieAnimationView, gradientView, logoImageView, titleLabel, taxiFareLabel, bottomStack, cancelImageView)
         
         backgroundImageView.image = UIImage.lockBackground
         gradient.colors = [
@@ -96,6 +97,9 @@ final class LockViewController: BaseViewController<LockViewModel> {
         startButton.addTarget(self,
                               action: #selector(startTapped),
                               for: .touchUpInside)
+        cancelImageView.image = UIImage.alarmCancel
+        cancelImageView.isUserInteractionEnabled = true
+        cancelImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(cancelAlarmTapped)))
         
         detailRouteButton.addTarget(self,
                                     action: #selector(detailRouteTapped),
@@ -137,6 +141,12 @@ final class LockViewController: BaseViewController<LockViewModel> {
             make.leading.equalToSuperview().offset(20)
             make.trailing.equalToSuperview().inset(20)
         }
+        
+        cancelImageView.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).inset(18)
+            make.trailing.equalToSuperview().inset(16)
+            make.size.equalTo(24)
+        }
     }
     
     @objc private func startTapped() {
@@ -175,6 +185,10 @@ final class LockViewController: BaseViewController<LockViewModel> {
         )
     }
     
+    @objc private func cancelAlarmTapped() {
+        showAlarmCancelPopup()
+    }
+    
     private func observeAlarmTimeout() {
         NotificationCenter.default.publisher(for: NSNotification.Name("alarmDidTimeout"))
             .receive(on: RunLoop.main)
@@ -183,5 +197,35 @@ final class LockViewController: BaseViewController<LockViewModel> {
                 self?.viewModel.routerHandler?(.dismissLockScreen)
             }
             .store(in: &cancellables)
+    }
+    
+    private func showAlarmCancelPopup() {
+        AlarmManager.shared.stopAlarm()
+        
+        let popupVM = AtchaPopupViewModel(info: .alarm_cancel)
+        let popupVC = AtchaPopupViewController(viewModel: popupVM)
+        
+        popupVC.cancelButton.addAction(UIAction { [weak popupVC] _ in
+            popupVC?.dismiss(animated: false)
+        }, for: .touchUpInside)
+        
+        popupVC.confirmButton.addAction(UIAction { [weak self, weak popupVC] _ in
+            guard let self else { return }
+            popupVC?.dismiss(animated: false)
+            
+            self.viewModel.cancelLockScreenTimer()
+            AlarmManager.shared.stopAlarm()
+            AlarmManager.shared.removeAllAlarmNotificationsExceptAutoStop()
+            
+            UserDefaultsWrapper.shared.set(
+                false,
+                forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue
+            )
+            
+            viewModel.routerHandler?(.dismissLockScreen)
+        }, for: .touchUpInside)
+        
+        popupVC.modalPresentationStyle = .overFullScreen
+        present(popupVC, animated: false)
     }
 }
