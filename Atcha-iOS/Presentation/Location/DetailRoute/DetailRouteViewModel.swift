@@ -155,6 +155,13 @@ final class DetailRouteViewModel: BaseViewModel {
     }
     
     @MainActor
+    private func loadSubwayRealTimeInfo() async {
+        for route in subwayRoutes {
+            await getSubwayRealTimeInfo(routeName: route)
+        }
+    }
+    
+    @MainActor
     func getBusRealTimeInfo(request: String) {
         Task {
             do {

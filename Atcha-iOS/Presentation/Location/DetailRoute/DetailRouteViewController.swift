@@ -144,6 +144,8 @@ final class DetailRouteViewController: BaseViewController<DetailRouteViewModel>,
         view.addSubViews(mapContainerView, loactionButton, bottomSheet, backButton, refreshButton)
         mapContainerView.delegate = self
         
+        bottomSheet.viewModel = viewModel
+        
         backButton.setImage(UIImage.chevronLeft, for: .normal)
         backButton.tintColor = .white
         backButton.backgroundColor = .black

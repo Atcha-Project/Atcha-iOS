@@ -107,6 +107,8 @@ struct Legs: Codable, Hashable {
     let subwayDirection: String?
     let targetBusStation: [TargetBusStation]?
     let targetBusTerm: Int?
+    let isExpressSubway: Bool?
+    let isLastSubway: Bool?
     
     var formattedSectionTimeRounded: String {
         guard let totalTime = sectionTime else { return "N/A" }
@@ -153,6 +155,9 @@ struct LegTrafficInfo: Hashable, Codable, Equatable {
     let targetBusTerm: Int?
     let startTime: String?
     let endTime: String?
+    let subwayFinalStation: String?
+    let isExpressSubway: Bool?
+    let isLastSubway: Bool?
 }
 
 extension Course {
@@ -177,7 +182,10 @@ extension Course {
                            targetBusStation: leg.targetBusStation,
                            targetBusTerm: leg.targetBusTerm,
                            startTime: formatToHourMinute(leg.departureDateTime) ?? "",
-                           endTime: addSecondsToTime(from: leg.departureDateTime ?? "", plusSeconds: leg.sectionTime ?? 0)
+                           endTime: addSecondsToTime(from: leg.departureDateTime ?? "", plusSeconds: leg.sectionTime ?? 0,),
+                           subwayFinalStation: leg.subwayFinalStation,
+                           isExpressSubway: leg.isExpressSubway,
+                           isLastSubway: leg.isLastSubway
             )
         }
     }

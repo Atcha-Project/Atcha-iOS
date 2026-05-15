@@ -9,6 +9,8 @@ import UIKit
 import Combine
 
 final class DetailRouteInfoBottomView: UIView {
+    weak var viewModel: DetailRouteViewModel?
+    
     enum SheetState {
         case expanded
         case collapsed
@@ -50,6 +52,10 @@ final class DetailRouteInfoBottomView: UIView {
     
     private var isAlarmFired: Bool {
         return UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.departureAlarmDidFire.rawValue) ?? false
+    }
+    
+    private var isAlarmRegister: Bool {
+        return UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
     }
     
     override init(frame: CGRect) {
@@ -178,11 +184,29 @@ final class DetailRouteInfoBottomView: UIView {
         subwayRealTimeInfo = infos
         
         for cell in collectionView.visibleCells {
-            guard let subwayCell = cell as? DetailRouteSubwayCell else { continue }
-            guard let route = subwayCell.currentLegTrafficInfo?.route, !route.isEmpty else { continue }
+            
+            guard let subwayCell = cell as? DetailRouteSubwayCell else {
+                print("DetailRouteSubwayCell 아님")
+                continue
+            }
+            
+            guard let route = subwayCell.currentLegTrafficInfo?.route, !route.isEmpty else {
+                print("route가 nil 또는 비어있음")
+                continue
+            }
+    
             
             let matched = subwayRealTimeInfo.filter { $0.routeName == route }
-            subwayCell.setupSubwayRealTime(routeName: route, infos: matched)
+            
+            let isExpress = subwayCell.currentLegTrafficInfo?.isExpressSubway ?? false
+            let isLast = subwayCell.currentLegTrafficInfo?.isLastSubway ?? false
+            
+            subwayCell.setupSubwayRealTime(
+                routeName: route,
+                infos: matched,
+                isExpressSubway: subwayCell.currentLegTrafficInfo?.isExpressSubway,
+                isLastSubway: subwayCell.currentLegTrafficInfo?.isLastSubway
+            )
         }
     }
     
@@ -348,26 +372,55 @@ extension DetailRouteInfoBottomView {
                     
                     return cell
                     
+                    
                 case .subway:
                     let cell = collectionView.dequeueReusableCell(
                         withReuseIdentifier: DetailRouteSubwayCell.id,
                         for: indexPath
                     ) as! DetailRouteSubwayCell
+                    
                     cell.didTapSummary = { [weak self] in
-                        //                        self?.applySnapshot()
                         self?.collectionView.collectionViewLayout.invalidateLayout()
                     }
+                    
                     cell.configure(info: item.info, isAlarmFired: self.isAlarmFired)
                     
                     if let route = item.info?.route, !route.isEmpty {
                         let key = route.components(separatedBy: ":").last ?? route
-                        let matched = self.subwayRealTimeInfo.filter { info in
-                            let apiRaw = info.routeName ?? ""
-                            let apiKey = apiRaw.components(separatedBy: ":").last ?? apiRaw
-                            return apiKey == key
+                
+                        if self.isAlarmRegister {
+                            Task { @MainActor in
+                                await self.viewModel?.getSubwayRealTimeInfo(routeName: route)
+                                
+                                let matched = self.subwayRealTimeInfo.filter { $0.routeName == route }
+                                
+                                cell.setupSubwayRealTime(
+                                    routeName: route,
+                                    infos: matched,
+                                    isExpressSubway: item.info?.isExpressSubway,
+                                    isLastSubway: item.info?.isLastSubway
+                                )
+                            }
+                        } else {
+                            
+                            let direction: String?
+                            if let legDirection = cell.currentLegTrafficInfo?.subwayFinalStation, !legDirection.isEmpty {
+                                direction = legDirection
+                            } else {
+                                direction = nil
+                            }
+                            
+                            cell.setupSubwayRealTime(
+                                routeName: route,
+                                infos: [],  // ✅ 빈 배열 전달
+                                isExpressSubway: item.info?.isExpressSubway,
+                                isLastSubway: item.info?.isLastSubway
+                            )
                         }
-                        cell.setupSubwayRealTime(routeName: route, infos: matched)
+                    } else {
+                        print("  ❌ route가 nil 또는 비어있음")
                     }
+                    
                     return cell
                     
                 default:

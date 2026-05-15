@@ -57,15 +57,32 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
     private var stationListStackViewBottomConstraint: Constraint?
     private var endLabelTopConstraintWithoutStack: Constraint?
     
+    // MARK: - Subway Real Time UI (방향, 타이머, 뱃지)
     private let subwayDirectionLabel = UILabel()
     private let subwayTimerLabel = UILabel()
+    
+    // MARK: - Express/Last Subway Badges
+    private let expressBadgeImageView = UIImageView()
+    private let lastBadgeImageView = UIImageView()
+    private lazy var badgeStackView: UIStackView = {
+        let stack = UIStackView(arrangedSubviews: [expressBadgeImageView, lastBadgeImageView])
+        stack.axis = .horizontal
+        stack.alignment = .center
+        stack.spacing = 4
+        return stack
+    }()
+    
     private lazy var subwayRealtimeStackView: UIStackView = {
-        let stack = UIStackView(arrangedSubviews: [subwayDirectionLabel, subwayTimerLabel])
+        let stack = UIStackView(arrangedSubviews: [subwayDirectionLabel, badgeStackView, subwayTimerLabel])
         stack.axis = .horizontal
         stack.alignment = .center
         stack.spacing = 8
         return stack
     }()
+    
+    private var isAlarmRegister: Bool {
+        return UserDefaultsWrapper.shared.bool(forKey: UserDefaultsWrapper.Key.alarmRegister.rawValue) ?? false
+    }
     
     private var subwayCountdownTimer: Timer?
     private var currentRemainingSec: Int?
@@ -112,6 +129,10 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
         currentRemainingSec = nil
         isAlarmFired = false
         subwayTimerLabel.isHidden = true
+        
+        // 뱃지 초기화
+        expressBadgeImageView.image = nil
+        lastBadgeImageView.image = nil
         
         hasMetZero = false
         isBoarded = false
@@ -171,6 +192,10 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
         subwayDirectionLabel.numberOfLines = 1
         subwayTimerLabel.numberOfLines = 1
         
+        // 뱃지 이미지뷰 설정
+        expressBadgeImageView.contentMode = .scaleAspectFit
+        lastBadgeImageView.contentMode = .scaleAspectFit
+        badgeStackView.backgroundColor = .clear
     }
     
     private func setupInitialConstraintState() {
@@ -222,14 +247,17 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
     }
     
     private func setupInfoConstrains() {
-        //        subwayBadgeLabel.snp.makeConstraints { make in
-        //            make.leading.equalTo(startLabel.snp.leading)
-        //            make.top.equalTo(startStackView.snp.bottom).offset(8)
-        //        }
-        
         subwayRealtimeStackView.snp.makeConstraints { make in
             make.leading.equalTo(startLabel.snp.leading)
             make.top.equalTo(startStackView.snp.bottom).offset(8)
+        }
+        
+        // 뱃지 크기 설정 (16x16)
+        expressBadgeImageView.snp.makeConstraints { make in
+            make.size.equalTo(16)
+        }
+        lastBadgeImageView.snp.makeConstraints { make in
+            make.size.equalTo(16)
         }
         
         summaryView.snp.makeConstraints { make in
@@ -299,8 +327,6 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
         subwayIconImageView.image = info.mode?.getIcon(for: info.type ?? "")
         stickView.backgroundColor = info.mode?.getColor(for: info.type ?? "")
         circleView.backgroundColor = info.mode?.getColor(for: info.type ?? "")
-        //        subwayBadgeLabel.configure(number: info.busName,
-        //                               color: info.mode?.getColor(for: info.type ?? ""))
         summaryView.configure(duration: sectionTime, stops: passStopList.count)
         addStationNameLabel(info: stationInfos)
         
@@ -315,10 +341,6 @@ final class DetailRouteSubwayCell: UICollectionViewCell {
                                                   color: .white))
         endCombinedLabel.append(AtchaFont.B3_M_15(" 하차", color: .gray200))
         endLabel.attributedText = endCombinedLabel
-        
-        //        if isCurrentTimeBetween(startTime: info.startTime, endTime: info.endTime) {
-        //            isNowUserLocationArrived()updateSubwayTimerLabel
-        //        }
         
         self.subwayTimerLabel.isHidden = !isAlarmFired
         if isAlarmFired && currentRemainingSec != nil {
@@ -434,15 +456,20 @@ extension DetailRouteSubwayCell {
 }
 
 extension DetailRouteSubwayCell {
-    
-    func setupSubwayRealTime(routeName: String?, infos: [SubwayRealTimeInfo]) {
+    func setupSubwayRealTime(routeName: String?, infos: [SubwayRealTimeInfo], isExpressSubway: Bool? = nil, isLastSubway: Bool? = nil) {
+        
         stopSubwayCountdownTimer()
         currentRemainingSec = nil
         
         subwayTimerLabel.isHidden = false
         subwayDirectionLabel.attributedText = AtchaFont.B6_R_14("", color: .white)
         
+        if isAlarmRegister{
+            updateBadges(isExpress: isExpressSubway ?? false, isLast: isLastSubway ?? false)
+        }
+        
         guard let routeName, !routeName.isEmpty else {
+            print("routeName이 nil 또는 비어있음")
             subwayTimerLabel.attributedText = AtchaFont.B6_R_14("", color: .gray300)
             return
         }
@@ -461,10 +488,20 @@ extension DetailRouteSubwayCell {
             return
         }
         
-        if let destination = matched.destination, destination != "" {
-            subwayDirectionLabel.attributedText = AtchaFont.B6_R_14("\(destination)행", color: .white)
+        let direction: String?
+        if let destDirection = matched.destination, !destDirection.isEmpty {
+            direction = destDirection
+            
+        } else if let legDirection = currentLegTrafficInfo?.subwayFinalStation, !legDirection.isEmpty {
+            direction = legDirection
+            
         } else {
-            subwayDirectionLabel.attributedText = AtchaFont.B6_R_14("", color: .white)
+            direction = nil
+        }
+        
+        if let direction = direction {
+            subwayDirectionLabel.attributedText = AtchaFont.B6_R_14(lineHeight: 0, "\(direction)행", color: .white)
+        } else {
         }
         
         guard let sec = matched.remainingTime, sec >= 0 else {
@@ -476,6 +513,26 @@ extension DetailRouteSubwayCell {
         updateSubwayTimerLabel()
         startSubwayCountdownTimerIfNeeded()
     }
+    
+    /// isExpressSubway, isLastSubway 뱃지 업데이트
+    private func updateBadges(isExpress: Bool, isLast: Bool) {
+        if isExpress {
+            expressBadgeImageView.image = UIImage(named: "express_badge")
+            expressBadgeImageView.isHidden = false
+        } else {
+            expressBadgeImageView.image = nil
+            expressBadgeImageView.isHidden = true
+        }
+        
+        if isLast {
+            lastBadgeImageView.image = UIImage(named: "last_badge")
+            lastBadgeImageView.isHidden = false
+        } else {
+            lastBadgeImageView.image = nil
+            lastBadgeImageView.isHidden = true
+        }
+    }
+    
     
     private func startSubwayCountdownTimerIfNeeded() {
         if subwayCountdownTimer != nil { return }
