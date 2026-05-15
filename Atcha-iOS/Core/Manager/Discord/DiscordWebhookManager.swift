@@ -14,6 +14,16 @@ final class DiscordWebhookManager {
     private let errorWebhookURLString = AppConfig.errorWebhookURL
     private let authWebhookURLString = AppConfig.authWebhookURL
     
+    private var environment: String {
+        let baseURL = AppConfig.apiBaseURL
+        if baseURL.contains("p-e.kr") {
+            return "🔧 DEV"
+        } else if baseURL.contains("online") {
+            return "🚀 PROD"
+        }
+        return "❓ UNKNOWN"
+    }
+    
     // MARK: - 오류 로그
     func sendErrorLog(
         baseURL: String,
@@ -76,6 +86,7 @@ final class DiscordWebhookManager {
         guard let url = URL(string: authWebhookURLString) else { return }
         
         var fields: [[String: Any]] = [
+            ["name": "Environment", "value": environment,                      "inline": true],
             ["name": "이벤트",      "value": event.title,                   "inline": true],
             ["name": "유저 ID",     "value": "`\(userID)`",                 "inline": true],
             ["name": "App Version", "value": AppInfoProvider.currentVersion, "inline": true]
