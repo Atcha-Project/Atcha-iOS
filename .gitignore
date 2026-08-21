@@ -117,3 +117,12 @@ BaseConfig.xcconfig
 .claude
 
 Atcha-iOS/DesignSource/AtchaImage/Icon.xcassets/Onboarding/.DS_Store
+
+# --- Tuist (generated artifacts only; legacy Atcha-iOS.xcodeproj stays tracked) ---
+/Atcha.xcworkspace/
+Projects/**/*.xcodeproj/
+Projects/**/Derived/
+Tuist/.build/
+.tuist/
+graph.dot
+graph.png
