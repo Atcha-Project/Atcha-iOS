@@ -31,6 +31,8 @@ private struct SpyAlarmRepository: AlarmRepository {
 private struct SpyAlarmScheduler: AlarmScheduler {
     let log: CallLog
 
+    func requestAuthorization() async -> Bool { true }
+
     func replaceAlarm(id: String, fireDate: Date, title: String) async throws {
         await log.append("replaceAlarm:\(id)")
     }
@@ -38,6 +40,8 @@ private struct SpyAlarmScheduler: AlarmScheduler {
     func cancelAlarm() async {
         await log.append("cancelAlarm")
     }
+
+    func scheduledFireDate() async -> Date? { nil }
 }
 
 struct DefaultCancelAlarmUseCaseTests {

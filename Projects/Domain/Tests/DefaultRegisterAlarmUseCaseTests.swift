@@ -32,6 +32,12 @@ private struct SpyAlarmRepository: AlarmRepository {
 
 private struct SpyAlarmScheduler: AlarmScheduler {
     let log: CallLog
+    var authorizationGranted = true
+
+    func requestAuthorization() async -> Bool {
+        await log.append("auth:\(authorizationGranted)")
+        return authorizationGranted
+    }
 
     func replaceAlarm(id: String, fireDate: Date, title: String) async throws {
         await log.append("replaceAlarm:\(id)")
@@ -40,6 +46,8 @@ private struct SpyAlarmScheduler: AlarmScheduler {
     func cancelAlarm() async {
         await log.append("cancelAlarm")
     }
+
+    func scheduledFireDate() async -> Date? { nil }
 }
 
 private extension LastRoute {
@@ -67,7 +75,7 @@ struct DefaultRegisterAlarmUseCaseTests {
             scheduler: SpyAlarmScheduler(log: log)
         )
         try await sut.execute(route: .fixture(id: "new"))
-        #expect(await log.events == ["refresh", "cancel:old", "register:new", "replaceAlarm:new"])
+        #expect(await log.events == ["auth:true", "refresh", "cancel:old", "register:new", "replaceAlarm:new"])
     }
 
     @Test
@@ -78,7 +86,7 @@ struct DefaultRegisterAlarmUseCaseTests {
             scheduler: SpyAlarmScheduler(log: log)
         )
         try await sut.execute(route: .fixture(id: "new"))
-        #expect(await log.events == ["refresh", "register:new", "replaceAlarm:new"])
+        #expect(await log.events == ["auth:true", "refresh", "register:new", "replaceAlarm:new"])
     }
 
     @Test
@@ -91,6 +99,20 @@ struct DefaultRegisterAlarmUseCaseTests {
         await #expect(throws: StubError.self) {
             try await sut.execute(route: .fixture(id: "new"))
         }
-        #expect(await log.events == ["refresh", "register:new"])
+        #expect(await log.events == ["auth:true", "refresh", "register:new"])
+    }
+
+    @Test
+    func execute_permissionDenied_throwsAndHoldsServerRegistration() async {
+        let log = CallLog()
+        let sut = DefaultRegisterAlarmUseCase(
+            repository: SpyAlarmRepository(log: log),
+            scheduler: SpyAlarmScheduler(log: log, authorizationGranted: false)
+        )
+        await #expect(throws: AlarmError.permissionDenied) {
+            try await sut.execute(route: .fixture(id: "new"))
+        }
+        // 권한 거부 시 서버 등록·삭제·로컬 스케줄 어디에도 도달하면 안 된다.
+        #expect(await log.events == ["auth:false"])
     }
 }

@@ -11,6 +11,7 @@ let workspace = Workspace(
         "Projects/Core/Network",
         "Projects/Core/Storage",
         "Projects/Core/Auth",
+        "Projects/Core/Alarm",
         "Projects/Core/Coordinator",
         "Projects/DesignSystem",
         "Projects/Legacy",

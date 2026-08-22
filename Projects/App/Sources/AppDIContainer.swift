@@ -1,4 +1,5 @@
 import AtchaData
+import CoreAlarm
 import CoreAuth
 import CoreNetwork
 import CoreStorage
@@ -40,10 +41,11 @@ final class AppDIContainer {
         let alarmRepository = AlarmRepositoryImpl(networkClient: networkClient)
         let recentSearchRepository = RecentSearchRepositoryImpl(store: UserDefaultsKeyValueStore())
 
-        // 디바이스 포트 어댑터. AlarmScheduler는 Phase 7에서 CoreAlarm 기반으로 교체.
+        // 디바이스 포트 어댑터 — CoreLocation/AlarmKit을 아는 곳은 App의 어댑터뿐.
         let locationService = CoreLocationServiceAdapter()
         let getCurrentLocation: any GetCurrentLocationUseCase =
             DefaultGetCurrentLocationUseCase(locationService: locationService)
+        let alarmScheduler = CoreAlarmSchedulerAdapter()
 
         let searchContainer = SearchDIContainer(
             searchPlacesUseCase: DefaultSearchPlacesUseCase(repository: placeRepository),
@@ -57,7 +59,15 @@ final class AppDIContainer {
             reverseGeocodeUseCase: DefaultReverseGeocodeUseCase(repository: placeRepository),
             registerAlarmUseCase: DefaultRegisterAlarmUseCase(
                 repository: alarmRepository,
-                scheduler: NoopAlarmScheduler()
+                scheduler: alarmScheduler
+            ),
+            cancelAlarmUseCase: DefaultCancelAlarmUseCase(
+                repository: alarmRepository,
+                scheduler: alarmScheduler
+            ),
+            refreshAlarmUseCase: DefaultRefreshAlarmUseCase(
+                repository: alarmRepository,
+                scheduler: alarmScheduler
             ),
             searchCoordinatorBuildable: searchContainer
         )

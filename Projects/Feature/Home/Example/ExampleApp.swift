@@ -38,6 +38,8 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             getCurrentLocationUseCase: PreviewGetCurrentLocationUseCase(),
             reverseGeocodeUseCase: PreviewReverseGeocodeUseCase(),
             registerAlarmUseCase: PreviewRegisterAlarmUseCase(),
+            cancelAlarmUseCase: PreviewCancelAlarmUseCase(),
+            refreshAlarmUseCase: PreviewRefreshAlarmUseCase(),
             searchCoordinatorBuildable: PreviewSearchCoordinatorBuildable()
         )
         let coordinator = container.makeHomeCoordinator(navigationController: navigationController)
@@ -70,6 +72,20 @@ struct PreviewReverseGeocodeUseCase: ReverseGeocodeUseCase {
 struct PreviewRegisterAlarmUseCase: RegisterAlarmUseCase {
     func execute(route: LastRoute) async throws {
         try? await Task.sleep(for: .milliseconds(500))
+    }
+}
+
+struct PreviewCancelAlarmUseCase: CancelAlarmUseCase {
+    func execute(lastRouteId: String) async throws {
+        try? await Task.sleep(for: .milliseconds(300))
+    }
+}
+
+/// 등록된 알람이 없는 서버 상태를 흉내 낸다 — 포그라운드 복귀가 화면을 건드리지 않는다.
+struct PreviewRefreshAlarmUseCase: RefreshAlarmUseCase {
+    struct NoRegisteredAlarm: Error {}
+    func execute() async throws -> AlarmInfo {
+        throw NoRegisteredAlarm()
     }
 }
 
