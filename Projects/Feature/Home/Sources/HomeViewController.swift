@@ -21,6 +21,8 @@ final class HomeViewController: UIViewController {
     private lazy var arrivalRow = makeFieldRow(icon: DSIcon.place24, field: arrivalField)
     private let routeCard = DSRouteCard()
     private let registerButton = DSButton(title: "알람 등록하기")
+    // DSButton은 title이 init 고정이라 토글은 버튼 2개의 표시 전환으로 구현한다.
+    private let cancelButton = DSButton(title: "알람 해제하기", style: .secondary)
 
     private let contentStack: UIStackView = {
         let stack = UIStackView()
@@ -44,6 +46,18 @@ final class HomeViewController: UIViewController {
         configureUI()
         bind()
         viewModel.viewDidLoad()
+        // "SceneDelegate → 알림 경유": scene 포그라운드 전환마다 시스템이 게시하는
+        // 노티를 관찰한다 (최초 진입 포함 — 알람 상태 복원을 겸한다).
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(sceneWillEnterForeground),
+            name: UIScene.willEnterForegroundNotification,
+            object: nil
+        )
+    }
+
+    @objc private func sceneWillEnterForeground() {
+        viewModel.appWillEnterForeground()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -63,7 +77,7 @@ final class HomeViewController: UIViewController {
             make.leading.trailing.equalToSuperview().inset(DSSpacing.md)
         }
 
-        [titleLabel, banner, departureRow, arrivalRow, routeCard, registerButton]
+        [titleLabel, banner, departureRow, arrivalRow, routeCard, registerButton, cancelButton]
             .forEach(contentStack.addArrangedSubview)
         contentStack.addArrangedSubview(makeCaptionStack())
         contentStack.setCustomSpacing(DSSpacing.lg20, after: titleLabel)
@@ -73,9 +87,14 @@ final class HomeViewController: UIViewController {
         banner.isHidden = true
         routeCard.isHidden = true
         registerButton.isHidden = true
+        cancelButton.isHidden = true
 
         registerButton.addAction(
             UIAction { [weak self] _ in self?.viewModel.registerAlarmTapped() },
+            for: .touchUpInside
+        )
+        cancelButton.addAction(
+            UIAction { [weak self] _ in self?.viewModel.cancelAlarmTapped() },
             for: .touchUpInside
         )
     }
@@ -165,12 +184,13 @@ final class HomeViewController: UIViewController {
         if let card = state.routeCard {
             routeCard.configure(with: card.dsContent)
             routeCard.isHidden = false
-            registerButton.isHidden = false
         } else {
             routeCard.isHidden = true
-            registerButton.isHidden = true
         }
-        registerButton.isEnabled = !state.isRegisteringAlarm
+        registerButton.isHidden = state.alarmButton != .register
+        cancelButton.isHidden = state.alarmButton != .cancel
+        registerButton.isEnabled = !state.isAlarmBusy
+        cancelButton.isEnabled = !state.isAlarmBusy
 
         if let bannerData = state.banner {
             banner.configure(text: bannerData.text, style: bannerData.isUrgent ? .urgent : .normal)
@@ -191,8 +211,19 @@ final class HomeViewController: UIViewController {
                     UIApplication.shared.open(url)
                 }
             )
+        case .alarmPermissionNeeded:
+            DSToast.show(
+                "알람 권한이 꺼져 있어요",
+                in: view,
+                action: .init(title: "설정으로 이동") {
+                    guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+                    UIApplication.shared.open(url)
+                }
+            )
         case .alarmRegisterFailed:
             DSToast.show("알람 등록에 실패했어요. 다시 시도해 주세요.", in: view)
+        case .alarmCancelFailed:
+            DSToast.show("알람 해제에 실패했어요. 다시 시도해 주세요.", in: view)
         }
     }
 }

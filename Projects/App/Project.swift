@@ -38,6 +38,7 @@ let appTarget = Target.target(
         .project(target: "CoreNetwork", path: "../Core/Network"),
         .project(target: "CoreStorage", path: "../Core/Storage"),
         .project(target: "CoreAuth", path: "../Core/Auth"),
+        .project(target: "CoreAlarm", path: "../Core/Alarm"),
         .project(target: "CoreCoordinator", path: "../Core/Coordinator"),
         .project(target: "DesignSystem", path: "../DesignSystem"),
         .external(name: "FirebaseCore"),

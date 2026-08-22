@@ -17,17 +17,27 @@ final class HomeViewModel {
         let isUrgent: Bool
     }
 
+    /// 알람 버튼 슬롯의 표출 모드 — 선택 경로·등록 상태의 순수 함수로 계산한다.
+    enum AlarmButtonMode: Equatable {
+        case hidden
+        case register
+        case cancel
+    }
+
     struct State: Equatable {
         var departure: DepartureState = .loading
         var routeCard: RouteCardViewData?
         var banner: BannerViewData?
-        var isRegisteringAlarm = false
+        var isAlarmBusy = false
+        var alarmButton: AlarmButtonMode = .hidden
     }
 
     /// 재방출되면 안 되는 원샷 안내 — 상태와 분리한다.
     enum ToastEvent: Equatable {
         case locationPermissionNeeded
+        case alarmPermissionNeeded
         case alarmRegisterFailed
+        case alarmCancelFailed
     }
 
     /// Set by the ViewController; always invoked on the main actor.
@@ -43,31 +53,41 @@ final class HomeViewModel {
     private let getCurrentLocationUseCase: any GetCurrentLocationUseCase
     private let reverseGeocodeUseCase: any ReverseGeocodeUseCase
     private let registerAlarmUseCase: any RegisterAlarmUseCase
+    private let cancelAlarmUseCase: any CancelAlarmUseCase
+    private let refreshAlarmUseCase: any RefreshAlarmUseCase
     private let now: @Sendable () -> Date
     private let bannerTickInterval: Duration
 
     private var selectedRoute: LastRoute?
+    /// 서버에 알람이 등록된 경로 id — 해제 버튼·포그라운드 복원의 기준.
+    private var registeredRouteId: String?
     private var locationTask: Task<Void, Never>?
-    private var registerTask: Task<Void, Never>?
+    private var alarmTask: Task<Void, Never>?
+    private var refreshTask: Task<Void, Never>?
     private var bannerTask: Task<Void, Never>?
 
     init(
         getCurrentLocationUseCase: any GetCurrentLocationUseCase,
         reverseGeocodeUseCase: any ReverseGeocodeUseCase,
         registerAlarmUseCase: any RegisterAlarmUseCase,
+        cancelAlarmUseCase: any CancelAlarmUseCase,
+        refreshAlarmUseCase: any RefreshAlarmUseCase,
         now: @escaping @Sendable () -> Date = { Date() },
         bannerTickInterval: Duration = .seconds(60)
     ) {
         self.getCurrentLocationUseCase = getCurrentLocationUseCase
         self.reverseGeocodeUseCase = reverseGeocodeUseCase
         self.registerAlarmUseCase = registerAlarmUseCase
+        self.cancelAlarmUseCase = cancelAlarmUseCase
+        self.refreshAlarmUseCase = refreshAlarmUseCase
         self.now = now
         self.bannerTickInterval = bannerTickInterval
     }
 
     deinit {
         locationTask?.cancel()
-        registerTask?.cancel()
+        alarmTask?.cancel()
+        refreshTask?.cancel()
         bannerTask?.cancel()
     }
 
@@ -90,26 +110,87 @@ final class HomeViewModel {
         newState.routeCard = RouteCardViewData(entity: route)
         // 새 경로 선택 = 기존 배너는 더 이상 유효하지 않다 (재등록 전까지 숨김).
         newState.banner = nil
+        newState.alarmButton = Self.alarmButtonMode(
+            selectedRouteId: route.id,
+            registeredRouteId: registeredRouteId
+        )
         state = newState
         bannerTask?.cancel()
     }
 
     func registerAlarmTapped() {
-        guard let route = selectedRoute, !state.isRegisteringAlarm else { return }
-        registerTask?.cancel()
-        state.isRegisteringAlarm = true
+        guard let route = selectedRoute, !state.isAlarmBusy else { return }
+        alarmTask?.cancel()
+        state.isAlarmBusy = true
         // [weak self]: the in-flight task must not keep the ViewModel alive.
-        registerTask = Task { [weak self] in
+        alarmTask = Task { [weak self] in
             guard let useCase = self?.registerAlarmUseCase else { return }
             do {
                 try await useCase.execute(route: route)
                 guard !Task.isCancelled else { return }
-                self?.state.isRegisteringAlarm = false
+                self?.registeredRouteId = route.id
+                self?.state.isAlarmBusy = false
+                self?.refreshAlarmButton()
                 self?.startBannerTimer(departure: route.departureTime)
+            } catch AlarmError.permissionDenied {
+                guard !Task.isCancelled else { return }
+                self?.state.isAlarmBusy = false
+                self?.onToast?(.alarmPermissionNeeded)
             } catch {
                 guard !Task.isCancelled else { return }
-                self?.state.isRegisteringAlarm = false
+                self?.state.isAlarmBusy = false
                 self?.onToast?(.alarmRegisterFailed)
+            }
+        }
+    }
+
+    func cancelAlarmTapped() {
+        guard let routeId = registeredRouteId, !state.isAlarmBusy else { return }
+        alarmTask?.cancel()
+        state.isAlarmBusy = true
+        alarmTask = Task { [weak self] in
+            guard let useCase = self?.cancelAlarmUseCase else { return }
+            do {
+                try await useCase.execute(lastRouteId: routeId)
+                guard !Task.isCancelled, let self else { return }
+                self.bannerTask?.cancel()
+                self.registeredRouteId = nil
+                var newState = self.state
+                newState.banner = nil
+                newState.isAlarmBusy = false
+                newState.alarmButton = Self.alarmButtonMode(
+                    selectedRouteId: self.selectedRoute?.id,
+                    registeredRouteId: nil
+                )
+                self.state = newState
+            } catch {
+                guard !Task.isCancelled else { return }
+                self?.state.isAlarmBusy = false
+                self?.onToast?(.alarmCancelFailed)
+            }
+        }
+    }
+
+    /// 포그라운드 복귀(최초 진입 포함) 시 서버 알람을 재조회한다. 시각 변경 재스케줄은
+    /// RefreshAlarmUseCase 내부 정책이고, 여기서는 배너·버튼 상태만 갱신한다.
+    /// Phase 8에서 앱 시작·푸시 수신 경로와 함께 AlarmSyncService로 일원화될 예정이라
+    /// App이 아닌 ViewModel에 최소 구현으로 둔다.
+    func appWillEnterForeground() {
+        refreshTask?.cancel()
+        refreshTask = Task { [weak self] in
+            guard let useCase = self?.refreshAlarmUseCase else { return }
+            do {
+                let info = try await useCase.execute()
+                guard !Task.isCancelled else { return }
+                self?.registeredRouteId = info.lastRouteId
+                self?.refreshAlarmButton()
+                if let departure = info.departureTime {
+                    self?.startBannerTimer(departure: departure)
+                }
+            } catch {
+                // TODO: [미확정] 서버의 "등록된 알람 없음" 표현이 확정되면 그 경우에만
+                //       배너·버튼을 정리한다. 지금은 네트워크 오류와 구분할 수 없어
+                //       상태를 유지한다 (Phase 8 하드닝에서 세분화).
             }
         }
     }
@@ -140,6 +221,13 @@ final class HomeViewModel {
         }
     }
 
+    private func refreshAlarmButton() {
+        state.alarmButton = Self.alarmButtonMode(
+            selectedRouteId: selectedRoute?.id,
+            registeredRouteId: registeredRouteId
+        )
+    }
+
     private func startBannerTimer(departure: Date) {
         bannerTask?.cancel()
         // 매 틱 departure 기준으로 재계산 — 누적 드리프트가 없다.
@@ -155,6 +243,18 @@ final class HomeViewModel {
     }
 
     // MARK: - 순수 계산
+
+    nonisolated static func alarmButtonMode(
+        selectedRouteId: String?,
+        registeredRouteId: String?
+    ) -> AlarmButtonMode {
+        if let selectedRouteId {
+            // 선택한 카드가 등록된 경로면 해제, 아니면 (재)등록.
+            return selectedRouteId == registeredRouteId ? .cancel : .register
+        }
+        // 카드 없이 등록만 남은 상태(재실행 복원) — 해제만 가능하다.
+        return registeredRouteId == nil ? .hidden : .cancel
+    }
 
     nonisolated static func minutesUntil(departure: Date, now: Date) -> Int {
         max(0, Int(ceil(departure.timeIntervalSince(now) / 60)))
