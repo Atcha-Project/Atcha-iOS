@@ -1,6 +1,7 @@
 import Domain
 import Foundation
 import UIKit
+import os
 
 /// 서버발 알람 시각 갱신의 단일 진입점. 앱 시작(인증 부트스트랩 직후)·포그라운드
 /// 복귀·사일런트 푸시 3경로가 전부 여기의 `RefreshAlarmUseCase` 호출 한 곳으로
@@ -11,6 +12,7 @@ import UIKit
 @MainActor
 final class AlarmSyncService: AlarmSyncEvents {
     private let refreshAlarmUseCase: any RefreshAlarmUseCase
+    private static let logger = Logger(subsystem: "com.atcha.iOS.v2", category: "AlarmSync")
 
     private var subscribers: [UUID: AsyncStream<AlarmInfo>.Continuation] = [:]
     /// 구독 전에 끝난 동기화를 놓치지 않기 위한 replay-1. 홈은 앱 시작 동기화와
@@ -52,13 +54,20 @@ final class AlarmSyncService: AlarmSyncEvents {
         if let inFlight {
             return await inFlight.value
         }
+        Self.logger.info("알람 동기화 시작")
         let task = Task { [refreshAlarmUseCase] () -> AlarmInfo? in
-            try? await refreshAlarmUseCase.execute()
+            do {
+                return try await refreshAlarmUseCase.execute()
+            } catch {
+                Self.logger.info("알람 동기화 실패(상태 유지): \(error)")
+                return nil
+            }
         }
         inFlight = task
         let info = await task.value
         inFlight = nil
         if let info {
+            Self.logger.info("알람 동기화 성공: route=\(info.lastRouteId, privacy: .public)")
             lastInfo = info
             for continuation in subscribers.values {
                 continuation.yield(info)

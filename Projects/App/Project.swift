@@ -30,6 +30,11 @@ let appTarget = Target.target(
     ]),
     sources: ["Sources/**"],
     resources: ["Resources/**"],
+    // APNs 등록에 필수 (없으면 didFailToRegister: "aps-environment 없음").
+    // 배포 서명 시 프로비저닝이 production으로 치환한다.
+    entitlements: .dictionary([
+        "aps-environment": "development",
+    ]),
     dependencies: [
         .project(target: "HomeFeature", path: "../Feature/Home"),
         .project(target: "HomeFeatureInterface", path: "../Feature/Home"),

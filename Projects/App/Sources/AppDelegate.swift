@@ -72,6 +72,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     ) async -> UIBackgroundFetchResult {
         guard isFirebaseEnabled else { return .noData }
         guard userInfo["type"] as? String == "REFRESH" else { return .noData }
+        Self.fcmLogger.info("사일런트 푸시 수신(REFRESH) → 알람 동기화 시작")
         return await container.alarmSyncService.syncFromPush()
     }
 }
