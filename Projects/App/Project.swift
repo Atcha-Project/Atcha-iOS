@@ -14,6 +14,7 @@ let appTarget = Target.target(
         "NSLocationWhenInUseUsageDescription": "현재 위치를 출발지로 사용하기 위해 위치 정보 접근 권한이 필요합니다.",
         // 사일런트 푸시(content-available=1) 수신용 — 사용자 알림 권한과 무관.
         "UIBackgroundModes": ["remote-notification"],
+        "NSSupportsLiveActivities": true,
         "UIApplicationSceneManifest": [
             "UIApplicationSupportsMultipleScenes": false,
             "UISceneConfigurations": [
@@ -36,6 +37,7 @@ let appTarget = Target.target(
         "aps-environment": "development",
     ]),
     dependencies: [
+        .target(name: "AtchaWidget"),
         .project(target: "HomeFeature", path: "../Feature/Home"),
         .project(target: "HomeFeatureInterface", path: "../Feature/Home"),
         .project(target: "SearchFeature", path: "../Feature/Search"),
@@ -47,6 +49,7 @@ let appTarget = Target.target(
         .project(target: "CoreAuth", path: "../Core/Auth"),
         .project(target: "CoreAlarm", path: "../Core/Alarm"),
         .project(target: "CoreCoordinator", path: "../Core/Coordinator"),
+        .project(target: "CoreLiveActivity", path: "../Core/LiveActivity"),
         .project(target: "DesignSystem", path: "../DesignSystem"),
         .external(name: "FirebaseCore"),
         .external(name: "FirebaseCrashlytics"),
@@ -60,6 +63,17 @@ let appTarget = Target.target(
     ])
 )
 
+let widgetTarget = Target.widgetExtension(
+    name: "AtchaWidget",
+    bundleId: "\(Atcha.v2BundleID).widget",
+    sources: ["Widget/Sources/**"],
+    entitlements: .dictionary(["aps-environment": "development"]),
+    dependencies: [
+        .project(target: "CoreLiveActivity", path: "../Core/LiveActivity"),
+        .project(target: "DesignSystem", path: "../DesignSystem"),
+    ]
+)
+
 let project = Project(
     name: "AtchaV2",
     options: .options(
@@ -68,7 +82,7 @@ let project = Project(
         developmentRegion: Atcha.developmentRegion
     ),
     settings: .atchaV2(),
-    targets: [appTarget],
+    targets: [appTarget, widgetTarget],
     schemes: [
         .scheme(
             name: "AtchaV2",
