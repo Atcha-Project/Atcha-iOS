@@ -12,6 +12,8 @@ let appTarget = Target.target(
         "UILaunchScreen": [:],
         "NSAlarmKitUsageDescription": "막차 시간에 맞춰 알람을 울리기 위해 권한이 필요합니다.",
         "NSLocationWhenInUseUsageDescription": "현재 위치를 출발지로 사용하기 위해 위치 정보 접근 권한이 필요합니다.",
+        // 사일런트 푸시(content-available=1) 수신용 — 사용자 알림 권한과 무관.
+        "UIBackgroundModes": ["remote-notification"],
         "UIApplicationSceneManifest": [
             "UIApplicationSupportsMultipleScenes": false,
             "UISceneConfigurations": [

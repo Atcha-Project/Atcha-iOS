@@ -46,18 +46,6 @@ final class HomeViewController: UIViewController {
         configureUI()
         bind()
         viewModel.viewDidLoad()
-        // "SceneDelegate → 알림 경유": scene 포그라운드 전환마다 시스템이 게시하는
-        // 노티를 관찰한다 (최초 진입 포함 — 알람 상태 복원을 겸한다).
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(sceneWillEnterForeground),
-            name: UIScene.willEnterForegroundNotification,
-            object: nil
-        )
-    }
-
-    @objc private func sceneWillEnterForeground() {
-        viewModel.appWillEnterForeground()
     }
 
     override func viewWillAppear(_ animated: Bool) {

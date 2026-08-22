@@ -38,6 +38,8 @@ final class AppCoordinator: Coordinator, CoordinatorFinishDelegate {
                 try await self.container.authSessionManager.bootstrap()
                 guard !Task.isCancelled else { return }
                 self.startHome()
+                // 앱 시작 동기화 + 포그라운드 관찰 시작 — 세션이 준비된 뒤에만.
+                self.container.alarmSyncService.activate()
             } catch {
                 guard !Task.isCancelled else { return }
                 self.splashViewController?.showRetry()
