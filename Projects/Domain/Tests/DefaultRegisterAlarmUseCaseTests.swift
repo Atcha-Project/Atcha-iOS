@@ -40,7 +40,7 @@ private struct SpyAlarmScheduler: AlarmScheduler {
     }
 
     func replaceAlarm(id: String, fireDate: Date, title: String) async throws {
-        await log.append("replaceAlarm:\(id)")
+        await log.append("replaceAlarm:\(id)@\(Int(fireDate.timeIntervalSince1970))")
     }
 
     func cancelAlarm() async {
@@ -75,7 +75,8 @@ struct DefaultRegisterAlarmUseCaseTests {
             scheduler: SpyAlarmScheduler(log: log)
         )
         try await sut.execute(route: .fixture(id: "new"))
-        #expect(await log.events == ["auth:true", "refresh", "cancel:old", "register:new", "replaceAlarm:new"])
+        // 스케줄 시각은 버퍼 반영값: 출발 1000 − 180 = 820
+        #expect(await log.events == ["auth:true", "refresh", "cancel:old", "register:new", "replaceAlarm:new@820"])
     }
 
     @Test
@@ -86,7 +87,7 @@ struct DefaultRegisterAlarmUseCaseTests {
             scheduler: SpyAlarmScheduler(log: log)
         )
         try await sut.execute(route: .fixture(id: "new"))
-        #expect(await log.events == ["auth:true", "refresh", "register:new", "replaceAlarm:new"])
+        #expect(await log.events == ["auth:true", "refresh", "register:new", "replaceAlarm:new@820"])
     }
 
     @Test

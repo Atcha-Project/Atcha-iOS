@@ -30,6 +30,11 @@ private struct StubObserveAlarmUseCase: ObserveAlarmUseCase {
     func execute() -> AsyncStream<AlarmInfo> { handler() }
 }
 
+private struct StubObserveAlarmChangeUseCase: ObserveAlarmChangeUseCase {
+    let handler: @Sendable () -> AsyncStream<AlarmChangeVerdict>
+    func execute() -> AsyncStream<AlarmChangeVerdict> { handler() }
+}
+
 /// 테스트 도중 `now()`를 전진시키기 위한 가변 시계.
 private nonisolated final class NowBox: @unchecked Sendable {
     private let lock = NSLock()
@@ -113,6 +118,9 @@ private func makeSUT(
     alarmUpdates: @escaping @Sendable () -> AsyncStream<AlarmInfo> = {
         AsyncStream { $0.finish() }
     },
+    alarmChanges: @escaping @Sendable () -> AsyncStream<AlarmChangeVerdict> = {
+        AsyncStream { $0.finish() }
+    },
     now: @escaping @Sendable () -> Date = { fixedNow },
     bannerTickInterval: Duration = .seconds(60)
 ) -> HomeViewModel {
@@ -122,6 +130,7 @@ private func makeSUT(
         registerAlarmUseCase: StubRegisterAlarmUseCase(handler: register),
         cancelAlarmUseCase: StubCancelAlarmUseCase(handler: cancel),
         observeAlarmUseCase: StubObserveAlarmUseCase(handler: alarmUpdates),
+        observeAlarmChangeUseCase: StubObserveAlarmChangeUseCase(handler: alarmChanges),
         now: now,
         bannerTickInterval: bannerTickInterval
     )
@@ -194,7 +203,8 @@ struct HomeViewModelTests {
         #expect(sut.state.isAlarmBusy)
         await recorder.waitUntilLast { $0.banner != nil }
 
-        #expect(sut.state.banner == .init(text: "막차 출발까지 42분", isUrgent: false))
+        // 카운트다운은 버퍼(3분) 포함 알람 발화 시각 기준 — 42분 출발이면 39분.
+        #expect(sut.state.banner == .init(text: "출발까지 39분", urgency: .relaxed))
         #expect(!sut.state.isAlarmBusy)
         // 등록 성공 후 같은 자리 버튼이 해제로 토글된다.
         #expect(sut.state.alarmButton == .cancel)
@@ -244,16 +254,31 @@ struct HomeViewModelTests {
         #expect(HomeViewModel.minutesUntil(
             departure: fixedNow.addingTimeInterval(-30), now: fixedNow
         ) == 0)
+    }
 
+    @Test
+    func makeBanner_urgencyBoundaries_useAlarmFireDate() {
+        // 카운트다운·긴급도 모두 알람 발화 시각(출발 − 3분 버퍼) 기준 — 이중 시각 금지.
+        // 출발까지 13분 = 알람까지 정확히 600초: imminent 경계.
         #expect(HomeViewModel.makeBanner(
-            departure: fixedNow.addingTimeInterval(10 * 60), now: fixedNow
-        ).isUrgent)
-        #expect(!HomeViewModel.makeBanner(
-            departure: fixedNow.addingTimeInterval(11 * 60), now: fixedNow
-        ).isUrgent)
+            departure: fixedNow.addingTimeInterval(13 * 60), now: fixedNow
+        ) == .init(text: "출발까지 10분", urgency: .imminent))
+        // 알람까지 601초: caution으로 넘어간다.
+        #expect(HomeViewModel.makeBanner(
+            departure: fixedNow.addingTimeInterval(13 * 60 + 1), now: fixedNow
+        ).urgency == .caution)
+        // 출발까지 33분 = 알람까지 정확히 1800초: caution 경계.
+        #expect(HomeViewModel.makeBanner(
+            departure: fixedNow.addingTimeInterval(33 * 60), now: fixedNow
+        ) == .init(text: "출발까지 30분", urgency: .caution))
+        // 알람까지 1801초: relaxed.
+        #expect(HomeViewModel.makeBanner(
+            departure: fixedNow.addingTimeInterval(33 * 60 + 1), now: fixedNow
+        ).urgency == .relaxed)
+        // 알람 시각이 이미 지났다: 0분 클램프 + imminent.
         #expect(HomeViewModel.makeBanner(
             departure: fixedNow, now: fixedNow
-        ) == .init(text: "막차 출발까지 0분", isUrgent: true))
+        ) == .init(text: "출발까지 0분", urgency: .imminent))
     }
 
     @Test
@@ -266,12 +291,12 @@ struct HomeViewModelTests {
 
         sut.routeSelected(route)
         sut.registerAlarmTapped()
-        await recorder.waitUntilLast { $0.banner?.text == "막차 출발까지 42분" }
+        await recorder.waitUntilLast { $0.banner?.text == "출발까지 39분" }
 
-        clock.set(fixedNow.addingTimeInterval(40 * 60))
-        await recorder.waitUntilLast { $0.banner?.text == "막차 출발까지 2분" }
+        clock.set(fixedNow.addingTimeInterval(37 * 60))
+        await recorder.waitUntilLast { $0.banner?.text == "출발까지 2분" }
 
-        #expect(sut.state.banner?.isUrgent == true)
+        #expect(sut.state.banner?.urgency == .imminent)
     }
 
     @Test
@@ -344,7 +369,8 @@ struct HomeViewModelTests {
         )
         await recorder.waitUntilLast { $0.banner != nil }
 
-        #expect(sut.state.banner == .init(text: "막차 출발까지 30분", isUrgent: false))
+        // 30분 출발 → 알람까지 27분(1620초) — caution 구간.
+        #expect(sut.state.banner == .init(text: "출발까지 27분", urgency: .caution))
         #expect(sut.state.alarmButton == .cancel)
         #expect(sut.state.routeCard == nil)
     }
@@ -359,7 +385,7 @@ struct HomeViewModelTests {
         sut.viewDidLoad()
         sut.routeSelected(route)
         sut.registerAlarmTapped()
-        await recorder.waitUntilLast { $0.banner?.text == "막차 출발까지 42분" }
+        await recorder.waitUntilLast { $0.banner?.text == "출발까지 39분" }
 
         // 서버가 15분 당긴 시각을 돌려준다 (포그라운드 복귀·푸시 동기화 공용 경로).
         continuation.yield(
@@ -370,7 +396,7 @@ struct HomeViewModelTests {
                 isReal: true
             )
         )
-        await recorder.waitUntilLast { $0.banner?.text == "막차 출발까지 27분" }
+        await recorder.waitUntilLast { $0.banner?.text == "출발까지 24분" }
 
         #expect(sut.state.alarmButton == .cancel)
     }
@@ -388,5 +414,50 @@ struct HomeViewModelTests {
         #expect(sut.state.banner == nil)
         #expect(sut.state.alarmButton == .hidden)
         #expect(recorder.toasts.isEmpty)
+    }
+
+    @Test
+    func changeStream_advancedActionable_emitsAdvancedToast() async {
+        // 포그라운드 인앱 채널: 앞당겨짐(아직 탈 수 있음) → 원샷 토스트 이벤트.
+        let (stream, continuation) = AsyncStream<AlarmChangeVerdict>.makeStream()
+        let sut = makeSUT(alarmChanges: { stream })
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+
+        sut.viewDidLoad()
+        continuation.yield(.advanced(by: 15 * 60, actionable: true))
+        while recorder.toasts.isEmpty { await Task.yield() }
+
+        #expect(recorder.toasts == [.lastTrainAdvanced(minutes: 15)])
+        // 배너 시각·긴급도 갱신은 info 스트림 몫 — verdict만으로 State는 바뀌지 않는다.
+        #expect(sut.state.banner == nil)
+
+        // 1분 미만 앞당김은 최소 1분으로 클램프한다.
+        continuation.yield(.advanced(by: 20, actionable: true))
+        while recorder.toasts.count < 2 { await Task.yield() }
+
+        #expect(recorder.toasts == [
+            .lastTrainAdvanced(minutes: 15),
+            .lastTrainAdvanced(minutes: 1),
+        ])
+    }
+
+    @Test
+    func changeStream_quietVerdicts_emitNoToast() async {
+        // 정책: 늦춰짐은 조용한 업데이트. actionable=false·sessionEnded는 Phase 12 산출물.
+        let (stream, continuation) = AsyncStream<AlarmChangeVerdict>.makeStream()
+        let sut = makeSUT(alarmChanges: { stream })
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+
+        sut.viewDidLoad()
+        continuation.yield(.delayed(by: 10 * 60))
+        continuation.yield(.unchanged)
+        continuation.yield(.advanced(by: 5 * 60, actionable: false))
+        continuation.yield(.sessionEnded)
+        for _ in 0..<20 { await Task.yield() }
+
+        #expect(recorder.toasts.isEmpty)
+        #expect(sut.state.banner == nil)
     }
 }

@@ -79,12 +79,17 @@ final class AppDIContainer {
         // 디바이스 포트 어댑터 — CoreLocation/AlarmKit/ActivityKit을 아는 곳은 App의 어댑터뿐.
         let alarmScheduler = CoreAlarmSchedulerAdapter()
         self.alarmScheduler = alarmScheduler
-        self.liveActivityPort = LastTrainLiveActivityAdapter()
+        // 구체 어댑터로 들고 있다가 두 얼굴로 나눠 준다 — Domain 포트(등록/해제 UseCase)와
+        // App 내부 변경 표출 경로(LastTrainChangeAlerting, Phase 11 훅).
+        let liveActivityAdapter = LastTrainLiveActivityAdapter()
+        self.liveActivityPort = liveActivityAdapter
         self.alarmSyncService = AlarmSyncService(
             refreshAlarmUseCase: DefaultRefreshAlarmUseCase(
                 repository: alarmRepository,
                 scheduler: alarmScheduler
-            )
+            ),
+            evaluateChangeUseCase: DefaultEvaluateAlarmChangeUseCase(),
+            liveActivity: liveActivityAdapter
         )
     }
 
@@ -115,6 +120,7 @@ final class AppDIContainer {
                 activityPort: liveActivityPort
             ),
             observeAlarmUseCase: DefaultObserveAlarmUseCase(events: alarmSyncService),
+            observeAlarmChangeUseCase: DefaultObserveAlarmChangeUseCase(events: alarmSyncService),
             searchCoordinatorBuildable: searchContainer
         )
     }

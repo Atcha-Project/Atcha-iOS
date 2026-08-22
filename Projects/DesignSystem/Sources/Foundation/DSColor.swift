@@ -41,6 +41,9 @@ public enum DSColor {
 
     public enum State {
         public static var danger: UIColor { DSPalette.red400 }
+        /// danger의 컨테이너 톤 — "주의" 단계 배경(DSBanner.caution 등). 어두운 베이스 위에
+        /// red400을 저알파로 깔아 Accent.container와 같은 "은은한 채움" 위계를 만든다.
+        public static var dangerContainer: UIColor { DSPalette.red400.withAlphaComponent(0.16) }
         public static var urgent: UIColor { DSPalette.red600 }
     }
 }

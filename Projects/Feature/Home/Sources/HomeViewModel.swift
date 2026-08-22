@@ -14,7 +14,9 @@ final class HomeViewModel {
 
     nonisolated struct BannerViewData: Equatable {
         let text: String
-        let isUrgent: Bool
+        /// 긴급도 3단계(여유/주의/임박) — Domain 기준을 그대로 쓴다. LA와 같은 척도여야
+        /// 배너·잠금화면이 다른 색을 보여주는 일이 없다.
+        let urgency: LastTrainUrgency
     }
 
     /// 알람 버튼 슬롯의 표출 모드 — 선택 경로·등록 상태의 순수 함수로 계산한다.
@@ -38,6 +40,8 @@ final class HomeViewModel {
         case alarmPermissionNeeded
         case alarmRegisterFailed
         case alarmCancelFailed
+        /// 포그라운드 인앱 채널: 막차가 당겨졌다는 판정 — VC가 토스트 + 배너 강조로 표출한다.
+        case lastTrainAdvanced(minutes: Int)
     }
 
     /// Set by the ViewController; always invoked on the main actor.
@@ -55,6 +59,7 @@ final class HomeViewModel {
     private let registerAlarmUseCase: any RegisterAlarmUseCase
     private let cancelAlarmUseCase: any CancelAlarmUseCase
     private let observeAlarmUseCase: any ObserveAlarmUseCase
+    private let observeAlarmChangeUseCase: any ObserveAlarmChangeUseCase
     private let now: @Sendable () -> Date
     private let bannerTickInterval: Duration
 
@@ -64,6 +69,7 @@ final class HomeViewModel {
     private var locationTask: Task<Void, Never>?
     private var alarmTask: Task<Void, Never>?
     private var observeTask: Task<Void, Never>?
+    private var changeTask: Task<Void, Never>?
     private var bannerTask: Task<Void, Never>?
 
     init(
@@ -72,6 +78,7 @@ final class HomeViewModel {
         registerAlarmUseCase: any RegisterAlarmUseCase,
         cancelAlarmUseCase: any CancelAlarmUseCase,
         observeAlarmUseCase: any ObserveAlarmUseCase,
+        observeAlarmChangeUseCase: any ObserveAlarmChangeUseCase,
         now: @escaping @Sendable () -> Date = { Date() },
         bannerTickInterval: Duration = .seconds(60)
     ) {
@@ -80,6 +87,7 @@ final class HomeViewModel {
         self.registerAlarmUseCase = registerAlarmUseCase
         self.cancelAlarmUseCase = cancelAlarmUseCase
         self.observeAlarmUseCase = observeAlarmUseCase
+        self.observeAlarmChangeUseCase = observeAlarmChangeUseCase
         self.now = now
         self.bannerTickInterval = bannerTickInterval
     }
@@ -88,6 +96,7 @@ final class HomeViewModel {
         locationTask?.cancel()
         alarmTask?.cancel()
         observeTask?.cancel()
+        changeTask?.cancel()
         bannerTask?.cancel()
     }
 
@@ -96,6 +105,7 @@ final class HomeViewModel {
     func viewDidLoad() {
         loadCurrentLocation()
         observeAlarmUpdates()
+        observeAlarmChanges()
     }
 
     /// 출발지/도착지 어느 필드를 탭해도 동일하게 검색 플로우로 진입한다.
@@ -198,6 +208,38 @@ final class HomeViewModel {
         }
     }
 
+    /// 포그라운드 인앱 채널: 앱이 떠 있을 때의 변경 판정은 LA alert 대신 여기서 소비한다.
+    /// 배너의 시각·긴급도 자체는 info 스트림(alarmSynced)이 이미 갱신하므로,
+    /// 이 스트림은 "당겨짐" 원샷 안내만 담당한다.
+    private func observeAlarmChanges() {
+        changeTask?.cancel()
+        changeTask = Task { [weak self] in
+            guard let stream = self?.observeAlarmChangeUseCase.execute() else { return }
+            for await verdict in stream {
+                guard !Task.isCancelled else { return }
+                self?.alarmChanged(verdict)
+            }
+        }
+    }
+
+    private func alarmChanged(_ verdict: AlarmChangeVerdict) {
+        switch verdict {
+        case let .advanced(by: interval, actionable: true):
+            // 반올림하되 최소 1분 — "0분 당겨졌어요"는 말이 안 된다.
+            let minutes = max(1, Int((interval / 60).rounded()))
+            onToast?(.lastTrainAdvanced(minutes: minutes))
+        case .advanced(by: _, actionable: false):
+            // TODO(Phase 12): 이미 못 타는 앞당김 — 막차 놓침(세션 종료) UX로 처리한다.
+            break
+        case .sessionEnded:
+            // TODO(Phase 12): 운행 종료·경로 소멸 UX.
+            break
+        case .delayed, .unchanged:
+            // 정책: 늦춰짐은 조용한 업데이트 — 배너는 info 스트림이 갱신하고 토스트는 없다.
+            break
+        }
+    }
+
     private func loadCurrentLocation() {
         locationTask?.cancel()
         state.departure = .loading
@@ -261,9 +303,15 @@ final class HomeViewModel {
         max(0, Int(ceil(departure.timeIntervalSince(now) / 60)))
     }
 
+    /// 카운트다운·긴급도 모두 **버퍼 포함 알람 발화 시각**(AlarmTiming) 기준 — LA와 기준을
+    /// 통일한다(이중 시각 금지). 그래서 문구도 "막차 출발까지"가 아니라 사용자가 출발해야
+    /// 할 시각 기준의 "출발까지"다.
     nonisolated static func makeBanner(departure: Date, now: Date) -> BannerViewData {
-        let minutes = minutesUntil(departure: departure, now: now)
-        // 긴박 기준 10분은 디자이너 확정 전 제안값.
-        return BannerViewData(text: "막차 출발까지 \(minutes)분", isUrgent: minutes <= 10)
+        let alarmDate = AlarmTiming.alarmFireDate(departureTime: departure)
+        let minutes = minutesUntil(departure: alarmDate, now: now)
+        return BannerViewData(
+            text: "출발까지 \(minutes)분",
+            urgency: LastTrainUrgency.forTimeRemaining(alarmDate.timeIntervalSince(now))
+        )
     }
 }

@@ -84,6 +84,7 @@ struct DesignTokenTests {
         #expect(colorsMatch(DSColor.Accent.container, DSPalette.lime900))
         #expect(colorsMatch(DSColor.Accent.tint, DSPalette.lime200))
         #expect(colorsMatch(DSColor.State.danger, DSPalette.red400))
+        #expect(colorsMatch(DSColor.State.dangerContainer, DSPalette.red400.withAlphaComponent(0.16)))
         #expect(colorsMatch(DSColor.State.urgent, DSPalette.red600))
     }
 }
