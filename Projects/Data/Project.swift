@@ -9,5 +9,6 @@ let project = Project.layer(
     dependencies: [
         .project(target: "Domain", path: "../Domain"),
         .project(target: "CoreNetwork", path: "../Core/Network"),
+        .project(target: "CoreStorage", path: "../Core/Storage"),
     ]
 )
