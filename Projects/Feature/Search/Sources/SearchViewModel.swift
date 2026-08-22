@@ -51,6 +51,8 @@ final class SearchViewModel {
     // 확정된 슬롯. 타이핑이 시작되면 해당 슬롯은 다시 미확정으로 돌아간다.
     private var departure: Place?
     private var arrival: Place?
+    // 확보되면 키워드 검색의 near 바이어스로 쓴다.
+    private var currentCoordinate: Coordinate?
     // 현재 리스트(.recent/.places)에 표시 중인 원본 — index 선택 매핑용.
     private var listedPlaces: [Place] = []
     // 0번 = 가장 늦은 차.
@@ -60,11 +62,14 @@ final class SearchViewModel {
     private let searchPlacesUseCase: any SearchPlacesUseCase
     private let searchLastRoutesUseCase: any SearchLastRoutesUseCase
     private let recentSearchesUseCase: any RecentSearchesUseCase
+    // nil이면(예: Example 스텁 구성) 프리필·near 바이어스 없이 동작한다.
+    private let getCurrentLocationUseCase: (any GetCurrentLocationUseCase)?
     private let debounceInterval: Duration
 
     private var searchTask: Task<Void, Never>?
     private var routeTask: Task<Void, Never>?
     private var recentTask: Task<Void, Never>?
+    private var locationTask: Task<Void, Never>?
     // save는 fetch류와 분리 보관 — 목록 갱신이 저장을 cancel하면 안 된다.
     private var saveTask: Task<Void, Never>?
 
@@ -72,11 +77,13 @@ final class SearchViewModel {
         searchPlacesUseCase: any SearchPlacesUseCase,
         searchLastRoutesUseCase: any SearchLastRoutesUseCase,
         recentSearchesUseCase: any RecentSearchesUseCase,
+        getCurrentLocationUseCase: (any GetCurrentLocationUseCase)? = nil,
         debounceInterval: Duration = .milliseconds(300)
     ) {
         self.searchPlacesUseCase = searchPlacesUseCase
         self.searchLastRoutesUseCase = searchLastRoutesUseCase
         self.recentSearchesUseCase = recentSearchesUseCase
+        self.getCurrentLocationUseCase = getCurrentLocationUseCase
         self.debounceInterval = debounceInterval
     }
 
@@ -84,6 +91,7 @@ final class SearchViewModel {
         searchTask?.cancel()
         routeTask?.cancel()
         recentTask?.cancel()
+        locationTask?.cancel()
         saveTask?.cancel()
     }
 
@@ -91,6 +99,7 @@ final class SearchViewModel {
 
     func viewDidLoad() {
         showRecent()
+        prefillDepartureWithCurrentLocation()
     }
 
     func fieldDidBeginEditing(_ field: Field) {
@@ -134,8 +143,8 @@ final class SearchViewModel {
             try? await Task.sleep(for: interval)
             guard !Task.isCancelled else { return }
             do {
-                // near: 현재 위치 연동은 Phase 6 스코프 — 그전까지는 nil.
-                let places = try await useCase.execute(keyword: trimmed, near: nil)
+                // 현재 위치가 확보된 경우에만 근처 우선 정렬 바이어스를 건다.
+                let places = try await useCase.execute(keyword: trimmed, near: self?.currentCoordinate)
                 guard !Task.isCancelled else { return }
                 self?.listedPlaces = places
                 self?.state = .places(places.map(PlaceViewData.init(entity:)))
@@ -198,6 +207,25 @@ final class SearchViewModel {
     }
 
     // MARK: - 내부 전이
+
+    /// 출발지 기본값 = 현재 위치. 실패·권한 거부는 조용히 무시한다 (권한 안내 UX는 홈 담당).
+    private func prefillDepartureWithCurrentLocation() {
+        guard let useCase = getCurrentLocationUseCase else { return }
+        locationTask = Task { [weak self] in
+            guard let coordinate = try? await useCase.execute() else { return }
+            guard !Task.isCancelled, let self else { return }
+            self.currentCoordinate = coordinate
+            // 사용자가 이미 출발지를 만졌다면 덮어쓰지 않는다.
+            guard self.departure == nil, self.fields.departureText.isEmpty else { return }
+            self.departure = Place(name: "현재 위치", address: "", coordinate: coordinate)
+            var newFields = self.fields
+            newFields.departureText = "현재 위치"
+            newFields.activeField = .arrival
+            self.fields = newFields
+            // 위치가 늦게 도착해 도착지가 먼저 확정된 경우를 마감한다.
+            if self.arrival != nil { self.searchRoutes() }
+        }
+    }
 
     private func confirm(_ place: Place, in field: Field) {
         searchTask?.cancel()

@@ -1,34 +1,257 @@
 import Domain
+import Foundation
 @testable import HomeFeature
 import Testing
 
-private struct StubFetchHomeUseCase: FetchHomeUseCase {
-    let summary: HomeSummary
-    func execute() async throws -> HomeSummary { summary }
+private struct StubError: Error {}
+
+private struct StubGetCurrentLocationUseCase: GetCurrentLocationUseCase {
+    let handler: @Sendable () async throws -> Coordinate
+    func execute() async throws -> Coordinate { try await handler() }
 }
+
+private struct StubReverseGeocodeUseCase: ReverseGeocodeUseCase {
+    let handler: @Sendable (Coordinate) async throws -> Place
+    func execute(coordinate: Coordinate) async throws -> Place { try await handler(coordinate) }
+}
+
+private struct StubRegisterAlarmUseCase: RegisterAlarmUseCase {
+    let handler: @Sendable (LastRoute) async throws -> Void
+    func execute(route: LastRoute) async throws { try await handler(route) }
+}
+
+/// 테스트 도중 `now()`를 전진시키기 위한 가변 시계.
+private nonisolated final class NowBox: @unchecked Sendable {
+    private let lock = NSLock()
+    private var value: Date
+
+    init(_ value: Date) { self.value = value }
+
+    func get() -> Date {
+        lock.lock()
+        defer { lock.unlock() }
+        return value
+    }
+
+    func set(_ newValue: Date) {
+        lock.lock()
+        defer { lock.unlock() }
+        value = newValue
+    }
+}
+
+// MARK: - 헬퍼
+
+@MainActor
+private final class StateRecorder {
+    private(set) var states: [HomeViewModel.State] = []
+    private(set) var toasts: [HomeViewModel.ToastEvent] = []
+
+    func attach(to sut: HomeViewModel) {
+        sut.onStateChange = { [weak self] in self?.states.append($0) }
+        sut.onToast = { [weak self] in self?.toasts.append($0) }
+    }
+
+    // 스텁이 즉시 resolve하므로 yield 드레인으로 충분하다.
+    func waitUntilLast(_ predicate: (HomeViewModel.State) -> Bool) async {
+        while !(states.last.map(predicate) ?? false) {
+            await Task.yield()
+        }
+    }
+}
+
+private nonisolated let fixedNow = Date(timeIntervalSince1970: 1_755_800_000)
+
+private nonisolated func makeRoute(id: String, departure: Date) -> LastRoute {
+    LastRoute(
+        id: id,
+        departureTime: departure,
+        totalTime: 3600,
+        totalWalkTime: 600,
+        transferCount: 1,
+        totalDistance: 12000,
+        totalWalkDistance: 800,
+        legs: [
+            TransportLeg(
+                mode: .subway,
+                sectionTime: 1800,
+                distance: 9000,
+                departureTime: nil,
+                routeName: "2호선",
+                lineType: "2",
+                start: RoutePoint(name: "강남역", coordinate: Coordinate(latitude: 37.49, longitude: 127.02)),
+                end: RoutePoint(name: "당산역", coordinate: Coordinate(latitude: 37.53, longitude: 126.90)),
+                subwayFinalStation: nil,
+                subwayDirection: nil,
+                isExpressSubway: false,
+                isLastSubway: true
+            ),
+        ]
+    )
+}
+
+@MainActor
+private func makeSUT(
+    location: @escaping @Sendable () async throws -> Coordinate = {
+        Coordinate(latitude: 37.4979, longitude: 127.0276)
+    },
+    geocode: @escaping @Sendable (Coordinate) async throws -> Place = {
+        Place(name: "강남역", address: "서울 강남구", coordinate: $0)
+    },
+    register: @escaping @Sendable (LastRoute) async throws -> Void = { _ in },
+    now: @escaping @Sendable () -> Date = { fixedNow },
+    bannerTickInterval: Duration = .seconds(60)
+) -> HomeViewModel {
+    HomeViewModel(
+        getCurrentLocationUseCase: StubGetCurrentLocationUseCase(handler: location),
+        reverseGeocodeUseCase: StubReverseGeocodeUseCase(handler: geocode),
+        registerAlarmUseCase: StubRegisterAlarmUseCase(handler: register),
+        now: now,
+        bannerTickInterval: bannerTickInterval
+    )
+}
+
+// MARK: - 테스트
 
 @MainActor
 struct HomeViewModelTests {
     @Test
-    func viewDidLoad_success_transitionsLoadingToLoaded() async {
-        let summary = HomeSummary(id: "1", title: "막차까지 42분", subtitle: "지금 출발하면 여유있어요")
-        let sut = HomeViewModel(fetchHomeUseCase: StubFetchHomeUseCase(summary: summary))
+    func viewDidLoad_locationSuccess_showsReverseGeocodedName() async {
+        let sut = makeSUT()
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
 
-        var states: [HomeViewModel.State] = []
-        await confirmation("reaches .loaded") { loaded in
-            sut.onStateChange = { state in
-                states.append(state)
-                if case .loaded = state { loaded() }
-            }
-            sut.viewDidLoad()
+        sut.viewDidLoad()
+        await recorder.waitUntilLast { $0.departure == .current(name: "강남역") }
 
-            // Drain until the async load lands (stub resolves immediately).
-            while !states.contains(where: { if case .loaded = $0 { true } else { false } }) {
-                await Task.yield()
-            }
-        }
+        // 초기값이 이미 .loading이라 didSet 재방출은 없다 — VC는 bind 시 초기 상태를 직접 렌더한다.
+        #expect(sut.state.departure == .current(name: "강남역"))
+        #expect(recorder.toasts.isEmpty)
+    }
 
-        #expect(states.first == .loading)
-        #expect(states.last == .loaded(HomeViewData(entity: summary)))
+    @Test
+    func viewDidLoad_permissionDenied_needsSearchAndEmitsSettingsToast() async {
+        let sut = makeSUT(location: { throw LocationError.permissionDenied })
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+
+        sut.viewDidLoad()
+        await recorder.waitUntilLast { $0.departure == .needsSearch(deniedPermission: true) }
+
+        #expect(recorder.toasts == [.locationPermissionNeeded])
+    }
+
+    @Test
+    func viewDidLoad_otherFailure_needsSearchWithoutToast() async {
+        let sut = makeSUT(geocode: { _ in throw StubError() })
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+
+        sut.viewDidLoad()
+        await recorder.waitUntilLast { $0.departure == .needsSearch(deniedPermission: false) }
+
+        #expect(recorder.toasts.isEmpty)
+    }
+
+    @Test
+    func routeSelected_populatesCard() async {
+        let route = makeRoute(id: "r1", departure: fixedNow.addingTimeInterval(42 * 60))
+        let sut = makeSUT()
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+
+        sut.routeSelected(route)
+
+        #expect(sut.state.routeCard == RouteCardViewData(entity: route))
+        #expect(sut.state.banner == nil)
+    }
+
+    @Test
+    func registerAlarm_success_startsBannerCountdown() async {
+        let route = makeRoute(id: "r1", departure: fixedNow.addingTimeInterval(42 * 60))
+        let sut = makeSUT()
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+
+        sut.routeSelected(route)
+        sut.registerAlarmTapped()
+        #expect(sut.state.isRegisteringAlarm)
+        await recorder.waitUntilLast { $0.banner != nil }
+
+        #expect(sut.state.banner == .init(text: "막차 출발까지 42분", isUrgent: false))
+        #expect(!sut.state.isRegisteringAlarm)
+    }
+
+    @Test
+    func registerAlarm_failure_emitsToastAndKeepsBannerHidden() async {
+        let route = makeRoute(id: "r1", departure: fixedNow.addingTimeInterval(42 * 60))
+        let sut = makeSUT(register: { _ in throw StubError() })
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+
+        sut.routeSelected(route)
+        sut.registerAlarmTapped()
+        while recorder.toasts.isEmpty { await Task.yield() }
+
+        #expect(recorder.toasts == [.alarmRegisterFailed])
+        #expect(sut.state.banner == nil)
+        #expect(!sut.state.isRegisteringAlarm)
+    }
+
+    @Test
+    func selectingNewRoute_clearsExistingBanner() async {
+        let route = makeRoute(id: "r1", departure: fixedNow.addingTimeInterval(42 * 60))
+        let sut = makeSUT()
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+        sut.routeSelected(route)
+        sut.registerAlarmTapped()
+        await recorder.waitUntilLast { $0.banner != nil }
+
+        sut.routeSelected(makeRoute(id: "r2", departure: fixedNow.addingTimeInterval(30 * 60)))
+
+        #expect(sut.state.banner == nil)
+        #expect(sut.state.routeCard?.departureTimeText != nil)
+    }
+
+    @Test
+    func minutesUntil_roundsUpAndClampsAtZero() {
+        #expect(HomeViewModel.minutesUntil(
+            departure: fixedNow.addingTimeInterval(42 * 60), now: fixedNow
+        ) == 42)
+        #expect(HomeViewModel.minutesUntil(
+            departure: fixedNow.addingTimeInterval(90), now: fixedNow
+        ) == 2)
+        #expect(HomeViewModel.minutesUntil(
+            departure: fixedNow.addingTimeInterval(-30), now: fixedNow
+        ) == 0)
+
+        #expect(HomeViewModel.makeBanner(
+            departure: fixedNow.addingTimeInterval(10 * 60), now: fixedNow
+        ).isUrgent)
+        #expect(!HomeViewModel.makeBanner(
+            departure: fixedNow.addingTimeInterval(11 * 60), now: fixedNow
+        ).isUrgent)
+        #expect(HomeViewModel.makeBanner(
+            departure: fixedNow, now: fixedNow
+        ) == .init(text: "막차 출발까지 0분", isUrgent: true))
+    }
+
+    @Test
+    func bannerTimer_ticksRecomputeMinutes() async {
+        let clock = NowBox(fixedNow)
+        let route = makeRoute(id: "r1", departure: fixedNow.addingTimeInterval(42 * 60))
+        let sut = makeSUT(now: { clock.get() }, bannerTickInterval: .milliseconds(1))
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+
+        sut.routeSelected(route)
+        sut.registerAlarmTapped()
+        await recorder.waitUntilLast { $0.banner?.text == "막차 출발까지 42분" }
+
+        clock.set(fixedNow.addingTimeInterval(40 * 60))
+        await recorder.waitUntilLast { $0.banner?.text == "막차 출발까지 2분" }
+
+        #expect(sut.state.banner?.isUrgent == true)
     }
 }

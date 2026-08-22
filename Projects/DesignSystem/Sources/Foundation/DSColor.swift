@@ -43,13 +43,4 @@ public enum DSColor {
         public static var danger: UIColor { DSPalette.red400 }
         public static var urgent: UIColor { DSPalette.red600 }
     }
-
-    // Flat aliases kept so HomeFeature compiles untouched until the Phase 6
-    // home overhaul migrates it to the semantic tokens.
-    @available(*, deprecated, renamed: "Accent.default")
-    public static var accent: UIColor { Accent.default }
-    @available(*, deprecated, renamed: "Background.base")
-    public static var background: UIColor { Background.base }
-    @available(*, deprecated, renamed: "Text.primary")
-    public static var textPrimary: UIColor { Text.primary }
 }

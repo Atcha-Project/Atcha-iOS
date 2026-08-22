@@ -52,19 +52,4 @@ public enum DSFont {
 
     private static var didAttemptRegistration = false
     private static var registrationSucceeded = false
-
-    @available(*, deprecated, message: "Use DSTypography presets")
-    public static func title(_ size: CGFloat = 22) -> UIFont {
-        pretendard(.bold, size: size)
-    }
-
-    @available(*, deprecated, message: "Use DSTypography presets")
-    public static func body(_ size: CGFloat = 16) -> UIFont {
-        pretendard(.regular, size: size)
-    }
-
-    @available(*, deprecated, message: "Use DSTypography presets")
-    public static func caption(_ size: CGFloat = 12) -> UIFont {
-        pretendard(.medium, size: size)
-    }
 }

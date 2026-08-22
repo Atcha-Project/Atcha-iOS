@@ -10,15 +10,18 @@ public final class SearchDIContainer: SearchCoordinatorBuildable {
     private let searchPlacesUseCase: any SearchPlacesUseCase
     private let searchLastRoutesUseCase: any SearchLastRoutesUseCase
     private let recentSearchesUseCase: any RecentSearchesUseCase
+    private let getCurrentLocationUseCase: (any GetCurrentLocationUseCase)?
 
     public init(
         searchPlacesUseCase: any SearchPlacesUseCase,
         searchLastRoutesUseCase: any SearchLastRoutesUseCase,
-        recentSearchesUseCase: any RecentSearchesUseCase
+        recentSearchesUseCase: any RecentSearchesUseCase,
+        getCurrentLocationUseCase: (any GetCurrentLocationUseCase)? = nil
     ) {
         self.searchPlacesUseCase = searchPlacesUseCase
         self.searchLastRoutesUseCase = searchLastRoutesUseCase
         self.recentSearchesUseCase = recentSearchesUseCase
+        self.getCurrentLocationUseCase = getCurrentLocationUseCase
     }
 
     public func makeSearchCoordinator(
@@ -39,7 +42,8 @@ public final class SearchDIContainer: SearchCoordinatorBuildable {
         let viewModel = SearchViewModel(
             searchPlacesUseCase: searchPlacesUseCase,
             searchLastRoutesUseCase: searchLastRoutesUseCase,
-            recentSearchesUseCase: recentSearchesUseCase
+            recentSearchesUseCase: recentSearchesUseCase,
+            getCurrentLocationUseCase: getCurrentLocationUseCase
         )
         viewModel.onRouteChosen = onRouteChosen
         viewModel.onBackRequested = onBack

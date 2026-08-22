@@ -17,6 +17,27 @@ private struct StubSearchLastRoutesUseCase: SearchLastRoutesUseCase {
     }
 }
 
+private struct StubGetCurrentLocationUseCase: GetCurrentLocationUseCase {
+    let handler: @Sendable () async throws -> Coordinate
+    func execute() async throws -> Coordinate { try await handler() }
+}
+
+// 키워드 검색이 받은 near 좌표를 기록한다.
+private actor NearLog {
+    private(set) var coordinates: [Coordinate?] = []
+    func append(_ coordinate: Coordinate?) { coordinates.append(coordinate) }
+}
+
+private struct NearRecordingSearchPlacesUseCase: SearchPlacesUseCase {
+    let log: NearLog
+    let places: [Place]
+
+    func execute(keyword: String, near coordinate: Coordinate?) async throws -> [Place] {
+        await log.append(coordinate)
+        return places
+    }
+}
+
 // save/remove 호출 기록 + fetch 응답을 한곳에서 관리.
 private actor RecentStore {
     private(set) var saved: [Place] = []
@@ -110,12 +131,14 @@ private nonisolated func makeRoute(id: String, departureOffset: TimeInterval = 0
 private func makeSUT(
     placesHandler: @escaping @Sendable (String) async throws -> [Place] = { _ in [] },
     routesHandler: @escaping @Sendable () async throws -> LastRouteSearchResult = { .available([]) },
-    store: RecentStore = RecentStore()
+    store: RecentStore = RecentStore(),
+    location: (@Sendable () async throws -> Coordinate)? = nil
 ) -> SearchViewModel {
     SearchViewModel(
         searchPlacesUseCase: StubSearchPlacesUseCase(handler: placesHandler),
         searchLastRoutesUseCase: StubSearchLastRoutesUseCase(handler: routesHandler),
         recentSearchesUseCase: StubRecentSearchesUseCase(store: store),
+        getCurrentLocationUseCase: location.map(StubGetCurrentLocationUseCase.init(handler:)),
         debounceInterval: .zero
     )
 }
@@ -304,6 +327,99 @@ struct SearchViewModelTests {
         await recorder.waitUntilLast { $0 == .recent([PlaceViewData(entity: second)]) }
 
         #expect(await store.removed == [first])
+    }
+
+    @Test
+    func viewDidLoad_withLocation_prefillsDepartureAsCurrentLocation() async {
+        let coordinate = Coordinate(latitude: 37.49, longitude: 127.02)
+        let sut = makeSUT(location: { coordinate })
+
+        sut.viewDidLoad()
+        while sut.fields.departureText.isEmpty { await Task.yield() }
+
+        #expect(sut.fields.departureText == "현재 위치")
+        #expect(sut.fields.activeField == .arrival)
+    }
+
+    @Test
+    func viewDidLoad_locationFails_keepsDepartureEmpty() async {
+        let sut = makeSUT(location: { throw StubError() })
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+
+        sut.viewDidLoad()
+        await recorder.waitUntilLast { if case .recent = $0 { true } else { false } }
+        for _ in 0..<20 { await Task.yield() }
+
+        #expect(sut.fields.departureText.isEmpty)
+        #expect(sut.fields.activeField == .departure)
+    }
+
+    @Test
+    func latePrefill_doesNotOverwriteTypedDeparture() async {
+        let (stream, continuation) = AsyncStream.makeStream(of: Coordinate.self)
+        let sut = makeSUT(
+            placesHandler: { _ in [makePlace("강남역")] },
+            location: {
+                for await coordinate in stream { return coordinate }
+                throw StubError()
+            }
+        )
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+
+        sut.viewDidLoad()
+        sut.keywordDidChange("강남", in: .departure)
+        await recorder.waitUntilLast { if case .places = $0 { true } else { false } }
+
+        continuation.yield(Coordinate(latitude: 37.49, longitude: 127.02))
+        continuation.finish()
+        for _ in 0..<20 { await Task.yield() }
+
+        #expect(sut.fields.departureText == "강남")
+    }
+
+    @Test
+    func keywordSearch_afterPrefill_passesNearBias() async {
+        let coordinate = Coordinate(latitude: 37.49, longitude: 127.02)
+        let log = NearLog()
+        let sut = SearchViewModel(
+            searchPlacesUseCase: NearRecordingSearchPlacesUseCase(log: log, places: [makePlace("회사")]),
+            searchLastRoutesUseCase: StubSearchLastRoutesUseCase(handler: { .available([]) }),
+            recentSearchesUseCase: StubRecentSearchesUseCase(store: RecentStore()),
+            getCurrentLocationUseCase: StubGetCurrentLocationUseCase(handler: { coordinate }),
+            debounceInterval: .zero
+        )
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+
+        sut.viewDidLoad()
+        while sut.fields.departureText.isEmpty { await Task.yield() }
+        sut.keywordDidChange("회사", in: .arrival)
+        await recorder.waitUntilLast { if case .places = $0 { true } else { false } }
+
+        #expect(await log.coordinates == [coordinate])
+    }
+
+    @Test
+    func prefillThenArrivalConfirmed_searchesRoutes() async {
+        let routes = [makeRoute(id: "r1")]
+        let sut = makeSUT(
+            placesHandler: { _ in [makePlace("회사")] },
+            routesHandler: { .available(routes) },
+            location: { Coordinate(latitude: 37.49, longitude: 127.02) }
+        )
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+
+        sut.viewDidLoad()
+        while sut.fields.departureText.isEmpty { await Task.yield() }
+        sut.keywordDidChange("회사", in: .arrival)
+        await recorder.waitUntilLast { if case .places = $0 { true } else { false } }
+        sut.didSelectListItem(at: 0)
+        await recorder.waitUntilLast { if case .routes = $0 { true } else { false } }
+
+        #expect(recorder.states.last == .routes(RouteResultsViewData(entities: routes, isExpanded: false)))
     }
 
     @Test

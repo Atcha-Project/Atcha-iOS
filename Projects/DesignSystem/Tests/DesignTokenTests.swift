@@ -86,11 +86,4 @@ struct DesignTokenTests {
         #expect(colorsMatch(DSColor.State.danger, DSPalette.red400))
         #expect(colorsMatch(DSColor.State.urgent, DSPalette.red600))
     }
-
-    @Test
-    func flatAliasesForwardToSemanticTokens() {
-        #expect(colorsMatch(DSColor.accent, DSColor.Accent.default))
-        #expect(colorsMatch(DSColor.background, DSColor.Background.base))
-        #expect(colorsMatch(DSColor.textPrimary, DSColor.Text.primary))
-    }
 }

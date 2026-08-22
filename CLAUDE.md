@@ -25,7 +25,7 @@ xcodebuild -workspace Atcha.xcworkspace -scheme AtchaV2 -configuration Debug \
 # 모듈 테스트 (Swift Testing 기반)
 xcodebuild -workspace Atcha.xcworkspace -scheme HomeFeature \
   -destination 'platform=iOS Simulator,name=iPhone 17' test
-# 단일 테스트: -only-testing:HomeFeatureTests/HomeViewModelTests/viewDidLoad_success_transitionsLoadingToLoaded
+# 단일 테스트: -only-testing:HomeFeatureTests/HomeViewModelTests/viewDidLoad_locationSuccess_showsReverseGeocodedName
 
 # 의존 그래프 확인 (graph.dot 생성, gitignore됨)
 tuist graph --format dot --no-open
@@ -47,8 +47,10 @@ xcodebuild -workspace Atcha.xcworkspace -scheme Atcha-Dev -configuration Debug \
 ## 아키텍처 (AtchaV2 — uFeatures + 클린아키텍처)
 
 ```
-AtchaV2(앱, 조합 루트) ─► HomeFeature ─► {HomeFeatureInterface, Domain, DesignSystem, CoreCoordinator, SnapKit}
-        └─► AtchaData ─► {Domain, CoreNetwork}
+AtchaV2(앱, 조합 루트: 어댑터·스플래시) ─► HomeFeature ─► {HomeFeatureInterface, SearchFeatureInterface, Domain, DesignSystem, CoreCoordinator, SnapKit}
+        ├─► SearchFeature ─► {SearchFeatureInterface, Domain, DesignSystem, CoreCoordinator, SnapKit}
+        ├─► AtchaData ─► {Domain, CoreNetwork, CoreStorage}
+        └─► CoreAuth ─► {CoreNetwork, CoreStorage}
 ```
 
 의존 규칙(위반 금지, `tuist graph`로 검증 가능):
