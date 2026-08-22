@@ -5,5 +5,6 @@ let project = Project.layer(
     name: "DesignSystem",
     bundleSuffix: "designsystem",
     isolation: .mainActor,
-    resources: ["Resources/**"]
+    resources: ["Resources/**"],
+    example: true
 )
