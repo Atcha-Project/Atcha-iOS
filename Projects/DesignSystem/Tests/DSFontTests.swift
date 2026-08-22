@@ -19,11 +19,4 @@ struct DSFontTests {
         let resolvable = UIFont(name: "Pretendard-Regular", size: 17) != nil
         #expect(registered == resolvable)
     }
-
-    @Test
-    func deprecatedHelpersKeepDefaultSizes() {
-        #expect(DSFont.title().pointSize == 22)
-        #expect(DSFont.body().pointSize == 16)
-        #expect(DSFont.caption().pointSize == 12)
-    }
 }

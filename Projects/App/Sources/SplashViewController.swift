@@ -28,17 +28,17 @@ final class SplashViewController: UIViewController {
     }
 
     private func configureUI() {
-        view.backgroundColor = DSColor.background
+        view.backgroundColor = DSColor.Background.base
 
         logoLabel.text = "앗차"
-        logoLabel.font = DSFont.title(34)
-        logoLabel.textColor = DSColor.accent
+        logoLabel.font = DSFont.pretendard(.bold, size: 34)
+        logoLabel.textColor = DSColor.Accent.default
 
         activityIndicator.hidesWhenStopped = true
 
         messageLabel.text = "네트워크 연결을 확인해주세요"
-        messageLabel.font = DSFont.body()
-        messageLabel.textColor = DSColor.textPrimary
+        messageLabel.font = DSTypography.body1.font
+        messageLabel.textColor = DSColor.Text.primary
         messageLabel.textAlignment = .center
 
         retryButton.addAction(

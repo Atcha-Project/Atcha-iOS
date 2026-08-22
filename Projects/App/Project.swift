@@ -11,6 +11,7 @@ let appTarget = Target.target(
         "CFBundleDisplayName": "앗차",
         "UILaunchScreen": [:],
         "NSAlarmKitUsageDescription": "막차 시간에 맞춰 알람을 울리기 위해 권한이 필요합니다.",
+        "NSLocationWhenInUseUsageDescription": "현재 위치를 출발지로 사용하기 위해 위치 정보 접근 권한이 필요합니다.",
         "UIApplicationSceneManifest": [
             "UIApplicationSupportsMultipleScenes": false,
             "UISceneConfigurations": [
@@ -30,6 +31,8 @@ let appTarget = Target.target(
     dependencies: [
         .project(target: "HomeFeature", path: "../Feature/Home"),
         .project(target: "HomeFeatureInterface", path: "../Feature/Home"),
+        .project(target: "SearchFeature", path: "../Feature/Search"),
+        .project(target: "SearchFeatureInterface", path: "../Feature/Search"),
         .project(target: "Domain", path: "../Domain"),
         .project(target: "AtchaData", path: "../Data"),
         .project(target: "CoreNetwork", path: "../Core/Network"),
