@@ -24,7 +24,14 @@ final class AppDIContainer {
     private let alarmScheduler: any AlarmScheduler
     // LA도 알람 세션과 수명을 같이하므로 1회 생성해 공유한다 — dismiss 기록이 세션 단위여야 한다.
     private let liveActivityPort: any LastTrainActivityPort
+    // 로컬 노티도 1회 생성 공유 — 권한 요청 훅(등록 UseCase)과 dismiss 폴백 발송(AlarmSyncService)이
+    // 같은 요청 이력을 봐야 한다. UNUserNotificationCenter를 아는 곳은 이 어댑터뿐.
+    private let localNotificationPort: any LocalNotificationPort
     let alarmSyncService: AlarmSyncService
+    #if DEV
+    /// DEV 플로팅 디버그 메뉴가 dismiss 기록 강제 토글에 접근하는 유일한 통로 (Phase 12 검수).
+    let devLiveActivityAdapter: LastTrainLiveActivityAdapter
+    #endif
 
     init() {
         #if DEV
@@ -83,13 +90,20 @@ final class AppDIContainer {
         // App 내부 변경 표출 경로(LastTrainChangeAlerting, Phase 11 훅).
         let liveActivityAdapter = LastTrainLiveActivityAdapter()
         self.liveActivityPort = liveActivityAdapter
+        #if DEV
+        self.devLiveActivityAdapter = liveActivityAdapter
+        #endif
+        let localNotificationAdapter = LocalNotificationAdapter()
+        self.localNotificationPort = localNotificationAdapter
         self.alarmSyncService = AlarmSyncService(
             refreshAlarmUseCase: DefaultRefreshAlarmUseCase(
                 repository: alarmRepository,
                 scheduler: alarmScheduler
             ),
             evaluateChangeUseCase: DefaultEvaluateAlarmChangeUseCase(),
-            liveActivity: liveActivityAdapter
+            liveActivity: liveActivityAdapter,
+            localNotification: localNotificationAdapter,
+            alarmScheduler: alarmScheduler
         )
     }
 
@@ -112,7 +126,9 @@ final class AppDIContainer {
             registerAlarmUseCase: DefaultRegisterAlarmUseCase(
                 repository: alarmRepository,
                 scheduler: alarmScheduler,
-                activityPort: liveActivityPort
+                activityPort: liveActivityPort,
+                // 알림 권한 요청의 유일한 시점(등록 성공 직후) — UseCase 내부 훅이 호출한다.
+                notificationPort: localNotificationPort
             ),
             cancelAlarmUseCase: DefaultCancelAlarmUseCase(
                 repository: alarmRepository,

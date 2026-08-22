@@ -79,6 +79,18 @@ private struct SpyActivityPort: LastTrainActivityPort {
     var isDismissedByUser: Bool { false }
 }
 
+private struct SpyLocalNotificationPort: LocalNotificationPort {
+    let log: CallLog
+
+    func requestAuthorizationIfNeeded() async {
+        await log.append("requestNotiAuth")
+    }
+
+    func post(title: String, body: String) async {
+        await log.append("postNoti:\(title)")
+    }
+}
+
 private extension LastRoute {
     static func fixture(id: String) -> LastRoute {
         LastRoute(
@@ -147,6 +159,57 @@ struct LastTrainActivityLifecycleTests {
         }
         #expect(await log.events == ["auth:false"])
         #expect(await box.sessions.isEmpty)
+    }
+
+    @Test
+    func register_success_requestsNotificationAuthOnceAfterActivityStart() async throws {
+        let log = CallLog()
+        let box = SessionBox()
+        let sut = DefaultRegisterAlarmUseCase(
+            repository: SpyAlarmRepository(log: log),
+            scheduler: SpyAlarmScheduler(log: log),
+            activityPort: SpyActivityPort(log: log, box: box),
+            notificationPort: SpyLocalNotificationPort(log: log)
+        )
+        try await sut.execute(route: .fixture(id: "new"))
+        // 순서 계약: 알림 권한 요청은 흐름의 맨 끝 — LA 시작 뒤에 정확히 1회.
+        #expect(await log.events == [
+            "auth:true", "refresh", "register:new", "replaceAlarm:new", "startLA:new", "requestNotiAuth",
+        ])
+    }
+
+    @Test
+    func register_serverFails_doesNotRequestNotificationAuth() async {
+        let log = CallLog()
+        let box = SessionBox()
+        let sut = DefaultRegisterAlarmUseCase(
+            repository: SpyAlarmRepository(log: log, registerError: StubError()),
+            scheduler: SpyAlarmScheduler(log: log),
+            activityPort: SpyActivityPort(log: log, box: box),
+            notificationPort: SpyLocalNotificationPort(log: log)
+        )
+        await #expect(throws: StubError.self) {
+            try await sut.execute(route: .fixture(id: "new"))
+        }
+        // 서버 등록 실패 경로에서는 알림 권한을 요청하지 않는다.
+        #expect(await log.events == ["auth:true", "refresh", "register:new"])
+    }
+
+    @Test
+    func register_alarmKitPermissionDenied_doesNotRequestNotificationAuth() async {
+        let log = CallLog()
+        let box = SessionBox()
+        let sut = DefaultRegisterAlarmUseCase(
+            repository: SpyAlarmRepository(log: log),
+            scheduler: SpyAlarmScheduler(log: log, authorizationGranted: false),
+            activityPort: SpyActivityPort(log: log, box: box),
+            notificationPort: SpyLocalNotificationPort(log: log)
+        )
+        await #expect(throws: AlarmError.permissionDenied) {
+            try await sut.execute(route: .fixture(id: "new"))
+        }
+        // AlarmKit 권한 거부 경로에서는 알림 권한을 요청하지 않는다(연속 팝업·스팸 금지).
+        #expect(await log.events == ["auth:false"])
     }
 
     @Test

@@ -91,6 +91,21 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         add("10분 늦춤 (3초 후)", injection: .delay(10 * 60), delay: 3)
         add("운행 종료 (3초 후)", injection: .end, delay: 3, style: .destructive)
         add("즉시 refresh", injection: nil, delay: 0)
+        // Phase 12 dismiss 폴백 검수용 — 잠금화면 스와이프 자동화가 불안정할 때 기록을 강제한다.
+        // 켠 뒤 앞당김/운행 종료를 주입하면 LA alert 대신 로컬 노티 경로를 탄다.
+        // 표시용 현재값은 UserDefaults 동기 읽기 — 어댑터가 캐시와 함께 갱신하므로 어긋나지 않는다.
+        let dismissed = UserDefaults.standard.bool(
+            forKey: LastTrainLiveActivityAdapter.devDismissedDefaultsKey
+        )
+        sheet.addAction(UIAlertAction(
+            title: "LA dismiss 기록 토글 (현재 \(dismissed ? "ON" : "OFF"))",
+            style: .default
+        ) { _ in
+            Task { @MainActor in
+                let value = await container.devLiveActivityAdapter.devToggleDismissedByUser()
+                print("⚠️ [DEV] la.dismissedByUser 강제 세팅 → \(value)")
+            }
+        })
         sheet.addAction(UIAlertAction(title: "취소", style: .cancel))
         if let popover = sheet.popoverPresentationController {
             popover.sourceView = sourceView ?? window

@@ -42,6 +42,10 @@ final class HomeViewModel {
         case alarmCancelFailed
         /// 포그라운드 인앱 채널: 막차가 당겨졌다는 판정 — VC가 토스트 + 배너 강조로 표출한다.
         case lastTrainAdvanced(minutes: Int)
+        /// 이미 못 타는 앞당김(actionable=false) — 배너는 실패 문구로 고정되고 원샷 안내만 나간다.
+        case lastTrainMissed
+        /// 운행 종료·경로 소멸(sessionEnded) — 배너·버튼 정리를 마쳤다는 원샷 안내.
+        case lastTrainServiceEnded
     }
 
     /// Set by the ViewController; always invoked on the main actor.
@@ -203,14 +207,17 @@ final class HomeViewModel {
     private func alarmSynced(_ info: AlarmInfo) {
         registeredRouteId = info.lastRouteId
         refreshAlarmButton()
-        if let departure = info.departureTime {
+        // 이미 출발한 시각으로는 카운트다운을 (재)시작하지 않는다 — "출발까지 0분" 복원은
+        // 오정보이고, 못 탐(actionable=false) 판정이 고정한 실패 배너를 후속 동기화가
+        // 되살아난 카운트다운으로 덮어쓰는 일도 이 가드가 막는다.
+        if let departure = info.departureTime, departure > now() {
             startBannerTimer(departure: departure)
         }
     }
 
     /// 포그라운드 인앱 채널: 앱이 떠 있을 때의 변경 판정은 LA alert 대신 여기서 소비한다.
-    /// 배너의 시각·긴급도 자체는 info 스트림(alarmSynced)이 이미 갱신하므로,
-    /// 이 스트림은 "당겨짐" 원샷 안내만 담당한다.
+    /// 배너의 시각·긴급도 자체는 info 스트림(alarmSynced)이 이미 갱신하므로, 이 스트림은
+    /// 원샷 안내(당겨짐·못 탐·운행 종료)와 실패·종료 시의 배너 정리만 담당한다.
     private func observeAlarmChanges() {
         changeTask?.cancel()
         changeTask = Task { [weak self] in
@@ -229,11 +236,26 @@ final class HomeViewModel {
             let minutes = max(1, Int((interval / 60).rounded()))
             onToast?(.lastTrainAdvanced(minutes: minutes))
         case .advanced(by: _, actionable: false):
-            // TODO(Phase 12): 이미 못 타는 앞당김 — 막차 놓침(세션 종료) UX로 처리한다.
-            break
+            // 이미 못 타는 앞당김 — 카운트다운을 멈추고 배너를 실패 문구로 고정한다.
+            // 알람·LA·서버 정리는 App(AlarmSyncService)·Domain 몫이고, 홈은 표출만 바꾼다.
+            // 긴급 스타일(imminent)은 유지 — 텍스트만 실패 문구로 교체된 같은 배너다.
+            bannerTask?.cancel()
+            state.banner = BannerViewData(text: "막차가 지나갔어요", urgency: .imminent)
+            onToast?(.lastTrainMissed)
         case .sessionEnded:
-            // TODO(Phase 12): 운행 종료·경로 소멸 UX.
-            break
+            // 운행 종료·경로 소멸 — 알람 세션이 사라졌으므로 배너·버튼·등록 기록을 전부
+            // 정리한다. 직전 info 이벤트(alarmSynced)가 남긴 죽은 registeredRouteId도
+            // 여기서 지워진다. LA final state 종료·알람 취소는 App/Domain 경로의 몫.
+            bannerTask?.cancel()
+            registeredRouteId = nil
+            var newState = state
+            newState.banner = nil
+            newState.alarmButton = Self.alarmButtonMode(
+                selectedRouteId: selectedRoute?.id,
+                registeredRouteId: nil
+            )
+            state = newState
+            onToast?(.lastTrainServiceEnded)
         case .delayed, .unchanged:
             // 정책: 늦춰짐은 조용한 업데이트 — 배너는 info 스트림이 갱신하고 토스트는 없다.
             break
