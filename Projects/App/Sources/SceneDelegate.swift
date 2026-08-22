@@ -9,11 +9,14 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         willConnectTo session: UISceneSession,
         options connectionOptions: UIScene.ConnectionOptions
     ) {
-        guard let windowScene = scene as? UIWindowScene else { return }
+        guard let windowScene = scene as? UIWindowScene,
+              // 조합 루트는 AppDelegate 소유 — 푸시 경로(scene 없음)와 공유한다.
+              let container = (UIApplication.shared.delegate as? AppDelegate)?.container
+        else { return }
         let navigationController = UINavigationController()
         let coordinator = AppCoordinator(
             navigationController: navigationController,
-            container: AppDIContainer()
+            container: container
         )
 
         let window = UIWindow(windowScene: windowScene)

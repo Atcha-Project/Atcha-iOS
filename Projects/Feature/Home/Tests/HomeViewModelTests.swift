@@ -25,9 +25,9 @@ private struct StubCancelAlarmUseCase: CancelAlarmUseCase {
     func execute(lastRouteId: String) async throws { try await handler(lastRouteId) }
 }
 
-private struct StubRefreshAlarmUseCase: RefreshAlarmUseCase {
-    let handler: @Sendable () async throws -> AlarmInfo
-    func execute() async throws -> AlarmInfo { try await handler() }
+private struct StubObserveAlarmUseCase: ObserveAlarmUseCase {
+    let handler: @Sendable () -> AsyncStream<AlarmInfo>
+    func execute() -> AsyncStream<AlarmInfo> { handler() }
 }
 
 /// 테스트 도중 `now()`를 전진시키기 위한 가변 시계.
@@ -110,7 +110,9 @@ private func makeSUT(
     },
     register: @escaping @Sendable (LastRoute) async throws -> Void = { _ in },
     cancel: @escaping @Sendable (String) async throws -> Void = { _ in },
-    refresh: @escaping @Sendable () async throws -> AlarmInfo = { throw StubError() },
+    alarmUpdates: @escaping @Sendable () -> AsyncStream<AlarmInfo> = {
+        AsyncStream { $0.finish() }
+    },
     now: @escaping @Sendable () -> Date = { fixedNow },
     bannerTickInterval: Duration = .seconds(60)
 ) -> HomeViewModel {
@@ -119,7 +121,7 @@ private func makeSUT(
         reverseGeocodeUseCase: StubReverseGeocodeUseCase(handler: geocode),
         registerAlarmUseCase: StubRegisterAlarmUseCase(handler: register),
         cancelAlarmUseCase: StubCancelAlarmUseCase(handler: cancel),
-        refreshAlarmUseCase: StubRefreshAlarmUseCase(handler: refresh),
+        observeAlarmUseCase: StubObserveAlarmUseCase(handler: alarmUpdates),
         now: now,
         bannerTickInterval: bannerTickInterval
     )
@@ -327,16 +329,19 @@ struct HomeViewModelTests {
     }
 
     @Test
-    func foregroundRefresh_restoresBannerAndCancelButtonWithoutCard() async {
-        // 앱 재실행 복원 시나리오: 카드 없이 서버 알람만 있는 상태.
+    func alarmSync_restoresBannerAndCancelButtonWithoutCard() async {
+        // 앱 재실행 복원 시나리오: 카드 없이 서버 알람만 있는 상태 — 앱 시작 동기화가
+        // 스트림으로 도착한다.
         let departure = fixedNow.addingTimeInterval(30 * 60)
-        let sut = makeSUT(refresh: {
-            AlarmInfo(lastRouteId: "r1", departureTime: departure, updatedAt: nil, isReal: true)
-        })
+        let (stream, continuation) = AsyncStream<AlarmInfo>.makeStream()
+        let sut = makeSUT(alarmUpdates: { stream })
         let recorder = StateRecorder()
         recorder.attach(to: sut)
 
-        sut.appWillEnterForeground()
+        sut.viewDidLoad()
+        continuation.yield(
+            AlarmInfo(lastRouteId: "r1", departureTime: departure, updatedAt: nil, isReal: true)
+        )
         await recorder.waitUntilLast { $0.banner != nil }
 
         #expect(sut.state.banner == .init(text: "막차 출발까지 30분", isUrgent: false))
@@ -345,37 +350,39 @@ struct HomeViewModelTests {
     }
 
     @Test
-    func foregroundRefresh_updatesBannerToNewDeparture() async {
+    func alarmSync_updatesBannerToNewDeparture() async {
         let route = makeRoute(id: "r1", departure: fixedNow.addingTimeInterval(42 * 60))
-        // 서버가 15분 당긴 시각을 돌려준다.
-        let sut = makeSUT(refresh: {
+        let (stream, continuation) = AsyncStream<AlarmInfo>.makeStream()
+        let sut = makeSUT(alarmUpdates: { stream })
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+        sut.viewDidLoad()
+        sut.routeSelected(route)
+        sut.registerAlarmTapped()
+        await recorder.waitUntilLast { $0.banner?.text == "막차 출발까지 42분" }
+
+        // 서버가 15분 당긴 시각을 돌려준다 (포그라운드 복귀·푸시 동기화 공용 경로).
+        continuation.yield(
             AlarmInfo(
                 lastRouteId: "r1",
                 departureTime: fixedNow.addingTimeInterval(27 * 60),
                 updatedAt: nil,
                 isReal: true
             )
-        })
-        let recorder = StateRecorder()
-        recorder.attach(to: sut)
-        sut.routeSelected(route)
-        sut.registerAlarmTapped()
-        await recorder.waitUntilLast { $0.banner?.text == "막차 출발까지 42분" }
-
-        sut.appWillEnterForeground()
+        )
         await recorder.waitUntilLast { $0.banner?.text == "막차 출발까지 27분" }
 
         #expect(sut.state.alarmButton == .cancel)
     }
 
     @Test
-    func foregroundRefresh_failure_keepsState() async {
-        let sut = makeSUT(refresh: { throw StubError() })
+    func alarmSync_noEvent_keepsState() async {
+        // 동기화 실패는 스트림에 흐르지 않는다 — 이벤트 없음 = 상태 유지.
+        let sut = makeSUT(alarmUpdates: { AsyncStream { $0.finish() } })
         let recorder = StateRecorder()
         recorder.attach(to: sut)
 
-        sut.appWillEnterForeground()
-        // 실패는 상태를 건드리지 않는다 — 드레인만 하고 확인한다.
+        sut.viewDidLoad()
         for _ in 0..<20 { await Task.yield() }
 
         #expect(sut.state.banner == nil)

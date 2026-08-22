@@ -12,6 +12,8 @@ let appTarget = Target.target(
         "UILaunchScreen": [:],
         "NSAlarmKitUsageDescription": "막차 시간에 맞춰 알람을 울리기 위해 권한이 필요합니다.",
         "NSLocationWhenInUseUsageDescription": "현재 위치를 출발지로 사용하기 위해 위치 정보 접근 권한이 필요합니다.",
+        // 사일런트 푸시(content-available=1) 수신용 — 사용자 알림 권한과 무관.
+        "UIBackgroundModes": ["remote-notification"],
         "UIApplicationSceneManifest": [
             "UIApplicationSupportsMultipleScenes": false,
             "UISceneConfigurations": [
@@ -28,6 +30,11 @@ let appTarget = Target.target(
     ]),
     sources: ["Sources/**"],
     resources: ["Resources/**"],
+    // APNs 등록에 필수 (없으면 didFailToRegister: "aps-environment 없음").
+    // 배포 서명 시 프로비저닝이 production으로 치환한다.
+    entitlements: .dictionary([
+        "aps-environment": "development",
+    ]),
     dependencies: [
         .project(target: "HomeFeature", path: "../Feature/Home"),
         .project(target: "HomeFeatureInterface", path: "../Feature/Home"),

@@ -54,16 +54,16 @@ final class HomeViewModel {
     private let reverseGeocodeUseCase: any ReverseGeocodeUseCase
     private let registerAlarmUseCase: any RegisterAlarmUseCase
     private let cancelAlarmUseCase: any CancelAlarmUseCase
-    private let refreshAlarmUseCase: any RefreshAlarmUseCase
+    private let observeAlarmUseCase: any ObserveAlarmUseCase
     private let now: @Sendable () -> Date
     private let bannerTickInterval: Duration
 
     private var selectedRoute: LastRoute?
-    /// 서버에 알람이 등록된 경로 id — 해제 버튼·포그라운드 복원의 기준.
+    /// 서버에 알람이 등록된 경로 id — 해제 버튼·동기화 복원의 기준.
     private var registeredRouteId: String?
     private var locationTask: Task<Void, Never>?
     private var alarmTask: Task<Void, Never>?
-    private var refreshTask: Task<Void, Never>?
+    private var observeTask: Task<Void, Never>?
     private var bannerTask: Task<Void, Never>?
 
     init(
@@ -71,7 +71,7 @@ final class HomeViewModel {
         reverseGeocodeUseCase: any ReverseGeocodeUseCase,
         registerAlarmUseCase: any RegisterAlarmUseCase,
         cancelAlarmUseCase: any CancelAlarmUseCase,
-        refreshAlarmUseCase: any RefreshAlarmUseCase,
+        observeAlarmUseCase: any ObserveAlarmUseCase,
         now: @escaping @Sendable () -> Date = { Date() },
         bannerTickInterval: Duration = .seconds(60)
     ) {
@@ -79,7 +79,7 @@ final class HomeViewModel {
         self.reverseGeocodeUseCase = reverseGeocodeUseCase
         self.registerAlarmUseCase = registerAlarmUseCase
         self.cancelAlarmUseCase = cancelAlarmUseCase
-        self.refreshAlarmUseCase = refreshAlarmUseCase
+        self.observeAlarmUseCase = observeAlarmUseCase
         self.now = now
         self.bannerTickInterval = bannerTickInterval
     }
@@ -87,7 +87,7 @@ final class HomeViewModel {
     deinit {
         locationTask?.cancel()
         alarmTask?.cancel()
-        refreshTask?.cancel()
+        observeTask?.cancel()
         bannerTask?.cancel()
     }
 
@@ -95,6 +95,7 @@ final class HomeViewModel {
 
     func viewDidLoad() {
         loadCurrentLocation()
+        observeAlarmUpdates()
     }
 
     /// 출발지/도착지 어느 필드를 탭해도 동일하게 검색 플로우로 진입한다.
@@ -171,31 +172,31 @@ final class HomeViewModel {
         }
     }
 
-    /// 포그라운드 복귀(최초 진입 포함) 시 서버 알람을 재조회한다. 시각 변경 재스케줄은
-    /// RefreshAlarmUseCase 내부 정책이고, 여기서는 배너·버튼 상태만 갱신한다.
-    /// Phase 8에서 앱 시작·푸시 수신 경로와 함께 AlarmSyncService로 일원화될 예정이라
-    /// App이 아닌 ViewModel에 최소 구현으로 둔다.
-    func appWillEnterForeground() {
-        refreshTask?.cancel()
-        refreshTask = Task { [weak self] in
-            guard let useCase = self?.refreshAlarmUseCase else { return }
-            do {
-                let info = try await useCase.execute()
+    // MARK: - 내부 전이
+
+    /// 서버 알람 동기화(재조회·재스케줄)는 App의 AlarmSyncService가 앱 시작·포그라운드
+    /// 복귀·푸시 수신 3경로를 일원화해 수행한다. 여기서는 성공 결과 스트림만 구독해
+    /// 배너·버튼 상태를 갱신한다. 실패는 스트림에 흐르지 않는다 — 상태 유지.
+    /// TODO: [미확정] 서버의 "등록된 알람 없음" 표현이 확정되면 그 경우에만
+    ///       배너·버튼을 정리하는 이벤트를 추가한다.
+    private func observeAlarmUpdates() {
+        observeTask?.cancel()
+        observeTask = Task { [weak self] in
+            guard let stream = self?.observeAlarmUseCase.execute() else { return }
+            for await info in stream {
                 guard !Task.isCancelled else { return }
-                self?.registeredRouteId = info.lastRouteId
-                self?.refreshAlarmButton()
-                if let departure = info.departureTime {
-                    self?.startBannerTimer(departure: departure)
-                }
-            } catch {
-                // TODO: [미확정] 서버의 "등록된 알람 없음" 표현이 확정되면 그 경우에만
-                //       배너·버튼을 정리한다. 지금은 네트워크 오류와 구분할 수 없어
-                //       상태를 유지한다 (Phase 8 하드닝에서 세분화).
+                self?.alarmSynced(info)
             }
         }
     }
 
-    // MARK: - 내부 전이
+    private func alarmSynced(_ info: AlarmInfo) {
+        registeredRouteId = info.lastRouteId
+        refreshAlarmButton()
+        if let departure = info.departureTime {
+            startBannerTimer(departure: departure)
+        }
+    }
 
     private func loadCurrentLocation() {
         locationTask?.cancel()

@@ -16,6 +16,14 @@ final class AppDIContainer {
     private let networkClient: any NetworkClient
     let authSessionManager: AuthSessionManager
 
+    // 알람 스택은 1회 생성해 공유한다 — AlarmSyncService(갱신 일원화)와
+    // 홈의 등록/해제 UseCase가 같은 리포지토리·스케줄러를 봐야 한다.
+    private let alarmRepository: any AlarmRepository
+    private let placeRepository: any PlaceRepository
+    private let lastRouteRepository: any LastRouteRepository
+    private let alarmScheduler: any AlarmScheduler
+    let alarmSyncService: AlarmSyncService
+
     init() {
         #if DEV
         // 검수용 임시 우회: 실서버(미확정 #1·#2)가 죽어 있어도 기본 60초 타임아웃 대기로
@@ -42,37 +50,46 @@ final class AppDIContainer {
             issuer: UnconfiguredAnonymousSessionIssuer()
         )
         self.authSessionManager = sessionManager
-        self.networkClient = AuthenticatedNetworkClient(
+        let networkClient = AuthenticatedNetworkClient(
             base: baseClient,
             sessionManager: sessionManager
+        )
+        self.networkClient = networkClient
+
+        #if DEV
+        // 검수용 임시 우회 — 실서버(미확정 #1·#2) 부재 시에만 데모 데이터로 폴백.
+        // 실서버 확정 시 이 블록과 DevDemoFallbacks.swift를 제거한다.
+        self.placeRepository = DevDemoFallbackPlaceRepository(
+            base: PlaceRepositoryImpl(networkClient: networkClient)
+        )
+        self.lastRouteRepository = DevDemoFallbackLastRouteRepository(
+            base: LastRouteRepositoryImpl(networkClient: networkClient)
+        )
+        self.alarmRepository = DevDemoTolerantAlarmRepository(
+            base: AlarmRepositoryImpl(networkClient: networkClient)
+        )
+        #else
+        self.placeRepository = PlaceRepositoryImpl(networkClient: networkClient)
+        self.lastRouteRepository = LastRouteRepositoryImpl(networkClient: networkClient)
+        self.alarmRepository = AlarmRepositoryImpl(networkClient: networkClient)
+        #endif
+
+        // 디바이스 포트 어댑터 — CoreLocation/AlarmKit을 아는 곳은 App의 어댑터뿐.
+        let alarmScheduler = CoreAlarmSchedulerAdapter()
+        self.alarmScheduler = alarmScheduler
+        self.alarmSyncService = AlarmSyncService(
+            refreshAlarmUseCase: DefaultRefreshAlarmUseCase(
+                repository: alarmRepository,
+                scheduler: alarmScheduler
+            )
         )
     }
 
     func makeHomeDIContainer() -> any HomeCoordinatorBuildable {
-        #if DEV
-        // 검수용 임시 우회 — 실서버(미확정 #1·#2) 부재 시에만 데모 데이터로 폴백.
-        // 실서버 확정 시 이 블록과 DevDemoFallbacks.swift를 제거한다.
-        let placeRepository: any PlaceRepository = DevDemoFallbackPlaceRepository(
-            base: PlaceRepositoryImpl(networkClient: networkClient)
-        )
-        let lastRouteRepository: any LastRouteRepository = DevDemoFallbackLastRouteRepository(
-            base: LastRouteRepositoryImpl(networkClient: networkClient)
-        )
-        let alarmRepository: any AlarmRepository = DevDemoTolerantAlarmRepository(
-            base: AlarmRepositoryImpl(networkClient: networkClient)
-        )
-        #else
-        let placeRepository: any PlaceRepository = PlaceRepositoryImpl(networkClient: networkClient)
-        let lastRouteRepository: any LastRouteRepository = LastRouteRepositoryImpl(networkClient: networkClient)
-        let alarmRepository: any AlarmRepository = AlarmRepositoryImpl(networkClient: networkClient)
-        #endif
         let recentSearchRepository = RecentSearchRepositoryImpl(store: UserDefaultsKeyValueStore())
-
-        // 디바이스 포트 어댑터 — CoreLocation/AlarmKit을 아는 곳은 App의 어댑터뿐.
         let locationService = CoreLocationServiceAdapter()
         let getCurrentLocation: any GetCurrentLocationUseCase =
             DefaultGetCurrentLocationUseCase(locationService: locationService)
-        let alarmScheduler = CoreAlarmSchedulerAdapter()
 
         let searchContainer = SearchDIContainer(
             searchPlacesUseCase: DefaultSearchPlacesUseCase(repository: placeRepository),
@@ -92,10 +109,7 @@ final class AppDIContainer {
                 repository: alarmRepository,
                 scheduler: alarmScheduler
             ),
-            refreshAlarmUseCase: DefaultRefreshAlarmUseCase(
-                repository: alarmRepository,
-                scheduler: alarmScheduler
-            ),
+            observeAlarmUseCase: DefaultObserveAlarmUseCase(events: alarmSyncService),
             searchCoordinatorBuildable: searchContainer
         )
     }
