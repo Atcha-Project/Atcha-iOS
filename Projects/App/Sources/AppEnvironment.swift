@@ -18,12 +18,14 @@ enum AppEnvironment {
         #endif
     }
 
-    // Placeholder URLs — replace with the real per-environment hosts.
+    // Hosts recovered from the legacy trust-evaluator registrations
+    // (user-approved 2026-08-22). Stage shares the dev host until a dedicated
+    // one exists.
     var apiBaseURL: URL {
         switch self {
-        case .dev: URL(string: "https://dev-api.atcha.example")!
-        case .stage: URL(string: "https://stage-api.atcha.example")!
-        case .live: URL(string: "https://api.atcha.example")!
+        case .dev: URL(string: "https://atcha.p-e.kr")!
+        case .stage: URL(string: "https://atcha.p-e.kr")!
+        case .live: URL(string: "https://atcha.online")!
         }
     }
 }

@@ -33,6 +33,8 @@ let appTarget = Target.target(
         .project(target: "Domain", path: "../Domain"),
         .project(target: "AtchaData", path: "../Data"),
         .project(target: "CoreNetwork", path: "../Core/Network"),
+        .project(target: "CoreStorage", path: "../Core/Storage"),
+        .project(target: "CoreAuth", path: "../Core/Auth"),
         .project(target: "CoreCoordinator", path: "../Core/Coordinator"),
         .project(target: "DesignSystem", path: "../DesignSystem"),
         .external(name: "FirebaseCore"),
