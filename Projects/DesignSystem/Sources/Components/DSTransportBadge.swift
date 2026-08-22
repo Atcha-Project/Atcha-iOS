@@ -68,6 +68,11 @@ public final class DSTransportBadge: UIView {
     public init(kind: Kind) {
         super.init(frame: .zero)
 
+        // Badges must keep their intrinsic width even inside fill-distribution
+        // stacks (a stretched line badge reads as a different line).
+        setContentHuggingPriority(.required, for: .horizontal)
+        setContentCompressionResistancePriority(.required, for: .horizontal)
+
         label.font = DSTypography.caption2.font
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false

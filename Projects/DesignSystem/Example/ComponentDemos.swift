@@ -156,6 +156,7 @@ final class CardsDemoViewController: GalleryScreenViewController {
         badges.axis = .horizontal
         badges.spacing = DSSpacing.xs
         badges.alignment = .center
+        badges.addArrangedSubview(UIView())
         contentStack.addArrangedSubview(badges)
     }
 }
