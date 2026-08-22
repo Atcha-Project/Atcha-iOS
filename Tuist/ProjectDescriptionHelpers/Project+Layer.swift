@@ -2,13 +2,17 @@ import ProjectDescription
 
 public extension Project {
     /// Horizontal / Clean Architecture layer module: framework + unit tests.
+    /// `example: true` adds a {name}Example app target (gallery/demo) —
+    /// mirrors the feature Example pattern for layers that benefit from
+    /// standalone visual review (e.g. DesignSystem).
     static func layer(
         name: String,
         bundleSuffix: String? = nil,
         isolation: AtchaIsolation = .nonisolated,
         dependencies: [TargetDependency] = [],
         testDependencies: [TargetDependency] = [],
-        resources: ResourceFileElements? = nil
+        resources: ResourceFileElements? = nil,
+        example: Bool = false
     ) -> Project {
         let suffix = bundleSuffix ?? name.lowercased()
 
@@ -37,6 +41,39 @@ public extension Project {
             settings: .atchaV2(isolation: isolation)
         )
 
+        var targets = [framework, tests]
+
+        if example {
+            let sceneManifest: Plist.Value = [
+                "UIApplicationSupportsMultipleScenes": false,
+                "UISceneConfigurations": [
+                    "UIWindowSceneSessionRoleApplication": [
+                        [
+                            "UISceneConfigurationName": "Default",
+                            "UISceneDelegateClassName": "$(PRODUCT_MODULE_NAME).SceneDelegate",
+                        ],
+                    ],
+                ],
+            ]
+
+            targets.append(
+                Target.target(
+                    name: "\(name)Example",
+                    destinations: Atcha.destinations,
+                    product: .app,
+                    bundleId: "\(Atcha.v2BundleID).\(suffix).example",
+                    deploymentTargets: Atcha.v2Deployment,
+                    infoPlist: .extendingDefault(with: [
+                        "UILaunchScreen": [:],
+                        "UIApplicationSceneManifest": sceneManifest,
+                    ]),
+                    sources: ["Example/**"],
+                    dependencies: [.target(name: name)],
+                    settings: .atchaV2(isolation: .mainActor)
+                )
+            )
+        }
+
         return Project(
             name: name,
             options: .options(
@@ -44,7 +81,7 @@ public extension Project {
                 developmentRegion: Atcha.developmentRegion
             ),
             settings: .atchaV2(isolation: isolation),
-            targets: [framework, tests]
+            targets: targets
         )
     }
 }
