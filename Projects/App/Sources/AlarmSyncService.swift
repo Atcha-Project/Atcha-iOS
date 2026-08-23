@@ -12,6 +12,12 @@ import os
 /// ① LA 채널(당겨짐 alert / 늦춰짐 조용한 갱신)과 ② 인앱 채널(`AlarmChangeEvents` →
 /// 홈 배너 강조·토스트)을 덧붙인다. 알람 재스케줄은 `RefreshAlarmUseCase.execute()` 안에서
 /// 이미 끝난 뒤라(반환 = 재스케줄 완료) LA·인앱 표출 실패가 알람을 막을 구조 자체가 없다.
+///
+/// Phase 12 폴백·종료: ③ 유저가 LA를 스와이프로 지운 기록(`isDismissedByUser`)이 있으면
+/// 백그라운드 alert 채널을 로컬 노티(같은 문구)로 갈아탄다 — 피기백 시점엔 앱이 깨어 있으므로
+/// 서버 무관여로 가능하고, push-to-start 재생성은 하지 않는다(지운 의사 존중).
+/// ④ advanced(actionable: false)는 LA를 missed 상태로, sessionEnded는 serviceEnded 최종
+/// 상태로 내리고 로컬 알람을 취소한다. 배너 정리는 changes 스트림을 받은 홈의 몫.
 // Sendable 프로토콜(AlarmSyncEvents 등) 채택이 기본 MainActor 격리를 nonisolated로
 // 추론시키므로 명시한다 — 상태(subscribers 등)는 전부 메인 액터에서만 만진다.
 @MainActor
@@ -20,6 +26,11 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
     private let evaluateChangeUseCase: any EvaluateAlarmChangeUseCase
     /// LA 표출 경로 — non-throwing 계약(어댑터가 실패 흡수)이라 이 훅의 어떤 실패도 무해하다.
     private let liveActivity: any LastTrainChangeAlerting
+    /// dismiss 폴백 채널(Phase 12) — 유저가 LA를 지운 뒤의 변경 alert를 로컬 노티로 대신한다.
+    /// 발송도 non-throwing(권한 없으면 조용히 no-op) — 여기서 권한을 요청하는 일은 절대 없다.
+    private let localNotification: any LocalNotificationPort
+    /// sessionEnded 시 로컬 알람 취소용(Phase 12) — 등록/갱신 UseCase와 같은 스케줄러를 공유한다.
+    private let alarmScheduler: any AlarmScheduler
     private static let logger = Logger(subsystem: "com.atcha.iOS.v2", category: "AlarmSync")
 
     /// "⚠ 당겨짐" 배지 유지 시간 — 정책: 표출 시점 + 10분.
@@ -39,11 +50,15 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
     init(
         refreshAlarmUseCase: any RefreshAlarmUseCase,
         evaluateChangeUseCase: any EvaluateAlarmChangeUseCase,
-        liveActivity: any LastTrainChangeAlerting
+        liveActivity: any LastTrainChangeAlerting,
+        localNotification: any LocalNotificationPort,
+        alarmScheduler: any AlarmScheduler
     ) {
         self.refreshAlarmUseCase = refreshAlarmUseCase
         self.evaluateChangeUseCase = evaluateChangeUseCase
         self.liveActivity = liveActivity
+        self.localNotification = localNotification
+        self.alarmScheduler = alarmScheduler
     }
 
     /// 인증 부트스트랩 완료 후 1회 호출: 즉시 동기화(앱 시작 경로) + 포그라운드
@@ -99,7 +114,7 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
         return info
     }
 
-    // MARK: - Phase 11 변경 표출 (판정 → LA/인앱 채널)
+    // MARK: - Phase 11·12 변경 표출 (판정 → LA/로컬 노티/인앱 채널)
 
     /// 판정 → 채널 분기. LA 호출은 전부 실패 무해(포트가 non-throwing) — 알람에 영향 없음.
     private func propagateChange(previous: AlarmInfo?, latest: AlarmInfo) async {
@@ -127,13 +142,15 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
             await presentAdvanced(previous: previous, latest: latest, delta: delta, now: now)
             yieldChange(verdict)
 
-        case .advanced(by: _, actionable: false), .sessionEnded:
-            // TODO(Phase 12): 못 탐/운행 종료 표출(missed·serviceEnded 전환, 로컬 노티 폴백)은
-            //                 다음 페이즈 산출물 — 그 전까지 조용한 LA 갱신만 한다
-            //                 (sessionEnded는 departureTime이 없어 사실상 no-op).
-            if let state = activityState(for: latest, now: now) {
-                await liveActivity.update(state: state, alert: nil)
-            }
+        case .advanced(by: _, actionable: false):
+            // 못 타게 됨 — LA를 실패 상태(missed)로 전환하고 '막차가 지나갔어요'를 알린다.
+            await presentMissed(latest: latest, now: now)
+            yieldChange(verdict)
+
+        case .sessionEnded:
+            // 운행 종료·경로 소멸 — LA 최종 상태 종료 + 로컬 알람 취소.
+            // 배너 정리는 changes yield를 받은 홈의 몫.
+            await presentSessionEnded(previous: previous, now: now)
             yieldChange(verdict)
         }
     }
@@ -152,17 +169,24 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
         guard alarmTime > now else {
             // 새 알람 시각이 이미 과거(출발은 미래) — 마지노선 침범. 원래 울렸어야 할 알람
             // 시점이 지나 있으므로 조용한 채널로는 늦다: 포그라운드 여부와 무관하게 즉시 최후통첩.
-            let state = LastTrainActivityState(
-                departureTime: departure,
-                alarmTime: alarmTime,
-                urgency: .imminent,
-                changeBadgeExpiry: badgeExpiry,
-                phase: .active
-            )
-            await liveActivity.update(state: state, alert: (
+            let alert = (
                 title: LastTrainChangeMessages.ultimatumTitle,
                 body: LastTrainChangeMessages.ultimatumBody(latestDeparture: departure)
-            ))
+            )
+            if await liveActivity.isDismissedByUser {
+                // dismiss 폴백(Phase 12) — LA는 유저가 지웠다: alert를 실을 update는 no-op이고
+                // push-to-start 재생성은 하지 않는다(어차피 세션도 없고, 지운 의사 존중이 정책).
+                // 피기백 시점엔 앱이 깨어 있으므로 서버 무관여 로컬 노티로 같은 문구를 보낸다.
+                await localNotification.post(title: alert.title, body: alert.body)
+            } else {
+                await liveActivity.update(state: LastTrainActivityState(
+                    departureTime: departure,
+                    alarmTime: alarmTime,
+                    urgency: .imminent,
+                    changeBadgeExpiry: badgeExpiry,
+                    phase: .active
+                ), alert: alert)
+            }
             return
         }
 
@@ -177,16 +201,77 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
             // 포그라운드 — LA alert 생략(조용한 업데이트 + 배지). 사용자 주의는 인앱 채널
             // (changes 스트림 → 홈 배너 강조 + 토스트)이 맡는다. 이중 알림 방지.
             await liveActivity.update(state: state, alert: nil)
-        } else {
-            // 백그라운드 — 잠금화면 alert + 행동 중심 문구 + "당겨짐" 배지(만료 now+10분).
-            let minutesEarlier = max(1, Int((delta / 60).rounded(.up)))
-            // advanced(by:)의 delta = 이전 출발 − 새 출발. 이전 값이 비어 있으면 새 시각 + delta로 복원.
-            let previousDeparture = previous?.departureTime ?? departure.addingTimeInterval(delta)
-            await liveActivity.update(state: state, alert: (
-                title: LastTrainChangeMessages.advancedAlertTitle(minutesEarlier: minutesEarlier),
-                body: LastTrainChangeMessages.advancedAlertBody(from: previousDeparture, to: departure)
-            ))
+            return
         }
+
+        // 백그라운드 — 행동 중심 문구를 잠금화면에 싣는다.
+        let minutesEarlier = max(1, Int((delta / 60).rounded(.up)))
+        // advanced(by:)의 delta = 이전 출발 − 새 출발. 이전 값이 비어 있으면 새 시각 + delta로 복원.
+        let previousDeparture = previous?.departureTime ?? departure.addingTimeInterval(delta)
+        let alert = (
+            title: LastTrainChangeMessages.advancedAlertTitle(minutesEarlier: minutesEarlier),
+            body: LastTrainChangeMessages.advancedAlertBody(from: previousDeparture, to: departure)
+        )
+        if await liveActivity.isDismissedByUser {
+            // dismiss 폴백(Phase 12) — LA alert 대신 같은 행동 중심 문구의 로컬 노티.
+            // push-to-start 재생성 금지(정책) — 지워진 LA를 되살리지 않는다.
+            await localNotification.post(title: alert.title, body: alert.body)
+        } else {
+            // 잠금화면 alert + "당겨짐" 배지(만료 now+10분).
+            await liveActivity.update(state: state, alert: alert)
+        }
+    }
+
+    /// 못 탐(advanced, actionable: false) 표출 — LA를 실패 상태(missed)로 전환한다.
+    /// 알람은 손대지 않는다: 과거 fireDate 재스케줄은 RefreshAlarmUseCase가 이미 걸렀고,
+    /// 이미 울렸거나 임박한 알람을 지우는 것은 인지 기회만 줄인다.
+    private func presentMissed(latest: AlarmInfo, now: Date) async {
+        // actionable=false 판정은 departureTime이 있을 때만 나온다(없으면 sessionEnded).
+        guard let departure = latest.departureTime else { return }
+        let state = LastTrainActivityState(
+            departureTime: departure,
+            alarmTime: AlarmTiming.alarmFireDate(departureTime: departure),
+            urgency: .imminent,
+            changeBadgeExpiry: nil,
+            phase: .missed
+        )
+        // TODO(#9 임시 — 문구만): 대안 제시 데이터(심야버스·첫차 등) 확보 시 본문에 대안 안내를 싣는다.
+        let alert = (
+            title: LastTrainChangeMessages.missedTitle,
+            body: LastTrainChangeMessages.missedBody(latestDeparture: departure)
+        )
+        if UIApplication.shared.applicationState == .active {
+            // 포그라운드 — 상태 전환만 조용히. 사용자 주의는 인앱 채널이 맡는다(이중 알림 방지).
+            await liveActivity.update(state: state, alert: nil)
+        } else if await liveActivity.isDismissedByUser {
+            // dismiss 폴백(Phase 12) — push-to-start 재생성 금지, 같은 문구의 로컬 노티로 대신한다.
+            await localNotification.post(title: alert.title, body: alert.body)
+        } else {
+            await liveActivity.update(state: state, alert: alert)
+        }
+    }
+
+    /// 운행 종료·경로 소멸(sessionEnded) 표출 — LA를 최종 상태(serviceEnded)로 내리고
+    /// 로컬 알람을 취소한다. 서버 측 알람 취소는 부르지 않는다 — 경로 소멸은 서버 재계산
+    /// 결과 그 자체라 이미 반영돼 있다.
+    /// TODO: [미확정] 서버가 종료 후에도 세션을 남겨 두는 스펙으로 확정되면 취소 API 연동을 재검토한다.
+    private func presentSessionEnded(previous: AlarmInfo?, now: Date) async {
+        // 더는 울리면 안 되는 것이 정책의 핵심 — 표출(LA 종료)보다 알람 취소를 먼저 한다.
+        await alarmScheduler.cancelAlarm()
+
+        // sessionEnded 응답에는 departureTime이 없다 — 종료 시각 정보용으로 직전 스냅샷
+        // (previous = 갱신 전 lastInfo)의 마지막 출발 시각을 쓰고, 그것도 없으면 now.
+        let departure = previous?.departureTime ?? now
+        // 유저가 이미 LA를 지웠으면 end는 no-op — 종료는 행동을 요구하지 않으므로
+        // 로컬 노티 폴백도 없다(배너 정리는 changes 스트림을 받은 홈이 한다).
+        await liveActivity.end(final: LastTrainActivityState(
+            departureTime: departure,
+            alarmTime: AlarmTiming.alarmFireDate(departureTime: departure),
+            // 위젯은 serviceEnded phase 키로 그린다 — urgency는 종료 화면에선 의미 없는 방어값.
+            urgency: .imminent,
+            changeBadgeExpiry: nil,
+            phase: .serviceEnded
+        ))
     }
 
     /// 갱신된 AlarmInfo → LA 상태. departureTime이 없으면(세션 종료 등) 만들 수 없다.

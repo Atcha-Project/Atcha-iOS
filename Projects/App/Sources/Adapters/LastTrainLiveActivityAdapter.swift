@@ -11,6 +11,11 @@ import Foundation
 nonisolated protocol LastTrainChangeAlerting: Sendable {
     /// alert가 nil이면 조용한 상태 갱신, 값이 있으면 해당 문구의 AlertConfiguration으로 갱신한다.
     func update(state: LastTrainActivityState, alert: (title: String, body: String)?) async
+    /// Phase 12 dismiss 폴백 트리거 — 유저가 잠금화면에서 LA를 스와이프로 지운 기록.
+    /// true면 LA alert는 도달 불가(update가 no-op)라 호출자가 로컬 노티로 갈아탄다.
+    var isDismissedByUser: Bool { get async }
+    /// Phase 12 종료 표출 — missed/serviceEnded 최종 상태로 LA를 내린다(Domain 포트와 동일 구현).
+    func end(final state: LastTrainActivityState) async
 }
 
 /// ActivityKit → Domain `LastTrainActivityPort` 어댑터. ActivityKit을 import하는 곳은 App에서 이 파일뿐.
@@ -27,6 +32,10 @@ actor LastTrainLiveActivityAdapter: LastTrainActivityPort, LastTrainChangeAlerti
     private let userDefaults: UserDefaults
 
     /// 단일 세션 — 단일 알람 정책과 동일. 새 start가 이전 activity를 먼저 내린다.
+    ///
+    /// 알려진 한계(LA 활성 8시간 제한): 출발이 8시간 이상 남은 세션은 시스템이 LA를 먼저
+    /// 종료할 수 있다(다이나믹 아일랜드는 더 짧음). 막차 추적은 저녁~심야 용도라 통상 무해하고,
+    /// 안전망(로컬 알람)은 LA와 무관하게 유지된다 — 재시작 경로는 두지 않는다(정책: 저빈도, YAGNI).
     private var activity: Activity<LastTrainActivityAttributes>?
     /// `activityStateUpdates` 관찰 태스크 — 프로그램적 end·새 start·deinit에서 cancel.
     private var stateObservationTask: Task<Void, Never>?
@@ -161,6 +170,22 @@ actor LastTrainLiveActivityAdapter: LastTrainActivityPort, LastTrainChangeAlerti
         dismissedByUser = value
         userDefaults.set(value, forKey: Self.dismissedDefaultsKey)
     }
+
+    #if DEV
+    // MARK: - DEV 검수용 (Phase 12 dismiss 폴백)
+
+    /// 플로팅 디버그 메뉴의 현재값 표시용 — 인메모리 캐시와 UserDefaults는 항상 함께 갱신되므로
+    /// MainActor(UI)에서 UserDefaults만 동기로 읽어도 어긋나지 않는다.
+    nonisolated static var devDismissedDefaultsKey: String { dismissedDefaultsKey }
+
+    /// 잠금화면 스와이프 자동화가 불안정할 때 dismiss 기록을 강제로 뒤집는 검수 수단.
+    /// recordDismissedByUser를 그대로 타므로 인메모리 캐시와 UserDefaults가 함께 갱신된다 —
+    /// UserDefaults만 바깥에서 직접 만지면 살아 있는 액터가 낡은 캐시 값을 계속 답하게 된다.
+    func devToggleDismissedByUser() -> Bool {
+        recordDismissedByUser(!dismissedByUser)
+        return dismissedByUser
+    }
+    #endif
 
     // MARK: - Domain → CoreLiveActivity 매핑
 

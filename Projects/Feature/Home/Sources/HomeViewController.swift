@@ -227,6 +227,11 @@ final class HomeViewController: UIViewController {
             // 배너의 시각·긴급도 값 자체는 info 스트림이 State로 이미 갱신한다.
             DSToast.show("막차가 \(minutes)분 당겨졌어요", in: view)
             banner.emphasize()
+        case .lastTrainMissed:
+            // TODO: [미확정 #9] 대안 제시(심야버스 등) 데이터 소스 확정 전까지 실패 문구만 표출한다.
+            DSToast.show("막차가 지나갔어요", in: view)
+        case .lastTrainServiceEnded:
+            DSToast.show("오늘 운행이 끝나 알람을 정리했어요", in: view)
         }
     }
 }

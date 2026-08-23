@@ -7,15 +7,19 @@ public struct DefaultRegisterAlarmUseCase: RegisterAlarmUseCase {
     private let scheduler: any AlarmScheduler
     /// Live Activity 포트 — nil이면 LA 없이 동작한다(Example·기존 콜사이트 호환).
     private let activityPort: (any LastTrainActivityPort)?
+    /// 로컬 노티 포트 — nil이면 알림 권한 요청 없이 동작한다(Example·기존 콜사이트 호환).
+    private let notificationPort: (any LocalNotificationPort)?
 
     public init(
         repository: any AlarmRepository,
         scheduler: any AlarmScheduler,
-        activityPort: (any LastTrainActivityPort)? = nil
+        activityPort: (any LastTrainActivityPort)? = nil,
+        notificationPort: (any LocalNotificationPort)? = nil
     ) {
         self.repository = repository
         self.scheduler = scheduler
         self.activityPort = activityPort
+        self.notificationPort = notificationPort
     }
 
     public func execute(route: LastRoute) async throws {
@@ -47,5 +51,11 @@ public struct DefaultRegisterAlarmUseCase: RegisterAlarmUseCase {
             )
             await activityPort.start(session: session, route: route)
         }
+        // 알림 권한 요청 — [미확정 #8 임시] 알람 등록 성공 직후가 유일한 요청 시점.
+        // 순서 근거: AlarmKit 권한 팝업(흐름 시작, requestAuthorization)과 알림 권한 팝업(여기, 흐름 끝)
+        // 사이에 서버 등록·로컬 스케줄·LA 시작이 끼어 있어 연속 팝업이 완화된다.
+        // 등록 실패·권한 거부 경로에서는 위에서 throw로 빠져나가므로 여기까지 오지 않는다.
+        // 거부 기록·재요청 스팸 방지는 어댑터 책임이고, 실패는 던지지 않는다(등록 결과에 영향 없음).
+        await notificationPort?.requestAuthorizationIfNeeded()
     }
 }

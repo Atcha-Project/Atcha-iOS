@@ -1,7 +1,7 @@
 import Foundation
 
 /// Phase 11 — 막차 변경 인지 계층의 사용자 대면 문구 단일 소스(정책: 하드코딩 상수, 한 파일).
-/// Live Activity alert(잠금화면)와 추후 Phase 12 로컬 노티 폴백이 같은 문구를 공유한다.
+/// Live Activity alert(잠금화면)와 Phase 12 로컬 노티 폴백(LA dismiss 시)이 같은 문구를 공유한다.
 /// nonisolated: 발신처가 액터 경계를 넘나든다(@MainActor AlarmSyncService·actor LA 어댑터·
 /// Phase 12 노티 빌더) — 어디서든 동기 접근 가능해야 한다.
 nonisolated enum LastTrainChangeMessages {
@@ -24,6 +24,16 @@ nonisolated enum LastTrainChangeMessages {
 
     static func ultimatumBody(latestDeparture: Date) -> String {
         "막차가 \(timeText(latestDeparture)) 출발로 당겨졌어요. 바로 출발하세요"
+    }
+
+    // MARK: - 못 탐 (advanced, actionable: false) — 당겨진 출발 시각이 이미 과거 (Phase 12)
+
+    /// LA 실패 상태(missed) 전환 alert와 dismiss 폴백 로컬 노티가 공유하는 제목.
+    static let missedTitle = "막차가 지나갔어요"
+
+    /// TODO(#9 임시 — 문구만): 대안 제시 데이터(심야버스·첫차 등) 확보 시 본문에 대안 안내를 싣는다.
+    static func missedBody(latestDeparture: Date) -> String {
+        "막차가 \(timeText(latestDeparture))에 이미 출발했어요"
     }
 
     // MARK: - 범용 폴백 — 문구를 싣지 않는 Domain 포트 경로(update(state:alert: true)) 전용

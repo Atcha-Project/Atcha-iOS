@@ -444,7 +444,7 @@ struct HomeViewModelTests {
 
     @Test
     func changeStream_quietVerdicts_emitNoToast() async {
-        // 정책: 늦춰짐은 조용한 업데이트. actionable=false·sessionEnded는 Phase 12 산출물.
+        // 정책: 늦춰짐·변경 없음은 조용한 업데이트 — 배너는 info 스트림 몫, 토스트 없음.
         let (stream, continuation) = AsyncStream<AlarmChangeVerdict>.makeStream()
         let sut = makeSUT(alarmChanges: { stream })
         let recorder = StateRecorder()
@@ -453,11 +453,107 @@ struct HomeViewModelTests {
         sut.viewDidLoad()
         continuation.yield(.delayed(by: 10 * 60))
         continuation.yield(.unchanged)
-        continuation.yield(.advanced(by: 5 * 60, actionable: false))
-        continuation.yield(.sessionEnded)
         for _ in 0..<20 { await Task.yield() }
 
         #expect(recorder.toasts.isEmpty)
         #expect(sut.state.banner == nil)
+    }
+
+    @Test
+    func changeStream_sessionEnded_clearsBannerResetsButtonAndToasts() async {
+        // 운행 종료·경로 소멸: 배너 제거 + 등록 기록 삭제 + 버튼 리셋 + 원샷 안내.
+        let route = makeRoute(id: "r1", departure: fixedNow.addingTimeInterval(42 * 60))
+        let (stream, continuation) = AsyncStream<AlarmChangeVerdict>.makeStream()
+        let sut = makeSUT(alarmChanges: { stream }, bannerTickInterval: .milliseconds(1))
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+        sut.viewDidLoad()
+        sut.routeSelected(route)
+        sut.registerAlarmTapped()
+        await recorder.waitUntilLast { $0.banner != nil }
+
+        continuation.yield(.sessionEnded)
+        await recorder.waitUntilLast { $0.banner == nil }
+
+        #expect(recorder.toasts == [.lastTrainServiceEnded])
+        // 카드는 남고 등록 기록만 사라졌다 — 재등록 버튼으로 돌아간다.
+        #expect(sut.state.alarmButton == .register)
+        #expect(sut.state.routeCard != nil)
+
+        // 배너 타이머도 멈췄다 — 살아 있다면 1ms 틱이 카운트다운을 곧장 되살린다.
+        try? await Task.sleep(for: .milliseconds(30))
+        #expect(sut.state.banner == nil)
+    }
+
+    @Test
+    func changeStream_advancedNotActionable_freezesBannerAsMissedAndToasts() async {
+        // 이미 못 타는 앞당김: 카운트다운 중지 + 배너 텍스트를 실패 문구로 교체(imminent 유지).
+        let clock = NowBox(fixedNow)
+        let route = makeRoute(id: "r1", departure: fixedNow.addingTimeInterval(42 * 60))
+        let (stream, continuation) = AsyncStream<AlarmChangeVerdict>.makeStream()
+        let sut = makeSUT(
+            alarmChanges: { stream },
+            now: { clock.get() },
+            bannerTickInterval: .milliseconds(1)
+        )
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+        sut.viewDidLoad()
+        sut.routeSelected(route)
+        sut.registerAlarmTapped()
+        await recorder.waitUntilLast { $0.banner?.text == "출발까지 39분" }
+
+        continuation.yield(.advanced(by: 5 * 60, actionable: false))
+        await recorder.waitUntilLast { $0.banner?.text == "막차가 지나갔어요" }
+
+        #expect(recorder.toasts == [.lastTrainMissed])
+        #expect(sut.state.banner == .init(text: "막차가 지나갔어요", urgency: .imminent))
+        // 등록 기록·버튼은 그대로 — 알람·서버 정리는 홈 밖(App·Domain) 몫이다.
+        #expect(sut.state.alarmButton == .cancel)
+
+        // 타이머가 살아 있다면 시계가 흐른 뒤 "출발까지 N분"으로 되돌린다 — 멈췄음을 확인.
+        clock.set(fixedNow.addingTimeInterval(10 * 60))
+        try? await Task.sleep(for: .milliseconds(30))
+        #expect(sut.state.banner?.text == "막차가 지나갔어요")
+    }
+
+    @Test
+    func alarmSync_pastDeparture_doesNotStartCountdown() async {
+        // 이미 출발한 시각의 동기화 복원 — "출발까지 0분" 카운트다운을 되살리지 않는다.
+        // 못 탐 판정이 고정한 실패 배너를 후속 동기화가 덮어쓰는 것도 같은 가드가 막는다.
+        let (stream, continuation) = AsyncStream<AlarmInfo>.makeStream()
+        let sut = makeSUT(alarmUpdates: { stream })
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+
+        sut.viewDidLoad()
+        continuation.yield(
+            AlarmInfo(
+                lastRouteId: "r1",
+                departureTime: fixedNow.addingTimeInterval(-60),
+                updatedAt: nil,
+                isReal: true
+            )
+        )
+        await recorder.waitUntilLast { $0.alarmButton == .cancel }
+
+        #expect(sut.state.banner == nil)
+    }
+
+    @Test
+    func makeBanner_acrossMidnight_usesAbsoluteDateArithmetic() {
+        // 자정 경계: 23:40 → 익일 00:10 출발은 벽시계로는 "이른 시각"이지만 절대 시간으로는
+        // 30분 뒤다 — 알람 발화 시각(00:07)까지 27분 카운트다운, caution.
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Asia/Seoul")!
+        let now = calendar.date(
+            from: DateComponents(year: 2026, month: 8, day: 22, hour: 23, minute: 40)
+        )!
+        let departure = calendar.date(
+            from: DateComponents(year: 2026, month: 8, day: 23, hour: 0, minute: 10)
+        )!
+
+        #expect(HomeViewModel.makeBanner(departure: departure, now: now)
+            == .init(text: "출발까지 27분", urgency: .caution))
     }
 }
