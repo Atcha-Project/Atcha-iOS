@@ -35,6 +35,8 @@ let appTarget = Target.target(
     // 배포 서명 시 프로비저닝이 production으로 치환한다.
     entitlements: .dictionary([
         "aps-environment": "development",
+        // 폴백 노티의 .timeSensitive interruptionLevel용(Phase 15) — 집중 모드 관통.
+        "com.apple.developer.usernotifications.time-sensitive": true,
     ]),
     dependencies: [
         .target(name: "AtchaWidget"),

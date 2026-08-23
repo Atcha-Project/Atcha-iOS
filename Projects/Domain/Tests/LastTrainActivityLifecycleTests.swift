@@ -81,9 +81,12 @@ private struct SpyActivityPort: LastTrainActivityPort {
 
 private struct SpyLocalNotificationPort: LocalNotificationPort {
     let log: CallLog
+    var authorizationOutcome: LocalNotificationAuthorizationOutcome = .alreadySettled
 
-    func requestAuthorizationIfNeeded() async {
+    @discardableResult
+    func requestAuthorizationIfNeeded() async -> LocalNotificationAuthorizationOutcome {
         await log.append("requestNotiAuth")
+        return authorizationOutcome
     }
 
     func post(title: String, body: String) async {

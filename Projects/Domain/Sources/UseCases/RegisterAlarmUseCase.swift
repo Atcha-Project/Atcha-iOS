@@ -1,7 +1,10 @@
 import Foundation
 
 public protocol RegisterAlarmUseCase: Sendable {
-    func execute(route: LastRoute) async throws
+    /// 반환값은 등록 성공의 후속 안내 신호(Phase 15) — 알림 권한이 이번에 거부됐는지.
+    /// 등록 실패는 기존대로 throw로 표현한다(반환값에 실패가 실리지 않는다).
+    @discardableResult
+    func execute(route: LastRoute) async throws -> LocalNotificationAuthorizationOutcome
 }
 
 public struct DefaultRegisterAlarmUseCase: RegisterAlarmUseCase {
@@ -31,7 +34,8 @@ public struct DefaultRegisterAlarmUseCase: RegisterAlarmUseCase {
         self.now = now
     }
 
-    public func execute(route: LastRoute) async throws {
+    @discardableResult
+    public func execute(route: LastRoute) async throws -> LocalNotificationAuthorizationOutcome {
         // 발화 시각(출발 − 도보 − 버퍼, 미확정 #7 클라 임시안)이 이미 과거면 시작조차
         // 하지 않는다 — 서버 등록이 성공한 뒤 로컬 스케줄(AlarmKit 과거 fixed 거부)이
         // 실패하는 서버/로컬 불일치의 사전 가드. 권한 팝업보다도 앞선다(죽은 경로에
@@ -84,6 +88,8 @@ public struct DefaultRegisterAlarmUseCase: RegisterAlarmUseCase {
         // 사이에 서버 등록·로컬 스케줄·LA 시작이 끼어 있어 연속 팝업이 완화된다.
         // 등록 실패·권한 거부 경로에서는 위에서 throw로 빠져나가므로 여기까지 오지 않는다.
         // 거부 기록·재요청 스팸 방지는 어댑터 책임이고, 실패는 던지지 않는다(등록 결과에 영향 없음).
-        await notificationPort?.requestAuthorizationIfNeeded()
+        // 결과는 그대로 위로 전달한다(Phase 15) — deniedNow일 때만 홈이 1회 안내 토스트를 띄운다.
+        guard let notificationPort else { return .alreadySettled }
+        return await notificationPort.requestAuthorizationIfNeeded()
     }
 }

@@ -50,6 +50,21 @@ private struct SpyAlarmScheduler: AlarmScheduler {
     func scheduledFireDate() async -> Date? { nil }
 }
 
+private struct StubLocalNotificationPort: LocalNotificationPort {
+    let log: CallLog
+    var authorizationOutcome: LocalNotificationAuthorizationOutcome = .alreadySettled
+
+    @discardableResult
+    func requestAuthorizationIfNeeded() async -> LocalNotificationAuthorizationOutcome {
+        await log.append("requestNotiAuth")
+        return authorizationOutcome
+    }
+
+    func post(title: String, body: String) async {
+        await log.append("postNoti:\(title)")
+    }
+}
+
 private actor SpySnapshotStore: AlarmSessionSnapshotStore {
     private(set) var saved: [AlarmSessionSnapshot] = []
     private(set) var clearCount = 0
@@ -172,6 +187,38 @@ struct DefaultRegisterAlarmUseCaseTests {
         }
         // 권한 거부 시 서버 등록·삭제·로컬 스케줄 어디에도 도달하면 안 된다.
         #expect(await log.events == ["auth:false"])
+    }
+
+    // MARK: - 알림 권한 후속 신호 (Phase 15)
+
+    @Test
+    func execute_notificationDeniedNow_propagatesOutcome() async throws {
+        // 포트가 "이번 호출로 최초 요청·거부"를 답하면 그대로 위로 전달한다 —
+        // 홈이 1회 안내 토스트를 띄울 유일한 트리거.
+        let log = CallLog()
+        let sut = DefaultRegisterAlarmUseCase(
+            repository: SpyAlarmRepository(log: log),
+            scheduler: SpyAlarmScheduler(log: log),
+            notificationPort: StubLocalNotificationPort(log: log, authorizationOutcome: .deniedNow),
+            now: fixedNow
+        )
+        let outcome = try await sut.execute(route: .fixture(id: "new"))
+        #expect(outcome == .deniedNow)
+        // 요청 시점은 여전히 등록 성공 마지막 한 곳이다(미확정 #8 유지).
+        #expect(await log.events.last == "requestNotiAuth")
+    }
+
+    @Test
+    func execute_withoutNotificationPort_returnsAlreadySettled() async throws {
+        // 포트 미주입(Example·스텁 조립)이면 요청 자체가 없다 — 안내도 없다.
+        let log = CallLog()
+        let sut = DefaultRegisterAlarmUseCase(
+            repository: SpyAlarmRepository(log: log),
+            scheduler: SpyAlarmScheduler(log: log),
+            now: fixedNow
+        )
+        let outcome = try await sut.execute(route: .fixture(id: "new"))
+        #expect(outcome == .alreadySettled)
     }
 
     // MARK: - tooLate 사전 가드 (Phase 14)

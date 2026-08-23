@@ -42,6 +42,9 @@ final class HomeViewModel {
         case alarmCancelFailed
         /// 발화 시각이 이미 과거인 경로의 등록 시도(사전 가드, Phase 14) — 서버 등록 전에 차단됐다.
         case alarmTooLate
+        /// 알림 권한이 이번 등록에서 최초 요청됐고 거부됨(Phase 15) — 폴백 노티를 잃었다는
+        /// 1회 안내. 요청이 평생 1회(어댑터 가드)라 이 안내도 구조적으로 최대 1회다.
+        case notificationPermissionDenied
         /// 포그라운드 인앱 채널: 막차가 당겨졌다는 판정 — VC가 토스트 + 배너 강조로 표출한다.
         case lastTrainAdvanced(minutes: Int)
         /// 이미 못 타는 앞당김(actionable=false) — 배너는 실패 문구로 고정되고 원샷 안내만 나간다.
@@ -119,6 +122,26 @@ final class HomeViewModel {
         observeAlarmChanges()
     }
 
+    /// 설정을 다녀온 뒤(didBecomeActive) 위치 권한 회복을 재확인한다(Phase 15).
+    /// `needsSearch`일 때만 — `.loading`/`.current`면 no-op(권한 팝업 닫힘도 이 노티를
+    /// 울리므로 이 가드가 진행 중 재진입·불필요 재조회를 막는다). 재확인 경로는 기존
+    /// 표시를 유지한 채 조용히 조회하고 **성공 시에만** 상태를 바꾼다 — 거부 유지 유저의
+    /// 매 포그라운드 깜빡임·거부 토스트 재발화(스팸)를 만들지 않는다.
+    func didBecomeActive() {
+        guard case .needsSearch = state.departure else { return }
+        locationTask?.cancel()
+        locationTask = Task { [weak self] in
+            guard let locationUseCase = self?.getCurrentLocationUseCase,
+                  let coordinate = try? await locationUseCase.execute() else { return }
+            guard !Task.isCancelled,
+                  let geocodeUseCase = self?.reverseGeocodeUseCase,
+                  let place = try? await geocodeUseCase.execute(coordinate: coordinate)
+            else { return }
+            guard !Task.isCancelled else { return }
+            self?.state.departure = .current(name: place.name)
+        }
+    }
+
     /// 출발지/도착지 어느 필드를 탭해도 동일하게 검색 플로우로 진입한다.
     func searchFieldTapped() {
         onSearchRequested? { [weak self] route in
@@ -148,7 +171,7 @@ final class HomeViewModel {
         alarmTask = Task { [weak self] in
             guard let useCase = self?.registerAlarmUseCase else { return }
             do {
-                try await useCase.execute(route: route)
+                let followUp = try await useCase.execute(route: route)
                 guard !Task.isCancelled else { return }
                 self?.registeredRouteId = route.id
                 self?.state.isAlarmBusy = false
@@ -157,6 +180,11 @@ final class HomeViewModel {
                     departure: route.departureTime,
                     firstWalkSeconds: route.firstWalkSectionSeconds
                 )
+                // 등록은 성공했고 폴백 노티만 잃었다 — 1회 안내(Phase 15). deniedNow는
+                // 이번 호출로 최초 요청이 이뤄졌고 거부된 경우뿐이라 재등록 시 반복되지 않는다.
+                if followUp == .deniedNow {
+                    self?.onToast?(.notificationPermissionDenied)
+                }
             } catch AlarmError.permissionDenied {
                 guard !Task.isCancelled else { return }
                 self?.state.isAlarmBusy = false

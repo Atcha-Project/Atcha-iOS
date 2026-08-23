@@ -17,7 +17,14 @@ private struct StubReverseGeocodeUseCase: ReverseGeocodeUseCase {
 
 private struct StubRegisterAlarmUseCase: RegisterAlarmUseCase {
     let handler: @Sendable (LastRoute) async throws -> Void
-    func execute(route: LastRoute) async throws { try await handler(route) }
+    /// 알림 권한 후속 신호(Phase 15) — 기본은 "요청·안내 없음".
+    var authorizationOutcome: LocalNotificationAuthorizationOutcome = .alreadySettled
+
+    @discardableResult
+    func execute(route: LastRoute) async throws -> LocalNotificationAuthorizationOutcome {
+        try await handler(route)
+        return authorizationOutcome
+    }
 }
 
 private struct StubCancelAlarmUseCase: CancelAlarmUseCase {
@@ -38,6 +45,26 @@ private struct StubObserveAlarmChangeUseCase: ObserveAlarmChangeUseCase {
 private struct StubGetLastRouteDetailUseCase: GetLastRouteDetailUseCase {
     let handler: @Sendable (String) async throws -> LastRoute
     func execute(routeId: String) async throws -> LastRoute { try await handler(routeId) }
+}
+
+/// 테스트 도중 스텁 동작을 바꾸거나 호출 횟수를 세기 위한 가변 박스 (NowBox와 동일 패턴).
+private nonisolated final class ValueBox<Value: Sendable>: @unchecked Sendable {
+    private let lock = NSLock()
+    private var value: Value
+
+    init(_ value: Value) { self.value = value }
+
+    func get() -> Value {
+        lock.lock()
+        defer { lock.unlock() }
+        return value
+    }
+
+    func update(_ transform: (Value) -> Value) {
+        lock.lock()
+        defer { lock.unlock() }
+        value = transform(value)
+    }
 }
 
 /// 테스트 도중 `now()`를 전진시키기 위한 가변 시계.
@@ -119,6 +146,7 @@ private func makeSUT(
         Place(name: "강남역", address: "서울 강남구", coordinate: $0)
     },
     register: @escaping @Sendable (LastRoute) async throws -> Void = { _ in },
+    registerOutcome: LocalNotificationAuthorizationOutcome = .alreadySettled,
     cancel: @escaping @Sendable (String) async throws -> Void = { _ in },
     alarmUpdates: @escaping @Sendable () -> AsyncStream<AlarmInfo> = {
         AsyncStream { $0.finish() }
@@ -135,7 +163,9 @@ private func makeSUT(
     HomeViewModel(
         getCurrentLocationUseCase: StubGetCurrentLocationUseCase(handler: location),
         reverseGeocodeUseCase: StubReverseGeocodeUseCase(handler: geocode),
-        registerAlarmUseCase: StubRegisterAlarmUseCase(handler: register),
+        registerAlarmUseCase: StubRegisterAlarmUseCase(
+            handler: register, authorizationOutcome: registerOutcome
+        ),
         cancelAlarmUseCase: StubCancelAlarmUseCase(handler: cancel),
         observeAlarmUseCase: StubObserveAlarmUseCase(handler: alarmUpdates),
         observeAlarmChangeUseCase: StubObserveAlarmChangeUseCase(handler: alarmChanges),
@@ -187,6 +217,73 @@ struct HomeViewModelTests {
         #expect(recorder.toasts.isEmpty)
     }
 
+    // MARK: - 위치 권한 재확인 (Phase 15)
+
+    @Test
+    func didBecomeActive_needsSearch_recoversDepartureWithoutLoadingFlicker() async {
+        // 최초 진입은 거부 → needsSearch. 설정에서 허용하고 돌아온(didBecomeActive) 상황.
+        let granted = ValueBox(false)
+        let sut = makeSUT(location: {
+            guard granted.get() else { throw LocationError.permissionDenied }
+            return Coordinate(latitude: 37.4979, longitude: 127.0276)
+        })
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+        sut.viewDidLoad()
+        await recorder.waitUntilLast { $0.departure == .needsSearch(deniedPermission: true) }
+        let statesBefore = recorder.states.count
+
+        granted.update { _ in true }
+        sut.didBecomeActive()
+        await recorder.waitUntilLast { $0.departure == .current(name: "강남역") }
+
+        // 재확인 경로는 .loading을 거치지 않는다 — 성공 상태로만 전이(깜빡임 방지).
+        #expect(!recorder.states.dropFirst(statesBefore).contains { $0.departure == .loading })
+        // 거부 토스트는 최초 진입 1회뿐 — 재확인이 재발화하지 않는다.
+        #expect(recorder.toasts == [.locationPermissionNeeded])
+    }
+
+    @Test
+    func didBecomeActive_stillDenied_keepsStateAndEmitsNoToast() async {
+        let calls = ValueBox(0)
+        let sut = makeSUT(location: {
+            calls.update { $0 + 1 }
+            throw LocationError.permissionDenied
+        })
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+        sut.viewDidLoad()
+        await recorder.waitUntilLast { $0.departure == .needsSearch(deniedPermission: true) }
+        let statesBefore = recorder.states.count
+
+        sut.didBecomeActive()
+        // 실패 경로는 상태 신호가 없다 — 재조회 호출을 확인한 뒤 후처리를 드레인한다.
+        while calls.get() < 2 { await Task.yield() }
+        for _ in 0..<20 { await Task.yield() }
+
+        #expect(recorder.states.count == statesBefore)
+        #expect(recorder.toasts == [.locationPermissionNeeded])
+    }
+
+    @Test
+    func didBecomeActive_departureResolved_doesNotRequery() async {
+        let calls = ValueBox(0)
+        let sut = makeSUT(location: {
+            calls.update { $0 + 1 }
+            return Coordinate(latitude: 37.4979, longitude: 127.0276)
+        })
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+        sut.viewDidLoad()
+        await recorder.waitUntilLast { $0.departure == .current(name: "강남역") }
+
+        // 권한 팝업 닫힘도 didBecomeActive를 울린다 — 이미 해결된 출발지는 재조회하지 않는다.
+        sut.didBecomeActive()
+        for _ in 0..<20 { await Task.yield() }
+
+        #expect(calls.get() == 1)
+    }
+
     @Test
     func routeSelected_populatesCard() async {
         let route = makeRoute(id: "r1", departure: fixedNow.addingTimeInterval(42 * 60))
@@ -217,6 +314,40 @@ struct HomeViewModelTests {
         #expect(!sut.state.isAlarmBusy)
         // 등록 성공 후 같은 자리 버튼이 해제로 토글된다.
         #expect(sut.state.alarmButton == .cancel)
+    }
+
+    // MARK: - 알림 권한 거부 1회 안내 (Phase 15)
+
+    @Test
+    func registerAlarm_notificationDeniedNow_emitsOneTimeGuidanceToast() async {
+        let route = makeRoute(id: "r1", departure: fixedNow.addingTimeInterval(42 * 60))
+        let sut = makeSUT(registerOutcome: .deniedNow)
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+
+        sut.routeSelected(route)
+        sut.registerAlarmTapped()
+        while recorder.toasts.isEmpty { await Task.yield() }
+        // 배너는 틱 태스크가 비동기로 채운다 — 토스트와 별도로 기다린다.
+        await recorder.waitUntilLast { $0.banner != nil }
+
+        // 등록 자체는 성공 — 배너·버튼은 정상 전이하고 안내 토스트만 덧붙는다.
+        #expect(recorder.toasts == [.notificationPermissionDenied])
+        #expect(sut.state.alarmButton == .cancel)
+    }
+
+    @Test
+    func registerAlarm_notificationAlreadySettled_emitsNoGuidanceToast() async {
+        let route = makeRoute(id: "r1", departure: fixedNow.addingTimeInterval(42 * 60))
+        let sut = makeSUT(registerOutcome: .alreadySettled)
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+
+        sut.routeSelected(route)
+        sut.registerAlarmTapped()
+        await recorder.waitUntilLast { $0.banner != nil }
+
+        #expect(recorder.toasts.isEmpty)
     }
 
     @Test

@@ -36,6 +36,9 @@ final class AppDIContainer {
     /// Phase 13 발화 이후 세션 수명 — stopIntent(AlarmAcknowledgeIntent)가 조합 루트를
     /// 거쳐 도달하는 지점. AppDelegate 경유로 인텐트 perform()이 접근한다.
     let alarmSessionLifecycle: AlarmSessionLifecycleService
+    /// 노티 탭 라우팅 델리게이트(Phase 15) — AppDelegate가 launch 시 등록하고,
+    /// SceneDelegate가 홈 랜딩 훅(onTap)을 배선한다.
+    let notificationTapDelegate = NotificationTapRoutingDelegate()
     #if DEV
     /// DEV 플로팅 디버그 메뉴가 dismiss 기록 강제 토글에 접근하는 유일한 통로 (Phase 12 검수).
     var devLiveActivityAdapter: LastTrainLiveActivityAdapter { liveActivityAdapter }
