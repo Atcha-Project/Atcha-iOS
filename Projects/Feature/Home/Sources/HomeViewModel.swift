@@ -33,6 +33,11 @@ final class HomeViewModel {
         /// 도착지 필드 표시값(Phase 17) — 선택 경로의 도착지명. nil이면 placeholder.
         /// 재실행 복원 경로는 도착지 명칭 원천이 없어 채우지 않는다(결정사항 — 수용).
         var arrivalText: String?
+        /// 최근 경로 원탭 칩(Phase 18) — 최근 검색 최신 1건의 "→ {도착지명}". nil이면 숨김.
+        /// 원천은 RecentSearchRepository 하나뿐(최근 검색의 표면 확장 — 즐겨찾기 아님).
+        var recentRouteChipText: String?
+        /// 칩 재검색 진행 중(Phase 18) — 칩 비활성(더블 탭 방지). 알람 busy와 독립이다.
+        var isChipBusy = false
         var routeCard: RouteCardViewData?
         var banner: BannerViewData?
         var isAlarmBusy = false
@@ -50,6 +55,14 @@ final class HomeViewModel {
         case locationServicesDisabled
         /// 스크린타임·MDM 제약(Phase 17) — 설정으로 못 푼다. "설정으로 이동" 안내 금지.
         case locationRestricted
+        /// 칩 원탭 재검색(Phase 18)의 위치 일시 실패 — 명시적 탭에 무음은 없다.
+        case chipLocationUnavailable
+        /// 칩 재검색 자체 실패(Phase 18) — 재시도 유도. 카드·필드는 무변경이 원칙.
+        case chipSearchFailed
+        /// 칩 재검색 결과 오늘 막차 종료(Phase 18) — 검색 빈 상태 제목과 같은 어휘.
+        case chipServiceEnded
+        /// 칩 재검색 결과 경로 없음(Phase 18).
+        case chipNoRoute
         case alarmPermissionNeeded
         case alarmRegisterFailed
         case alarmCancelFailed
@@ -91,10 +104,14 @@ final class HomeViewModel {
     private let observeAlarmChangeUseCase: any ObserveAlarmChangeUseCase
     private let requestAlarmSyncUseCase: any RequestAlarmSyncUseCase
     private let getLastRouteDetailUseCase: any GetLastRouteDetailUseCase
+    private let searchLastRoutesUseCase: any SearchLastRoutesUseCase
+    private let recentSearchesUseCase: any RecentSearchesUseCase
     private let now: @Sendable () -> Date
     private let bannerTickInterval: Duration
 
     private var selectedRoute: LastRoute?
+    /// 칩의 원본 도착지(Phase 18) — 표시는 문자열(State), 재검색은 이 Place가 한다.
+    private var chipPlace: Place?
     /// 서버에 알람이 등록된 경로 id — 해제 버튼·동기화 복원의 기준.
     private var registeredRouteId: String?
     /// 세션 값이 마지막으로 서버로 확인된 시각(Phase 16) — 스트림의 checkedAt·등록
@@ -107,6 +124,10 @@ final class HomeViewModel {
     private var bannerTask: Task<Void, Never>?
     private var restoreCardTask: Task<Void, Never>?
     private var refreshTask: Task<Void, Never>?
+    private var chipTask: Task<Void, Never>?
+    // 승격 저장은 재조회와 분리 보관 — 재조회가 저장을 cancel하면 안 된다(검색 VM saveTask 선례).
+    private var chipSaveTask: Task<Void, Never>?
+    private var chipSearchTask: Task<Void, Never>?
 
     init(
         getCurrentLocationUseCase: any GetCurrentLocationUseCase,
@@ -117,6 +138,8 @@ final class HomeViewModel {
         observeAlarmChangeUseCase: any ObserveAlarmChangeUseCase,
         requestAlarmSyncUseCase: any RequestAlarmSyncUseCase,
         getLastRouteDetailUseCase: any GetLastRouteDetailUseCase,
+        searchLastRoutesUseCase: any SearchLastRoutesUseCase,
+        recentSearchesUseCase: any RecentSearchesUseCase,
         now: @escaping @Sendable () -> Date = { Date() },
         bannerTickInterval: Duration = .seconds(60)
     ) {
@@ -128,6 +151,8 @@ final class HomeViewModel {
         self.observeAlarmChangeUseCase = observeAlarmChangeUseCase
         self.requestAlarmSyncUseCase = requestAlarmSyncUseCase
         self.getLastRouteDetailUseCase = getLastRouteDetailUseCase
+        self.searchLastRoutesUseCase = searchLastRoutesUseCase
+        self.recentSearchesUseCase = recentSearchesUseCase
         self.now = now
         self.bannerTickInterval = bannerTickInterval
     }
@@ -140,6 +165,9 @@ final class HomeViewModel {
         bannerTask?.cancel()
         restoreCardTask?.cancel()
         refreshTask?.cancel()
+        chipTask?.cancel()
+        chipSaveTask?.cancel()
+        chipSearchTask?.cancel()
     }
 
     // MARK: - 입력
@@ -148,6 +176,12 @@ final class HomeViewModel {
         loadCurrentLocation()
         observeAlarmUpdates()
         observeAlarmChanges()
+        refreshChip()
+    }
+
+    /// 홈 재노출(Phase 18) — 검색 화면을 다녀오며 바뀐 최근 검색(삭제 포함)을 칩에 반영한다.
+    func viewWillAppear() {
+        refreshChip()
     }
 
     /// 설정을 다녀온 뒤(didBecomeActive) 위치 권한 회복을 재확인한다(Phase 15).
@@ -192,10 +226,13 @@ final class HomeViewModel {
 
     func routeSelected(_ route: LastRoute, arrival: Place) {
         selectedRoute = route
+        chipPlace = arrival
         var newState = state
         newState.routeCard = RouteCardViewData(entity: route, now: now())
         // 도착지 필드를 선택 경로의 도착지명과 정합시킨다(Phase 17) — placeholder 공존 해소.
         newState.arrivalText = arrival.name
+        // 칩도 즉시 정합(Phase 18) — fetch를 기다리지 않는다. 방금 확정한 도착지가 최신이다.
+        newState.recentRouteChipText = "→ \(arrival.name)"
         // 새 경로 선택 = 기존 배너는 더 이상 유효하지 않다 (재등록 전까지 숨김).
         newState.banner = nil
         newState.alarmButton = Self.alarmButtonMode(
@@ -204,6 +241,64 @@ final class HomeViewModel {
         )
         state = newState
         bannerTask?.cancel()
+        promoteChipDestination(arrival)
+    }
+
+    /// 최근 경로 원탭(Phase 18) — 현재 위치 기준 즉시 재검색, 검색 화면 생략.
+    /// 성공은 routeSelected로 수렴한다(카드·도착지·배너 무효화·버튼이 검색 복귀와 같은 의미).
+    /// 알람 자동 등록은 없다 — 등록은 명시적 버튼 탭만(확정 결정).
+    func chipTapped() {
+        guard let destination = chipPlace, !state.isChipBusy else { return }
+        state.isChipBusy = true
+        chipSearchTask?.cancel()
+        chipSearchTask = Task { [weak self] in
+            defer { self?.state.isChipBusy = false }
+
+            let start: Coordinate
+            do {
+                guard let locationUseCase = self?.getCurrentLocationUseCase else { return }
+                start = try await locationUseCase.execute()
+            } catch let error as LocationError {
+                guard !Task.isCancelled else { return }
+                // 사유별 안내는 기존 3분기 이벤트 재사용(Phase 17 문구·액션 그대로).
+                // 명시적 탭이라 unavailable도 무음일 수 없다 — loadCurrentLocation과의 차이.
+                switch error {
+                case .permissionDenied: self?.onToast?(.locationPermissionNeeded)
+                case .servicesDisabled: self?.onToast?(.locationServicesDisabled)
+                case .restricted: self?.onToast?(.locationRestricted)
+                case .unavailable: self?.onToast?(.chipLocationUnavailable)
+                }
+                return
+            } catch {
+                guard !Task.isCancelled else { return }
+                self?.onToast?(.chipLocationUnavailable)
+                return
+            }
+
+            guard !Task.isCancelled,
+                  let routesUseCase = self?.searchLastRoutesUseCase else { return }
+            do {
+                let result = try await routesUseCase.execute(
+                    start: start, end: destination.coordinate
+                )
+                guard !Task.isCancelled, let self else { return }
+                switch result {
+                case let .available(routes) where !routes.isEmpty:
+                    // featured(0번 = 가장 늦은 차)만 원탭의 몫 — 대안 표출은 풀 검색 화면 담당.
+                    self.routeSelected(routes[0], arrival: destination)
+                case .available:
+                    // 정규화가 놓친 빈 목록 방어 (검색 VM 선례).
+                    self.onToast?(.chipNoRoute)
+                case .serviceEnded:
+                    self.onToast?(.chipServiceEnded)
+                case .noRoute:
+                    self.onToast?(.chipNoRoute)
+                }
+            } catch {
+                guard !Task.isCancelled else { return }
+                self?.onToast?(.chipSearchFailed)
+            }
+        }
     }
 
     func registerAlarmTapped() {
@@ -400,6 +495,36 @@ final class HomeViewModel {
         case .delayed, .unchanged:
             // 정책: 늦춰짐은 조용한 업데이트 — 배너는 info 스트림이 갱신하고 토스트는 없다.
             break
+        }
+    }
+
+    /// 칩 재조회(Phase 18) — 최근 검색 최신 1건이 칩의 유일한 원천이다(즐겨찾기 아님).
+    /// 승격 저장이 진행 중이면 no-op — 저장 전의 낡은 목록으로 되돌리는 경합을 막는다
+    /// (저장 완료가 가드를 풀고, 다음 재노출 재조회가 확정 목록을 반영한다).
+    private func refreshChip() {
+        guard chipSaveTask == nil else { return }
+        chipTask?.cancel()
+        chipTask = Task { [weak self] in
+            guard let useCase = self?.recentSearchesUseCase else { return }
+            // 로드 실패는 칩 없음으로 무해화한다 (검색 화면의 최근 목록과 같은 취급).
+            let latest = ((try? await useCase.fetch()) ?? []).first
+            guard !Task.isCancelled, let self else { return }
+            self.chipPlace = latest
+            self.state.recentRouteChipText = latest.map { "→ \($0.name)" }
+        }
+    }
+
+    /// 도착지 승격(Phase 18) — 기존 save의 "중복 시 최신 갱신"을 재사용해 확정 도착지를
+    /// 최근 검색 최신으로 올린다(새 저장 의미 없음 — 출발지를 나중에 확정한 경우에도
+    /// 칩 = 마지막으로 경로를 확정한 도착지가 되게 하는 최소 수단이다). 칩 탭 경로의
+    /// 재저장은 이미 최신 1위라 멱등이다.
+    private func promoteChipDestination(_ place: Place) {
+        chipSaveTask?.cancel()
+        chipSaveTask = Task { [weak self] in
+            guard let useCase = self?.recentSearchesUseCase else { return }
+            try? await useCase.save(place)
+            guard !Task.isCancelled else { return }
+            self?.chipSaveTask = nil
         }
     }
 

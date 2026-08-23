@@ -53,6 +53,21 @@ private struct StubGetLastRouteDetailUseCase: GetLastRouteDetailUseCase {
     func execute(routeId: String) async throws -> LastRoute { try await handler(routeId) }
 }
 
+private struct StubSearchLastRoutesUseCase: SearchLastRoutesUseCase {
+    let handler: @Sendable (Coordinate, Coordinate) async throws -> LastRouteSearchResult
+    func execute(start: Coordinate, end: Coordinate) async throws -> LastRouteSearchResult {
+        try await handler(start, end)
+    }
+}
+
+private struct StubRecentSearchesUseCase: RecentSearchesUseCase {
+    let fetchHandler: @Sendable () async throws -> [Place]
+    let saveHandler: @Sendable (Place) async throws -> Void
+    func fetch() async throws -> [Place] { try await fetchHandler() }
+    func save(_ place: Place) async throws { try await saveHandler(place) }
+    func remove(_ place: Place) async throws {}
+}
+
 /// 테스트 도중 스텁 동작을 바꾸거나 호출 횟수를 세기 위한 가변 박스 (NowBox와 동일 패턴).
 private nonisolated final class ValueBox<Value: Sendable>: @unchecked Sendable {
     private let lock = NSLock()
@@ -173,6 +188,11 @@ private func makeSUT(
     routeDetail: @escaping @Sendable (String) async throws -> LastRoute = { _ in
         throw StubError()
     },
+    searchRoutes: @escaping @Sendable (Coordinate, Coordinate) async throws -> LastRouteSearchResult = { _, _ in
+        throw StubError()
+    },
+    recentFetch: @escaping @Sendable () async throws -> [Place] = { [] },
+    recentSave: @escaping @Sendable (Place) async throws -> Void = { _ in },
     now: @escaping @Sendable () -> Date = { fixedNow },
     bannerTickInterval: Duration = .seconds(60)
 ) -> HomeViewModel {
@@ -187,6 +207,10 @@ private func makeSUT(
         observeAlarmChangeUseCase: StubObserveAlarmChangeUseCase(handler: alarmChanges),
         requestAlarmSyncUseCase: StubRequestAlarmSyncUseCase(handler: requestSync),
         getLastRouteDetailUseCase: StubGetLastRouteDetailUseCase(handler: routeDetail),
+        searchLastRoutesUseCase: StubSearchLastRoutesUseCase(handler: searchRoutes),
+        recentSearchesUseCase: StubRecentSearchesUseCase(
+            fetchHandler: recentFetch, saveHandler: recentSave
+        ),
         now: now,
         bannerTickInterval: bannerTickInterval
     )
@@ -1224,6 +1248,249 @@ struct HomeViewModelTests {
         clock.set(departure.addingTimeInterval(60))
         await recorder.waitUntilLast { $0.banner == nil && $0.freshnessText == nil }
         #expect(sut.state.routeCard?.tone == .past)
+    }
+
+    // MARK: - 최근 경로 원탭 칩 (Phase 18)
+
+    @Test
+    func viewDidLoad_recentSearchExists_showsChipForLatest() async {
+        // 칩은 최근 검색 최신 1건 — 목록의 첫 항목만 표면화한다.
+        let sut = makeSUT(recentFetch: { [makeArrival("신림동"), makeArrival("강남역")] })
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+
+        sut.viewDidLoad()
+        await recorder.waitUntilLast { $0.recentRouteChipText == "→ 신림동" }
+
+        #expect(sut.state.recentRouteChipText == "→ 신림동")
+    }
+
+    @Test
+    func viewDidLoad_noRecentSearch_hidesChip() async {
+        let sut = makeSUT()
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+
+        sut.viewDidLoad()
+        await recorder.waitUntilLast { $0.departure == .current(name: "강남역") }
+        for _ in 0..<20 { await Task.yield() }
+
+        #expect(sut.state.recentRouteChipText == nil)
+    }
+
+    @Test
+    func routeSelected_updatesChipImmediatelyAndPromotesArrival() async {
+        // 칩은 fetch를 기다리지 않고 즉시 정합하고, 도착지는 save로 승격된다(중복 최신 갱신 재사용).
+        let saved = ValueBox([String]())
+        let sut = makeSUT(recentSave: { place in saved.update { $0 + [place.name] } })
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+
+        sut.routeSelected(
+            makeRoute(id: "r1", departure: fixedNow.addingTimeInterval(3600)),
+            arrival: makeArrival("당산역")
+        )
+
+        #expect(sut.state.recentRouteChipText == "→ 당산역")
+        while saved.get().isEmpty { await Task.yield() }
+        #expect(saved.get() == ["당산역"])
+    }
+
+    @Test
+    func chipTapped_success_showsFeaturedCardWithoutRegisteringAlarm() async {
+        // 원탭 성공 = routeSelected 수렴 — 카드는 featured(0번), 알람 등록은 0회여야 한다.
+        let registerCalls = ValueBox(0)
+        let searched = ValueBox([Coordinate]())
+        let destination = makeArrival("신림동")
+        let featured = makeRoute(id: "featured", departure: fixedNow.addingTimeInterval(3600))
+        let alternative = makeRoute(id: "alt", departure: fixedNow.addingTimeInterval(1800))
+        let sut = makeSUT(
+            register: { _ in registerCalls.update { $0 + 1 } },
+            searchRoutes: { start, end in
+                searched.update { $0 + [start, end] }
+                return .available([featured, alternative])
+            },
+            recentFetch: { [destination] }
+        )
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+        sut.viewDidLoad()
+        await recorder.waitUntilLast { $0.recentRouteChipText == "→ 신림동" }
+
+        sut.chipTapped()
+        await recorder.waitUntilLast { $0.routeCard != nil && !$0.isChipBusy }
+
+        // 재검색 좌표: start = 현재 위치(스텁), end = 칩 도착지.
+        #expect(searched.get() == [
+            Coordinate(latitude: 37.4979, longitude: 127.0276), destination.coordinate,
+        ])
+        #expect(sut.state.routeCard == RouteCardViewData(entity: featured, now: fixedNow))
+        #expect(sut.state.arrivalText == "신림동")
+        #expect(sut.state.alarmButton == .register)
+        #expect(sut.state.banner == nil)
+        // 알람 자동 등록 금지(확정 결정)의 직접 검증 — 등록은 명시적 버튼 탭만.
+        #expect(registerCalls.get() == 0)
+        #expect(recorder.toasts.isEmpty)
+    }
+
+    @Test
+    func chipTapped_locationDenied_reusesPermissionToastAndShowsNoCard() async {
+        // 위치 실패 안내는 기존 3분기 이벤트를 재사용한다 — 칩 전용 문구를 만들지 않는다.
+        let denied = ValueBox(false)
+        let sut = makeSUT(
+            location: {
+                guard !denied.get() else { throw LocationError.permissionDenied }
+                return Coordinate(latitude: 37.4979, longitude: 127.0276)
+            },
+            recentFetch: { [makeArrival("신림동")] }
+        )
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+        sut.viewDidLoad()
+        await recorder.waitUntilLast {
+            $0.recentRouteChipText == "→ 신림동" && $0.departure == .current(name: "강남역")
+        }
+
+        denied.update { _ in true }
+        sut.chipTapped()
+        while recorder.toasts.isEmpty { await Task.yield() }
+
+        #expect(recorder.toasts == [.locationPermissionNeeded])
+        #expect(sut.state.routeCard == nil)
+        #expect(!sut.state.isChipBusy)
+    }
+
+    @Test
+    func chipTapped_locationUnavailable_emitsChipToast() async {
+        // 명시적 탭에 무음은 없다 — loadCurrentLocation(무토스트)과 다른 분기.
+        let unavailable = ValueBox(false)
+        let sut = makeSUT(
+            location: {
+                guard !unavailable.get() else { throw LocationError.unavailable }
+                return Coordinate(latitude: 37.4979, longitude: 127.0276)
+            },
+            recentFetch: { [makeArrival("신림동")] }
+        )
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+        sut.viewDidLoad()
+        await recorder.waitUntilLast { $0.recentRouteChipText == "→ 신림동" }
+
+        unavailable.update { _ in true }
+        sut.chipTapped()
+        while recorder.toasts.isEmpty { await Task.yield() }
+
+        #expect(recorder.toasts == [.chipLocationUnavailable])
+        #expect(sut.state.routeCard == nil)
+    }
+
+    @Test
+    func chipTapped_normalizedAndFailedResults_emitMatchingToasts() async {
+        // serviceEnded/noRoute/빈 available/실패 전부 토스트만 — 카드·필드는 무변경.
+        enum Scenario: Sendable { case serviceEnded, noRoute, emptyAvailable, failure }
+        let scenario = ValueBox(Scenario.serviceEnded)
+        let sut = makeSUT(
+            searchRoutes: { _, _ in
+                switch scenario.get() {
+                case .serviceEnded: return .serviceEnded
+                case .noRoute: return .noRoute
+                case .emptyAvailable: return .available([])
+                case .failure: throw StubError()
+                }
+            },
+            recentFetch: { [makeArrival("신림동")] }
+        )
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+        sut.viewDidLoad()
+        await recorder.waitUntilLast { $0.recentRouteChipText == "→ 신림동" }
+
+        for (scenarioCase, expected) in [
+            (Scenario.serviceEnded, HomeViewModel.ToastEvent.chipServiceEnded),
+            (.noRoute, .chipNoRoute),
+            (.emptyAvailable, .chipNoRoute),
+            (.failure, .chipSearchFailed),
+        ] {
+            scenario.update { _ in scenarioCase }
+            let toastsBefore = recorder.toasts.count
+            sut.chipTapped()
+            while recorder.toasts.count == toastsBefore { await Task.yield() }
+            #expect(recorder.toasts.last == expected)
+            await recorder.waitUntilLast { !$0.isChipBusy }
+        }
+        #expect(sut.state.routeCard == nil)
+        #expect(sut.state.arrivalText == nil)
+    }
+
+    @Test
+    func chipTapped_whileBusy_ignoresSecondTap() async {
+        // 더블 탭 = 재검색 1회 — busy 가드가 재진입을 막는다.
+        let calls = ValueBox(0)
+        let release = ValueBox(false)
+        let sut = makeSUT(
+            searchRoutes: { _, _ in
+                calls.update { $0 + 1 }
+                while !release.get() { await Task.yield() }
+                return .serviceEnded
+            },
+            recentFetch: { [makeArrival("신림동")] }
+        )
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+        sut.viewDidLoad()
+        await recorder.waitUntilLast { $0.recentRouteChipText == "→ 신림동" }
+
+        sut.chipTapped()
+        #expect(sut.state.isChipBusy)
+        sut.chipTapped()
+        release.update { _ in true }
+        while recorder.toasts.isEmpty { await Task.yield() }
+
+        #expect(calls.get() == 1)
+        #expect(recorder.toasts == [.chipServiceEnded])
+    }
+
+    @Test
+    func viewWillAppear_refetchesChip_reflectingDeletion() async {
+        // 검색 화면에서 최근을 지우고 돌아오면 칩도 사라져야 한다 — 재노출 재조회.
+        let recents = ValueBox([makeArrival("신림동")])
+        let sut = makeSUT(recentFetch: { recents.get() })
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+        sut.viewDidLoad()
+        await recorder.waitUntilLast { $0.recentRouteChipText == "→ 신림동" }
+
+        recents.update { _ in [] }
+        sut.viewWillAppear()
+        await recorder.waitUntilLast { $0.recentRouteChipText == nil }
+
+        #expect(sut.state.recentRouteChipText == nil)
+    }
+
+    @Test
+    func viewWillAppear_whilePromotionInFlight_keepsJustSelectedChip() async {
+        // 승격 저장이 끝나기 전의 재조회는 no-op — 낡은 목록이 방금의 도착지를 덮지 않는다.
+        let release = ValueBox(false)
+        let sut = makeSUT(
+            recentFetch: { [] }, // 저장 전의 낡은(빈) 목록.
+            recentSave: { _ in while !release.get() { await Task.yield() } }
+        )
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+
+        sut.routeSelected(
+            makeRoute(id: "r1", departure: fixedNow.addingTimeInterval(3600)),
+            arrival: makeArrival("당산역")
+        )
+        #expect(sut.state.recentRouteChipText == "→ 당산역")
+
+        sut.viewWillAppear()
+        for _ in 0..<20 { await Task.yield() }
+        #expect(sut.state.recentRouteChipText == "→ 당산역")
+
+        release.update { _ in true }
+        for _ in 0..<20 { await Task.yield() }
+        #expect(sut.state.recentRouteChipText == "→ 당산역")
     }
 }
 

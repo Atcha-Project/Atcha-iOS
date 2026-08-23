@@ -16,6 +16,8 @@ public final class HomeDIContainer: HomeCoordinatorBuildable {
     private let observeAlarmChangeUseCase: any ObserveAlarmChangeUseCase
     private let requestAlarmSyncUseCase: any RequestAlarmSyncUseCase
     private let getLastRouteDetailUseCase: any GetLastRouteDetailUseCase
+    private let searchLastRoutesUseCase: any SearchLastRoutesUseCase
+    private let recentSearchesUseCase: any RecentSearchesUseCase
     private let searchCoordinatorBuildable: any SearchCoordinatorBuildable
 
     public init(
@@ -27,6 +29,8 @@ public final class HomeDIContainer: HomeCoordinatorBuildable {
         observeAlarmChangeUseCase: any ObserveAlarmChangeUseCase,
         requestAlarmSyncUseCase: any RequestAlarmSyncUseCase,
         getLastRouteDetailUseCase: any GetLastRouteDetailUseCase,
+        searchLastRoutesUseCase: any SearchLastRoutesUseCase,
+        recentSearchesUseCase: any RecentSearchesUseCase,
         searchCoordinatorBuildable: any SearchCoordinatorBuildable
     ) {
         self.getCurrentLocationUseCase = getCurrentLocationUseCase
@@ -37,6 +41,8 @@ public final class HomeDIContainer: HomeCoordinatorBuildable {
         self.observeAlarmChangeUseCase = observeAlarmChangeUseCase
         self.requestAlarmSyncUseCase = requestAlarmSyncUseCase
         self.getLastRouteDetailUseCase = getLastRouteDetailUseCase
+        self.searchLastRoutesUseCase = searchLastRoutesUseCase
+        self.recentSearchesUseCase = recentSearchesUseCase
         self.searchCoordinatorBuildable = searchCoordinatorBuildable
     }
 
@@ -58,7 +64,9 @@ public final class HomeDIContainer: HomeCoordinatorBuildable {
             observeAlarmUseCase: observeAlarmUseCase,
             observeAlarmChangeUseCase: observeAlarmChangeUseCase,
             requestAlarmSyncUseCase: requestAlarmSyncUseCase,
-            getLastRouteDetailUseCase: getLastRouteDetailUseCase
+            getLastRouteDetailUseCase: getLastRouteDetailUseCase,
+            searchLastRoutesUseCase: searchLastRoutesUseCase,
+            recentSearchesUseCase: recentSearchesUseCase
         )
         viewModel.onSearchRequested = onSearchRequested
         return HomeViewController(viewModel: viewModel)

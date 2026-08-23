@@ -105,7 +105,7 @@
 ### Constraints
 - **즐겨찾기 선취 금지**: 칩 데이터의 유일한 원천은 `RecentSearchRepository` — 칩 전용 저장 키·별도 영속화·관리 UI(삭제·고정·다중) 금지. `AlarmSessionSnapshot` 확장 금지(재실행 복원 arrivalText placeholder 수용은 Phase 17 결정 그대로 — 칩은 그것과 별개 표면으로 공존한다).
 - **알람 자동 등록 금지**: 칩 탭 경로에서 `RegisterAlarmUseCase`·`AlarmScheduler`에 닿는 코드 금지. 밤 시간대 자동 재검색·제안 카드([제품 결정 트랙](../planning/atcha-v2-post12-roadmap.md) v1.1 후보)·"집" 배지 선취 금지 — 칩은 탭이라는 명시적 의사가 있을 때만 검색한다.
-- **SearchFeature·Domain·AtchaData·CoreStorage 소스 변경 0.** Interface 공개 계약 변경 0. `DevDemoFallbacks` 변경 0. 매니페스트(`Project.swift`/`Workspace.swift`)·`Tuist/Package.swift`·`Package.resolved` 무변경 — 신규 타겟 없음, `tuist generate` 불필요.
+- **SearchFeature·Domain·AtchaData·CoreStorage 소스 변경 0.** Interface 공개 계약 변경 0. `DevDemoFallbacks` 변경 0. 매니페스트(`Project.swift`/`Workspace.swift`)·`Tuist/Package.swift`·`Package.resolved` 무변경 — 신규 타겟 없음. 단 신규 소스 파일(`DSChip.swift` 등)은 생성 시점 글롭에 잡히도록 `tuist generate --no-open` 1회 재생성이 필요하다(2026-08-24 실측 — 매니페스트 무변경과 별개다).
 - 알람·LA·sync·스냅샷 경로 무변경. 홈 pull-to-refresh·스탬프·배너·복원 회귀 금지 — 칩 성공 경로는 `routeSelected` 수렴이라 이 표면들과 같은 규칙을 자동 상속한다.
 - DesignSystem 변경은 `DSChip`(+테스트·갤러리 데모)에 한정 — 기존 컴포넌트 API 파괴적 변경 금지.
 - 미확정 #3(serviceEnded/noRoute의 responseCode 실측) 해소 시도 금지 — 정규화 로직·TODO 불변.
