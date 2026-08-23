@@ -91,6 +91,10 @@ private struct SpyLocalNotificationPort: LocalNotificationPort {
     }
 }
 
+/// 픽스처가 1970 부근의 작은 epoch를 쓰므로, tooLate 사전 가드(발화 시각 > now)를
+/// 통과시키려면 now도 그보다 이른 고정값으로 주입한다.
+private let fixedNow: @Sendable () -> Date = { Date(timeIntervalSince1970: 0) }
+
 private extension LastRoute {
     static func fixture(id: String) -> LastRoute {
         LastRoute(
@@ -115,7 +119,8 @@ struct LastTrainActivityLifecycleTests {
         let sut = DefaultRegisterAlarmUseCase(
             repository: SpyAlarmRepository(log: log),
             scheduler: SpyAlarmScheduler(log: log),
-            activityPort: SpyActivityPort(log: log, box: box)
+            activityPort: SpyActivityPort(log: log, box: box),
+            now: fixedNow
         )
         try await sut.execute(route: route)
         // 순서 계약: 알람(서버 등록 → 로컬 교체)이 항상 LA 시작에 선행한다.
@@ -135,7 +140,8 @@ struct LastTrainActivityLifecycleTests {
         let sut = DefaultRegisterAlarmUseCase(
             repository: SpyAlarmRepository(log: log, registerError: StubError()),
             scheduler: SpyAlarmScheduler(log: log),
-            activityPort: SpyActivityPort(log: log, box: box)
+            activityPort: SpyActivityPort(log: log, box: box),
+            now: fixedNow
         )
         await #expect(throws: StubError.self) {
             try await sut.execute(route: .fixture(id: "new"))
@@ -152,7 +158,8 @@ struct LastTrainActivityLifecycleTests {
         let sut = DefaultRegisterAlarmUseCase(
             repository: SpyAlarmRepository(log: log),
             scheduler: SpyAlarmScheduler(log: log, authorizationGranted: false),
-            activityPort: SpyActivityPort(log: log, box: box)
+            activityPort: SpyActivityPort(log: log, box: box),
+            now: fixedNow
         )
         await #expect(throws: AlarmError.permissionDenied) {
             try await sut.execute(route: .fixture(id: "new"))
@@ -169,7 +176,8 @@ struct LastTrainActivityLifecycleTests {
             repository: SpyAlarmRepository(log: log),
             scheduler: SpyAlarmScheduler(log: log),
             activityPort: SpyActivityPort(log: log, box: box),
-            notificationPort: SpyLocalNotificationPort(log: log)
+            notificationPort: SpyLocalNotificationPort(log: log),
+            now: fixedNow
         )
         try await sut.execute(route: .fixture(id: "new"))
         // 순서 계약: 알림 권한 요청은 흐름의 맨 끝 — LA 시작 뒤에 정확히 1회.
@@ -186,7 +194,8 @@ struct LastTrainActivityLifecycleTests {
             repository: SpyAlarmRepository(log: log, registerError: StubError()),
             scheduler: SpyAlarmScheduler(log: log),
             activityPort: SpyActivityPort(log: log, box: box),
-            notificationPort: SpyLocalNotificationPort(log: log)
+            notificationPort: SpyLocalNotificationPort(log: log),
+            now: fixedNow
         )
         await #expect(throws: StubError.self) {
             try await sut.execute(route: .fixture(id: "new"))
@@ -203,7 +212,8 @@ struct LastTrainActivityLifecycleTests {
             repository: SpyAlarmRepository(log: log),
             scheduler: SpyAlarmScheduler(log: log, authorizationGranted: false),
             activityPort: SpyActivityPort(log: log, box: box),
-            notificationPort: SpyLocalNotificationPort(log: log)
+            notificationPort: SpyLocalNotificationPort(log: log),
+            now: fixedNow
         )
         await #expect(throws: AlarmError.permissionDenied) {
             try await sut.execute(route: .fixture(id: "new"))

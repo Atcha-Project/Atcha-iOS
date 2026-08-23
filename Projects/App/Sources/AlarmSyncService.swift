@@ -24,6 +24,13 @@ import os
 /// 성공해 **미래 출발 시각**을 반환하면 서버 우선(만료 취소, 정상 갱신 경로).
 /// 만료 확정 세션은 기록해 이후 refresh가 같은 과거 세션으로 배너를 되살리지 못하게
 /// 한다(홈의 미래 시각 가드가 1차 방어, 이 기록이 2차).
+///
+/// Phase 14 재실행 정합성: 첫 sync 진입 시 스냅샷을 시딩해 ⑤ `lastInfo`(diff의 "이전
+/// 값")가 재실행 후에도 살아 종료 중 발생한 변경을 실제로 판정하고, 만료 판정도 프로세스
+/// 수명과 무관하게 성립한다(expired 톰스톤은 2차 방어 복원). ⑥ sync 성공 시 스냅샷을
+/// 병합 저장하고, 스냅샷은 살아 있는데 활성 LA가 없는 죽은 세션은 로컬 재시작을
+/// 위임한다(dismiss·확인 기록 존중은 어댑터 몫). 도보 초는 스냅샷에서 읽어 LA 알람
+/// 시각 계산이 등록/refresh와 같은 기준을 탄다(이중 시각 금지).
 // Sendable 프로토콜(AlarmSyncEvents 등) 채택이 기본 MainActor 격리를 nonisolated로
 // 추론시키므로 명시한다 — 상태(subscribers 등)는 전부 메인 액터에서만 만진다.
 @MainActor
@@ -37,6 +44,11 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
     private let localNotification: any LocalNotificationPort
     /// sessionEnded 시 로컬 알람 취소용(Phase 12) — 등록/갱신 UseCase와 같은 스케줄러를 공유한다.
     private let alarmScheduler: any AlarmScheduler
+    /// 세션 스냅샷(Phase 14) — 재실행 브리지. sync 성공 시 병합 저장, 만료 확정 시 톰스톤,
+    /// 서버 sessionEnded 시 clear.
+    private let snapshotStore: any AlarmSessionSnapshotStore
+    /// 죽은 세션 LA 재시작 경로(Phase 14) — dismiss·확인 기록 판정은 어댑터가 한다.
+    private let sessionRestorer: any LastTrainSessionRestoring
     private static let logger = Logger(subsystem: "com.atcha.iOS.v2", category: "AlarmSync")
 
     /// "⚠ 당겨짐" 배지 유지 시간 — 정책: 표출 시점 + 10분.
@@ -51,6 +63,15 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
     /// Phase 13 만료 2차 방어 — 로컬 만료를 확정한 세션. 이후 refresh가 같은 routeId의
     /// 과거 세션을 반환해도 무시한다(미래 출발이 오면 서버 우선으로 해제).
     private var locallyExpiredSession: AlarmInfo?
+    /// Phase 14 스냅샷 시딩 1회 게이트 — 첫 sync 진입 전에 반드시 시딩이 끝나야
+    /// diff·만료 판정이 재실행 전 세션을 본다(트리거 3경로 공용이라 sync 안에서 게이트).
+    private var isSeededFromSnapshot = false
+    /// 현재 세션의 첫 도보 구간(초) — LA 알람 시각 계산용(등록/refresh와 같은 기준,
+    /// 이중 시각 금지). 스냅샷 시딩·병합 저장 시 갱신된다.
+    private var sessionWalkSeconds: Int?
+    /// "⚠ 당겨짐" 배지의 현재 만료 시각 — 조용한 갱신(unchanged/delayed)이 배지를 10분
+    /// 정책보다 일찍 지우지 않도록 보존한다(Phase 14 정합).
+    private var changeBadgeExpiry: Date?
     /// 진행 중 동기화 — 트리거가 겹치면(예: 앱 시작 직후 포그라운드 노티) 합류한다.
     private var inFlight: Task<AlarmInfo?, Never>?
     private var foregroundObserver: (any NSObjectProtocol)?
@@ -61,13 +82,17 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
         evaluateChangeUseCase: any EvaluateAlarmChangeUseCase,
         liveActivity: any LastTrainChangeAlerting,
         localNotification: any LocalNotificationPort,
-        alarmScheduler: any AlarmScheduler
+        alarmScheduler: any AlarmScheduler,
+        snapshotStore: any AlarmSessionSnapshotStore,
+        sessionRestorer: any LastTrainSessionRestoring
     ) {
         self.refreshAlarmUseCase = refreshAlarmUseCase
         self.evaluateChangeUseCase = evaluateChangeUseCase
         self.liveActivity = liveActivity
         self.localNotification = localNotification
         self.alarmScheduler = alarmScheduler
+        self.snapshotStore = snapshotStore
+        self.sessionRestorer = sessionRestorer
     }
 
     /// 인증 부트스트랩 완료 후 1회 호출: 즉시 동기화(앱 시작 경로) + 포그라운드
@@ -98,6 +123,9 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
             return await inFlight.value
         }
         Self.logger.info("알람 동기화 시작")
+        // Phase 14 시딩 — 첫 진입에서 스냅샷을 lastInfo(diff 이전 값)·만료 기록으로 복원.
+        // 만료 선행 판정보다 먼저여야 재실행 직후의 과거 세션도 리컨실에 걸린다.
+        await seedFromSnapshotIfNeeded()
         // Phase 13 선행 판정 — 확정은 refresh 결과를 본 뒤(미래 출발이면 서버 우선 취소).
         let expiryCandidate = expireLocallyIfNeeded(now: Date())
         let task = Task { [refreshAlarmUseCase] () -> AlarmInfo? in
@@ -137,13 +165,66 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
         Self.logger.info("알람 동기화 성공: route=\(info.lastRouteId, privacy: .public)")
         let previous = lastInfo
         lastInfo = info
+        // Phase 14 — sync 성공은 스냅샷 저장 시점. 도보·표시명은 같은 세션이면 보존한다.
+        let snapshot = await persistSyncedSnapshot(for: info)
         for continuation in subscribers.values {
             continuation.yield(info)
         }
+        // Phase 14 죽은 세션 재시작 — 스냅샷은 살아 있는데 활성 LA가 없고 dismiss·확인
+        // 기록도 없으면 로컬 재시작(판정은 어댑터). 8시간 한도·시작 실패 세션 커버.
+        await sessionRestorer.restartIfNeeded(snapshot: snapshot, now: Date())
         // Phase 11 피기백 — 이 시점에 알람 재스케줄은 이미 완료돼 있다
         // (RefreshAlarmUseCase.execute 반환 = 재스케줄 포함). 표출은 그 뒤에만 덧붙는다.
         await propagateChange(previous: previous, latest: info)
         return info
+    }
+
+    // MARK: - Phase 14 스냅샷 시딩·병합
+
+    /// 첫 sync 진입 전 1회 — 재실행 브리지 복원. expired 톰스톤은 2차 방어로,
+    /// 살아 있는 스냅샷은 diff의 "이전 값"으로 시딩하고 **구독자에게도 흘린다** —
+    /// refresh가 실패해도(오프라인·실서버 미인증) 홈이 배너·해제 버튼·카드를 복원할
+    /// 수 있어야 재실행이 정보를 잃지 않는다. 직후의 만료 판정·refresh가 이 값을
+    /// 즉시 교정하므로(서버 우선) 스냅샷이 정본 행세를 하는 창은 한 sync 이내다.
+    private func seedFromSnapshotIfNeeded() async {
+        guard !isSeededFromSnapshot else { return }
+        isSeededFromSnapshot = true
+        guard let snapshot = await snapshotStore.load() else { return }
+        sessionWalkSeconds = snapshot.firstWalkSeconds
+        if snapshot.expired {
+            locallyExpiredSession = snapshot.info
+        } else if lastInfo == nil {
+            lastInfo = snapshot.info
+            Self.logger.info(
+                "스냅샷 시딩: route=\(snapshot.info.lastRouteId, privacy: .public)"
+            )
+            for continuation in subscribers.values {
+                continuation.yield(snapshot.info)
+            }
+        }
+    }
+
+    /// sync 성공 시 스냅샷 병합 저장 — 같은 세션(routeId 일치)이면 등록 시점 사실
+    /// (도보·표시명·수단·확인 기록)을 보존하고 info만 갱신, 다른 세션이면 아는 것만 담는다
+    /// (표시명 공백은 LA 재시작 시 "막차" 폴백, 카드는 상세 재조회가 채운다).
+    private func persistSyncedSnapshot(for info: AlarmInfo) async -> AlarmSessionSnapshot {
+        let existing = await snapshotStore.load()
+        let snapshot: AlarmSessionSnapshot
+        if let existing, existing.info.lastRouteId == info.lastRouteId {
+            snapshot = existing.updating(info: info, expired: false)
+        } else {
+            snapshot = AlarmSessionSnapshot(
+                info: info,
+                firstWalkSeconds: nil,
+                routeDisplayName: "",
+                transportMode: nil,
+                acknowledged: false,
+                expired: false
+            )
+        }
+        await snapshotStore.save(snapshot)
+        sessionWalkSeconds = snapshot.firstWalkSeconds
+        return snapshot
     }
 
     // MARK: - Phase 13 클라 자체 만료 (wake 시점 판정)
@@ -167,6 +248,22 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
         locallyExpiredSession = session
         // replay-1이 죽은 세션을 재구독자에게 되살리지 않도록 비운다.
         lastInfo = nil
+        // Phase 14 — 만료 기록을 톰스톤(expired=true)으로 영속화: 재실행 후에도 같은
+        // 과거 세션의 refresh가 배너·재부착·재시작을 되살리지 못한다(2차 방어의 영속화).
+        // clear가 아니라 톰스톤인 이유: 지워 버리면 다음 실행의 2차 방어가 사라진다.
+        let existing = await snapshotStore.load()
+        if let existing, existing.info.lastRouteId == session.lastRouteId {
+            await snapshotStore.save(existing.updating(expired: true))
+        } else {
+            await snapshotStore.save(AlarmSessionSnapshot(
+                info: session,
+                firstWalkSeconds: sessionWalkSeconds,
+                routeDisplayName: "",
+                transportMode: nil,
+                acknowledged: false,
+                expired: true
+            ))
+        }
         await presentSessionEnded(previous: session, now: Date())
         yieldChange(.sessionEnded)
     }
@@ -207,6 +304,9 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
         case .sessionEnded:
             // 운행 종료·경로 소멸 — LA 최종 상태 종료 + 로컬 알람 취소.
             // 배너 정리는 changes yield를 받은 홈의 몫.
+            // 서버가 세션 종료를 확정했으므로 재실행 브리지(스냅샷)도 지운다(Phase 14).
+            await snapshotStore.clear()
+            sessionWalkSeconds = nil
             await presentSessionEnded(previous: previous, now: now)
             yieldChange(verdict)
         }
@@ -220,8 +320,12 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
         now: Date
     ) async {
         guard let departure = latest.departureTime else { return }
-        let alarmTime = AlarmTiming.alarmFireDate(departureTime: departure)
+        let alarmTime = AlarmTiming.alarmFireDate(
+            departureTime: departure, firstWalkSeconds: sessionWalkSeconds
+        )
         let badgeExpiry = now.addingTimeInterval(Self.changeBadgeDuration)
+        // 조용한 후속 갱신(unchanged/delayed)이 배지를 10분보다 일찍 지우지 않도록 보존한다.
+        changeBadgeExpiry = badgeExpiry
 
         guard alarmTime > now else {
             // 새 알람 시각이 이미 과거(출발은 미래) — 마지노선 침범. 원래 울렸어야 할 알람
@@ -285,9 +389,13 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
     private func presentMissed(latest: AlarmInfo, now: Date) async {
         // actionable=false 판정은 departureTime이 있을 때만 나온다(없으면 sessionEnded).
         guard let departure = latest.departureTime else { return }
+        // 실패 상태로 내려가면 "당겨짐" 배지는 의미를 잃는다 — 보존 기록도 접는다.
+        changeBadgeExpiry = nil
         let state = LastTrainActivityState(
             departureTime: departure,
-            alarmTime: AlarmTiming.alarmFireDate(departureTime: departure),
+            alarmTime: AlarmTiming.alarmFireDate(
+                departureTime: departure, firstWalkSeconds: sessionWalkSeconds
+            ),
             urgency: .imminent,
             changeBadgeExpiry: nil,
             phase: .missed
@@ -315,6 +423,7 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
     private func presentSessionEnded(previous: AlarmInfo?, now: Date) async {
         // 더는 울리면 안 되는 것이 정책의 핵심 — 표출(LA 종료)보다 알람 취소를 먼저 한다.
         await alarmScheduler.cancelAlarm()
+        changeBadgeExpiry = nil
 
         // sessionEnded 응답에는 departureTime이 없다 — 종료 시각 정보용으로 직전 스냅샷
         // (previous = 갱신 전 lastInfo)의 마지막 출발 시각을 쓰고, 그것도 없으면 now.
@@ -323,7 +432,9 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
         // 로컬 노티 폴백도 없다(배너 정리는 changes 스트림을 받은 홈이 한다).
         await liveActivity.end(final: LastTrainActivityState(
             departureTime: departure,
-            alarmTime: AlarmTiming.alarmFireDate(departureTime: departure),
+            alarmTime: AlarmTiming.alarmFireDate(
+                departureTime: departure, firstWalkSeconds: sessionWalkSeconds
+            ),
             // 위젯은 serviceEnded phase 키로 그린다 — urgency는 종료 화면에선 의미 없는 방어값.
             urgency: .imminent,
             changeBadgeExpiry: nil,
@@ -332,14 +443,20 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
     }
 
     /// 갱신된 AlarmInfo → LA 상태. departureTime이 없으면(세션 종료 등) 만들 수 없다.
+    /// 조용한 갱신도 살아 있는 "당겨짐" 배지는 그대로 싣는다 — 10분 정책 보존(Phase 14).
     private func activityState(for info: AlarmInfo, now: Date) -> LastTrainActivityState? {
         guard let departure = info.departureTime else { return nil }
-        let alarmTime = AlarmTiming.alarmFireDate(departureTime: departure)
+        let alarmTime = AlarmTiming.alarmFireDate(
+            departureTime: departure, firstWalkSeconds: sessionWalkSeconds
+        )
+        if let badgeExpiry = changeBadgeExpiry, badgeExpiry <= now {
+            changeBadgeExpiry = nil // 만료된 배지 기록은 정리한다.
+        }
         return LastTrainActivityState(
             departureTime: departure,
             alarmTime: alarmTime,
             urgency: LastTrainUrgency.forTimeRemaining(alarmTime.timeIntervalSince(now)),
-            changeBadgeExpiry: nil,
+            changeBadgeExpiry: changeBadgeExpiry,
             phase: .active
         )
     }

@@ -35,6 +35,11 @@ private struct StubObserveAlarmChangeUseCase: ObserveAlarmChangeUseCase {
     func execute() -> AsyncStream<AlarmChangeVerdict> { handler() }
 }
 
+private struct StubGetLastRouteDetailUseCase: GetLastRouteDetailUseCase {
+    let handler: @Sendable (String) async throws -> LastRoute
+    func execute(routeId: String) async throws -> LastRoute { try await handler(routeId) }
+}
+
 /// 테스트 도중 `now()`를 전진시키기 위한 가변 시계.
 private nonisolated final class NowBox: @unchecked Sendable {
     private let lock = NSLock()
@@ -121,6 +126,9 @@ private func makeSUT(
     alarmChanges: @escaping @Sendable () -> AsyncStream<AlarmChangeVerdict> = {
         AsyncStream { $0.finish() }
     },
+    routeDetail: @escaping @Sendable (String) async throws -> LastRoute = { _ in
+        throw StubError()
+    },
     now: @escaping @Sendable () -> Date = { fixedNow },
     bannerTickInterval: Duration = .seconds(60)
 ) -> HomeViewModel {
@@ -131,6 +139,7 @@ private func makeSUT(
         cancelAlarmUseCase: StubCancelAlarmUseCase(handler: cancel),
         observeAlarmUseCase: StubObserveAlarmUseCase(handler: alarmUpdates),
         observeAlarmChangeUseCase: StubObserveAlarmChangeUseCase(handler: alarmChanges),
+        getLastRouteDetailUseCase: StubGetLastRouteDetailUseCase(handler: routeDetail),
         now: now,
         bannerTickInterval: bannerTickInterval
     )
@@ -261,19 +270,19 @@ struct HomeViewModelTests {
         // 카운트다운·긴급도 모두 알람 발화 시각(출발 − 3분 버퍼) 기준 — 이중 시각 금지.
         // 출발까지 13분 = 알람까지 정확히 600초: imminent 경계.
         #expect(HomeViewModel.makeBanner(
-            departure: fixedNow.addingTimeInterval(13 * 60), now: fixedNow
+            departure: fixedNow.addingTimeInterval(13 * 60), firstWalkSeconds: nil, now: fixedNow
         ) == .init(text: "출발까지 10분", urgency: .imminent))
         // 알람까지 601초: caution으로 넘어간다.
         #expect(HomeViewModel.makeBanner(
-            departure: fixedNow.addingTimeInterval(13 * 60 + 1), now: fixedNow
+            departure: fixedNow.addingTimeInterval(13 * 60 + 1), firstWalkSeconds: nil, now: fixedNow
         )?.urgency == .caution)
         // 출발까지 33분 = 알람까지 정확히 1800초: caution 경계.
         #expect(HomeViewModel.makeBanner(
-            departure: fixedNow.addingTimeInterval(33 * 60), now: fixedNow
+            departure: fixedNow.addingTimeInterval(33 * 60), firstWalkSeconds: nil, now: fixedNow
         ) == .init(text: "출발까지 30분", urgency: .caution))
         // 알람까지 1801초: relaxed.
         #expect(HomeViewModel.makeBanner(
-            departure: fixedNow.addingTimeInterval(33 * 60 + 1), now: fixedNow
+            departure: fixedNow.addingTimeInterval(33 * 60 + 1), firstWalkSeconds: nil, now: fixedNow
         )?.urgency == .relaxed)
     }
 
@@ -282,22 +291,22 @@ struct HomeViewModelTests {
         // Phase 13: 1단계(카운트다운) → 2단계(지금 출발하세요) → 3단계(nil = 지난 막차).
         // 알람 직전(출발 3분 1초 전): 아직 1단계 — "출발까지 1분".
         #expect(HomeViewModel.makeBanner(
-            departure: fixedNow.addingTimeInterval(181), now: fixedNow
+            departure: fixedNow.addingTimeInterval(181), firstWalkSeconds: nil, now: fixedNow
         ) == .init(text: "출발까지 1분", urgency: .imminent))
         // 알람 시각 정각(출발 3분 전): 2단계 진입 — "출발까지 0분"은 존재하지 않는다.
         #expect(HomeViewModel.makeBanner(
-            departure: fixedNow.addingTimeInterval(180), now: fixedNow
+            departure: fixedNow.addingTimeInterval(180), firstWalkSeconds: nil, now: fixedNow
         ) == .init(text: "지금 출발하세요", urgency: .imminent))
         // 출발 정각·유예 마지막 초까지 2단계 유지.
         #expect(HomeViewModel.makeBanner(
-            departure: fixedNow, now: fixedNow
+            departure: fixedNow, firstWalkSeconds: nil, now: fixedNow
         ) == .init(text: "지금 출발하세요", urgency: .imminent))
         #expect(HomeViewModel.makeBanner(
-            departure: fixedNow.addingTimeInterval(-59), now: fixedNow
+            departure: fixedNow.addingTimeInterval(-59), firstWalkSeconds: nil, now: fixedNow
         ) == .init(text: "지금 출발하세요", urgency: .imminent))
         // 유예 경계(출발+60초)부터 3단계 — nil.
         #expect(HomeViewModel.makeBanner(
-            departure: fixedNow.addingTimeInterval(-60), now: fixedNow
+            departure: fixedNow.addingTimeInterval(-60), firstWalkSeconds: nil, now: fixedNow
         ) == nil)
     }
 
@@ -624,7 +633,199 @@ struct HomeViewModelTests {
             from: DateComponents(year: 2026, month: 8, day: 23, hour: 0, minute: 10)
         )!
 
-        #expect(HomeViewModel.makeBanner(departure: departure, now: now)
+        #expect(HomeViewModel.makeBanner(departure: departure, firstWalkSeconds: nil, now: now)
             == .init(text: "출발까지 27분", urgency: .caution))
     }
+
+    // MARK: - 도보 시간 반영 (Phase 14)
+
+    @Test
+    func makeBanner_walkSeconds_shiftAlarmBase() {
+        // 기준 = 출발 − 도보 − 버퍼: 출발 42분 뒤, 도보 120초면 알람까지 37분.
+        #expect(HomeViewModel.makeBanner(
+            departure: fixedNow.addingTimeInterval(42 * 60), firstWalkSeconds: 120, now: fixedNow
+        ) == .init(text: "출발까지 37분", urgency: .relaxed))
+        // 도보 반영으로 알람 시각이 이미 지났으면(출발 5분 전, 도보 120초 → 알람 정각)
+        // 2단계 "지금 출발하세요"에 진입한다.
+        #expect(HomeViewModel.makeBanner(
+            departure: fixedNow.addingTimeInterval(5 * 60), firstWalkSeconds: 120, now: fixedNow
+        ) == .init(text: "지금 출발하세요", urgency: .imminent))
+    }
+
+    @Test
+    func registerAlarm_routeWithWalk_bannerUsesWalkAwareBase() async {
+        // 등록 배너도 등록/LA와 같은 기준(출발 − 도보 − 버퍼)을 쓴다 — 이중 시각 금지.
+        let route = makeWalkRoute(
+            id: "r1", departure: fixedNow.addingTimeInterval(42 * 60), walkSeconds: 120
+        )
+        let sut = makeSUT()
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+
+        sut.routeSelected(route)
+        sut.registerAlarmTapped()
+        await recorder.waitUntilLast { $0.banner != nil }
+
+        #expect(sut.state.banner == .init(text: "출발까지 37분", urgency: .relaxed))
+    }
+
+    // MARK: - tooLate 사전 가드 (Phase 14)
+
+    @Test
+    func registerAlarm_tooLate_emitsToastAndKeepsRegisterButton() async {
+        let route = makeRoute(id: "r1", departure: fixedNow.addingTimeInterval(60))
+        let sut = makeSUT(register: { _ in throw AlarmError.tooLate })
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+
+        sut.routeSelected(route)
+        sut.registerAlarmTapped()
+        while recorder.toasts.isEmpty { await Task.yield() }
+
+        #expect(recorder.toasts == [.alarmTooLate])
+        #expect(sut.state.banner == nil)
+        #expect(!sut.state.isAlarmBusy)
+        #expect(sut.state.alarmButton == .register)
+    }
+
+    // MARK: - 변경 분 표기 올림 통일 (Phase 14)
+
+    @Test
+    func changeStream_advancedToast_roundsMinutesUp() async {
+        // 61초 앞당김 → 올림 2분 — LA 잠금화면 문구(.up)와 같은 분으로 읽힌다.
+        let (stream, continuation) = AsyncStream<AlarmChangeVerdict>.makeStream()
+        let sut = makeSUT(alarmChanges: { stream })
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+
+        sut.viewDidLoad()
+        continuation.yield(.advanced(by: 61, actionable: true))
+        while recorder.toasts.isEmpty { await Task.yield() }
+
+        #expect(recorder.toasts == [.lastTrainAdvanced(minutes: 2)])
+    }
+
+    // MARK: - 재실행 카드 복원 (Phase 14)
+
+    @Test
+    func alarmSync_withoutCard_restoresCardFromRouteDetail() async {
+        // 재실행 복원: 카드 없이 동기화가 도착하면 상세를 재조회해 카드·해제 버튼·
+        // 도보 반영 배너까지 복원한다 — "무슨 경로인지 모르는 해제 버튼" 해소.
+        let departure = fixedNow.addingTimeInterval(42 * 60)
+        let route = makeWalkRoute(id: "r1", departure: departure, walkSeconds: 120)
+        let (stream, continuation) = AsyncStream<AlarmInfo>.makeStream()
+        let sut = makeSUT(
+            alarmUpdates: { stream },
+            routeDetail: { routeId in
+                #expect(routeId == "r1")
+                return route
+            }
+        )
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+
+        sut.viewDidLoad()
+        continuation.yield(
+            AlarmInfo(lastRouteId: "r1", departureTime: departure, updatedAt: nil, isReal: true)
+        )
+        await recorder.waitUntilLast { $0.routeCard != nil }
+
+        #expect(sut.state.routeCard == RouteCardViewData(entity: route))
+        #expect(sut.state.alarmButton == .cancel)
+        // 배너도 상세의 도보 초 반영 기준으로 재시작됐다 (42분 − 2분 도보 − 3분 버퍼 = 37분).
+        await recorder.waitUntilLast { $0.banner?.text == "출발까지 37분" }
+    }
+
+    @Test
+    func alarmSync_detailFails_keepsCancelButtonWithoutCard() async {
+        // 복원 실패는 현행 폴백 — 카드 없이 해제 버튼·배너만. (기본 routeDetail 스텁이 throw)
+        let departure = fixedNow.addingTimeInterval(30 * 60)
+        let (stream, continuation) = AsyncStream<AlarmInfo>.makeStream()
+        let sut = makeSUT(alarmUpdates: { stream })
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+
+        sut.viewDidLoad()
+        continuation.yield(
+            AlarmInfo(lastRouteId: "r1", departureTime: departure, updatedAt: nil, isReal: true)
+        )
+        await recorder.waitUntilLast { $0.banner != nil }
+        for _ in 0..<20 { await Task.yield() }
+
+        #expect(sut.state.routeCard == nil)
+        #expect(sut.state.alarmButton == .cancel)
+    }
+
+    @Test
+    func alarmSync_cardAlreadyVisible_doesNotFetchDetail() async {
+        // 등록 직후의 동기화 — 카드가 이미 있으면 상세 재조회를 하지 않는다.
+        let route = makeRoute(id: "r1", departure: fixedNow.addingTimeInterval(42 * 60))
+        let fetched = FetchFlag()
+        let (stream, continuation) = AsyncStream<AlarmInfo>.makeStream()
+        let sut = makeSUT(
+            alarmUpdates: { stream },
+            routeDetail: { _ in
+                fetched.mark()
+                throw StubError()
+            }
+        )
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+        sut.viewDidLoad()
+        sut.routeSelected(route)
+        sut.registerAlarmTapped()
+        await recorder.waitUntilLast { $0.banner != nil }
+
+        continuation.yield(
+            AlarmInfo(
+                lastRouteId: "r1",
+                departureTime: fixedNow.addingTimeInterval(42 * 60),
+                updatedAt: nil,
+                isReal: true
+            )
+        )
+        for _ in 0..<20 { await Task.yield() }
+
+        #expect(!fetched.value)
+        #expect(sut.state.routeCard == RouteCardViewData(entity: route))
+    }
+}
+
+/// 상세 재조회 호출 여부 기록용 — 스텁 클로저가 @Sendable이라 클래스 박스로 관찰한다.
+private nonisolated final class FetchFlag: @unchecked Sendable {
+    private let lock = NSLock()
+    private var flag = false
+
+    var value: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return flag
+    }
+
+    func mark() {
+        lock.lock()
+        defer { lock.unlock() }
+        flag = true
+    }
+}
+
+/// 첫 구간이 도보인 경로 픽스처 (Phase 14 도보 반영 검증용).
+private nonisolated func makeWalkRoute(id: String, departure: Date, walkSeconds: Int) -> LastRoute {
+    let base = makeRoute(id: id, departure: departure)
+    let walk = TransportLeg(
+        mode: .walk, sectionTime: walkSeconds, distance: 150, departureTime: nil,
+        routeName: nil, lineType: nil, start: nil, end: nil,
+        subwayFinalStation: nil, subwayDirection: nil,
+        isExpressSubway: false, isLastSubway: false
+    )
+    return LastRoute(
+        id: base.id,
+        departureTime: base.departureTime,
+        totalTime: base.totalTime,
+        totalWalkTime: base.totalWalkTime,
+        transferCount: base.transferCount,
+        totalDistance: base.totalDistance,
+        totalWalkDistance: base.totalWalkDistance,
+        legs: [walk] + base.legs
+    )
 }

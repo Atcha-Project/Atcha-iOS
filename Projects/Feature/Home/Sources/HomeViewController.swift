@@ -220,6 +220,8 @@ final class HomeViewController: UIViewController {
             )
         case .alarmRegisterFailed:
             DSToast.show("알람 등록에 실패했어요. 다시 시도해 주세요.", in: view)
+        case .alarmTooLate:
+            DSToast.show("이미 출발 시간이 지난 경로예요", in: view)
         case .alarmCancelFailed:
             DSToast.show("알람 해제에 실패했어요. 다시 시도해 주세요.", in: view)
         case let .lastTrainAdvanced(minutes):

@@ -40,6 +40,8 @@ final class HomeViewModel {
         case alarmPermissionNeeded
         case alarmRegisterFailed
         case alarmCancelFailed
+        /// 발화 시각이 이미 과거인 경로의 등록 시도(사전 가드, Phase 14) — 서버 등록 전에 차단됐다.
+        case alarmTooLate
         /// 포그라운드 인앱 채널: 막차가 당겨졌다는 판정 — VC가 토스트 + 배너 강조로 표출한다.
         case lastTrainAdvanced(minutes: Int)
         /// 이미 못 타는 앞당김(actionable=false) — 배너는 실패 문구로 고정되고 원샷 안내만 나간다.
@@ -64,6 +66,7 @@ final class HomeViewModel {
     private let cancelAlarmUseCase: any CancelAlarmUseCase
     private let observeAlarmUseCase: any ObserveAlarmUseCase
     private let observeAlarmChangeUseCase: any ObserveAlarmChangeUseCase
+    private let getLastRouteDetailUseCase: any GetLastRouteDetailUseCase
     private let now: @Sendable () -> Date
     private let bannerTickInterval: Duration
 
@@ -75,6 +78,7 @@ final class HomeViewModel {
     private var observeTask: Task<Void, Never>?
     private var changeTask: Task<Void, Never>?
     private var bannerTask: Task<Void, Never>?
+    private var restoreCardTask: Task<Void, Never>?
 
     init(
         getCurrentLocationUseCase: any GetCurrentLocationUseCase,
@@ -83,6 +87,7 @@ final class HomeViewModel {
         cancelAlarmUseCase: any CancelAlarmUseCase,
         observeAlarmUseCase: any ObserveAlarmUseCase,
         observeAlarmChangeUseCase: any ObserveAlarmChangeUseCase,
+        getLastRouteDetailUseCase: any GetLastRouteDetailUseCase,
         now: @escaping @Sendable () -> Date = { Date() },
         bannerTickInterval: Duration = .seconds(60)
     ) {
@@ -92,6 +97,7 @@ final class HomeViewModel {
         self.cancelAlarmUseCase = cancelAlarmUseCase
         self.observeAlarmUseCase = observeAlarmUseCase
         self.observeAlarmChangeUseCase = observeAlarmChangeUseCase
+        self.getLastRouteDetailUseCase = getLastRouteDetailUseCase
         self.now = now
         self.bannerTickInterval = bannerTickInterval
     }
@@ -102,6 +108,7 @@ final class HomeViewModel {
         observeTask?.cancel()
         changeTask?.cancel()
         bannerTask?.cancel()
+        restoreCardTask?.cancel()
     }
 
     // MARK: - 입력
@@ -146,11 +153,18 @@ final class HomeViewModel {
                 self?.registeredRouteId = route.id
                 self?.state.isAlarmBusy = false
                 self?.refreshAlarmButton()
-                self?.startBannerTimer(departure: route.departureTime)
+                self?.startBannerTimer(
+                    departure: route.departureTime,
+                    firstWalkSeconds: route.firstWalkSectionSeconds
+                )
             } catch AlarmError.permissionDenied {
                 guard !Task.isCancelled else { return }
                 self?.state.isAlarmBusy = false
                 self?.onToast?(.alarmPermissionNeeded)
+            } catch AlarmError.tooLate {
+                guard !Task.isCancelled else { return }
+                self?.state.isAlarmBusy = false
+                self?.onToast?(.alarmTooLate)
             } catch {
                 guard !Task.isCancelled else { return }
                 self?.state.isAlarmBusy = false
@@ -213,7 +227,47 @@ final class HomeViewModel {
         // 창의 "지금 출발하세요"(2단계)도 동기화 복원 대상이다.
         if let departure = info.departureTime,
            !AlarmTiming.isSessionExpired(departureTime: departure, now: now()) {
-            startBannerTimer(departure: departure)
+            // 도보 초는 등록 시점 경로에서만 안다 — 같은 경로가 화면에 있으면 그 값,
+            // 재실행 복원(카드 없음)이면 상세 재조회가 끝난 뒤 재시작하며 반영한다.
+            startBannerTimer(
+                departure: departure,
+                firstWalkSeconds: selectedRoute?.id == info.lastRouteId
+                    ? selectedRoute?.firstWalkSectionSeconds
+                    : nil
+            )
+        }
+        restoreRouteCardIfNeeded(info)
+    }
+
+    /// 재실행 복원 (Phase 14): 알람은 있는데 카드가 없으면 경로 상세를 재조회해 카드를
+    /// 복원한다 — "무슨 경로인지 모르는 해제 버튼" 상태 해소. 실패는 현행 폴백(카드 없이
+    /// 해제 버튼)으로 조용히 남는다 — 만료 정리가 있어 유령이 오래가지 않는다.
+    private func restoreRouteCardIfNeeded(_ info: AlarmInfo) {
+        guard state.routeCard == nil, restoreCardTask == nil else { return }
+        restoreCardTask = Task { [weak self] in
+            defer { self?.restoreCardTask = nil }
+            guard let useCase = self?.getLastRouteDetailUseCase else { return }
+            guard let route = try? await useCase.execute(routeId: info.lastRouteId) else { return }
+            guard !Task.isCancelled, let self else { return }
+            // 복원 도중 상태가 변했으면(새 경로 선택·세션 종료) 낡은 복원을 버린다.
+            guard self.registeredRouteId == info.lastRouteId,
+                  self.state.routeCard == nil else { return }
+            self.selectedRoute = route
+            var newState = self.state
+            newState.routeCard = RouteCardViewData(entity: route)
+            newState.alarmButton = Self.alarmButtonMode(
+                selectedRouteId: route.id,
+                registeredRouteId: self.registeredRouteId
+            )
+            self.state = newState
+            // 배너를 도보 반영 기준으로 재시작한다(등록/refresh/LA와 같은 값 — 이중 시각 금지).
+            if let departure = info.departureTime,
+               !AlarmTiming.isSessionExpired(departureTime: departure, now: self.now()) {
+                self.startBannerTimer(
+                    departure: departure,
+                    firstWalkSeconds: route.firstWalkSectionSeconds
+                )
+            }
         }
     }
 
@@ -234,8 +288,9 @@ final class HomeViewModel {
     private func alarmChanged(_ verdict: AlarmChangeVerdict) {
         switch verdict {
         case let .advanced(by: interval, actionable: true):
-            // 반올림하되 최소 1분 — "0분 당겨졌어요"는 말이 안 된다.
-            let minutes = max(1, Int((interval / 60).rounded()))
+            // 올림 + 최소 1분 — LA 잠금화면 문구(.up)와 같은 분으로 읽혀야 한다(표기 통일,
+            // Phase 14). "0분 당겨졌어요"도 자연히 존재하지 않는다.
+            let minutes = max(1, Int((interval / 60).rounded(.up)))
             onToast?(.lastTrainAdvanced(minutes: minutes))
         case .advanced(by: _, actionable: false):
             // 이미 못 타는 앞당김 — 카운트다운을 멈추고 배너를 실패 문구로 고정한다.
@@ -295,13 +350,15 @@ final class HomeViewModel {
         )
     }
 
-    private func startBannerTimer(departure: Date) {
+    private func startBannerTimer(departure: Date, firstWalkSeconds: Int?) {
         bannerTask?.cancel()
         // 매 틱 departure 기준으로 재계산 — 누적 드리프트가 없다.
         bannerTask = Task { [weak self] in
             while !Task.isCancelled {
                 guard let now = self?.now() else { return }
-                guard let banner = Self.makeBanner(departure: departure, now: now) else {
+                guard let banner = Self.makeBanner(
+                    departure: departure, firstWalkSeconds: firstWalkSeconds, now: now
+                ) else {
                     // 유예 경과(3단계) — 배너·버튼을 내리고 카드를 "지난 막차"로 전환,
                     // 틱 종료. 알람·LA·서버 정리는 App(AlarmSyncService)의 wake 판정 몫.
                     self?.sessionExpired(departure: departure)
@@ -345,19 +402,25 @@ final class HomeViewModel {
         max(0, Int(ceil(departure.timeIntervalSince(now) / 60)))
     }
 
-    /// 카운트다운·긴급도 모두 **버퍼 포함 알람 발화 시각**(AlarmTiming) 기준 — LA와 기준을
-    /// 통일한다(이중 시각 금지). 그래서 문구도 "막차 출발까지"가 아니라 사용자가 출발해야
-    /// 할 시각 기준의 "출발까지"다.
+    /// 카운트다운·긴급도 모두 **도보·버퍼 포함 알람 발화 시각**(AlarmTiming) 기준 — 등록/
+    /// refresh/LA와 기준을 통일한다(이중 시각 금지). 그래서 문구도 "막차 출발까지"가
+    /// 아니라 사용자가 출발해야 할 시각 기준의 "출발까지"다.
     ///
     /// Phase 13 배너 3단계 전이:
     /// 1) now < 알람 시각: "출발까지 N분"
     /// 2) 알람 시각 ≤ now < 출발+유예: "지금 출발하세요" (imminent 고정 — "출발까지 0분" 제거)
     /// 3) 유예 경과: nil — 호출자가 배너를 내리고 카드를 "지난 막차"로 전환할 시점.
-    nonisolated static func makeBanner(departure: Date, now: Date) -> BannerViewData? {
+    nonisolated static func makeBanner(
+        departure: Date,
+        firstWalkSeconds: Int?,
+        now: Date
+    ) -> BannerViewData? {
         guard !AlarmTiming.isSessionExpired(departureTime: departure, now: now) else {
             return nil
         }
-        let alarmDate = AlarmTiming.alarmFireDate(departureTime: departure)
+        let alarmDate = AlarmTiming.alarmFireDate(
+            departureTime: departure, firstWalkSeconds: firstWalkSeconds
+        )
         guard now < alarmDate else {
             return BannerViewData(text: "지금 출발하세요", urgency: .imminent)
         }

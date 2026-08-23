@@ -41,6 +41,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             cancelAlarmUseCase: PreviewCancelAlarmUseCase(),
             observeAlarmUseCase: PreviewObserveAlarmUseCase(),
             observeAlarmChangeUseCase: PreviewObserveAlarmChangeUseCase(),
+            getLastRouteDetailUseCase: PreviewGetLastRouteDetailUseCase(),
             searchCoordinatorBuildable: PreviewSearchCoordinatorBuildable()
         )
         let coordinator = container.makeHomeCoordinator(navigationController: navigationController)
@@ -96,6 +97,15 @@ struct PreviewObserveAlarmChangeUseCase: ObserveAlarmChangeUseCase {
     }
 }
 
+/// 재실행 카드 복원 경로 스텁 — 동기화 이벤트가 없어 호출되지 않지만, 호출돼도
+/// canned 경로를 돌려줘 플로우가 성립한다.
+struct PreviewGetLastRouteDetailUseCase: GetLastRouteDetailUseCase {
+    func execute(routeId: String) async throws -> LastRoute {
+        try? await Task.sleep(for: .milliseconds(300))
+        return PreviewSearchCoordinator.makeCannedRoute()
+    }
+}
+
 /// 검색 플로우 스텁: 화면 전환 없이 canned 경로를 즉시 반환한다.
 /// 실제 검색 UX 시연은 SearchFeatureExample이 담당한다.
 struct PreviewSearchCoordinatorBuildable: SearchCoordinatorBuildable {
@@ -122,7 +132,8 @@ final class PreviewSearchCoordinator: Coordinator {
         finish()
     }
 
-    private static func makeCannedRoute() -> LastRoute {
+    // nonisolated: 상세 재조회 스텁(nonisolated async)에서도 공유한다.
+    nonisolated static func makeCannedRoute() -> LastRoute {
         let departure = Date().addingTimeInterval(42 * 60)
         return LastRoute(
             id: "preview-route",

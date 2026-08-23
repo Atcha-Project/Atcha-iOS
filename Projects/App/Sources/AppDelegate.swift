@@ -19,6 +19,11 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
+        // 고아 LA 재부착/정리 (Phase 14) — 인증 부트스트랩과 무관한 로컬 리컨실이라
+        // 앱 시작 최전선에서 1회. 첫 sync보다 먼저 끝나는 것이 보통이지만, 늦어도
+        // 어댑터(actor)가 직렬화하므로 안전하다.
+        let container = container
+        Task { await container.reattachOrphanLiveActivities() }
         configureFirebaseIfAvailable()
         if isFirebaseEnabled {
             Messaging.messaging().delegate = self

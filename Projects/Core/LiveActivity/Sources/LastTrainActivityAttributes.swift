@@ -10,10 +10,22 @@ public struct LastTrainActivityAttributes: ActivityAttributes, Sendable {
     public let routeId: String
     /// 노선명 (예: "9호선 급행") — 잠금화면·다이나믹 아일랜드 타이틀.
     public let routeName: String
+    /// 탑승 수단 (Phase 14) — DI 컴팩트 아이콘 분기용. 고정 정보라 Attributes가 맞는 자리.
+    /// optional인 이유: 구버전이 남긴 활성 LA의 재부착 디코딩이 새 키 부재로 깨지면 안 된다.
+    public let transportKind: LastTrainTransportKind?
+    /// 등록 시점 경로의 첫 도보 구간(초, Phase 14) — 잠금화면 3행 "정류장 도보 N분" 표시용.
+    public let firstWalkSeconds: Int?
 
-    public init(routeId: String, routeName: String) {
+    public init(
+        routeId: String,
+        routeName: String,
+        transportKind: LastTrainTransportKind?,
+        firstWalkSeconds: Int?
+    ) {
         self.routeId = routeId
         self.routeName = routeName
+        self.transportKind = transportKind
+        self.firstWalkSeconds = firstWalkSeconds
     }
 
     /// Mutable snapshot pushed on every update.
@@ -43,6 +55,15 @@ public struct LastTrainActivityAttributes: ActivityAttributes, Sendable {
             self.status = status
         }
     }
+}
+
+/// 탑승 수단 (Phase 14) — 위젯 아이콘 키. 세분류(간선/지선 등)는 표시에 불필요해
+/// 버스/지하철 2종 + 방어값(other)만 둔다. 미지 rawValue 디코딩 실패는 어댑터가
+/// optional 필드로 무해화한다(위젯은 nil이면 버스 아이콘 폴백).
+public enum LastTrainTransportKind: String, Codable, Hashable, Sendable {
+    case bus
+    case subway
+    case other
 }
 
 /// 긴급도 3단계 (여유/주의/임박).
