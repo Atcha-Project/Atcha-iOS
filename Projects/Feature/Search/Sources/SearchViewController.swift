@@ -102,12 +102,24 @@ final class SearchViewController: UIViewController {
             make.top.equalTo(separator.snp.bottom)
             make.leading.trailing.bottom.equalToSuperview()
         }
+        // 빈 상태·스피너는 키보드 위 가시 영역의 중앙에 둔다(Phase 17) — 타이핑 중 뜨는
+        // 빈 상태(최근 0건·결과 0건)의 문구가 키보드에 가리지 않아야 한다.
+        // keyboardLayoutGuide는 키보드가 없으면 화면 하단을 따르므로 분기가 필요 없다.
+        let aboveKeyboardArea = UILayoutGuide()
+        view.addLayoutGuide(aboveKeyboardArea)
+        NSLayoutConstraint.activate([
+            aboveKeyboardArea.topAnchor.constraint(equalTo: separator.bottomAnchor),
+            aboveKeyboardArea.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            aboveKeyboardArea.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            aboveKeyboardArea.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor),
+        ])
         emptyState.snp.makeConstraints { make in
-            make.center.equalTo(tableView)
+            make.centerY.equalTo(aboveKeyboardArea.snp.centerY)
             make.leading.trailing.equalToSuperview().inset(DSSpacing.lg)
         }
         activityIndicator.snp.makeConstraints { make in
-            make.center.equalTo(tableView)
+            make.centerX.equalToSuperview()
+            make.centerY.equalTo(aboveKeyboardArea.snp.centerY)
         }
 
         navigationBar.onBack = { [weak self] in self?.viewModel.didTapBack() }
