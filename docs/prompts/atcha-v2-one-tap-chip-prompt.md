@@ -127,6 +127,8 @@ iOS 26 시뮬레이터(Debug/DEV)에서 에이전트가 직접 수행하고 단�
 
 **실기기 잔여**: 실기기 GPS 기반 칩 재검색 실측(시뮬 좌표 주입은 참고값). restricted(스크린타임 제약) 실측(Phase 17 승계). 사일런트 푸시 실수신(기존 항상-잔여 항목 — 이 Phase 무관 승계).
 
+> **검수 결과 기록 (2026-08-24 실측)**: [규약의 XCUITest 하니스 경로](atcha-v2-auto-verification.md)(Phase 17 하니스 승계)로 ①~⑧ 전 시나리오 자동 검수 **통과**(Run 1: 위치 허용 7건 + Run 2: 위치 거부 1건, 증적 p18-01~p18-10). Run 2는 도착지→출발지 순 확정으로 저장 순서상 최근 1위가 출발지가 되는 상황을 만들어 **승격 저장(칩 = 확정 도착지)을 화면으로 직접 검증**했다. 검수 중 앱 결함 0건 — 초기 2회 실패는 전부 하니스·환경 원인: ① 권한 알럿 자동화의 `label IN` firstMatch가 **"한 번 허용(Allow Once)"을 눌러** 재실행부터 권한이 소멸(→ 위치 재조회가 nil 업데이트 후 즉시 종료 = unavailable), ② `simctl location start`(waypoint)·`simctl location set` 펌프·`XCUIDevice.location` 주입 모두 Allow Once 상태의 재조회 스트림을 구제하지 못함. **While-Using 정식 허용 + 사전 `simctl location set` 정적 좌표**면 재조회 스트림(검색 프리필·칩 탭)까지 픽스가 정상 도달한다 — 규약에 실측 추가. 실기기 잔여는 위 목록 그대로.
+
 ---
 
 ## 진행 프로토콜
