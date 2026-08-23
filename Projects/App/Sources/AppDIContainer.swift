@@ -56,8 +56,14 @@ final class AppDIContainer {
             session: URLSession(configuration: sessionConfiguration)
         )
         #else
+        // Phase 16 — 기본 60초 타임아웃은 심야의 약한 연결에서 1분 침묵이다. 빨리
+        // 실패시키고(요청 10초) 멱등 GET 1회 재시도·신선도 스탬프가 정직성을 맡는다.
+        let sessionConfiguration = URLSessionConfiguration.default
+        sessionConfiguration.timeoutIntervalForRequest = 10
+        sessionConfiguration.timeoutIntervalForResource = 30
         let baseClient = URLSessionNetworkClient(
-            baseURL: AppEnvironment.current.apiBaseURL
+            baseURL: AppEnvironment.current.apiBaseURL,
+            session: URLSession(configuration: sessionConfiguration)
         )
         #endif
         let sessionManager = AuthSessionManager(
@@ -173,6 +179,8 @@ final class AppDIContainer {
             ),
             observeAlarmUseCase: DefaultObserveAlarmUseCase(events: alarmSyncService),
             observeAlarmChangeUseCase: DefaultObserveAlarmChangeUseCase(events: alarmSyncService),
+            // 홈 pull-to-refresh(Phase 16) — 4번째 트리거도 같은 동기화 한 곳으로 합류한다.
+            requestAlarmSyncUseCase: DefaultRequestAlarmSyncUseCase(requesting: alarmSyncService),
             // 재실행 카드 복원(Phase 14) — 기존 미사용 자산(detail 엔드포인트) 재활용.
             getLastRouteDetailUseCase: DefaultGetLastRouteDetailUseCase(
                 repository: lastRouteRepository

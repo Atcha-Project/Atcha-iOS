@@ -42,7 +42,10 @@ final class AppCoordinator: Coordinator, CoordinatorFinishDelegate {
                 self.container.alarmSyncService.activate()
             } catch {
                 guard !Task.isCancelled else { return }
-                self.splashViewController?.showRetry()
+                // 원인별 문구 분기(Phase 16) — 오프라인만 구분, 그 외는 일시 장애 안내.
+                self.splashViewController?.showRetry(
+                    message: BootstrapFailureMessage.text(for: error)
+                )
             }
         }
     }

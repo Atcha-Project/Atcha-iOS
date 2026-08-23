@@ -32,6 +32,14 @@ final class HomeViewController: UIViewController {
         return stack
     }()
 
+    // pull-to-refresh(Phase 16) — 콘텐츠가 화면보다 짧아도 당길 수 있게 상시 바운스.
+    private let scrollView: UIScrollView = {
+        let scrollView = UIScrollView()
+        scrollView.alwaysBounceVertical = true
+        return scrollView
+    }()
+    private let refreshControl = UIRefreshControl()
+
     init(viewModel: HomeViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
@@ -73,10 +81,24 @@ final class HomeViewController: UIViewController {
     private func configureUI() {
         view.backgroundColor = DSColor.Background.base
 
-        view.addSubview(contentStack)
+        refreshControl.addAction(
+            UIAction { [weak self] _ in self?.viewModel.refreshPulled() },
+            for: .valueChanged
+        )
+        scrollView.refreshControl = refreshControl
+        view.addSubview(scrollView)
+        scrollView.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide)
+            make.leading.trailing.bottom.equalToSuperview()
+        }
+
+        scrollView.addSubview(contentStack)
         contentStack.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(DSSpacing.sm12)
-            make.leading.trailing.equalToSuperview().inset(DSSpacing.md)
+            make.top.equalTo(scrollView.contentLayoutGuide).offset(DSSpacing.sm12)
+            make.bottom.equalTo(scrollView.contentLayoutGuide)
+            make.leading.trailing.equalTo(scrollView.contentLayoutGuide).inset(DSSpacing.md)
+            // 세로 스크롤 전용 — 콘텐츠 폭을 프레임 폭에 고정한다(수평 스크롤 방지).
+            make.width.equalTo(scrollView.frameLayoutGuide).offset(-DSSpacing.md * 2)
         }
 
         [titleLabel, banner, departureRow, arrivalRow, routeCard, registerButton, cancelButton]
@@ -169,6 +191,11 @@ final class HomeViewController: UIViewController {
         viewModel.onToast = { [weak self] event in
             self?.showToast(for: event)
         }
+        // 성공/실패 불문 동기화 종료 시 스피너를 내린다(Phase 16) — 실패 표출은
+        // 스탬프가 낡은 시각을 유지하는 것뿐(무음 정책).
+        viewModel.onManualSyncFinished = { [weak self] in
+            self?.refreshControl.endRefreshing()
+        }
         render(viewModel.state)
     }
 
@@ -184,7 +211,8 @@ final class HomeViewController: UIViewController {
         }
 
         if let card = state.routeCard {
-            routeCard.configure(with: card.dsContent)
+            // 신선도 스탬프(Phase 16)는 세션 상태라 State가 따로 나른다 — 표출 시점 합성.
+            routeCard.configure(with: card.dsContent(footnote: state.freshnessText))
             routeCard.isHidden = false
         } else {
             routeCard.isHidden = true
@@ -195,7 +223,11 @@ final class HomeViewController: UIViewController {
         cancelButton.isEnabled = !state.isAlarmBusy
 
         if let bannerData = state.banner {
-            banner.configure(text: bannerData.text, style: Self.bannerStyle(for: bannerData.urgency))
+            banner.configure(
+                text: bannerData.text,
+                style: Self.bannerStyle(for: bannerData.urgency),
+                detailText: state.freshnessText
+            )
             banner.isHidden = false
         } else {
             banner.isHidden = true

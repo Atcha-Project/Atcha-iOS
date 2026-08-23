@@ -41,6 +41,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             cancelAlarmUseCase: PreviewCancelAlarmUseCase(),
             observeAlarmUseCase: PreviewObserveAlarmUseCase(),
             observeAlarmChangeUseCase: PreviewObserveAlarmChangeUseCase(),
+            requestAlarmSyncUseCase: PreviewRequestAlarmSyncUseCase(),
             getLastRouteDetailUseCase: PreviewGetLastRouteDetailUseCase(),
             searchCoordinatorBuildable: PreviewSearchCoordinatorBuildable()
         )
@@ -87,8 +88,15 @@ struct PreviewCancelAlarmUseCase: CancelAlarmUseCase {
 
 /// 등록된 알람이 없는 서버 상태를 흉내 낸다 — 동기화 이벤트가 오지 않으므로 화면을 건드리지 않는다.
 struct PreviewObserveAlarmUseCase: ObserveAlarmUseCase {
-    func execute() -> AsyncStream<AlarmInfo> {
+    func execute() -> AsyncStream<AlarmSyncUpdate> {
         AsyncStream { _ in }
+    }
+}
+
+/// 수동 갱신(pull-to-refresh) 스텁 — 잠깐 도는 스피너만 흉내 낸다(결과 스트림 없음).
+struct PreviewRequestAlarmSyncUseCase: RequestAlarmSyncUseCase {
+    func execute() async {
+        try? await Task.sleep(for: .milliseconds(600))
     }
 }
 

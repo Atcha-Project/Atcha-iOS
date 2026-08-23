@@ -10,6 +10,15 @@ private let timeFormatter: DateFormatter = {
     return formatter
 }()
 
+/// 신선도 스탬프 문구(Phase 16) — 배너 보조 라인·카드 푸터 공용. 등록 세션이 있고
+/// 확인 시각이 있을 때만 문구가 있다. 시각 포맷은 카드와 같은 캐시 포매터를 쓴다.
+extension HomeViewModel {
+    static func freshnessText(checkedAt: Date?, isRegistered: Bool) -> String? {
+        guard isRegistered, let checkedAt else { return nil }
+        return "\(timeFormatter.string(from: checkedAt)) 확인 기준"
+    }
+}
+
 /// 홈에 표출되는 선택 경로 카드. Entity를 뷰에 직접 노출하지 않는다.
 struct RouteCardViewData: Equatable {
     /// 카드 톤 — past는 유예 경과 후의 "지난 막차" 상태(비활성 시각, Phase 13).
@@ -65,13 +74,16 @@ struct RouteCardViewData: Equatable {
         )
     }
 
-    var dsContent: DSRouteCard.Content {
+    /// footnote(신선도 스탬프)는 카드 사실이 아니라 세션 상태라 State가 따로 나른다 —
+    /// VC가 표출 시점에 합성한다(Phase 16).
+    func dsContent(footnote: String?) -> DSRouteCard.Content {
         .init(
             badgeText: badgeText,
             departureTimeText: departureTimeText,
             legs: legs,
             summaryText: summaryText,
             destinationText: destinationText,
+            footnoteText: footnote,
             tone: tone == .past ? .muted : .normal
         )
     }

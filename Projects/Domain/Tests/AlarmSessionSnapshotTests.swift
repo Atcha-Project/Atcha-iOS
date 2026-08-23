@@ -14,7 +14,8 @@ struct AlarmSessionSnapshotTests {
         routeDisplayName: "6411번 버스",
         transportMode: .bus,
         acknowledged: false,
-        expired: false
+        expired: false,
+        syncedAt: Date(timeIntervalSince1970: 1_755_995_000)
     )
 
     @Test
@@ -61,5 +62,40 @@ struct AlarmSessionSnapshotTests {
         let tombstone = snapshot.updating(expired: true)
         #expect(tombstone.expired)
         #expect(tombstone.info == snapshot.info)
+    }
+
+    // MARK: - syncedAt (Phase 16 신선도 스탬프)
+
+    @Test
+    func updating_preservesSyncedAtUnlessGiven() {
+        // 명시하지 않으면 마지막 확인 시각을 보존한다 — 톰스톤 전환이 스탬프를 지우면 안 된다.
+        let tombstone = snapshot.updating(expired: true)
+        #expect(tombstone.syncedAt == snapshot.syncedAt)
+
+        let refreshed = snapshot.updating(syncedAt: Date(timeIntervalSince1970: 1_756_000_100))
+        #expect(refreshed.syncedAt == Date(timeIntervalSince1970: 1_756_000_100))
+        #expect(refreshed.info == snapshot.info)
+    }
+
+    @Test
+    func decoding_snapshotWithoutSyncedAtKey_defaultsToNil() throws {
+        // Phase 16 이전에 저장된 스냅샷(구 포맷) — syncedAt 키 부재는 nil로 디코딩돼야
+        // 재실행 브리지가 깨지지 않는다(하위호환).
+        let legacy = AlarmSessionSnapshot(
+            info: snapshot.info,
+            firstWalkSeconds: 120,
+            routeDisplayName: "6411번 버스",
+            transportMode: .bus,
+            acknowledged: false,
+            expired: false
+        )
+        var object = try #require(
+            try JSONSerialization.jsonObject(with: JSONEncoder().encode(legacy)) as? [String: Any]
+        )
+        object.removeValue(forKey: "syncedAt")
+        let data = try JSONSerialization.data(withJSONObject: object)
+        let decoded = try JSONDecoder().decode(AlarmSessionSnapshot.self, from: data)
+        #expect(decoded.syncedAt == nil)
+        #expect(decoded.info == snapshot.info)
     }
 }

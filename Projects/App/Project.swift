@@ -65,6 +65,20 @@ let appTarget = Target.target(
     ])
 )
 
+// App 타겟 테스트 타겟(Phase 16) — host app 방식: 앱 타겟 의존으로 internal 심볼을
+// @testable 접근한다. AlarmSyncService(판정·폴백·만료 분기)의 회귀 방어가 목적.
+let testTarget = Target.target(
+    name: "AtchaV2Tests",
+    destinations: Atcha.destinations,
+    product: .unitTests,
+    bundleId: "\(Atcha.v2BundleID).tests",
+    deploymentTargets: Atcha.v2Deployment,
+    infoPlist: .default,
+    sources: ["Tests/**"],
+    dependencies: [.target(name: "AtchaV2")],
+    settings: .atchaV2()
+)
+
 let widgetTarget = Target.widgetExtension(
     name: "AtchaWidget",
     bundleId: "\(Atcha.v2BundleID).widget",
@@ -84,12 +98,13 @@ let project = Project(
         developmentRegion: Atcha.developmentRegion
     ),
     settings: .atchaV2(),
-    targets: [appTarget, widgetTarget],
+    targets: [appTarget, widgetTarget, testTarget],
     schemes: [
         .scheme(
             name: "AtchaV2",
             shared: true,
             buildAction: .buildAction(targets: ["AtchaV2"]),
+            testAction: .targets(["AtchaV2Tests"]),
             runAction: .runAction(configuration: "Debug", executable: "AtchaV2"),
             archiveAction: .archiveAction(configuration: "Debug"),
             profileAction: .profileAction(configuration: "Debug", executable: "AtchaV2"),

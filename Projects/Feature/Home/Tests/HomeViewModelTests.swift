@@ -33,8 +33,13 @@ private struct StubCancelAlarmUseCase: CancelAlarmUseCase {
 }
 
 private struct StubObserveAlarmUseCase: ObserveAlarmUseCase {
-    let handler: @Sendable () -> AsyncStream<AlarmInfo>
-    func execute() -> AsyncStream<AlarmInfo> { handler() }
+    let handler: @Sendable () -> AsyncStream<AlarmSyncUpdate>
+    func execute() -> AsyncStream<AlarmSyncUpdate> { handler() }
+}
+
+private struct StubRequestAlarmSyncUseCase: RequestAlarmSyncUseCase {
+    let handler: @Sendable () async -> Void
+    func execute() async { await handler() }
 }
 
 private struct StubObserveAlarmChangeUseCase: ObserveAlarmChangeUseCase {
@@ -148,12 +153,13 @@ private func makeSUT(
     register: @escaping @Sendable (LastRoute) async throws -> Void = { _ in },
     registerOutcome: LocalNotificationAuthorizationOutcome = .alreadySettled,
     cancel: @escaping @Sendable (String) async throws -> Void = { _ in },
-    alarmUpdates: @escaping @Sendable () -> AsyncStream<AlarmInfo> = {
+    alarmUpdates: @escaping @Sendable () -> AsyncStream<AlarmSyncUpdate> = {
         AsyncStream { $0.finish() }
     },
     alarmChanges: @escaping @Sendable () -> AsyncStream<AlarmChangeVerdict> = {
         AsyncStream { $0.finish() }
     },
+    requestSync: @escaping @Sendable () async -> Void = {},
     routeDetail: @escaping @Sendable (String) async throws -> LastRoute = { _ in
         throw StubError()
     },
@@ -169,10 +175,18 @@ private func makeSUT(
         cancelAlarmUseCase: StubCancelAlarmUseCase(handler: cancel),
         observeAlarmUseCase: StubObserveAlarmUseCase(handler: alarmUpdates),
         observeAlarmChangeUseCase: StubObserveAlarmChangeUseCase(handler: alarmChanges),
+        requestAlarmSyncUseCase: StubRequestAlarmSyncUseCase(handler: requestSync),
         getLastRouteDetailUseCase: StubGetLastRouteDetailUseCase(handler: routeDetail),
         now: now,
         bannerTickInterval: bannerTickInterval
     )
+}
+
+/// 스트림 yield용 축약 — 확인 시각이 무관한 기존 시나리오는 checkedAt 없이 흘린다.
+private nonisolated func syncUpdate(
+    _ info: AlarmInfo, checkedAt: Date? = nil
+) -> AlarmSyncUpdate {
+    AlarmSyncUpdate(info: info, checkedAt: checkedAt)
 }
 
 // MARK: - 테스트
@@ -546,15 +560,15 @@ struct HomeViewModelTests {
         // 앱 재실행 복원 시나리오: 카드 없이 서버 알람만 있는 상태 — 앱 시작 동기화가
         // 스트림으로 도착한다.
         let departure = fixedNow.addingTimeInterval(30 * 60)
-        let (stream, continuation) = AsyncStream<AlarmInfo>.makeStream()
+        let (stream, continuation) = AsyncStream<AlarmSyncUpdate>.makeStream()
         let sut = makeSUT(alarmUpdates: { stream })
         let recorder = StateRecorder()
         recorder.attach(to: sut)
 
         sut.viewDidLoad()
-        continuation.yield(
+        continuation.yield(syncUpdate(
             AlarmInfo(lastRouteId: "r1", departureTime: departure, updatedAt: nil, isReal: true)
-        )
+        ))
         await recorder.waitUntilLast { $0.banner != nil }
 
         // 30분 출발 → 알람까지 27분(1620초) — caution 구간.
@@ -566,7 +580,7 @@ struct HomeViewModelTests {
     @Test
     func alarmSync_updatesBannerToNewDeparture() async {
         let route = makeRoute(id: "r1", departure: fixedNow.addingTimeInterval(42 * 60))
-        let (stream, continuation) = AsyncStream<AlarmInfo>.makeStream()
+        let (stream, continuation) = AsyncStream<AlarmSyncUpdate>.makeStream()
         let sut = makeSUT(alarmUpdates: { stream })
         let recorder = StateRecorder()
         recorder.attach(to: sut)
@@ -576,14 +590,14 @@ struct HomeViewModelTests {
         await recorder.waitUntilLast { $0.banner?.text == "출발까지 39분" }
 
         // 서버가 15분 당긴 시각을 돌려준다 (포그라운드 복귀·푸시 동기화 공용 경로).
-        continuation.yield(
+        continuation.yield(syncUpdate(
             AlarmInfo(
                 lastRouteId: "r1",
                 departureTime: fixedNow.addingTimeInterval(27 * 60),
                 updatedAt: nil,
                 isReal: true
             )
-        )
+        ))
         await recorder.waitUntilLast { $0.banner?.text == "출발까지 24분" }
 
         #expect(sut.state.alarmButton == .cancel)
@@ -709,20 +723,20 @@ struct HomeViewModelTests {
     func alarmSync_pastGraceDeparture_doesNotStartCountdown() async {
         // 유예(출발+60초)가 지난 시각의 동기화 복원 — 지난 막차 배너를 되살리지 않는다.
         // 못 탐 판정이 고정한 실패 배너를 후속 동기화가 덮어쓰는 것도 같은 가드가 막는다.
-        let (stream, continuation) = AsyncStream<AlarmInfo>.makeStream()
+        let (stream, continuation) = AsyncStream<AlarmSyncUpdate>.makeStream()
         let sut = makeSUT(alarmUpdates: { stream })
         let recorder = StateRecorder()
         recorder.attach(to: sut)
 
         sut.viewDidLoad()
-        continuation.yield(
+        continuation.yield(syncUpdate(
             AlarmInfo(
                 lastRouteId: "r1",
                 departureTime: fixedNow.addingTimeInterval(-60),
                 updatedAt: nil,
                 isReal: true
             )
-        )
+        ))
         await recorder.waitUntilLast { $0.alarmButton == .cancel }
 
         #expect(sut.state.banner == nil)
@@ -731,20 +745,20 @@ struct HomeViewModelTests {
     @Test
     func alarmSync_withinGrace_restoresDepartNowBanner() async {
         // 발화~유예 창의 동기화 복원 — 2단계 "지금 출발하세요"도 복원 대상이다 (Phase 13).
-        let (stream, continuation) = AsyncStream<AlarmInfo>.makeStream()
+        let (stream, continuation) = AsyncStream<AlarmSyncUpdate>.makeStream()
         let sut = makeSUT(alarmUpdates: { stream })
         let recorder = StateRecorder()
         recorder.attach(to: sut)
 
         sut.viewDidLoad()
-        continuation.yield(
+        continuation.yield(syncUpdate(
             AlarmInfo(
                 lastRouteId: "r1",
                 departureTime: fixedNow.addingTimeInterval(-30),
                 updatedAt: nil,
                 isReal: true
             )
-        )
+        ))
         await recorder.waitUntilLast { $0.banner != nil }
 
         #expect(sut.state.banner == .init(text: "지금 출발하세요", urgency: .imminent))
@@ -844,7 +858,7 @@ struct HomeViewModelTests {
         // 도보 반영 배너까지 복원한다 — "무슨 경로인지 모르는 해제 버튼" 해소.
         let departure = fixedNow.addingTimeInterval(42 * 60)
         let route = makeWalkRoute(id: "r1", departure: departure, walkSeconds: 120)
-        let (stream, continuation) = AsyncStream<AlarmInfo>.makeStream()
+        let (stream, continuation) = AsyncStream<AlarmSyncUpdate>.makeStream()
         let sut = makeSUT(
             alarmUpdates: { stream },
             routeDetail: { routeId in
@@ -856,9 +870,9 @@ struct HomeViewModelTests {
         recorder.attach(to: sut)
 
         sut.viewDidLoad()
-        continuation.yield(
+        continuation.yield(syncUpdate(
             AlarmInfo(lastRouteId: "r1", departureTime: departure, updatedAt: nil, isReal: true)
-        )
+        ))
         await recorder.waitUntilLast { $0.routeCard != nil }
 
         #expect(sut.state.routeCard == RouteCardViewData(entity: route))
@@ -871,15 +885,15 @@ struct HomeViewModelTests {
     func alarmSync_detailFails_keepsCancelButtonWithoutCard() async {
         // 복원 실패는 현행 폴백 — 카드 없이 해제 버튼·배너만. (기본 routeDetail 스텁이 throw)
         let departure = fixedNow.addingTimeInterval(30 * 60)
-        let (stream, continuation) = AsyncStream<AlarmInfo>.makeStream()
+        let (stream, continuation) = AsyncStream<AlarmSyncUpdate>.makeStream()
         let sut = makeSUT(alarmUpdates: { stream })
         let recorder = StateRecorder()
         recorder.attach(to: sut)
 
         sut.viewDidLoad()
-        continuation.yield(
+        continuation.yield(syncUpdate(
             AlarmInfo(lastRouteId: "r1", departureTime: departure, updatedAt: nil, isReal: true)
-        )
+        ))
         await recorder.waitUntilLast { $0.banner != nil }
         for _ in 0..<20 { await Task.yield() }
 
@@ -892,7 +906,7 @@ struct HomeViewModelTests {
         // 등록 직후의 동기화 — 카드가 이미 있으면 상세 재조회를 하지 않는다.
         let route = makeRoute(id: "r1", departure: fixedNow.addingTimeInterval(42 * 60))
         let fetched = FetchFlag()
-        let (stream, continuation) = AsyncStream<AlarmInfo>.makeStream()
+        let (stream, continuation) = AsyncStream<AlarmSyncUpdate>.makeStream()
         let sut = makeSUT(
             alarmUpdates: { stream },
             routeDetail: { _ in
@@ -907,19 +921,199 @@ struct HomeViewModelTests {
         sut.registerAlarmTapped()
         await recorder.waitUntilLast { $0.banner != nil }
 
-        continuation.yield(
+        continuation.yield(syncUpdate(
             AlarmInfo(
                 lastRouteId: "r1",
                 departureTime: fixedNow.addingTimeInterval(42 * 60),
                 updatedAt: nil,
                 isReal: true
             )
-        )
+        ))
         for _ in 0..<20 { await Task.yield() }
 
         #expect(!fetched.value)
         #expect(sut.state.routeCard == RouteCardViewData(entity: route))
     }
+
+    // MARK: - 수동 갱신 (Phase 16 pull-to-refresh)
+
+    @Test
+    func refreshPulled_invokesSyncAndSignalsFinish() async {
+        let calls = ValueBox(0)
+        let sut = makeSUT(requestSync: { calls.update { $0 + 1 } })
+        let finished = ValueBox(0)
+        sut.onManualSyncFinished = { finished.update { $0 + 1 } }
+
+        sut.refreshPulled()
+        while finished.get() < 1 { await Task.yield() }
+
+        #expect(calls.get() == 1)
+        #expect(finished.get() == 1)
+    }
+
+    @Test
+    func refreshPulled_whileInFlight_isNoOp() async {
+        // 스텁 동기화가 게이트에 막혀 있는 동안의 재당김은 no-op이어야 한다(이중 당김 무해).
+        let gate = ValueBox(false)
+        let calls = ValueBox(0)
+        let sut = makeSUT(requestSync: {
+            calls.update { $0 + 1 }
+            while !gate.get() { await Task.yield() }
+        })
+        let finished = ValueBox(0)
+        sut.onManualSyncFinished = { finished.update { $0 + 1 } }
+
+        sut.refreshPulled()
+        sut.refreshPulled()
+        gate.update { _ in true }
+        while finished.get() < 1 { await Task.yield() }
+        for _ in 0..<20 { await Task.yield() }
+
+        #expect(calls.get() == 1)
+        #expect(finished.get() == 1)
+
+        // 완료 후의 당김은 새 동기화다.
+        sut.refreshPulled()
+        while finished.get() < 2 { await Task.yield() }
+        #expect(calls.get() == 2)
+    }
+
+    // MARK: - 신선도 스탬프 (Phase 16)
+
+    @Test
+    func freshnessText_requiresRegisteredSessionAndCheckedAt() {
+        let checkedAt = fixedNow
+        let expected = "\(makeStampFormatter().string(from: checkedAt)) 확인 기준"
+        #expect(HomeViewModel.freshnessText(checkedAt: checkedAt, isRegistered: true) == expected)
+        // 확인 시각이 없으면(구 스냅샷 시딩 등) 스탬프를 지어내지 않는다.
+        #expect(HomeViewModel.freshnessText(checkedAt: nil, isRegistered: true) == nil)
+        // 등록 세션이 없으면 후보 카드에 스탬프를 달지 않는다.
+        #expect(HomeViewModel.freshnessText(checkedAt: checkedAt, isRegistered: false) == nil)
+    }
+
+    @Test
+    func registerAlarm_success_stampsFreshnessWithNow() async {
+        let route = makeRoute(id: "r1", departure: fixedNow.addingTimeInterval(42 * 60))
+        let sut = makeSUT()
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+
+        sut.routeSelected(route)
+        #expect(sut.state.freshnessText == nil)
+        sut.registerAlarmTapped()
+        await recorder.waitUntilLast { $0.banner != nil }
+
+        // 등록 성공 = 서버 확인 — now(고정 시계) 기준으로 스탬프가 시작된다.
+        #expect(sut.state.freshnessText
+            == "\(makeStampFormatter().string(from: fixedNow)) 확인 기준")
+    }
+
+    @Test
+    func alarmSync_checkedAt_updatesStamp_andSeededNilKeepsNoStamp() async {
+        // 시딩 복원(checkedAt = 직전 확인 시각)은 그 낡은 시각을 그대로 표시하고,
+        // 이후 성공 동기화(checkedAt = 새 시각)가 스탬프를 전진시킨다.
+        let departure = fixedNow.addingTimeInterval(30 * 60)
+        let seededCheckedAt = fixedNow.addingTimeInterval(-40 * 60)
+        let (stream, continuation) = AsyncStream<AlarmSyncUpdate>.makeStream()
+        let sut = makeSUT(alarmUpdates: { stream })
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+        sut.viewDidLoad()
+
+        continuation.yield(syncUpdate(
+            AlarmInfo(lastRouteId: "r1", departureTime: departure, updatedAt: nil, isReal: true),
+            checkedAt: seededCheckedAt
+        ))
+        await recorder.waitUntilLast { $0.freshnessText != nil }
+        #expect(sut.state.freshnessText
+            == "\(makeStampFormatter().string(from: seededCheckedAt)) 확인 기준")
+
+        continuation.yield(syncUpdate(
+            AlarmInfo(lastRouteId: "r1", departureTime: departure, updatedAt: nil, isReal: true),
+            checkedAt: fixedNow
+        ))
+        await recorder.waitUntilLast {
+            $0.freshnessText == "\(makeStampFormatter().string(from: fixedNow)) 확인 기준"
+        }
+    }
+
+    @Test
+    func manualSync_noStreamEvent_keepsStaleStamp() async {
+        // 무음 실패의 표면: 당김이 아무 이벤트도 못 얻으면 스탬프는 낡은 시각을 유지한다.
+        let route = makeRoute(id: "r1", departure: fixedNow.addingTimeInterval(42 * 60))
+        let sut = makeSUT()
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+        sut.routeSelected(route)
+        sut.registerAlarmTapped()
+        await recorder.waitUntilLast { $0.freshnessText != nil }
+        let stampBefore = sut.state.freshnessText
+
+        let finished = ValueBox(0)
+        sut.onManualSyncFinished = { finished.update { $0 + 1 } }
+        sut.refreshPulled()
+        while finished.get() < 1 { await Task.yield() }
+
+        #expect(sut.state.freshnessText == stampBefore)
+        #expect(recorder.toasts.isEmpty) // 실패 토스트 금지 — 무음 정책.
+    }
+
+    @Test
+    func cancelAlarm_clearsFreshnessStamp() async {
+        let route = makeRoute(id: "r1", departure: fixedNow.addingTimeInterval(42 * 60))
+        let sut = makeSUT()
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+        sut.routeSelected(route)
+        sut.registerAlarmTapped()
+        await recorder.waitUntilLast { $0.freshnessText != nil }
+
+        sut.cancelAlarmTapped()
+        await recorder.waitUntilLast { $0.banner == nil && !$0.isAlarmBusy }
+
+        #expect(sut.state.freshnessText == nil)
+    }
+
+    @Test
+    func sessionEndedAndExpiry_clearFreshnessStamp() async {
+        // 종료·만료 정리와 함께 스탬프도 사라진다 — "지난 막차"에 신선도는 무의미하다.
+        let clock = NowBox(fixedNow)
+        let departure = fixedNow.addingTimeInterval(42 * 60)
+        let route = makeRoute(id: "r1", departure: departure)
+        let (stream, continuation) = AsyncStream<AlarmChangeVerdict>.makeStream()
+        let sut = makeSUT(
+            alarmChanges: { stream },
+            now: { clock.get() },
+            bannerTickInterval: .milliseconds(1)
+        )
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+        sut.viewDidLoad()
+        sut.routeSelected(route)
+        sut.registerAlarmTapped()
+        // 스탬프는 배너보다 먼저 설정된다 — 배너까지 뜬 뒤에 종료를 흘려야 정리를 검증한다.
+        await recorder.waitUntilLast { $0.banner != nil && $0.freshnessText != nil }
+
+        continuation.yield(.sessionEnded)
+        await recorder.waitUntilLast { $0.banner == nil }
+        #expect(sut.state.freshnessText == nil)
+
+        // 재등록 후 유예 경과(3단계 전이)도 스탬프를 정리한다.
+        sut.registerAlarmTapped()
+        await recorder.waitUntilLast { $0.banner != nil && $0.freshnessText != nil }
+        clock.set(departure.addingTimeInterval(60))
+        await recorder.waitUntilLast { $0.banner == nil && $0.freshnessText == nil }
+        #expect(sut.state.routeCard?.tone == .past)
+    }
+}
+
+/// 스탬프 기대값용 포매터 — 프로덕션(HomeViewData)과 같은 구성(HH:mm, ko_KR).
+@MainActor
+private func makeStampFormatter() -> DateFormatter {
+    let formatter = DateFormatter()
+    formatter.dateFormat = "HH:mm"
+    formatter.locale = Locale(identifier: "ko_KR")
+    return formatter
 }
 
 /// 상세 재조회 호출 여부 기록용 — 스텁 클로저가 @Sendable이라 클래스 박스로 관찰한다.

@@ -283,6 +283,8 @@ struct DefaultRegisterAlarmUseCaseTests {
         #expect(saved.first?.transportMode == .bus)
         #expect(saved.first?.acknowledged == false)
         #expect(saved.first?.expired == false)
+        // 등록 성공 = 서버 확인 — 신선도 스탬프의 원천이 등록 시각으로 기록된다(Phase 16).
+        #expect(saved.first?.syncedAt == fixedNow())
     }
 
     @Test
