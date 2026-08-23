@@ -72,9 +72,10 @@ struct DevDemoFallbackLastRouteRepository: LastRouteRepository {
         }
     }
 
-    /// 발화 검증을 빠르게 하려고 출발 시각을 3분 뒤로 둔다 (알람은 출발 시각에 울린다).
+    /// 출발 시각은 8분 뒤 — 알람이 버퍼(−3분) 반영으로 +5분 시점에 걸린다.
+    /// (3분이면 알람 시각 ≈ now라 등록 탭 시점에 이미 과거가 되어 AlarmKit이 거부한다.)
     private static func demoRoute(start: Coordinate, end: Coordinate) -> LastRoute {
-        let departure = Date().addingTimeInterval(3 * 60)
+        let departure = Date().addingTimeInterval(8 * 60)
         return LastRoute(
             id: "dev-demo-route",
             departureTime: departure,
