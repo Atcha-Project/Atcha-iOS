@@ -16,9 +16,14 @@ public enum LastTrainUrgency: String, Sendable, Equatable {
     }
 }
 
-/// 알람 세션 단계 — active(진행 중) / missed(막차 놓침) / serviceEnded(운행 종료).
+/// 알람 세션 단계 — active(진행 중) / departed(발화 확인, "지금 출발") /
+/// missed(막차 놓침) / serviceEnded(운행 종료).
+/// rawValue는 CoreLiveActivity `LastTrainSessionStatus`와 동일 규약(wire) —
+/// 앱·익스텐션 동일 바이너리 배포이고, 미지 rawValue는 방어값(.active)으로 떨어진다.
 public enum LastTrainSessionPhase: String, Sendable, Equatable {
     case active
+    /// 알람 발화 후 "확인" 탭(stopIntent) — 카운트다운 대신 "지금 출발하세요" 표시 단계.
+    case departed
     case missed
     case serviceEnded
 }

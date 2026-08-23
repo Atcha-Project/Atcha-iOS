@@ -12,11 +12,18 @@ private let timeFormatter: DateFormatter = {
 
 /// 홈에 표출되는 선택 경로 카드. Entity를 뷰에 직접 노출하지 않는다.
 struct RouteCardViewData: Equatable {
+    /// 카드 톤 — past는 유예 경과 후의 "지난 막차" 상태(비활성 시각, Phase 13).
+    enum Tone: Equatable {
+        case normal
+        case past
+    }
+
     let badgeText: String?
     let departureTimeText: String
     let legs: [DSTransportBadge.Kind]
     let summaryText: String?
     let destinationText: String
+    let tone: Tone
 
     init(entity: LastRoute) {
         badgeText = "가장 늦은 차"
@@ -26,6 +33,36 @@ struct RouteCardViewData: Equatable {
 
         let arrival = entity.departureTime.addingTimeInterval(TimeInterval(entity.totalTime))
         destinationText = "도착 \(timeFormatter.string(from: arrival)) · 환승 \(entity.transferCount)회"
+        tone = .normal
+    }
+
+    private init(
+        badgeText: String?,
+        departureTimeText: String,
+        legs: [DSTransportBadge.Kind],
+        summaryText: String?,
+        destinationText: String,
+        tone: Tone
+    ) {
+        self.badgeText = badgeText
+        self.departureTimeText = departureTimeText
+        self.legs = legs
+        self.summaryText = summaryText
+        self.destinationText = destinationText
+        self.tone = tone
+    }
+
+    /// 유예 경과 후의 "지난 막차" 카드 — 비활성 톤 + "HH:mm 출발이었어요" (Phase 13).
+    /// 시각은 카드의 등록 시점 문자열이 아니라 최신 세션 출발 시각(서버 갱신 반영)을 받는다.
+    func asPastTrain(departure: Date) -> RouteCardViewData {
+        RouteCardViewData(
+            badgeText: "지난 막차",
+            departureTimeText: "\(timeFormatter.string(from: departure)) 출발이었어요",
+            legs: legs,
+            summaryText: summaryText,
+            destinationText: destinationText,
+            tone: .past
+        )
     }
 
     var dsContent: DSRouteCard.Content {
@@ -34,7 +71,8 @@ struct RouteCardViewData: Equatable {
             departureTimeText: departureTimeText,
             legs: legs,
             summaryText: summaryText,
-            destinationText: destinationText
+            destinationText: destinationText,
+            tone: tone == .past ? .muted : .normal
         )
     }
 
