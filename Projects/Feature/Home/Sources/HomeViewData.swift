@@ -19,6 +19,14 @@ extension HomeViewModel {
     }
 }
 
+/// 자정 넘김 표기(Phase 17) — 내일이면 "내일 " 접두, 오늘·그 외는 무라벨(무라벨 = 오늘).
+/// 이틀+ 미래·과거는 막차 도메인상 비발생 — 방어적 무라벨. 피처 간 공유 모듈을 만들지
+/// 않으므로 SearchFeature와 중복이다(TransportBadgeMapper 선례).
+func dayPrefix(for date: Date, now: Date, calendar: Calendar = .current) -> String {
+    guard let tomorrow = calendar.date(byAdding: .day, value: 1, to: now) else { return "" }
+    return calendar.isDate(date, inSameDayAs: tomorrow) ? "내일 " : ""
+}
+
 /// 홈에 표출되는 선택 경로 카드. Entity를 뷰에 직접 노출하지 않는다.
 struct RouteCardViewData: Equatable {
     /// 카드 톤 — past는 유예 경과 후의 "지난 막차" 상태(비활성 시각, Phase 13).
@@ -34,14 +42,16 @@ struct RouteCardViewData: Equatable {
     let destinationText: String
     let tone: Tone
 
-    init(entity: LastRoute) {
+    init(entity: LastRoute, now: Date) {
         badgeText = "가장 늦은 차"
-        departureTimeText = "\(timeFormatter.string(from: entity.departureTime)) 출발"
+        let departurePrefix = dayPrefix(for: entity.departureTime, now: now)
+        departureTimeText = "\(departurePrefix)\(timeFormatter.string(from: entity.departureTime)) 출발"
         legs = TransportBadgeMapper.kinds(for: entity.legs)
         summaryText = Self.summary(from: entity.legs)
 
         let arrival = entity.departureTime.addingTimeInterval(TimeInterval(entity.totalTime))
-        destinationText = "도착 \(timeFormatter.string(from: arrival)) · 환승 \(entity.transferCount)회"
+        let arrivalPrefix = dayPrefix(for: arrival, now: now)
+        destinationText = "도착 \(arrivalPrefix)\(timeFormatter.string(from: arrival)) · 환승 \(entity.transferCount)회"
         tone = .normal
     }
 

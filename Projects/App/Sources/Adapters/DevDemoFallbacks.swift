@@ -13,7 +13,27 @@ import Foundation
 struct DevDemoFallbackPlaceRepository: PlaceRepository {
     let base: any PlaceRepository
 
+    /// Phase 17 검수 훅 — 이 좌표의 장소를 도착지로 고르면 경로 검색이 빈 목록을 반환한다
+    /// (빈 목록 정규화 = serviceEnded 표면의 유일한 DEV 재현 수단).
+    static let emptyRouteCoordinate = Coordinate(latitude: 0, longitude: 0)
+
     func searchPlaces(keyword: String, near coordinate: Coordinate?) async throws -> [Place] {
+        // Phase 17 검수 훅 — 예약 키워드는 base보다 먼저 판정한다("실패 시에만" 원칙의
+        // 명시적 예외, 검수 결정론 확보). 빈 상태·serviceEnded 화면의 재현 재료.
+        if keyword == "결과없음" {
+            print("⚠️ [DEV 검수 훅] 예약 키워드 → 장소 0건 반환")
+            return []
+        }
+        if keyword == "경로없음" {
+            print("⚠️ [DEV 검수 훅] 예약 키워드 → 빈 경로 유도 데모 장소 반환")
+            return [
+                Place(
+                    name: "경로없음 (데모)",
+                    address: "도착지로 선택하면 빈 경로 응답을 시연해요",
+                    coordinate: Self.emptyRouteCoordinate
+                ),
+            ]
+        }
         do { return try await base.searchPlaces(keyword: keyword, near: coordinate) }
         catch {
             print("⚠️ [DEV 우회] 장소 검색 실패 → 데모 장소 반환: \(error)")
@@ -45,15 +65,22 @@ struct DevDemoFallbackLastRouteRepository: LastRouteRepository {
     let base: any LastRouteRepository
 
     func searchLastRoutes(start: Coordinate, end: Coordinate) async throws -> [LastRoute] {
+        // Phase 17 검수 훅 — 예약 도착지(경로없음 데모 장소)는 base보다 먼저 판정한다.
+        // 빈 목록은 정규화 가정(미확정 #3)에 따라 serviceEnded로 표면화된다.
+        if end == DevDemoFallbackPlaceRepository.emptyRouteCoordinate {
+            print("⚠️ [DEV 검수 훅] 예약 도착지 → 빈 경로 목록 반환 (serviceEnded 정규화 재료)")
+            return []
+        }
         do { return try await base.searchLastRoutes(start: start, end: end) }
         catch {
             print("⚠️ [DEV 우회] 막차 검색 실패 → 데모 경로 반환: \(error)")
             let route = Self.demoRoute(start: start, end: end)
             // 변경 시뮬레이터의 기준 출발 시각 — 데모 흐름에선 검색 직후 이 경로가 등록된다.
+            // 대안(내일 출발)은 기준 시각에 관여하지 않는다 — index 0 정합 불변.
             await DevChangeSimulator.shared.noteKnownSession(
                 routeId: route.id, departureTime: route.departureTime
             )
-            return [route]
+            return [route, Self.tomorrowDemoRoute(start: start, end: end)]
         }
     }
 
@@ -76,15 +103,30 @@ struct DevDemoFallbackLastRouteRepository: LastRouteRepository {
         }
     }
 
+    /// 오늘/내일 라벨(Phase 17) 검수 재료 — 더보기의 대안 경로로 항상 "내일" 출발이
+    /// 표시되게 다음 자정+10분을 출발 시각으로 잡는다(검수 시각 무관 결정론).
+    /// 알람 등록 검수 플로우는 featured(index 0)를 쓰므로 이 경로와 무관하다.
+    private static func tomorrowDemoRoute(start: Coordinate, end: Coordinate) -> LastRoute {
+        let startOfToday = Calendar.current.startOfDay(for: Date())
+        let nextMidnight = Calendar.current.date(byAdding: .day, value: 1, to: startOfToday)
+            ?? startOfToday.addingTimeInterval(24 * 60 * 60)
+        return demoRoute(
+            start: start,
+            end: end,
+            departure: nextMidnight.addingTimeInterval(10 * 60),
+            id: "dev-demo-route-tomorrow"
+        )
+    }
+
     /// 출발 시각은 8분 뒤 — 알람이 도보(첫 walk leg 120초)+버퍼(180초) 반영으로 +3분
     /// 시점에 걸린다(Phase 14 검수 ③: 배너·LA·발화가 전부 "출발 − 도보 − 3분" 기준).
     /// 더 이르면 등록 탭 시점에 이미 과거가 되어 tooLate 가드·AlarmKit 거부에 걸린다.
     private static func demoRoute(
-        start: Coordinate, end: Coordinate, departure: Date? = nil
+        start: Coordinate, end: Coordinate, departure: Date? = nil, id: String = "dev-demo-route"
     ) -> LastRoute {
         let departure = departure ?? Date().addingTimeInterval(8 * 60)
         return LastRoute(
-            id: "dev-demo-route",
+            id: id,
             departureTime: departure,
             totalTime: 2940,
             totalWalkTime: 480,

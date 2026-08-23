@@ -49,6 +49,13 @@ final class SearchViewController: UIViewController {
         navigationController?.setNavigationBarHidden(true, animated: animated)
     }
 
+    // 숨긴 내비바는 스와이프 백 제스처를 죽인다 — delegate를 잡아 되살린다(Phase 17).
+    // 코디네이터 정리는 pop 경로 공통의 didShow(SearchCoordinator)가 수행한다.
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        navigationController?.interactivePopGestureRecognizer?.delegate = self
+    }
+
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         navigationController?.setNavigationBarHidden(false, animated: animated)
@@ -155,8 +162,27 @@ final class SearchViewController: UIViewController {
         case let .recent(places):
             showsRecentHeader = true
             rows = places.map { .place($0, showsDelete: true) }
+            // 빈 상태 2종(Phase 17) — 백지 대신 다음 행동을 말한다. 액션 버튼 없음
+            // (타이핑이 곧 회복 경로). 빈 목록엔 "최근 검색" 헤더도 없다(rows.isEmpty 가드).
+            if places.isEmpty {
+                showEmptyState(
+                    title: "최근 검색이 없어요",
+                    message: "도착지를 검색해 막차 시간을 확인해 보세요"
+                )
+            }
         case let .places(places):
             rows = places.map { .place($0, showsDelete: false) }
+            if places.isEmpty {
+                showEmptyState(
+                    title: "검색 결과가 없어요",
+                    message: "다른 키워드로 검색해 보세요"
+                )
+            }
+        case .loadingPlaces:
+            // 키워드 검색 로딩(Phase 17) — loadingRoutes와 달리 키보드를 유지한다
+            // (타이핑 계속이 정상 흐름).
+            rows = []
+            activityIndicator.startAnimating()
         case .loadingRoutes:
             rows = []
             view.endEditing(true)
@@ -211,7 +237,7 @@ final class SearchViewController: UIViewController {
         return rows
     }
 
-    private func showEmptyState(title: String, message: String, actionTitle: String) {
+    private func showEmptyState(title: String, message: String, actionTitle: String? = nil) {
         emptyState.configure(
             with: .init(
                 icon: DSIcon.illustCharacterGray,
@@ -313,6 +339,20 @@ extension SearchViewController: UITableViewDelegate {
         }
     }
 
+    // 최근 검색 스와이프 삭제(Phase 17, 기획서 요구) — 기존 X 버튼과 같은 경로를 탄다.
+    func tableView(
+        _ tableView: UITableView,
+        trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath
+    ) -> UISwipeActionsConfiguration? {
+        guard case .place(_, showsDelete: true) = rows[indexPath.row] else { return nil }
+        let delete = UIContextualAction(style: .destructive, title: "삭제") {
+            [weak self] _, _, completion in
+            self?.viewModel.didDeleteRecent(at: indexPath.row)
+            completion(true)
+        }
+        return UISwipeActionsConfiguration(actions: [delete])
+    }
+
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         guard showsRecentHeader, !rows.isEmpty else { return nil }
         return DSSectionHeader(title: "최근 검색")
@@ -321,6 +361,13 @@ extension SearchViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         guard showsRecentHeader, !rows.isEmpty else { return 0 }
         return UITableView.automaticDimension
+    }
+}
+
+extension SearchViewController: UIGestureRecognizerDelegate {
+    // 루트에서는 시작 금지 — 검색 화면이 스택 위에 있을 때만 스와이프 백을 허용한다.
+    func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        (navigationController?.viewControllers.count ?? 0) > 1
     }
 }
 

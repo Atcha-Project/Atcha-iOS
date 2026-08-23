@@ -1,6 +1,7 @@
 import Domain
 import Foundation
 @testable import HomeFeature
+import SearchFeatureInterface
 import Testing
 
 private struct StubError: Error {}
@@ -114,6 +115,15 @@ private final class StateRecorder {
 
 private nonisolated let fixedNow = Date(timeIntervalSince1970: 1_755_800_000)
 
+/// 검색 플로우가 동반하는 확정 도착지(Phase 17) — 도착지 필드 바인딩의 원천.
+private nonisolated func makeArrival(_ name: String = "구로디지털단지역") -> Place {
+    Place(
+        name: name,
+        address: "서울 구로구 도림천로 486",
+        coordinate: Coordinate(latitude: 37.4853, longitude: 126.9015)
+    )
+}
+
 private nonisolated func makeRoute(id: String, departure: Date) -> LastRoute {
     LastRoute(
         id: id,
@@ -214,7 +224,7 @@ struct HomeViewModelTests {
         recorder.attach(to: sut)
 
         sut.viewDidLoad()
-        await recorder.waitUntilLast { $0.departure == .needsSearch(deniedPermission: true) }
+        await recorder.waitUntilLast { $0.departure == .needsSearch }
 
         #expect(recorder.toasts == [.locationPermissionNeeded])
     }
@@ -226,7 +236,7 @@ struct HomeViewModelTests {
         recorder.attach(to: sut)
 
         sut.viewDidLoad()
-        await recorder.waitUntilLast { $0.departure == .needsSearch(deniedPermission: false) }
+        await recorder.waitUntilLast { $0.departure == .needsSearch }
 
         #expect(recorder.toasts.isEmpty)
     }
@@ -244,7 +254,7 @@ struct HomeViewModelTests {
         let recorder = StateRecorder()
         recorder.attach(to: sut)
         sut.viewDidLoad()
-        await recorder.waitUntilLast { $0.departure == .needsSearch(deniedPermission: true) }
+        await recorder.waitUntilLast { $0.departure == .needsSearch }
         let statesBefore = recorder.states.count
 
         granted.update { _ in true }
@@ -267,7 +277,7 @@ struct HomeViewModelTests {
         let recorder = StateRecorder()
         recorder.attach(to: sut)
         sut.viewDidLoad()
-        await recorder.waitUntilLast { $0.departure == .needsSearch(deniedPermission: true) }
+        await recorder.waitUntilLast { $0.departure == .needsSearch }
         let statesBefore = recorder.states.count
 
         sut.didBecomeActive()
@@ -305,9 +315,9 @@ struct HomeViewModelTests {
         let recorder = StateRecorder()
         recorder.attach(to: sut)
 
-        sut.routeSelected(route)
+        sut.routeSelected(route, arrival: makeArrival())
 
-        #expect(sut.state.routeCard == RouteCardViewData(entity: route))
+        #expect(sut.state.routeCard == RouteCardViewData(entity: route, now: fixedNow))
         #expect(sut.state.banner == nil)
     }
 
@@ -318,7 +328,7 @@ struct HomeViewModelTests {
         let recorder = StateRecorder()
         recorder.attach(to: sut)
 
-        sut.routeSelected(route)
+        sut.routeSelected(route, arrival: makeArrival())
         sut.registerAlarmTapped()
         #expect(sut.state.isAlarmBusy)
         await recorder.waitUntilLast { $0.banner != nil }
@@ -339,7 +349,7 @@ struct HomeViewModelTests {
         let recorder = StateRecorder()
         recorder.attach(to: sut)
 
-        sut.routeSelected(route)
+        sut.routeSelected(route, arrival: makeArrival())
         sut.registerAlarmTapped()
         while recorder.toasts.isEmpty { await Task.yield() }
         // 배너는 틱 태스크가 비동기로 채운다 — 토스트와 별도로 기다린다.
@@ -357,7 +367,7 @@ struct HomeViewModelTests {
         let recorder = StateRecorder()
         recorder.attach(to: sut)
 
-        sut.routeSelected(route)
+        sut.routeSelected(route, arrival: makeArrival())
         sut.registerAlarmTapped()
         await recorder.waitUntilLast { $0.banner != nil }
 
@@ -371,7 +381,7 @@ struct HomeViewModelTests {
         let recorder = StateRecorder()
         recorder.attach(to: sut)
 
-        sut.routeSelected(route)
+        sut.routeSelected(route, arrival: makeArrival())
         sut.registerAlarmTapped()
         while recorder.toasts.isEmpty { await Task.yield() }
 
@@ -387,11 +397,14 @@ struct HomeViewModelTests {
         let sut = makeSUT()
         let recorder = StateRecorder()
         recorder.attach(to: sut)
-        sut.routeSelected(route)
+        sut.routeSelected(route, arrival: makeArrival())
         sut.registerAlarmTapped()
         await recorder.waitUntilLast { $0.banner != nil }
 
-        sut.routeSelected(makeRoute(id: "r2", departure: fixedNow.addingTimeInterval(30 * 60)))
+        sut.routeSelected(
+            makeRoute(id: "r2", departure: fixedNow.addingTimeInterval(30 * 60)),
+            arrival: makeArrival()
+        )
 
         #expect(sut.state.banner == nil)
         #expect(sut.state.routeCard?.departureTimeText != nil)
@@ -465,7 +478,7 @@ struct HomeViewModelTests {
         let sut = makeSUT(now: { clock.get() }, bannerTickInterval: .milliseconds(1))
         let recorder = StateRecorder()
         recorder.attach(to: sut)
-        sut.routeSelected(route)
+        sut.routeSelected(route, arrival: makeArrival())
         sut.registerAlarmTapped()
         await recorder.waitUntilLast { $0.banner != nil }
 
@@ -491,7 +504,7 @@ struct HomeViewModelTests {
         let recorder = StateRecorder()
         recorder.attach(to: sut)
 
-        sut.routeSelected(route)
+        sut.routeSelected(route, arrival: makeArrival())
         sut.registerAlarmTapped()
         await recorder.waitUntilLast { $0.banner?.text == "출발까지 39분" }
 
@@ -508,7 +521,7 @@ struct HomeViewModelTests {
         let recorder = StateRecorder()
         recorder.attach(to: sut)
 
-        sut.routeSelected(route)
+        sut.routeSelected(route, arrival: makeArrival())
         sut.registerAlarmTapped()
         while recorder.toasts.isEmpty { await Task.yield() }
 
@@ -524,7 +537,7 @@ struct HomeViewModelTests {
         let sut = makeSUT()
         let recorder = StateRecorder()
         recorder.attach(to: sut)
-        sut.routeSelected(route)
+        sut.routeSelected(route, arrival: makeArrival())
         sut.registerAlarmTapped()
         await recorder.waitUntilLast { $0.banner != nil }
 
@@ -543,7 +556,7 @@ struct HomeViewModelTests {
         let sut = makeSUT(cancel: { _ in throw StubError() })
         let recorder = StateRecorder()
         recorder.attach(to: sut)
-        sut.routeSelected(route)
+        sut.routeSelected(route, arrival: makeArrival())
         sut.registerAlarmTapped()
         await recorder.waitUntilLast { $0.banner != nil }
 
@@ -585,7 +598,7 @@ struct HomeViewModelTests {
         let recorder = StateRecorder()
         recorder.attach(to: sut)
         sut.viewDidLoad()
-        sut.routeSelected(route)
+        sut.routeSelected(route, arrival: makeArrival())
         sut.registerAlarmTapped()
         await recorder.waitUntilLast { $0.banner?.text == "출발까지 39분" }
 
@@ -670,7 +683,7 @@ struct HomeViewModelTests {
         let recorder = StateRecorder()
         recorder.attach(to: sut)
         sut.viewDidLoad()
-        sut.routeSelected(route)
+        sut.routeSelected(route, arrival: makeArrival())
         sut.registerAlarmTapped()
         await recorder.waitUntilLast { $0.banner != nil }
 
@@ -701,7 +714,7 @@ struct HomeViewModelTests {
         let recorder = StateRecorder()
         recorder.attach(to: sut)
         sut.viewDidLoad()
-        sut.routeSelected(route)
+        sut.routeSelected(route, arrival: makeArrival())
         sut.registerAlarmTapped()
         await recorder.waitUntilLast { $0.banner?.text == "출발까지 39분" }
 
@@ -807,7 +820,7 @@ struct HomeViewModelTests {
         let recorder = StateRecorder()
         recorder.attach(to: sut)
 
-        sut.routeSelected(route)
+        sut.routeSelected(route, arrival: makeArrival())
         sut.registerAlarmTapped()
         await recorder.waitUntilLast { $0.banner != nil }
 
@@ -823,7 +836,7 @@ struct HomeViewModelTests {
         let recorder = StateRecorder()
         recorder.attach(to: sut)
 
-        sut.routeSelected(route)
+        sut.routeSelected(route, arrival: makeArrival())
         sut.registerAlarmTapped()
         while recorder.toasts.isEmpty { await Task.yield() }
 
@@ -875,7 +888,7 @@ struct HomeViewModelTests {
         ))
         await recorder.waitUntilLast { $0.routeCard != nil }
 
-        #expect(sut.state.routeCard == RouteCardViewData(entity: route))
+        #expect(sut.state.routeCard == RouteCardViewData(entity: route, now: fixedNow))
         #expect(sut.state.alarmButton == .cancel)
         // 배너도 상세의 도보 초 반영 기준으로 재시작됐다 (42분 − 2분 도보 − 3분 버퍼 = 37분).
         await recorder.waitUntilLast { $0.banner?.text == "출발까지 37분" }
@@ -917,7 +930,7 @@ struct HomeViewModelTests {
         let recorder = StateRecorder()
         recorder.attach(to: sut)
         sut.viewDidLoad()
-        sut.routeSelected(route)
+        sut.routeSelected(route, arrival: makeArrival())
         sut.registerAlarmTapped()
         await recorder.waitUntilLast { $0.banner != nil }
 
@@ -932,7 +945,7 @@ struct HomeViewModelTests {
         for _ in 0..<20 { await Task.yield() }
 
         #expect(!fetched.value)
-        #expect(sut.state.routeCard == RouteCardViewData(entity: route))
+        #expect(sut.state.routeCard == RouteCardViewData(entity: route, now: fixedNow))
     }
 
     // MARK: - 수동 갱신 (Phase 16 pull-to-refresh)
@@ -998,7 +1011,7 @@ struct HomeViewModelTests {
         let recorder = StateRecorder()
         recorder.attach(to: sut)
 
-        sut.routeSelected(route)
+        sut.routeSelected(route, arrival: makeArrival())
         #expect(sut.state.freshnessText == nil)
         sut.registerAlarmTapped()
         await recorder.waitUntilLast { $0.banner != nil }
@@ -1044,7 +1057,7 @@ struct HomeViewModelTests {
         let sut = makeSUT()
         let recorder = StateRecorder()
         recorder.attach(to: sut)
-        sut.routeSelected(route)
+        sut.routeSelected(route, arrival: makeArrival())
         sut.registerAlarmTapped()
         await recorder.waitUntilLast { $0.freshnessText != nil }
         let stampBefore = sut.state.freshnessText
@@ -1064,7 +1077,7 @@ struct HomeViewModelTests {
         let sut = makeSUT()
         let recorder = StateRecorder()
         recorder.attach(to: sut)
-        sut.routeSelected(route)
+        sut.routeSelected(route, arrival: makeArrival())
         sut.registerAlarmTapped()
         await recorder.waitUntilLast { $0.freshnessText != nil }
 
@@ -1072,6 +1085,113 @@ struct HomeViewModelTests {
         await recorder.waitUntilLast { $0.banner == nil && !$0.isAlarmBusy }
 
         #expect(sut.state.freshnessText == nil)
+    }
+
+    // MARK: - 검색·홈 마찰 팩 (Phase 17)
+
+    @Test
+    func routeSelected_bindsArrivalFieldText() async {
+        let route = makeRoute(id: "r1", departure: fixedNow.addingTimeInterval(42 * 60))
+        let sut = makeSUT()
+
+        #expect(sut.state.arrivalText == nil)
+        sut.routeSelected(route, arrival: makeArrival("신림동"))
+
+        #expect(sut.state.arrivalText == "신림동")
+        // 새 경로 선택은 도착지명을 교체한다.
+        sut.routeSelected(
+            makeRoute(id: "r2", departure: fixedNow.addingTimeInterval(30 * 60)),
+            arrival: makeArrival("당산역")
+        )
+        #expect(sut.state.arrivalText == "당산역")
+    }
+
+    @Test
+    func searchFieldTapped_forwardsTappedFieldAsEntry() async {
+        let sut = makeSUT()
+        let received = ValueBox<[SearchEntryField]>([])
+        sut.onSearchRequested = { field, _ in received.update { $0 + [field] } }
+
+        sut.searchFieldTapped(.arrival)
+        sut.searchFieldTapped(.departure)
+
+        #expect(received.get() == [.arrival, .departure])
+    }
+
+    @Test
+    func searchReply_bindsRouteCardAndArrival() async {
+        let route = makeRoute(id: "r1", departure: fixedNow.addingTimeInterval(42 * 60))
+        let arrival = makeArrival("신림동")
+        let sut = makeSUT()
+        sut.onSearchRequested = { _, reply in reply(route, arrival) }
+
+        sut.searchFieldTapped(.arrival)
+
+        #expect(sut.state.routeCard == RouteCardViewData(entity: route, now: fixedNow))
+        #expect(sut.state.arrivalText == "신림동")
+    }
+
+    @Test
+    func viewDidLoad_servicesDisabled_needsSearchAndEmitsSystemToast() async {
+        let sut = makeSUT(location: { throw LocationError.servicesDisabled })
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+
+        sut.viewDidLoad()
+        await recorder.waitUntilLast { $0.departure == .needsSearch }
+        while recorder.toasts.isEmpty { await Task.yield() }
+
+        #expect(recorder.toasts == [.locationServicesDisabled])
+    }
+
+    @Test
+    func viewDidLoad_restricted_needsSearchAndEmitsRestrictedToast() async {
+        // restricted는 설정으로 못 푸는 제약 — 별도 안내(설정 이동 없음, VC 매핑)로 분기한다.
+        let sut = makeSUT(location: { throw LocationError.restricted })
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+
+        sut.viewDidLoad()
+        await recorder.waitUntilLast { $0.departure == .needsSearch }
+        while recorder.toasts.isEmpty { await Task.yield() }
+
+        #expect(recorder.toasts == [.locationRestricted])
+    }
+
+    @Test
+    func viewDidLoad_locationUnavailable_needsSearchWithoutToast() async {
+        let sut = makeSUT(location: { throw LocationError.unavailable })
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+
+        sut.viewDidLoad()
+        await recorder.waitUntilLast { $0.departure == .needsSearch }
+        for _ in 0..<20 { await Task.yield() }
+
+        #expect(recorder.toasts.isEmpty)
+    }
+
+    @Test
+    func routeCardViewData_labelsTomorrowDepartureAndArrival() {
+        // 자정 넘김 표기 — 내일 출발 경로는 출발·도착 모두 "내일" 접두가 붙는다.
+        let tomorrowDeparture = Calendar.current.date(byAdding: .day, value: 1, to: fixedNow)!
+        let card = RouteCardViewData(
+            entity: makeRoute(id: "r1", departure: tomorrowDeparture), now: fixedNow
+        )
+        #expect(card.departureTimeText.hasPrefix("내일 "))
+        #expect(card.destinationText.hasPrefix("도착 내일 "))
+
+        // 오늘 경로는 무라벨 — 무라벨 = 오늘.
+        let today = RouteCardViewData(
+            entity: makeRoute(id: "r2", departure: fixedNow.addingTimeInterval(3600)), now: fixedNow
+        )
+        #expect(!today.departureTimeText.hasPrefix("내일 "))
+        #expect(!today.destinationText.contains("내일"))
+
+        // "지난 막차" 카드는 라벨 스코프 밖 — 기존 문구 유지.
+        let past = card.asPastTrain(departure: tomorrowDeparture)
+        #expect(past.departureTimeText.hasSuffix("출발이었어요"))
+        #expect(!past.departureTimeText.hasPrefix("내일 "))
     }
 
     @Test
@@ -1089,7 +1209,7 @@ struct HomeViewModelTests {
         let recorder = StateRecorder()
         recorder.attach(to: sut)
         sut.viewDidLoad()
-        sut.routeSelected(route)
+        sut.routeSelected(route, arrival: makeArrival())
         sut.registerAlarmTapped()
         // 스탬프는 배너보다 먼저 설정된다 — 배너까지 뜬 뒤에 종료를 흘려야 정리를 검증한다.
         await recorder.waitUntilLast { $0.banner != nil && $0.freshnessText != nil }

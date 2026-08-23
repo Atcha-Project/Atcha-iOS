@@ -121,7 +121,8 @@ struct PreviewGetLastRouteDetailUseCase: GetLastRouteDetailUseCase {
 struct PreviewSearchCoordinatorBuildable: SearchCoordinatorBuildable {
     func makeSearchCoordinator(
         navigationController: UINavigationController,
-        onRouteSelected: @escaping (LastRoute) -> Void
+        initialField: SearchEntryField,
+        onRouteSelected: @escaping (LastRoute, Place) -> Void
     ) -> any Coordinator {
         PreviewSearchCoordinator(onRouteSelected: onRouteSelected)
     }
@@ -131,15 +132,24 @@ final class PreviewSearchCoordinator: Coordinator {
     var childCoordinators: [any Coordinator] = []
     weak var finishDelegate: (any CoordinatorFinishDelegate)?
 
-    private let onRouteSelected: (LastRoute) -> Void
+    private let onRouteSelected: (LastRoute, Place) -> Void
 
-    init(onRouteSelected: @escaping (LastRoute) -> Void) {
+    init(onRouteSelected: @escaping (LastRoute, Place) -> Void) {
         self.onRouteSelected = onRouteSelected
     }
 
     func start() {
-        onRouteSelected(Self.makeCannedRoute())
+        onRouteSelected(Self.makeCannedRoute(), Self.makeCannedArrival())
         finish()
+    }
+
+    // 도착지 필드 바인딩(Phase 17) 시연용 — canned 경로의 하차지와 같은 동네.
+    nonisolated static func makeCannedArrival() -> Place {
+        Place(
+            name: "구로디지털단지역",
+            address: "서울 구로구 도림천로 486",
+            coordinate: Coordinate(latitude: 37.4853, longitude: 126.9015)
+        )
     }
 
     // nonisolated: 상세 재조회 스텁(nonisolated async)에서도 공유한다.

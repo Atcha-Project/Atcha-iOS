@@ -45,7 +45,10 @@ public final class HomeDIContainer: HomeCoordinatorBuildable {
     }
 
     func makeHomeViewController(
-        onSearchRequested: @escaping (_ onRouteSelected: @escaping (LastRoute) -> Void) -> Void
+        onSearchRequested: @escaping (
+            _ initialField: SearchEntryField,
+            _ onRouteSelected: @escaping (LastRoute, Place) -> Void
+        ) -> Void
     ) -> UIViewController {
         let viewModel = HomeViewModel(
             getCurrentLocationUseCase: getCurrentLocationUseCase,
@@ -63,10 +66,12 @@ public final class HomeDIContainer: HomeCoordinatorBuildable {
 
     func makeSearchCoordinator(
         navigationController: UINavigationController,
-        onRouteSelected: @escaping (LastRoute) -> Void
+        initialField: SearchEntryField,
+        onRouteSelected: @escaping (LastRoute, Place) -> Void
     ) -> any Coordinator {
         searchCoordinatorBuildable.makeSearchCoordinator(
             navigationController: navigationController,
+            initialField: initialField,
             onRouteSelected: onRouteSelected
         )
     }

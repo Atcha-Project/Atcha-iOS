@@ -8,13 +8,25 @@ import Domain
 /// App 모듈 기본 격리가 MainActor라 이 클래스는 암시적 Sendable — 프로토콜의
 /// nonisolated async 요구사항은 격리 witness로 충족된다.
 final class CoreLocationServiceAdapter: LocationService {
+    /// CLLocationUpdate의 거부 플래그 3종 → LocationError 매핑(Phase 17). nil = 진행 중.
+    /// 우선순위: restricted > 전역 OFF > 앱 권한 거부 — 더 좁은 회복 경로가 이긴다
+    /// (restricted는 설정으로 못 풀고, 전역 OFF는 앱 권한 상태를 무의미하게 만든다).
+    static func classify(denied: Bool, deniedGlobally: Bool, restricted: Bool) -> LocationError? {
+        if restricted { return .restricted }
+        if deniedGlobally { return .servicesDisabled }
+        if denied { return .permissionDenied }
+        return nil
+    }
+
     func currentLocation() async throws -> Coordinate {
         do {
             for try await update in CLLocationUpdate.liveUpdates() {
-                if update.authorizationDenied
-                    || update.authorizationDeniedGlobally
-                    || update.authorizationRestricted {
-                    throw LocationError.permissionDenied
+                if let error = Self.classify(
+                    denied: update.authorizationDenied,
+                    deniedGlobally: update.authorizationDeniedGlobally,
+                    restricted: update.authorizationRestricted
+                ) {
+                    throw error
                 }
                 if let location = update.location {
                     return Coordinate(

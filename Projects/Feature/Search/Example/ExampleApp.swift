@@ -52,19 +52,22 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         )
         let coordinator = container.makeSearchCoordinator(
             navigationController: navigationController,
-            onRouteSelected: { [weak self] route in self?.showSelectedRoute(route) }
+            initialField: .departure,
+            onRouteSelected: { [weak self] route, arrival in
+                self?.showSelectedRoute(route, arrival: arrival)
+            }
         )
         coordinator.finishDelegate = self
         searchCoordinator = coordinator
         coordinator.start()
     }
 
-    private func showSelectedRoute(_ route: LastRoute) {
+    private func showSelectedRoute(_ route: LastRoute, arrival: Place) {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"
         let alert = UIAlertController(
             title: "경로 선택됨",
-            message: "\(formatter.string(from: route.departureTime)) 출발 · 환승 \(route.transferCount)회 (id: \(route.id))",
+            message: "\(formatter.string(from: route.departureTime)) 출발 → \(arrival.name) · 환승 \(route.transferCount)회 (id: \(route.id))",
             preferredStyle: .alert
         )
         alert.addAction(UIAlertAction(title: "확인", style: .default))

@@ -1,6 +1,7 @@
 import Domain
 import Foundation
 @testable import SearchFeature
+import SearchFeatureInterface
 import Testing
 
 private struct StubSearchPlacesUseCase: SearchPlacesUseCase {
@@ -91,6 +92,8 @@ private final class StateRecorder {
     }
 }
 
+private nonisolated let fixedNow = Date(timeIntervalSince1970: 1_755_800_000)
+
 private nonisolated func makePlace(_ name: String) -> Place {
     Place(
         name: name,
@@ -132,13 +135,16 @@ private func makeSUT(
     placesHandler: @escaping @Sendable (String) async throws -> [Place] = { _ in [] },
     routesHandler: @escaping @Sendable () async throws -> LastRouteSearchResult = { .available([]) },
     store: RecentStore = RecentStore(),
-    location: (@Sendable () async throws -> Coordinate)? = nil
+    location: (@Sendable () async throws -> Coordinate)? = nil,
+    initialField: SearchEntryField = .departure
 ) -> SearchViewModel {
     SearchViewModel(
         searchPlacesUseCase: StubSearchPlacesUseCase(handler: placesHandler),
         searchLastRoutesUseCase: StubSearchLastRoutesUseCase(handler: routesHandler),
         recentSearchesUseCase: StubRecentSearchesUseCase(store: store),
         getCurrentLocationUseCase: location.map(StubGetCurrentLocationUseCase.init(handler:)),
+        initialField: initialField,
+        now: { fixedNow },
         debounceInterval: .zero
     )
 }
@@ -212,7 +218,7 @@ struct SearchViewModelTests {
         await recorder.waitUntilLast { if case .routes = $0 { true } else { false } }
 
         #expect(recorder.states.contains(.loadingRoutes))
-        let expected = RouteResultsViewData(entities: routes, isExpanded: false)
+        let expected = RouteResultsViewData(entities: routes, isExpanded: false, now: fixedNow)
         #expect(recorder.states.last == .routes(expected))
         #expect(expected.featured.badgeText == "가장 늦은 차")
         #expect(expected.alternatives.count == 1)
@@ -288,10 +294,10 @@ struct SearchViewModelTests {
         await recorder.waitUntilLast { if case .routes = $0 { true } else { false } }
 
         sut.didTapMore()
-        #expect(recorder.states.last == .routes(RouteResultsViewData(entities: routes, isExpanded: true)))
+        #expect(recorder.states.last == .routes(RouteResultsViewData(entities: routes, isExpanded: true, now: fixedNow)))
 
         sut.didTapMore()
-        #expect(recorder.states.last == .routes(RouteResultsViewData(entities: routes, isExpanded: false)))
+        #expect(recorder.states.last == .routes(RouteResultsViewData(entities: routes, isExpanded: false, now: fixedNow)))
     }
 
     @Test
@@ -419,18 +425,24 @@ struct SearchViewModelTests {
         sut.didSelectListItem(at: 0)
         await recorder.waitUntilLast { if case .routes = $0 { true } else { false } }
 
-        #expect(recorder.states.last == .routes(RouteResultsViewData(entities: routes, isExpanded: false)))
+        #expect(recorder.states.last == .routes(RouteResultsViewData(entities: routes, isExpanded: false, now: fixedNow)))
     }
 
     @Test
-    func selectRoute_forwardsEntityToOnRouteChosen() async {
+    func selectRoute_forwardsEntityAndConfirmedArrival() async {
+        // 도착지 동반(Phase 17) — 홈 도착지 필드의 원천이므로 확정된 그 장소여야 한다.
+        let arrival = makePlace("회사")
         let routes = [makeRoute(id: "r1"), makeRoute(id: "r2")]
         let sut = makeSUT(
-            placesHandler: { _ in [makePlace("강남역")] },
+            placesHandler: { _ in [arrival] },
             routesHandler: { .available(routes) }
         )
         var chosen: LastRoute?
-        sut.onRouteChosen = { chosen = $0 }
+        var chosenArrival: Place?
+        sut.onRouteChosen = { route, place in
+            chosen = route
+            chosenArrival = place
+        }
         let recorder = StateRecorder()
         recorder.attach(to: sut)
         await driveBothSlotsConfirmed(sut: sut, recorder: recorder)
@@ -439,5 +451,126 @@ struct SearchViewModelTests {
         sut.didSelectRoute(at: 0)
 
         #expect(chosen == routes[0])
+        #expect(chosenArrival == arrival)
+    }
+
+    // MARK: - Phase 17: 진입 필드·로딩·빈 결과·다시 검색하기·내일 라벨
+
+    @Test
+    func initialFieldArrival_startsWithArrivalSlotActive() {
+        let sut = makeSUT(initialField: .arrival)
+        #expect(sut.fields.activeField == .arrival)
+
+        let departureEntry = makeSUT(initialField: .departure)
+        #expect(departureEntry.fields.activeField == .departure)
+    }
+
+    @Test
+    func keywordSearch_passesThroughLoadingPlaces() async {
+        let place = makePlace("강남역")
+        let sut = makeSUT(placesHandler: { _ in [place] })
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+
+        sut.keywordDidChange("강남", in: .departure)
+        await recorder.waitUntilLast { if case .places = $0 { true } else { false } }
+
+        // 디바운스 통과 후 요청 직전의 로딩 상태를 반드시 거친다.
+        #expect(recorder.states.contains(.loadingPlaces))
+    }
+
+    @Test
+    func keywordSearch_zeroResults_showsEmptyPlaces() async {
+        let sut = makeSUT(placesHandler: { _ in [] })
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+
+        sut.keywordDidChange("결과없는키워드", in: .arrival)
+        await recorder.waitUntilLast { $0 == .places([]) }
+
+        // 0건도 .places로 흐른다 — VC가 빈 상태("검색 결과가 없어요")를 그린다.
+        #expect(recorder.states.last == .places([]))
+    }
+
+    @Test
+    func emptyResultAction_resetsArrivalSlotAndReturnsToRecent() async {
+        // "다시 검색하기" 실동작: 도착지 슬롯 초기화 + 포커스 + 최근 검색 복귀.
+        let sut = makeSUT(
+            placesHandler: { _ in [makePlace("강남역")] },
+            routesHandler: { .serviceEnded }
+        )
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+        await driveBothSlotsConfirmed(sut: sut, recorder: recorder)
+        await recorder.waitUntilLast { $0 == .serviceEnded }
+        #expect(!sut.fields.arrivalText.isEmpty)
+
+        sut.didTapEmptyAction()
+        await recorder.waitUntilLast { if case .recent = $0 { true } else { false } }
+
+        #expect(sut.fields.arrivalText.isEmpty)
+        #expect(sut.fields.activeField == .arrival)
+        // 출발지는 유지 — 즉시 새 도착지 검색이 가능하다.
+        #expect(sut.fields.departureText == "강남역")
+    }
+
+    @Test
+    func noRouteAction_alsoResetsArrivalSlot() async {
+        let sut = makeSUT(
+            placesHandler: { _ in [makePlace("강남역")] },
+            routesHandler: { .noRoute }
+        )
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+        await driveBothSlotsConfirmed(sut: sut, recorder: recorder)
+        await recorder.waitUntilLast { $0 == .noRoute }
+
+        sut.didTapEmptyAction()
+        await recorder.waitUntilLast { if case .recent = $0 { true } else { false } }
+
+        #expect(sut.fields.arrivalText.isEmpty)
+        #expect(sut.fields.activeField == .arrival)
+    }
+
+    @Test
+    func dayPrefix_labelsOnlyTomorrow() {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Asia/Seoul")!
+        let now = calendar.date(
+            from: DateComponents(year: 2026, month: 8, day: 23, hour: 23, minute: 40)
+        )!
+        let lateTonight = calendar.date(
+            from: DateComponents(year: 2026, month: 8, day: 23, hour: 23, minute: 55)
+        )!
+        let afterMidnight = calendar.date(
+            from: DateComponents(year: 2026, month: 8, day: 24, hour: 0, minute: 29)
+        )!
+        let dayAfterTomorrow = calendar.date(
+            from: DateComponents(year: 2026, month: 8, day: 25, hour: 0, minute: 10)
+        )!
+
+        #expect(dayPrefix(for: lateTonight, now: now, calendar: calendar) == "")
+        #expect(dayPrefix(for: afterMidnight, now: now, calendar: calendar) == "내일 ")
+        // 이틀+ 미래는 막차 도메인상 비발생 — 방어적 무라벨.
+        #expect(dayPrefix(for: dayAfterTomorrow, now: now, calendar: calendar) == "")
+    }
+
+    @Test
+    func routeViewData_labelsTomorrowDepartureAndArrival() {
+        let tomorrowDeparture = Calendar.current.date(byAdding: .day, value: 1, to: fixedNow)!
+        let tomorrow = RouteViewData(
+            entity: makeRoute(id: "r1", departureOffset: tomorrowDeparture.timeIntervalSince(fixedNow)),
+            isFeatured: true,
+            now: fixedNow
+        )
+        #expect(tomorrow.departureTimeText.hasPrefix("내일 "))
+        #expect(tomorrow.destinationText.hasPrefix("도착 내일 "))
+
+        // 오늘 출발·오늘 도착은 무라벨 — 무라벨 = 오늘.
+        let today = RouteViewData(
+            entity: makeRoute(id: "r2", departureOffset: 60), isFeatured: true, now: fixedNow
+        )
+        #expect(!today.departureTimeText.hasPrefix("내일 "))
+        #expect(!today.destinationText.contains("내일"))
     }
 }

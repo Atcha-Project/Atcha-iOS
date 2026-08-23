@@ -26,24 +26,28 @@ public final class SearchDIContainer: SearchCoordinatorBuildable {
 
     public func makeSearchCoordinator(
         navigationController: UINavigationController,
-        onRouteSelected: @escaping (LastRoute) -> Void
+        initialField: SearchEntryField,
+        onRouteSelected: @escaping (LastRoute, Place) -> Void
     ) -> any Coordinator {
         SearchCoordinator(
             navigationController: navigationController,
             container: self,
+            initialField: initialField,
             onRouteSelected: onRouteSelected
         )
     }
 
     func makeSearchViewController(
-        onRouteChosen: @escaping (LastRoute) -> Void,
+        initialField: SearchEntryField,
+        onRouteChosen: @escaping (LastRoute, Place) -> Void,
         onBack: @escaping () -> Void
     ) -> UIViewController {
         let viewModel = SearchViewModel(
             searchPlacesUseCase: searchPlacesUseCase,
             searchLastRoutesUseCase: searchLastRoutesUseCase,
             recentSearchesUseCase: recentSearchesUseCase,
-            getCurrentLocationUseCase: getCurrentLocationUseCase
+            getCurrentLocationUseCase: getCurrentLocationUseCase,
+            initialField: initialField
         )
         viewModel.onRouteChosen = onRouteChosen
         viewModel.onBackRequested = onBack
