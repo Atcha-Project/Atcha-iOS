@@ -5,10 +5,17 @@ public protocol RegisterAlarmUseCase: Sendable {
 public struct DefaultRegisterAlarmUseCase: RegisterAlarmUseCase {
     private let repository: any AlarmRepository
     private let scheduler: any AlarmScheduler
+    /// Live Activity 포트 — nil이면 LA 없이 동작한다(Example·기존 콜사이트 호환).
+    private let activityPort: (any LastTrainActivityPort)?
 
-    public init(repository: any AlarmRepository, scheduler: any AlarmScheduler) {
+    public init(
+        repository: any AlarmRepository,
+        scheduler: any AlarmScheduler,
+        activityPort: (any LastTrainActivityPort)? = nil
+    ) {
         self.repository = repository
         self.scheduler = scheduler
+        self.activityPort = activityPort
     }
 
     public func execute(route: LastRoute) async throws {
@@ -29,5 +36,16 @@ public struct DefaultRegisterAlarmUseCase: RegisterAlarmUseCase {
             fireDate: route.departureTime,
             title: AlarmSchedulingDefaults.title
         )
+        // 수명 정책: 알람 등록(서버+로컬)이 전부 성공한 뒤에만 LA를 시작한다.
+        // start는 throws가 아니므로 LA 실패가 알람 등록을 실패시킬 수 없다.
+        if let activityPort {
+            let session = AlarmInfo(
+                lastRouteId: route.id,
+                departureTime: route.departureTime,
+                updatedAt: nil, // 등록 직후라 서버 재계산 값이 아직 없다 — refresh가 갱신한다.
+                isReal: true
+            )
+            await activityPort.start(session: session, route: route)
+        }
     }
 }

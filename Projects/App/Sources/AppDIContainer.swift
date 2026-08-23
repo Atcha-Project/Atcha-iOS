@@ -22,6 +22,8 @@ final class AppDIContainer {
     private let placeRepository: any PlaceRepository
     private let lastRouteRepository: any LastRouteRepository
     private let alarmScheduler: any AlarmScheduler
+    // LA도 알람 세션과 수명을 같이하므로 1회 생성해 공유한다 — dismiss 기록이 세션 단위여야 한다.
+    private let liveActivityPort: any LastTrainActivityPort
     let alarmSyncService: AlarmSyncService
 
     init() {
@@ -74,9 +76,10 @@ final class AppDIContainer {
         self.alarmRepository = AlarmRepositoryImpl(networkClient: networkClient)
         #endif
 
-        // 디바이스 포트 어댑터 — CoreLocation/AlarmKit을 아는 곳은 App의 어댑터뿐.
+        // 디바이스 포트 어댑터 — CoreLocation/AlarmKit/ActivityKit을 아는 곳은 App의 어댑터뿐.
         let alarmScheduler = CoreAlarmSchedulerAdapter()
         self.alarmScheduler = alarmScheduler
+        self.liveActivityPort = LastTrainLiveActivityAdapter()
         self.alarmSyncService = AlarmSyncService(
             refreshAlarmUseCase: DefaultRefreshAlarmUseCase(
                 repository: alarmRepository,
@@ -103,11 +106,13 @@ final class AppDIContainer {
             reverseGeocodeUseCase: DefaultReverseGeocodeUseCase(repository: placeRepository),
             registerAlarmUseCase: DefaultRegisterAlarmUseCase(
                 repository: alarmRepository,
-                scheduler: alarmScheduler
+                scheduler: alarmScheduler,
+                activityPort: liveActivityPort
             ),
             cancelAlarmUseCase: DefaultCancelAlarmUseCase(
                 repository: alarmRepository,
-                scheduler: alarmScheduler
+                scheduler: alarmScheduler,
+                activityPort: liveActivityPort
             ),
             observeAlarmUseCase: DefaultObserveAlarmUseCase(events: alarmSyncService),
             searchCoordinatorBuildable: searchContainer
