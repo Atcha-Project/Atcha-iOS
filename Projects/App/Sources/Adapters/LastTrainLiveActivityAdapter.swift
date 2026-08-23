@@ -3,6 +3,16 @@ import CoreLiveActivity
 import Domain
 import Foundation
 
+/// App 내부 확장 포트 — Phase 11 변경 훅이 alert **문구**를 실어 보내는 경로.
+/// Domain 포트(`update(state:alert: Bool)`)는 문서 고정 계약이라 그대로 두고,
+/// 변경 유형별 문구가 필요한 호출자(AlarmSyncService)는 이 프로토콜로 어댑터를 본다.
+/// nonisolated 명시: App의 기본 MainActor 격리가 요구사항에 스미면 actor 어댑터가
+/// 적합성을 만족할 수 없다 — Domain 포트(.nonisolated 모듈)와 같은 조건을 재현한다.
+nonisolated protocol LastTrainChangeAlerting: Sendable {
+    /// alert가 nil이면 조용한 상태 갱신, 값이 있으면 해당 문구의 AlertConfiguration으로 갱신한다.
+    func update(state: LastTrainActivityState, alert: (title: String, body: String)?) async
+}
+
 /// ActivityKit → Domain `LastTrainActivityPort` 어댑터. ActivityKit을 import하는 곳은 App에서 이 파일뿐.
 /// 단일 알람 정책과 동일하게 Live Activity도 단일 세션만 유지한다(새 start가 기존 세션을 교체).
 /// 포트 계약대로 어떤 실패도 밖으로 던지지 않는다 — LA 실패가 알람 등록·취소를 실패시키면 안 된다.
@@ -10,13 +20,9 @@ import Foundation
 /// actor인 이유: 포트는 nonisolated async 요구사항을 가진 Sendable 프로토콜이라
 /// MainActor 클래스의 격리 멤버로는 적합성이 성립하지 않는다(Sendable 경계를 넘는 격리 적합성 불가).
 /// ActivityKit의 `Activity`는 Sendable 미표기이나 스레드 안전 설계라 `@preconcurrency`로 완화한다.
-actor LastTrainLiveActivityAdapter: LastTrainActivityPort {
+actor LastTrainLiveActivityAdapter: LastTrainActivityPort, LastTrainChangeAlerting {
     /// 유저 스와이프 dismiss 기록 키 — 앱 재실행 후에도 남아야 Phase 12 폴백 트리거 재료가 된다.
     private static let dismissedDefaultsKey = "la.dismissedByUser"
-
-    // TODO: Phase 11 — 변경 유형별 알림 문구를 UseCase에서 주입한다. 그 전까지는 범용 문구.
-    private static let alertTitle: LocalizedStringResource = "막차 정보가 변경됐어요"
-    private static let alertBody: LocalizedStringResource = "잠금화면에서 최신 막차 시간을 확인하세요"
 
     private let userDefaults: UserDefaults
 
@@ -55,8 +61,8 @@ actor LastTrainLiveActivityAdapter: LastTrainActivityPort {
         let departureTime = session.departureTime ?? route.departureTime
         let initialState = LastTrainActivityState(
             departureTime: departureTime,
-            // TODO: Phase 11 — 알람 버퍼(기준 시각 − 버퍼) 도입 전까지 alarmTime = departureTime.
-            alarmTime: departureTime,
+            // 로컬 알람 발화 시각 — register/refresh와 동일한 버퍼 반영값(출발 − 3분).
+            alarmTime: AlarmTiming.alarmFireDate(departureTime: departureTime),
             urgency: Domain.LastTrainUrgency.forTimeRemaining(
                 departureTime.timeIntervalSinceNow
             ),
@@ -85,16 +91,15 @@ actor LastTrainLiveActivityAdapter: LastTrainActivityPort {
     }
 
     func update(state: LastTrainActivityState, alert: Bool) async {
-        guard let activity else { return }
-        // staleDate도 매 갱신마다 최신 출발 시각으로 재설정한다(앞당겨짐·미뤄짐 반영).
-        let content = ActivityContent(
-            state: Self.contentState(from: state),
-            staleDate: state.departureTime
+        // 문구 없는 Bool 경로(Domain 포트) — alert=true면 범용 폴백 문구로 위임한다.
+        // Phase 11 훅은 이 경로 대신 LastTrainChangeAlerting으로 변경 유형별 문구를 싣는다.
+        await update(
+            state: state,
+            alert: alert
+                ? (title: LastTrainChangeMessages.genericChangeTitle,
+                   body: LastTrainChangeMessages.genericChangeBody)
+                : nil
         )
-        let alertConfiguration: AlertConfiguration? = alert
-            ? AlertConfiguration(title: Self.alertTitle, body: Self.alertBody, sound: .default)
-            : nil
-        await activity.update(content, alertConfiguration: alertConfiguration)
     }
 
     func end(final state: LastTrainActivityState) async {
@@ -114,6 +119,26 @@ actor LastTrainLiveActivityAdapter: LastTrainActivityPort {
     }
 
     var isDismissedByUser: Bool { dismissedByUser }
+
+    // MARK: - LastTrainChangeAlerting
+
+    func update(state: LastTrainActivityState, alert: (title: String, body: String)?) async {
+        guard let activity else { return }
+        // staleDate도 매 갱신마다 최신 출발 시각으로 재설정한다(앞당겨짐·미뤄짐 반영).
+        let content = ActivityContent(
+            state: Self.contentState(from: state),
+            staleDate: state.departureTime
+        )
+        // LocalizedStringResource의 키로 원문을 그대로 쓴다 — 테이블 미등록 키는 원문 표시.
+        let alertConfiguration = alert.map {
+            AlertConfiguration(
+                title: LocalizedStringResource(stringLiteral: $0.title),
+                body: LocalizedStringResource(stringLiteral: $0.body),
+                sound: .default
+            )
+        }
+        await activity.update(content, alertConfiguration: alertConfiguration)
+    }
 
     // MARK: - Dismiss 감지
 

@@ -1,4 +1,5 @@
 import DesignSystem
+import Domain
 import SnapKit
 import UIKit
 
@@ -181,10 +182,19 @@ final class HomeViewController: UIViewController {
         cancelButton.isEnabled = !state.isAlarmBusy
 
         if let bannerData = state.banner {
-            banner.configure(text: bannerData.text, style: bannerData.isUrgent ? .urgent : .normal)
+            banner.configure(text: bannerData.text, style: Self.bannerStyle(for: bannerData.urgency))
             banner.isHidden = false
         } else {
             banner.isHidden = true
+        }
+    }
+
+    /// 긴급도 3단계 ↔ DSBanner.Style 매핑 — LA와 같은 척도(여유/주의/임박)를 그대로 쓴다.
+    private static func bannerStyle(for urgency: LastTrainUrgency) -> DSBanner.Style {
+        switch urgency {
+        case .relaxed: .normal
+        case .caution: .caution
+        case .imminent: .urgent
         }
     }
 
@@ -212,6 +222,11 @@ final class HomeViewController: UIViewController {
             DSToast.show("알람 등록에 실패했어요. 다시 시도해 주세요.", in: view)
         case .alarmCancelFailed:
             DSToast.show("알람 해제에 실패했어요. 다시 시도해 주세요.", in: view)
+        case let .lastTrainAdvanced(minutes):
+            // 배너 강조는 이 원샷 이벤트에 부수하는 시각 효과 — 별도 채널을 만들지 않는다.
+            // 배너의 시각·긴급도 값 자체는 info 스트림이 State로 이미 갱신한다.
+            DSToast.show("막차가 \(minutes)분 당겨졌어요", in: view)
+            banner.emphasize()
         }
     }
 }

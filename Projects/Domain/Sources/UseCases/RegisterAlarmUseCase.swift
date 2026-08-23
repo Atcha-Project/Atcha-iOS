@@ -30,10 +30,10 @@ public struct DefaultRegisterAlarmUseCase: RegisterAlarmUseCase {
         }
         try await repository.register(lastRouteId: route.id)
         // 단일 알람 정책: 서버 등록이 성공한 뒤에만 로컬 알람을 교체한다.
-        // TODO: [미확정] 서버 계산 알람 시각 스펙 확정 전까지 막차 출발 시각으로 스케줄한다.
+        // TODO: [미확정] 서버 계산 알람 시각 스펙 확정 전까지 막차 출발 시각 − 버퍼로 스케줄한다.
         try await scheduler.replaceAlarm(
             id: route.id,
-            fireDate: route.departureTime,
+            fireDate: AlarmTiming.alarmFireDate(departureTime: route.departureTime),
             title: AlarmSchedulingDefaults.title
         )
         // 수명 정책: 알람 등록(서버+로컬)이 전부 성공한 뒤에만 LA를 시작한다.

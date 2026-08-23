@@ -40,6 +40,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             registerAlarmUseCase: PreviewRegisterAlarmUseCase(),
             cancelAlarmUseCase: PreviewCancelAlarmUseCase(),
             observeAlarmUseCase: PreviewObserveAlarmUseCase(),
+            observeAlarmChangeUseCase: PreviewObserveAlarmChangeUseCase(),
             searchCoordinatorBuildable: PreviewSearchCoordinatorBuildable()
         )
         let coordinator = container.makeHomeCoordinator(navigationController: navigationController)
@@ -84,6 +85,13 @@ struct PreviewCancelAlarmUseCase: CancelAlarmUseCase {
 /// 등록된 알람이 없는 서버 상태를 흉내 낸다 — 동기화 이벤트가 오지 않으므로 화면을 건드리지 않는다.
 struct PreviewObserveAlarmUseCase: ObserveAlarmUseCase {
     func execute() -> AsyncStream<AlarmInfo> {
+        AsyncStream { _ in }
+    }
+}
+
+/// 막차 변경 판정이 없는 상태를 흉내 낸다 — 토스트·배너 강조는 발생하지 않는다.
+struct PreviewObserveAlarmChangeUseCase: ObserveAlarmChangeUseCase {
+    func execute() -> AsyncStream<AlarmChangeVerdict> {
         AsyncStream { _ in }
     }
 }
