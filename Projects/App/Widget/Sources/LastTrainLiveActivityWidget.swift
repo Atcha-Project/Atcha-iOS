@@ -36,22 +36,26 @@ struct LastTrainLiveActivityWidget: Widget {
                 DynamicIslandExpandedRegion(.leading) {
                     HStack(spacing: DSSpacing.xs) {
                         Image(systemName: context.attributes.transportSymbolName)
-                            .font(.subheadline)
+                            .font(.system(size: 13, weight: .semibold))
                             .foregroundStyle(state.glanceColor)
                         Text(context.attributes.routeName)
-                            .font(.headline)
+                            .font(.pretendard(.semiBold, size: 15))
                             .foregroundStyle(Color(ds: DSColor.Text.primary))
                             .lineLimit(1)
                     }
                 }
                 DynamicIslandExpandedRegion(.trailing) {
                     Text("\(LastTrainTimeFormat.hhmm(state.departureTime)) 출발")
-                        .font(.subheadline)
+                        .font(.pretendard(.regular, size: 13))
                         .foregroundStyle(Color(ds: DSColor.Text.secondary))
                         .lineLimit(1)
                 }
+                // expanded .center는 의도적 미사용 — 센서 하우징 좌우 클램프 탓에
+                // 와이드 타이머가 잘리거나 축소되고, 전폭을 쓸 수 있는 영역은
+                // bottom뿐이다. leading/trailing이 채워진 구성에선 center가
+                // 세로 밴드만 더해 160pt 확장 캡을 압박한다.
                 DynamicIslandExpandedRegion(.bottom) {
-                    // 잠금화면 2행의 축약판. 도보 안내 축약도 이 영역 몫이지만
+                    // 잠금화면 히어로 슬롯의 축약판. 도보 안내 축약도 이 영역 몫이지만
                     // ContentState에 도보 필드가 없어 생략 — 아래
                     // LastTrainLockScreenView.departureRow 주석 참고.
                     switch state.status {
@@ -59,26 +63,26 @@ struct LastTrainLiveActivityWidget: Widget {
                         // 갱신이 끊긴 채 staleDate(=출발 시각)가 지났다 — 얼어붙은
                         // 카운트다운 대신 최신성 경고 (Phase 13, 앱 깨움 없는 마지막 방어선).
                         Text(LastTrainStaleCopy.message)
-                            .font(.headline)
+                            .font(.pretendard(.semiBold, size: 15))
                             .foregroundStyle(Color(ds: DSColor.Text.secondary))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
                     case .active:
-                        HStack(alignment: .firstTextBaseline, spacing: DSSpacing.sm) {
+                        VStack(alignment: .leading, spacing: DSSpacing.xxs) {
                             Text("출발까지")
-                                .font(.subheadline)
+                                .font(.pretendard(.medium, size: 12))
                                 .foregroundStyle(Color(ds: DSColor.Text.secondary))
-                            HStack(spacing: DSSpacing.xs) {
-                                Image(systemName: "timer")
-                                    .font(.body.weight(.semibold))
-                                Text(timerInterval: state.countdownRange, countsDown: true)
-                                    .font(.title2.weight(.bold))
-                                    .monospacedDigit()
-                                    .multilineTextAlignment(.leading)
-                            }
-                            .foregroundStyle(state.urgencyColor)
+                            Text(timerInterval: state.countdownRange, countsDown: true)
+                                .font(.pretendard(.bold, size: 28))
+                                .monospacedDigit()
+                                .foregroundStyle(state.urgencyColor)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.6)
+                                .multilineTextAlignment(.leading)
                         }
                     case .departed, .missed, .serviceEnded:
                         Text(state.finalStatusMessage ?? "")
-                            .font(.headline)
+                            .font(.pretendard(.semiBold, size: 17))
                             .foregroundStyle(state.glanceColor)
                     }
                 }
@@ -90,11 +94,11 @@ struct LastTrainLiveActivityWidget: Widget {
                 switch state.status {
                 case .active where isStale:
                     Text("지남")
-                        .font(.caption2.weight(.semibold))
+                        .font(.pretendard(.semiBold, size: 12))
                         .foregroundStyle(Color(ds: DSColor.Text.secondary))
                 case .active:
                     Text(timerInterval: state.countdownRange, countsDown: true)
-                        .font(.caption2.weight(.semibold))
+                        .font(.pretendard(.semiBold, size: 12))
                         .monospacedDigit()
                         .foregroundStyle(state.urgencyColor)
                         .multilineTextAlignment(.trailing)
@@ -105,15 +109,15 @@ struct LastTrainLiveActivityWidget: Widget {
                         .frame(maxWidth: 56)
                 case .departed:
                     Text("출발")
-                        .font(.caption2.weight(.semibold))
+                        .font(.pretendard(.semiBold, size: 12))
                         .foregroundStyle(state.glanceColor)
                 case .missed:
                     Text("놓침")
-                        .font(.caption2.weight(.semibold))
+                        .font(.pretendard(.semiBold, size: 12))
                         .foregroundStyle(state.glanceColor)
                 case .serviceEnded:
                     Text("종료")
-                        .font(.caption2.weight(.semibold))
+                        .font(.pretendard(.semiBold, size: 12))
                         .foregroundStyle(state.glanceColor)
                 }
             } minimal: {
@@ -127,16 +131,18 @@ struct LastTrainLiveActivityWidget: Widget {
 
 // MARK: - Lock screen
 
-/// 잠금화면 뷰 — UX 정본 목업:
+/// 잠금화면 뷰 — 타이머 히어로 목업(UX 정본):
 /// ```
 /// ┌────────────────────────────┐
 /// │ 🚌 5518 막차      [⚠ 당겨짐] │
-/// │ 출발까지  ⏱ 22분             │  ← 여유도에 따라 색 변경
+/// │ 출발까지                     │
+/// │ 21:34                      │  ← 히어로 카운트다운, 여유도에 따라 색 변경
 /// │ 23:25 출발 · 정류장 도보 8분   │
 /// └────────────────────────────┘
 /// ```
-/// glance는 0.5초 — 숫자보다 색·상태가 먼저 읽히도록 카운트다운
-/// 숫자·아이콘에 긴급도 색을 상시 적용한다.
+/// glance는 0.5초 — 숫자보다 색·상태가 먼저 읽히도록 카운트다운 숫자에
+/// 긴급도 색을 상시 적용한다. 타이머 아이콘은 히어로 스케일에서 숫자와
+/// 경합해 제거 — 아이콘 앵커는 헤더의 수단 심벌이 담당한다.
 private struct LastTrainLockScreenView: View {
     let attributes: LastTrainActivityAttributes
     let state: LastTrainActivityAttributes.ContentState
@@ -147,7 +153,7 @@ private struct LastTrainLockScreenView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: DSSpacing.sm) {
             headerRow
-            mainRow
+            heroSlot
             departureRow
         }
         .padding(DSSpacing.md)
@@ -157,10 +163,10 @@ private struct LastTrainLockScreenView: View {
     private var headerRow: some View {
         HStack(spacing: DSSpacing.xs) {
             Image(systemName: attributes.transportSymbolName)
-                .font(.subheadline)
+                .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(Color(ds: DSColor.Icon.default))
             Text("\(attributes.routeName) 막차")
-                .font(.subheadline.weight(.semibold))
+                .font(.pretendard(.semiBold, size: 14))
                 .foregroundStyle(Color(ds: DSColor.Text.primary))
                 .lineLimit(1)
             Spacer(minLength: DSSpacing.sm)
@@ -170,46 +176,62 @@ private struct LastTrainLockScreenView: View {
         }
     }
 
-    /// 2행: glance 핵심. active면 카운트다운(긴급도 색), stale이면 최신성 경고,
-    /// departed/final state면 카운트다운을 숨기고 상태 문구만 표시.
+    /// 2행(히어로 슬롯): active면 오버라인 + 대형 카운트다운(긴급도 색), stale이면
+    /// 최신성 경고, final state면 상태 문구가 히어로 자리를 차지한다.
     @ViewBuilder
-    private var mainRow: some View {
+    private var heroSlot: some View {
         switch state.status {
         case .active where isStale:
             // 갱신이 끊긴 채 staleDate(=출발 시각) 경과 — 얼어붙은 카운트다운을
             // 신선한 정보처럼 보여주지 않는다 (Phase 13 마지막 방어선).
-            Text(LastTrainStaleCopy.message)
-                .font(.title3.weight(.bold))
-                .foregroundStyle(Color(ds: DSColor.Text.secondary))
+            heroMessage(
+                LastTrainStaleCopy.message,
+                font: .pretendard(.bold, size: 20),
+                color: Color(ds: DSColor.Text.secondary),
+                lineLimit: 2
+            )
         case .active:
-            HStack(alignment: .firstTextBaseline, spacing: DSSpacing.sm) {
+            VStack(alignment: .leading, spacing: DSSpacing.xxs) {
                 Text("출발까지")
-                    .font(.body)
+                    .font(.pretendard(.medium, size: 12))
                     .foregroundStyle(Color(ds: DSColor.Text.secondary))
-                HStack(spacing: DSSpacing.xs) {
-                    Image(systemName: "timer")
-                        .font(.title3.weight(.semibold))
-                    // 알람 발화 시각(alarmTime = 출발 기준시각 − 버퍼) 기준 —
-                    // 정책: "출발까지 N분"은 버퍼 포함 알람 시각 기준으로 통일.
-                    Text(timerInterval: state.countdownRange, countsDown: true)
-                        .font(.title.weight(.bold))
-                        .monospacedDigit()
-                        .multilineTextAlignment(.leading)
-                }
-                .foregroundStyle(state.urgencyColor)
+                // 알람 발화 시각(alarmTime = 출발 기준시각 − 버퍼) 기준 —
+                // 정책: "출발까지 N분"은 버퍼 포함 알람 시각 기준으로 통일.
+                // h:mm:ss 최악 8글리프도 38pt에서 폭 여유가 있지만
+                // lineLimit+minScale을 벨트로 유지한다.
+                Text(timerInterval: state.countdownRange, countsDown: true)
+                    .font(.pretendard(.bold, size: 38))
+                    .monospacedDigit()
+                    .foregroundStyle(state.urgencyColor)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+                    .multilineTextAlignment(.leading)
             }
         case .departed, .missed, .serviceEnded:
-            Text(state.finalStatusMessage ?? "")
-                .font(.title3.weight(.bold))
-                .foregroundStyle(state.glanceColor)
+            heroMessage(
+                state.finalStatusMessage ?? "",
+                font: .pretendard(.bold, size: 22),
+                color: state.glanceColor,
+                lineLimit: 1
+            )
         }
+    }
+
+    /// stale·final 공용 — 히어로 자리를 차지하는 상태 문구.
+    private func heroMessage(
+        _ text: String, font: Font, color: Color, lineLimit: Int
+    ) -> some View {
+        Text(text)
+            .font(font)
+            .foregroundStyle(color)
+            .lineLimit(lineLimit)
     }
 
     /// 3행: 출발 시각 + 정류장 도보 소요 (Phase 14 — 미확정 #7 클라 임시안으로 목업 공석 해소).
     /// 도보 데이터가 없는 세션(구버전 LA·도보 없는 경로)은 출발 시각만 표시한다.
     private var departureRow: some View {
         Text(departureRowText)
-            .font(.footnote)
+            .font(.pretendard(.regular, size: 13))
             .foregroundStyle(Color(ds: DSColor.Text.secondary))
             .lineLimit(1)
     }
@@ -239,14 +261,16 @@ private extension LastTrainActivityAttributes {
 
 /// "⚠ 당겨짐" 배지 — 변경 직후 10분 노출 정책의 표시 슬롯.
 /// 취소선 등 변경 흔적의 상시 표시는 하지 않는다(정책).
+/// 스타일은 홈 배너 caution 티어(danger 글자 + dangerContainer 채움)와 같은
+/// 은은한 채움 — 강한 긴급색은 히어로 숫자가 담당한다.
 private struct ChangeBadge: View {
     var body: some View {
         Text("⚠ 당겨짐")
-            .font(.caption2.weight(.semibold))
-            .foregroundStyle(Color(ds: DSColor.Text.primary))
+            .font(.pretendard(.semiBold, size: 12))
+            .foregroundStyle(Color(ds: DSColor.State.danger))
             .padding(.horizontal, DSSpacing.sm)
             .padding(.vertical, DSSpacing.xxs)
-            .background(Color(ds: DSColor.State.danger), in: Capsule())
+            .background(Color(ds: DSColor.State.dangerContainer), in: Capsule())
             .lineLimit(1)
     }
 }
@@ -322,4 +346,116 @@ private enum LastTrainTimeFormat {
     static func hhmm(_ date: Date) -> String {
         formatter.string(from: date)
     }
+}
+
+// MARK: - Previews (렌더 검증 픽스처 — 계약·정책과 무관한 표시 확인용)
+
+private extension LastTrainActivityAttributes {
+    static let previewSubway = LastTrainActivityAttributes(
+        routeId: "preview.subway",
+        routeName: "9호선 급행",
+        transportKind: .subway,
+        firstWalkSeconds: 300
+    )
+
+    static let previewBusNoWalk = LastTrainActivityAttributes(
+        routeId: "preview.bus",
+        routeName: "5518",
+        transportKind: .bus,
+        firstWalkSeconds: nil
+    )
+}
+
+private extension LastTrainActivityAttributes.ContentState {
+    /// alarm이 N초 후, 출발은 alarm+3분 — 미래 시각 기반이라 프리뷰 타이머가 실제로 틱한다.
+    static func preview(
+        alarmIn seconds: TimeInterval,
+        urgency: LastTrainUrgency,
+        badge: Bool = false,
+        status: LastTrainSessionStatus = .active
+    ) -> Self {
+        let alarm = Date.now.addingTimeInterval(seconds)
+        return .init(
+            departureTime: alarm.addingTimeInterval(180),
+            alarmTime: alarm,
+            urgency: urgency,
+            changeBadgeExpiry: badge ? Date.now.addingTimeInterval(600) : nil,
+            status: status
+        )
+    }
+}
+
+#Preview("lock-active-relaxed", as: .content, using: LastTrainActivityAttributes.previewSubway) {
+    LastTrainLiveActivityWidget()
+} contentStates: {
+    LastTrainActivityAttributes.ContentState.preview(alarmIn: 22 * 60, urgency: .relaxed)
+}
+
+#Preview(
+    "lock-active-caution-badge", as: .content, using: LastTrainActivityAttributes.previewSubway
+) {
+    LastTrainLiveActivityWidget()
+} contentStates: {
+    LastTrainActivityAttributes.ContentState.preview(alarmIn: 7 * 60, urgency: .caution, badge: true)
+}
+
+#Preview(
+    "lock-active-imminent", as: .content, using: LastTrainActivityAttributes.previewBusNoWalk
+) {
+    LastTrainLiveActivityWidget()
+} contentStates: {
+    LastTrainActivityAttributes.ContentState.preview(alarmIn: 45, urgency: .imminent)
+}
+
+#Preview("lock-final-states", as: .content, using: LastTrainActivityAttributes.previewSubway) {
+    LastTrainLiveActivityWidget()
+} contentStates: {
+    LastTrainActivityAttributes.ContentState
+        .preview(alarmIn: -60, urgency: .imminent, status: .departed)
+    LastTrainActivityAttributes.ContentState
+        .preview(alarmIn: -300, urgency: .imminent, status: .missed)
+    LastTrainActivityAttributes.ContentState
+        .preview(alarmIn: -300, urgency: .relaxed, status: .serviceEnded)
+}
+
+#Preview(
+    "di-expanded", as: .dynamicIsland(.expanded),
+    using: LastTrainActivityAttributes.previewSubway
+) {
+    LastTrainLiveActivityWidget()
+} contentStates: {
+    LastTrainActivityAttributes.ContentState.preview(alarmIn: 22 * 60, urgency: .relaxed)
+    LastTrainActivityAttributes.ContentState.preview(alarmIn: 45, urgency: .imminent)
+    LastTrainActivityAttributes.ContentState
+        .preview(alarmIn: -300, urgency: .imminent, status: .missed)
+}
+
+#Preview(
+    "di-compact", as: .dynamicIsland(.compact),
+    using: LastTrainActivityAttributes.previewBusNoWalk
+) {
+    LastTrainLiveActivityWidget()
+} contentStates: {
+    LastTrainActivityAttributes.ContentState.preview(alarmIn: 7 * 60, urgency: .caution)
+    LastTrainActivityAttributes.ContentState
+        .preview(alarmIn: -300, urgency: .imminent, status: .missed)
+}
+
+#Preview(
+    "di-minimal", as: .dynamicIsland(.minimal),
+    using: LastTrainActivityAttributes.previewSubway
+) {
+    LastTrainLiveActivityWidget()
+} contentStates: {
+    LastTrainActivityAttributes.ContentState.preview(alarmIn: 22 * 60, urgency: .relaxed)
+}
+
+// 프리뷰 매크로는 context.isStale을 주입할 수 없다 — stale 분기는 뷰 직접 렌더로 확인.
+#Preview("lock-stale") {
+    LastTrainLockScreenView(
+        attributes: .previewSubway,
+        state: .preview(alarmIn: -300, urgency: .caution),
+        isStale: true
+    )
+    .background(Color(ds: DSColor.Background.base))
 }
