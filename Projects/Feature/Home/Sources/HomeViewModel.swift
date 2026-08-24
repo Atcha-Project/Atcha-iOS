@@ -32,6 +32,10 @@ final class HomeViewModel {
         var banner: BannerViewData?
         var isAlarmBusy = false
         var alarmButton: AlarmButtonMode = .hidden
+        /// 신선도 스탬프 "HH:mm 확인 기준"(Phase 16) — 배너 보조 라인·카드 푸터 공용
+        /// 단일 소스. 등록 세션과 확인 시각이 있을 때만 값이 있고, sync 무음 실패 시
+        /// 낡은 시각을 그대로 유지하는 것이 실패의 정직한 표면이다(원칙 3).
+        var freshnessText: String?
     }
 
     /// 재방출되면 안 되는 원샷 안내 — 상태와 분리한다.
@@ -56,6 +60,9 @@ final class HomeViewModel {
     /// Set by the ViewController; always invoked on the main actor.
     var onStateChange: ((State) -> Void)?
     var onToast: ((ToastEvent) -> Void)?
+    /// pull-to-refresh 종료 훅(Phase 16) — 성공/실패 불문 동기화가 끝나면 불린다
+    /// (VC가 refreshControl.endRefreshing). 실패는 무음 — 결과 표출은 스트림·스탬프 몫.
+    var onManualSyncFinished: (() -> Void)?
     /// Set by the Coordinator: 검색 플로우를 열고, 선택 경로를 reply 클로저로 돌려받는다.
     var onSearchRequested: ((_ onRouteSelected: @escaping (LastRoute) -> Void) -> Void)?
 
@@ -69,6 +76,7 @@ final class HomeViewModel {
     private let cancelAlarmUseCase: any CancelAlarmUseCase
     private let observeAlarmUseCase: any ObserveAlarmUseCase
     private let observeAlarmChangeUseCase: any ObserveAlarmChangeUseCase
+    private let requestAlarmSyncUseCase: any RequestAlarmSyncUseCase
     private let getLastRouteDetailUseCase: any GetLastRouteDetailUseCase
     private let now: @Sendable () -> Date
     private let bannerTickInterval: Duration
@@ -76,12 +84,16 @@ final class HomeViewModel {
     private var selectedRoute: LastRoute?
     /// 서버에 알람이 등록된 경로 id — 해제 버튼·동기화 복원의 기준.
     private var registeredRouteId: String?
+    /// 세션 값이 마지막으로 서버로 확인된 시각(Phase 16) — 스트림의 checkedAt·등록
+    /// 성공 시각만이 원천이다(수신 시각으로 찍지 않는다 — 시딩 복원값의 둔갑 방지).
+    private var lastCheckedAt: Date?
     private var locationTask: Task<Void, Never>?
     private var alarmTask: Task<Void, Never>?
     private var observeTask: Task<Void, Never>?
     private var changeTask: Task<Void, Never>?
     private var bannerTask: Task<Void, Never>?
     private var restoreCardTask: Task<Void, Never>?
+    private var refreshTask: Task<Void, Never>?
 
     init(
         getCurrentLocationUseCase: any GetCurrentLocationUseCase,
@@ -90,6 +102,7 @@ final class HomeViewModel {
         cancelAlarmUseCase: any CancelAlarmUseCase,
         observeAlarmUseCase: any ObserveAlarmUseCase,
         observeAlarmChangeUseCase: any ObserveAlarmChangeUseCase,
+        requestAlarmSyncUseCase: any RequestAlarmSyncUseCase,
         getLastRouteDetailUseCase: any GetLastRouteDetailUseCase,
         now: @escaping @Sendable () -> Date = { Date() },
         bannerTickInterval: Duration = .seconds(60)
@@ -100,6 +113,7 @@ final class HomeViewModel {
         self.cancelAlarmUseCase = cancelAlarmUseCase
         self.observeAlarmUseCase = observeAlarmUseCase
         self.observeAlarmChangeUseCase = observeAlarmChangeUseCase
+        self.requestAlarmSyncUseCase = requestAlarmSyncUseCase
         self.getLastRouteDetailUseCase = getLastRouteDetailUseCase
         self.now = now
         self.bannerTickInterval = bannerTickInterval
@@ -112,6 +126,7 @@ final class HomeViewModel {
         changeTask?.cancel()
         bannerTask?.cancel()
         restoreCardTask?.cancel()
+        refreshTask?.cancel()
     }
 
     // MARK: - 입력
@@ -139,6 +154,19 @@ final class HomeViewModel {
             else { return }
             guard !Task.isCancelled else { return }
             self?.state.departure = .current(name: place.name)
+        }
+    }
+
+    /// pull-to-refresh(Phase 16) — 수동 동기화 1회. 진행 중 재진입은 no-op(이중 당김
+    /// 무해). 실패는 무음 — 스피너 종료 + 스탬프가 낡은 시각을 유지하는 것이 표면이다.
+    func refreshPulled() {
+        guard refreshTask == nil else { return }
+        refreshTask = Task { [weak self] in
+            guard let useCase = self?.requestAlarmSyncUseCase else { return }
+            await useCase.execute()
+            guard let self, !Task.isCancelled else { return }
+            self.refreshTask = nil
+            self.onManualSyncFinished?()
         }
     }
 
@@ -172,18 +200,21 @@ final class HomeViewModel {
             guard let useCase = self?.registerAlarmUseCase else { return }
             do {
                 let followUp = try await useCase.execute(route: route)
-                guard !Task.isCancelled else { return }
-                self?.registeredRouteId = route.id
-                self?.state.isAlarmBusy = false
-                self?.refreshAlarmButton()
-                self?.startBannerTimer(
+                guard !Task.isCancelled, let self else { return }
+                self.registeredRouteId = route.id
+                // 등록 성공 = 서버가 방금 이 값을 확인해줬다 — 스탬프 시작점(Phase 16).
+                self.lastCheckedAt = self.now()
+                self.state.isAlarmBusy = false
+                self.refreshAlarmButton()
+                self.refreshFreshness()
+                self.startBannerTimer(
                     departure: route.departureTime,
                     firstWalkSeconds: route.firstWalkSectionSeconds
                 )
                 // 등록은 성공했고 폴백 노티만 잃었다 — 1회 안내(Phase 15). deniedNow는
                 // 이번 호출로 최초 요청이 이뤄졌고 거부된 경우뿐이라 재등록 시 반복되지 않는다.
                 if followUp == .deniedNow {
-                    self?.onToast?(.notificationPermissionDenied)
+                    self.onToast?(.notificationPermissionDenied)
                 }
             } catch AlarmError.permissionDenied {
                 guard !Task.isCancelled else { return }
@@ -212,6 +243,7 @@ final class HomeViewModel {
                 guard !Task.isCancelled, let self else { return }
                 self.bannerTask?.cancel()
                 self.registeredRouteId = nil
+                self.lastCheckedAt = nil
                 var newState = self.state
                 newState.banner = nil
                 newState.isAlarmBusy = false
@@ -219,6 +251,7 @@ final class HomeViewModel {
                     selectedRouteId: self.selectedRoute?.id,
                     registeredRouteId: nil
                 )
+                newState.freshnessText = nil
                 self.state = newState
             } catch {
                 guard !Task.isCancelled else { return }
@@ -239,16 +272,21 @@ final class HomeViewModel {
         observeTask?.cancel()
         observeTask = Task { [weak self] in
             guard let stream = self?.observeAlarmUseCase.execute() else { return }
-            for await info in stream {
+            for await update in stream {
                 guard !Task.isCancelled else { return }
-                self?.alarmSynced(info)
+                self?.alarmSynced(update)
             }
         }
     }
 
-    private func alarmSynced(_ info: AlarmInfo) {
+    private func alarmSynced(_ update: AlarmSyncUpdate) {
+        let info = update.info
         registeredRouteId = info.lastRouteId
+        // 확인 시각은 스트림이 준 값만 쓴다(Phase 16) — 시딩 복원이면 직전 세션의 마지막
+        // 확인 시각이고, 그것도 없으면 nil(스탬프 없음). 수신 시각으로 찍지 않는다.
+        lastCheckedAt = update.checkedAt
         refreshAlarmButton()
+        refreshFreshness()
         // 유예(출발+60초)가 지난 시각으로는 배너를 (재)시작하지 않는다 — 지난 막차의
         // 복원은 오정보이고, 못 탐(actionable=false) 판정이 고정한 실패 배너를 후속
         // 동기화가 덮어쓰는 일도 이 가드가 막는다. 유예 안이면 시작한다 — 발화~유예
@@ -333,12 +371,14 @@ final class HomeViewModel {
             // 여기서 지워진다. LA final state 종료·알람 취소는 App/Domain 경로의 몫.
             bannerTask?.cancel()
             registeredRouteId = nil
+            lastCheckedAt = nil
             var newState = state
             newState.banner = nil
             newState.alarmButton = Self.alarmButtonMode(
                 selectedRouteId: selectedRoute?.id,
                 registeredRouteId: nil
             )
+            newState.freshnessText = nil
             state = newState
             onToast?(.lastTrainServiceEnded)
         case .delayed, .unchanged:
@@ -378,6 +418,14 @@ final class HomeViewModel {
         )
     }
 
+    /// 스탬프 재계산(Phase 16) — 등록 세션 존재 ∧ 확인 시각 존재일 때만 값이 있다.
+    private func refreshFreshness() {
+        state.freshnessText = Self.freshnessText(
+            checkedAt: lastCheckedAt,
+            isRegistered: registeredRouteId != nil
+        )
+    }
+
     private func startBannerTimer(departure: Date, firstWalkSeconds: Int?) {
         bannerTask?.cancel()
         // 매 틱 departure 기준으로 재계산 — 누적 드리프트가 없다.
@@ -405,10 +453,13 @@ final class HomeViewModel {
     private func sessionExpired(departure: Date) {
         registeredRouteId = nil
         selectedRoute = nil
+        lastCheckedAt = nil
         var newState = state
         newState.banner = nil
         newState.routeCard = newState.routeCard?.asPastTrain(departure: departure)
         newState.alarmButton = .hidden
+        // "지난 막차" 카드에는 스탬프가 없다 — 세션이 끝난 값의 신선도는 무의미하다.
+        newState.freshnessText = nil
         state = newState
     }
 

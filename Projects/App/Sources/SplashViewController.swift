@@ -22,7 +22,9 @@ final class SplashViewController: UIViewController {
         activityIndicator.startAnimating()
     }
 
-    func showRetry() {
+    /// 실패 원인별 문구(Phase 16) — 선택은 호출자(AppCoordinator + BootstrapFailureMessage)가 한다.
+    func showRetry(message: String) {
+        messageLabel.text = message
         activityIndicator.stopAnimating()
         retryStack.isHidden = false
     }
@@ -36,7 +38,6 @@ final class SplashViewController: UIViewController {
 
         activityIndicator.hidesWhenStopped = true
 
-        messageLabel.text = "네트워크 연결을 확인해주세요"
         messageLabel.font = DSTypography.body1.font
         messageLabel.textColor = DSColor.Text.primary
         messageLabel.textAlignment = .center

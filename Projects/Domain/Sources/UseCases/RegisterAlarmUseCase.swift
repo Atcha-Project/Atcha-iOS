@@ -70,13 +70,15 @@ public struct DefaultRegisterAlarmUseCase: RegisterAlarmUseCase {
         )
         // 등록 성공 = 스냅샷 저장 시점(Phase 14) — 재실행 시 diff 기준·LA 재부착·카드
         // 복원의 재료. 도보 초·표시명·수단은 등록 시점 경로에서만 얻을 수 있다.
+        // syncedAt = 등록 시각(Phase 16) — 서버가 방금 이 값을 받아들였으므로 확인이다.
         await snapshotStore?.save(AlarmSessionSnapshot(
             info: session,
             firstWalkSeconds: route.firstWalkSectionSeconds,
             routeDisplayName: route.sessionDisplayName,
             transportMode: route.boardingLeg?.mode,
             acknowledged: false,
-            expired: false
+            expired: false,
+            syncedAt: now()
         ))
         // 수명 정책: 알람 등록(서버+로컬)이 전부 성공한 뒤에만 LA를 시작한다.
         // start는 throws가 아니므로 LA 실패가 알람 등록을 실패시킬 수 없다.

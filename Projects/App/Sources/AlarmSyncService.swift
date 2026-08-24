@@ -32,10 +32,16 @@ import os
 /// 병합 저장하고, 스냅샷은 살아 있는데 활성 LA가 없는 죽은 세션은 로컬 재시작을
 /// 위임한다(dismiss·확인 기록 존중은 어댑터 몫). 도보 초는 스냅샷에서 읽어 LA 알람
 /// 시각 계산이 등록/refresh와 같은 기준을 탄다(이중 시각 금지).
+/// Phase 16 갱신 신뢰성: ⑦ 홈 pull-to-refresh가 4번째 트리거(`AlarmSyncRequesting`)로
+/// 합류한다 — inFlight 합류가 있어 당김·포그라운드 복귀가 겹쳐도 refresh는 1회.
+/// ⑧ sync 성공마다 확인 시각(checkedAt)을 방출·스냅샷(syncedAt)에 영속화해 신선도
+/// 스탬프("HH:mm 확인 기준")의 원천이 된다 — 시딩 방출은 직전 세션의 마지막 확인
+/// 시각을 나른다(실패 무음의 정직한 표면화, 원칙 3). ⑨ `UIApplication`·`Date()` 직접
+/// 참조는 주입(isAppActive·now)으로 교체 — App 테스트 타겟의 회귀 방어 대상이 됐다.
 // Sendable 프로토콜(AlarmSyncEvents 등) 채택이 기본 MainActor 격리를 nonisolated로
 // 추론시키므로 명시한다 — 상태(subscribers 등)는 전부 메인 액터에서만 만진다.
 @MainActor
-final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
+final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents, AlarmSyncRequesting {
     private let refreshAlarmUseCase: any RefreshAlarmUseCase
     private let evaluateChangeUseCase: any EvaluateAlarmChangeUseCase
     /// LA 표출 경로 — non-throwing 계약(어댑터가 실패 흡수)이라 이 훅의 어떤 실패도 무해하다.
@@ -50,17 +56,25 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
     private let snapshotStore: any AlarmSessionSnapshotStore
     /// 죽은 세션 LA 재시작 경로(Phase 14) — dismiss·확인 기록 판정은 어댑터가 한다.
     private let sessionRestorer: any LastTrainSessionRestoring
+    /// 표출 채널 분기용 앱 활성 판정(Phase 16) — UIApplication 직접 참조를 걷어내
+    /// 테스트가 상태를 주입한다. 분기 의미(포그라운드 = 인앱 채널 단독)는 불변.
+    private let isAppActive: @MainActor () -> Bool
+    /// 만료·판정·스탬프의 시각 주입(Phase 16) — 실 Date() 직접 호출 제거(기존 관례).
+    private let now: @Sendable () -> Date
     private static let logger = Logger(subsystem: "com.atcha.iOS.v2", category: "AlarmSync")
 
     /// "⚠ 당겨짐" 배지 유지 시간 — 정책: 표출 시점 + 10분.
     private static let changeBadgeDuration: TimeInterval = 600
 
-    private var subscribers: [UUID: AsyncStream<AlarmInfo>.Continuation] = [:]
+    private var subscribers: [UUID: AsyncStream<AlarmSyncUpdate>.Continuation] = [:]
     /// 변경 판정 구독자 — updates()와 달리 **replay 없음**(과거 변경이 재구독 시 재발화 금지).
     private var changeSubscribers: [UUID: AsyncStream<AlarmChangeVerdict>.Continuation] = [:]
     /// 구독 전에 끝난 동기화를 놓치지 않기 위한 replay-1. 홈은 앱 시작 동기화와
     /// 거의 동시에 구독하므로 순서에 기대지 않는다. 변경 판정의 "이전 값"이기도 하다.
     private var lastInfo: AlarmInfo?
+    /// lastInfo가 마지막으로 서버로 확인된 시각(Phase 16) — 신선도 스탬프의 원천.
+    /// sync 성공 시 now(), 시딩 복원 시 스냅샷의 syncedAt. 수신·방출 시각이 아니다.
+    private var lastCheckedAt: Date?
     /// Phase 13 만료 2차 방어 — 로컬 만료를 확정한 세션. 이후 refresh가 같은 routeId의
     /// 과거 세션을 반환해도 무시한다(미래 출발이 오면 서버 우선으로 해제).
     private var locallyExpiredSession: AlarmInfo?
@@ -85,7 +99,11 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
         localNotification: any LocalNotificationPort,
         alarmScheduler: any AlarmScheduler,
         snapshotStore: any AlarmSessionSnapshotStore,
-        sessionRestorer: any LastTrainSessionRestoring
+        sessionRestorer: any LastTrainSessionRestoring,
+        isAppActive: @escaping @MainActor () -> Bool = {
+            UIApplication.shared.applicationState == .active
+        },
+        now: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.refreshAlarmUseCase = refreshAlarmUseCase
         self.evaluateChangeUseCase = evaluateChangeUseCase
@@ -94,6 +112,8 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
         self.alarmScheduler = alarmScheduler
         self.snapshotStore = snapshotStore
         self.sessionRestorer = sessionRestorer
+        self.isAppActive = isAppActive
+        self.now = now
     }
 
     /// 인증 부트스트랩 완료 후 1회 호출: 즉시 동기화(앱 시작 경로) + 포그라운드
@@ -116,6 +136,15 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
         await sync() != nil ? .newData : .failed
     }
 
+    // MARK: - AlarmSyncRequesting (Phase 16 — 홈 pull-to-refresh)
+
+    /// 수동 갱신 트리거(4번째) — 기존 sync()에 그대로 합류한다. 실패는 던지지 않고
+    /// 스트림에도 흐르지 않는다(무음 정책) — 스탬프가 낡은 시각을 유지하는 것이 표면이다.
+    /// 테스트 진입점이기도 하다(NotificationCenter 없이 전 분기 도달).
+    nonisolated func syncNow() async {
+        _ = await sync()
+    }
+
     /// 3경로 공용 동기화. 실패는 스트림에 흘리지 않는다 — 구독자는 상태를 유지하고,
     /// 다음 트리거(포그라운드·푸시)가 자연 재시도가 된다.
     @discardableResult
@@ -128,7 +157,7 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
         // 만료 선행 판정보다 먼저여야 재실행 직후의 과거 세션도 리컨실에 걸린다.
         await seedFromSnapshotIfNeeded()
         // Phase 13 선행 판정 — 확정은 refresh 결과를 본 뒤(미래 출발이면 서버 우선 취소).
-        let expiryCandidate = expireLocallyIfNeeded(now: Date())
+        let expiryCandidate = expireLocallyIfNeeded(now: now())
         let task = Task { [refreshAlarmUseCase] () -> AlarmInfo? in
             do {
                 return try await refreshAlarmUseCase.execute()
@@ -149,7 +178,7 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
             return nil
         }
 
-        if let departure = info.departureTime, departure > Date() {
+        if let departure = info.departureTime, departure > now() {
             // 서버 우선 — 미래 출발 시각이 오면 만료 후보·확정 기록 모두 해제하고 정상 경로.
             locallyExpiredSession = nil
         } else if let expiryCandidate {
@@ -166,14 +195,17 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
         Self.logger.info("알람 동기화 성공: route=\(info.lastRouteId, privacy: .public)")
         let previous = lastInfo
         lastInfo = info
+        // Phase 16 — 서버가 방금 이 값을 확인해줬다. 이 시각이 스탬프의 유일한 원천.
+        let checkedAt = now()
+        lastCheckedAt = checkedAt
         // Phase 14 — sync 성공은 스냅샷 저장 시점. 도보·표시명은 같은 세션이면 보존한다.
-        let snapshot = await persistSyncedSnapshot(for: info)
+        let snapshot = await persistSyncedSnapshot(for: info, checkedAt: checkedAt)
         for continuation in subscribers.values {
-            continuation.yield(info)
+            continuation.yield(AlarmSyncUpdate(info: info, checkedAt: checkedAt))
         }
         // Phase 14 죽은 세션 재시작 — 스냅샷은 살아 있는데 활성 LA가 없고 dismiss·확인
         // 기록도 없으면 로컬 재시작(판정은 어댑터). 8시간 한도·시작 실패 세션 커버.
-        await sessionRestorer.restartIfNeeded(snapshot: snapshot, now: Date())
+        await sessionRestorer.restartIfNeeded(snapshot: snapshot, now: now())
         // Phase 11 피기백 — 이 시점에 알람 재스케줄은 이미 완료돼 있다
         // (RefreshAlarmUseCase.execute 반환 = 재스케줄 포함). 표출은 그 뒤에만 덧붙는다.
         await propagateChange(previous: previous, latest: info)
@@ -196,11 +228,15 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
             locallyExpiredSession = snapshot.info
         } else if lastInfo == nil {
             lastInfo = snapshot.info
+            // Phase 16 — 시딩 복원값의 확인 시각은 "지금"이 아니라 스냅샷에 영속화된
+            // 마지막 확인 시각이다. 직후 refresh가 실패해도(오프라인) 스탬프는 이
+            // 낡은 시각을 정직하게 유지한다.
+            lastCheckedAt = snapshot.syncedAt
             Self.logger.info(
                 "스냅샷 시딩: route=\(snapshot.info.lastRouteId, privacy: .public)"
             )
             for continuation in subscribers.values {
-                continuation.yield(snapshot.info)
+                continuation.yield(AlarmSyncUpdate(info: snapshot.info, checkedAt: snapshot.syncedAt))
             }
         }
     }
@@ -208,11 +244,14 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
     /// sync 성공 시 스냅샷 병합 저장 — 같은 세션(routeId 일치)이면 등록 시점 사실
     /// (도보·표시명·수단·확인 기록)을 보존하고 info만 갱신, 다른 세션이면 아는 것만 담는다
     /// (표시명 공백은 LA 재시작 시 "막차" 폴백, 카드는 상세 재조회가 채운다).
-    private func persistSyncedSnapshot(for info: AlarmInfo) async -> AlarmSessionSnapshot {
+    /// syncedAt도 함께 기록한다(Phase 16) — 재실행 시딩이 이 시각으로 스탬프를 복원한다.
+    private func persistSyncedSnapshot(
+        for info: AlarmInfo, checkedAt: Date
+    ) async -> AlarmSessionSnapshot {
         let existing = await snapshotStore.load()
         let snapshot: AlarmSessionSnapshot
         if let existing, existing.info.lastRouteId == info.lastRouteId {
-            snapshot = existing.updating(info: info, expired: false)
+            snapshot = existing.updating(info: info, expired: false, syncedAt: checkedAt)
         } else {
             snapshot = AlarmSessionSnapshot(
                 info: info,
@@ -220,7 +259,8 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
                 routeDisplayName: "",
                 transportMode: nil,
                 acknowledged: false,
-                expired: false
+                expired: false,
+                syncedAt: checkedAt
             )
         }
         await snapshotStore.save(snapshot)
@@ -262,10 +302,11 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
                 routeDisplayName: "",
                 transportMode: nil,
                 acknowledged: false,
-                expired: true
+                expired: true,
+                syncedAt: lastCheckedAt
             ))
         }
-        await presentSessionEnded(previous: session, now: Date())
+        await presentSessionEnded(previous: session, now: now())
         yieldChange(.sessionEnded)
     }
 
@@ -273,7 +314,7 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
 
     /// 판정 → 채널 분기. LA 호출은 전부 실패 무해(포트가 non-throwing) — 알람에 영향 없음.
     private func propagateChange(previous: AlarmInfo?, latest: AlarmInfo) async {
-        let now = Date()
+        let now = self.now()
         // 첫 수신(이전 값 없음)은 비교 대상이 없다 — unchanged 취급.
         let verdict = previous.map {
             evaluateChangeUseCase.execute(previous: $0, latest: latest, now: now)
@@ -338,7 +379,7 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
                 changeBadgeExpiry: badgeExpiry,
                 phase: .active
             )
-            if UIApplication.shared.applicationState == .active {
+            if isAppActive() {
                 // 포그라운드 — LA alert 소리·로컬 노티 없이 조용한 상태 갱신만(Phase 15
                 // 이중 알림 제거). 사용자 주의는 인앱 채널(changes 스트림 → 배너 강조 +
                 // 토스트)이 단독으로 맡는다 — 일반 advanced·missed 분기와 동일 구조.
@@ -367,7 +408,7 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
             changeBadgeExpiry: badgeExpiry,
             phase: .active
         )
-        if UIApplication.shared.applicationState == .active {
+        if isAppActive() {
             // 포그라운드 — LA alert 생략(조용한 업데이트 + 배지). 사용자 주의는 인앱 채널
             // (changes 스트림 → 홈 배너 강조 + 토스트)이 맡는다. 이중 알림 방지.
             await liveActivity.update(state: state, alert: nil)
@@ -414,7 +455,7 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
             title: LastTrainChangeMessages.missedTitle,
             body: LastTrainChangeMessages.missedBody(latestDeparture: departure)
         )
-        if UIApplication.shared.applicationState == .active {
+        if isAppActive() {
             // 포그라운드 — 상태 전환만 조용히. 사용자 주의는 인앱 채널이 맡는다(이중 알림 방지).
             await liveActivity.update(state: state, alert: nil)
         } else if await liveActivity.isAlertReachable {
@@ -479,12 +520,12 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
 
     // MARK: - AlarmSyncEvents
 
-    nonisolated func updates() -> AsyncStream<AlarmInfo> {
+    nonisolated func updates() -> AsyncStream<AlarmSyncUpdate> {
         AsyncStream { continuation in
             let id = UUID()
             Task { @MainActor in
                 if let last = self.lastInfo {
-                    continuation.yield(last)
+                    continuation.yield(AlarmSyncUpdate(info: last, checkedAt: self.lastCheckedAt))
                 }
                 self.subscribers[id] = continuation
             }

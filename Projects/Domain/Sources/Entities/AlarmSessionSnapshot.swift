@@ -18,6 +18,10 @@ public struct AlarmSessionSnapshot: Sendable, Equatable, Codable {
     public let acknowledged: Bool
     /// 로컬 만료 기록 (Phase 13 연동) — true면 죽은 세션 톰스톤.
     public let expired: Bool
+    /// 이 세션 값이 마지막으로 서버로 확인된 시각(Phase 16) — 등록 성공·sync 성공 시
+    /// 갱신된다. 재실행 시딩이 이 값을 날라 신선도 스탬프("HH:mm 확인 기준")가 재실행·
+    /// 오프라인에서도 마지막 확인 시각을 정직하게 유지한다. 구 스냅샷은 nil로 디코딩된다.
+    public let syncedAt: Date?
 
     public init(
         info: AlarmInfo,
@@ -25,7 +29,8 @@ public struct AlarmSessionSnapshot: Sendable, Equatable, Codable {
         routeDisplayName: String,
         transportMode: TransportMode?,
         acknowledged: Bool,
-        expired: Bool
+        expired: Bool,
+        syncedAt: Date? = nil
     ) {
         self.info = info
         self.firstWalkSeconds = firstWalkSeconds
@@ -33,13 +38,16 @@ public struct AlarmSessionSnapshot: Sendable, Equatable, Codable {
         self.transportMode = transportMode
         self.acknowledged = acknowledged
         self.expired = expired
+        self.syncedAt = syncedAt
     }
 
     /// 세션 사실(도보·표시명·수단)은 유지하고 기록 필드만 바꾼 사본.
+    /// syncedAt은 명시할 때만 갱신된다 — 만료 톰스톤 전환 등은 마지막 확인 시각을 보존한다.
     public func updating(
         info: AlarmInfo? = nil,
         acknowledged: Bool? = nil,
-        expired: Bool? = nil
+        expired: Bool? = nil,
+        syncedAt: Date? = nil
     ) -> AlarmSessionSnapshot {
         AlarmSessionSnapshot(
             info: info ?? self.info,
@@ -47,7 +55,8 @@ public struct AlarmSessionSnapshot: Sendable, Equatable, Codable {
             routeDisplayName: routeDisplayName,
             transportMode: transportMode,
             acknowledged: acknowledged ?? self.acknowledged,
-            expired: expired ?? self.expired
+            expired: expired ?? self.expired,
+            syncedAt: syncedAt ?? self.syncedAt
         )
     }
 }
