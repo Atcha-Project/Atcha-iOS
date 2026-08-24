@@ -47,10 +47,13 @@ xcodebuild -workspace Atcha.xcworkspace -scheme Atcha-Dev -configuration Debug \
 ## 아키텍처 (AtchaV2 — uFeatures + 클린아키텍처)
 
 ```
-AtchaV2(앱, 조합 루트: 어댑터·스플래시) ─► HomeFeature ─► {HomeFeatureInterface, SearchFeatureInterface, Domain, DesignSystem, CoreCoordinator, SnapKit}
+AtchaV2(앱, 조합 루트: 어댑터·스플래시·AlarmSyncService) ─► HomeFeature ─► {HomeFeatureInterface, SearchFeatureInterface, Domain, DesignSystem, CoreCoordinator, SnapKit}
         ├─► SearchFeature ─► {SearchFeatureInterface, Domain, DesignSystem, CoreCoordinator, SnapKit}
         ├─► AtchaData ─► {Domain, CoreNetwork, CoreStorage}
-        └─► CoreAuth ─► {CoreNetwork, CoreStorage}
+        ├─► CoreAuth ─► {CoreNetwork, CoreStorage}
+        ├─► CoreAlarm (무의존 — AlarmKit 유일 import 지점, App만 import)
+        ├─► CoreLiveActivity (무의존 — ActivityAttributes 계약, 앱·위젯 공유)
+        └─► AtchaWidget (위젯 익스텐션, 앱에 임베드 — Live Activity UI, UIKit 규약의 유일한 SwiftUI 예외)
 ```
 
 의존 규칙(위반 금지, `tuist graph`로 검증 가능):
@@ -76,6 +79,9 @@ AtchaV2(앱, 조합 루트: 어댑터·스플래시) ─► HomeFeature ─► {
 
 ### 미완 상태 (작업 시 참고)
 
-- `AppEnvironment`의 API base URL은 플레이스홀더 — 실서버 주소 미정.
-- `com.atcha.iOS.v2`용 GoogleService-Info.plist 미발급 — `AppDelegate`가 파일 존재를 가드한 뒤에만 `FirebaseApp.configure()` 호출. plist를 `Projects/App/Resources/`에 넣으면 자동 활성화.
-- AtchaV2는 iOS 26 전용(AlarmKit 사용 예정). AlarmKit의 커스텀 알람 UI(Live Activity)는 추후 위젯 익스텐션 타겟이 별도로 필요.
+- **익명 인증 발급 엔드포인트 미확정** — `UnconfiguredAnonymousSessionIssuer` 스텁이 주입돼 있어 실서버에서는 토큰 없이 동작한다(알람 서버 기능 전부 불가). Debug(DEV)는 `DevDemoFallbacks`가 데모 데이터로 가린다 — 실서버 스펙 확정 시 이 폴백과 `AppDIContainer`의 `#if DEV` 주입을 제거할 것.
+- `AppEnvironment`의 base URL은 dev/live 실주소 반영 완료. **Stage는 dev 호스트를 공유 중** — 전용 호스트만 미정.
+- `Projects/App/Resources/GoogleService-Info.plist`는 **레거시 번들 ID(`com.atcha.iOS`)용 파일**이라 존재 가드만 통과할 뿐 V2(`com.atcha.iOS.v2`)로의 사일런트 푸시가 성립하지 않는다 — V2용 재발급·교체 필요. FCM 토큰 서버 전달도 미구현(로깅만)이라 갱신 채널은 현재 폴링(앱 시작·포그라운드 복귀)뿐.
+- AtchaV2는 iOS 26 전용. AlarmKit(CoreAlarm)·Live Activity(CoreLiveActivity + AtchaWidget 익스텐션)는 Phase 9~12에서 구축 완료.
+- Phase 12 이후의 갭 분석·후속 로드맵: `docs/planning/atcha-v2-post12-roadmap.md` / Phase 13·14(알람 이후 + 재실행 정합성) 구현 프롬프트: `docs/prompts/atcha-v2-session-lifecycle-prompt.md`.
+- Phase 검수는 사람 검수 대신 **자동 검수 규약**(`docs/prompts/atcha-v2-auto-verification.md`)을 따른다 — 에이전트가 computer use로 시뮬레이터 검수를 직접 수행·증적 보고하고, 실기기 잔여 항목만 사용자에게 이관.

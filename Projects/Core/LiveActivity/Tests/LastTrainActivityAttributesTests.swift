@@ -50,7 +50,26 @@ struct LastTrainActivityAttributesTests {
         #expect(LastTrainUrgency.caution.rawValue == "caution")
         #expect(LastTrainUrgency.imminent.rawValue == "imminent")
         #expect(LastTrainSessionStatus.active.rawValue == "active")
+        #expect(LastTrainSessionStatus.departed.rawValue == "departed")
         #expect(LastTrainSessionStatus.missed.rawValue == "missed")
         #expect(LastTrainSessionStatus.serviceEnded.rawValue == "serviceEnded")
+    }
+
+    @Test
+    func contentState_departedStatus_roundTripsCodable() throws {
+        // Phase 13 신설 케이스 — 앱(발신)·익스텐션(렌더) 사이 wire 왕복 확인.
+        let departed = LastTrainActivityAttributes.ContentState(
+            departureTime: state.departureTime,
+            alarmTime: state.alarmTime,
+            urgency: .imminent,
+            changeBadgeExpiry: nil,
+            status: .departed
+        )
+        let data = try JSONEncoder().encode(departed)
+        let decoded = try JSONDecoder().decode(
+            LastTrainActivityAttributes.ContentState.self, from: data
+        )
+        #expect(decoded == departed)
+        #expect(decoded.status == .departed)
     }
 }

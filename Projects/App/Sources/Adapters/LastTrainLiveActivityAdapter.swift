@@ -18,6 +18,16 @@ nonisolated protocol LastTrainChangeAlerting: Sendable {
     func end(final state: LastTrainActivityState) async
 }
 
+/// Phase 13 발화 확인 경로 — stopIntent가 조합 루트(세션 수명 서비스)를 거쳐 LA를
+/// departed로 내리는 통로. Domain 포트(`LastTrainActivityPort`)는 문서 고정 계약이라
+/// 손대지 않고 App 내부 확장 포트로 둔다(Phase 11의 LastTrainChangeAlerting과 같은 방식).
+nonisolated protocol LastTrainDepartureEnding: Sendable {
+    /// 현재 세션을 departed("지금 출발하세요") 최종 상태로 전환하고, 출발+유예 시점에
+    /// 잠금화면에서 자동 소멸하도록 예약한다 — 앱이 다시 깨지 않아도 시스템이 내린다.
+    /// 실패·세션 부재는 흡수한다(포트 계약과 동일 — LA 실패가 확인 기록을 막으면 안 된다).
+    func endAsDeparted() async
+}
+
 /// ActivityKit → Domain `LastTrainActivityPort` 어댑터. ActivityKit을 import하는 곳은 App에서 이 파일뿐.
 /// 단일 알람 정책과 동일하게 Live Activity도 단일 세션만 유지한다(새 start가 기존 세션을 교체).
 /// 포트 계약대로 어떤 실패도 밖으로 던지지 않는다 — LA 실패가 알람 등록·취소를 실패시키면 안 된다.
@@ -25,7 +35,8 @@ nonisolated protocol LastTrainChangeAlerting: Sendable {
 /// actor인 이유: 포트는 nonisolated async 요구사항을 가진 Sendable 프로토콜이라
 /// MainActor 클래스의 격리 멤버로는 적합성이 성립하지 않는다(Sendable 경계를 넘는 격리 적합성 불가).
 /// ActivityKit의 `Activity`는 Sendable 미표기이나 스레드 안전 설계라 `@preconcurrency`로 완화한다.
-actor LastTrainLiveActivityAdapter: LastTrainActivityPort, LastTrainChangeAlerting {
+actor LastTrainLiveActivityAdapter: LastTrainActivityPort, LastTrainChangeAlerting,
+    LastTrainDepartureEnding {
     /// 유저 스와이프 dismiss 기록 키 — 앱 재실행 후에도 남아야 Phase 12 폴백 트리거 재료가 된다.
     private static let dismissedDefaultsKey = "la.dismissedByUser"
 
@@ -128,6 +139,50 @@ actor LastTrainLiveActivityAdapter: LastTrainActivityPort, LastTrainChangeAlerti
     }
 
     var isDismissedByUser: Bool { dismissedByUser }
+
+    // MARK: - LastTrainDepartureEnding (Phase 13)
+
+    /// 정책: departed 상태는 잠금화면에 남았다가 출발 + 10분에 자동 소멸한다(.after) —
+    /// "지금 출발" 상태가 잠시 남는 것이 취지. end 이후 남은 시간 창(최대 3분+10분)의
+    /// 재변경 인지는 알람 재스케줄(기존 경로)이 담당하고, LA 재생성은 하지 않는다(계약).
+    private var departedDismissalGraceSeconds: TimeInterval {
+        #if DEV
+        // 자동 검수 규약: 자동 소멸 대기가 과도할 때 DEV 한정 단축 —
+        // `simctl spawn booted defaults write com.atcha.iOS.v2 dev.la.departedDismissalGrace -int 60`
+        let override = userDefaults.double(forKey: "dev.la.departedDismissalGrace")
+        if override > 0 { return override }
+        #endif
+        return 600
+    }
+
+    func endAsDeparted() async {
+        // 프로그램적 end — 예약 소멸 시점에 도착하는 .dismissed를 유저 스와이프로
+        // 오인하지 않도록 관찰을 먼저 끊는다(end(final:)과 동일 순서).
+        stateObservationTask?.cancel()
+        stateObservationTask = nil
+        // 세션 부재(강제 종료 후 고아, LA 비활성 등)는 조용히 no-op —
+        // 확인 기록은 이미 남았고, 고아 재부착은 Phase 14 몫이다.
+        guard let activity else { return }
+        self.activity = nil
+
+        // departed 상태는 현재 콘텐츠의 세션 사실(출발·알람 시각)을 그대로 잇는다 —
+        // glance 색은 imminent와 동일 척도(정책), 배지는 접는다.
+        let current = activity.content.state
+        let departed = LastTrainActivityAttributes.ContentState(
+            departureTime: current.departureTime,
+            alarmTime: current.alarmTime,
+            urgency: .imminent,
+            changeBadgeExpiry: nil,
+            status: .departed
+        )
+        await activity.end(
+            // staleDate nil: departed는 시각 최신성 경고 대상이 아니다 — 소멸은 .after가 맡는다.
+            ActivityContent(state: departed, staleDate: nil),
+            dismissalPolicy: .after(
+                current.departureTime.addingTimeInterval(departedDismissalGraceSeconds)
+            )
+        )
+    }
 
     // MARK: - LastTrainChangeAlerting
 

@@ -1,4 +1,5 @@
 import AlarmKit
+import AppIntents
 import Foundation
 import SwiftUI
 
@@ -21,11 +22,14 @@ struct AlarmKitEngine: AlarmEngine {
         }
     }
 
-    func schedule(id: UUID, fireDate: Date, title: String) async throws {
+    func schedule(
+        id: UUID, fireDate: Date, title: String, stopIntent: (any LiveActivityIntent)?
+    ) async throws {
         // Alert의 non-deprecated init은 iOS 26.1+라 배포 타겟 26.0에서는 stopButton
         // 버전을 쓴다 (26.1 미만 타겟에서는 deprecation 경고가 나지 않는다).
         // 반복(스누즈) 버튼은 넣지 않는다 — "마지노선까지만 미루기" 클램프 검증(Phase 11)
         // 전까지는 단발 알람이 보수 기본값이다.
+        // secondaryButton("경로 보기")도 붙이지 않는다 — 심야 버튼 2개는 인지 부하(제품 결정).
         let alert = AlarmPresentation.Alert(
             title: "\(title)",
             stopButton: AlarmButton(text: "확인", textColor: .white, systemImageName: "checkmark")
@@ -35,9 +39,15 @@ struct AlarmKitEngine: AlarmEngine {
             presentation: AlarmPresentation(alert: alert),
             tintColor: .accentColor
         )
+        // stopIntent: stop("확인") 탭 시 앱 프로세스에서 실행되는 LiveActivityIntent —
+        // iOS 26 SDK 실검증 결과 .alarm 팩토리가 stopIntent 파라미터를 직접 받는다.
         _ = try await AlarmManager.shared.schedule(
             id: id,
-            configuration: .alarm(schedule: .fixed(fireDate), attributes: attributes)
+            configuration: .alarm(
+                schedule: .fixed(fireDate),
+                attributes: attributes,
+                stopIntent: stopIntent
+            )
         )
     }
 

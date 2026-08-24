@@ -266,7 +266,7 @@ struct HomeViewModelTests {
         // 알람까지 601초: caution으로 넘어간다.
         #expect(HomeViewModel.makeBanner(
             departure: fixedNow.addingTimeInterval(13 * 60 + 1), now: fixedNow
-        ).urgency == .caution)
+        )?.urgency == .caution)
         // 출발까지 33분 = 알람까지 정확히 1800초: caution 경계.
         #expect(HomeViewModel.makeBanner(
             departure: fixedNow.addingTimeInterval(33 * 60), now: fixedNow
@@ -274,11 +274,59 @@ struct HomeViewModelTests {
         // 알람까지 1801초: relaxed.
         #expect(HomeViewModel.makeBanner(
             departure: fixedNow.addingTimeInterval(33 * 60 + 1), now: fixedNow
-        ).urgency == .relaxed)
-        // 알람 시각이 이미 지났다: 0분 클램프 + imminent.
+        )?.urgency == .relaxed)
+    }
+
+    @Test
+    func makeBanner_threeStageTransition_boundaries() {
+        // Phase 13: 1단계(카운트다운) → 2단계(지금 출발하세요) → 3단계(nil = 지난 막차).
+        // 알람 직전(출발 3분 1초 전): 아직 1단계 — "출발까지 1분".
+        #expect(HomeViewModel.makeBanner(
+            departure: fixedNow.addingTimeInterval(181), now: fixedNow
+        ) == .init(text: "출발까지 1분", urgency: .imminent))
+        // 알람 시각 정각(출발 3분 전): 2단계 진입 — "출발까지 0분"은 존재하지 않는다.
+        #expect(HomeViewModel.makeBanner(
+            departure: fixedNow.addingTimeInterval(180), now: fixedNow
+        ) == .init(text: "지금 출발하세요", urgency: .imminent))
+        // 출발 정각·유예 마지막 초까지 2단계 유지.
         #expect(HomeViewModel.makeBanner(
             departure: fixedNow, now: fixedNow
-        ) == .init(text: "출발까지 0분", urgency: .imminent))
+        ) == .init(text: "지금 출발하세요", urgency: .imminent))
+        #expect(HomeViewModel.makeBanner(
+            departure: fixedNow.addingTimeInterval(-59), now: fixedNow
+        ) == .init(text: "지금 출발하세요", urgency: .imminent))
+        // 유예 경계(출발+60초)부터 3단계 — nil.
+        #expect(HomeViewModel.makeBanner(
+            departure: fixedNow.addingTimeInterval(-60), now: fixedNow
+        ) == nil)
+    }
+
+    @Test
+    func bannerTimer_graceElapsed_transitionsToPastTrainState() async {
+        // 유예 경과 시 틱이 3단계 전이를 수행한다: 배너 제거 + "지난 막차" 카드(비활성 톤)
+        // + 알람 버튼 숨김 + 틱 종료.
+        let clock = NowBox(fixedNow)
+        let departure = fixedNow.addingTimeInterval(42 * 60)
+        let route = makeRoute(id: "r1", departure: departure)
+        let sut = makeSUT(now: { clock.get() }, bannerTickInterval: .milliseconds(1))
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+        sut.routeSelected(route)
+        sut.registerAlarmTapped()
+        await recorder.waitUntilLast { $0.banner != nil }
+
+        clock.set(departure.addingTimeInterval(60))
+        await recorder.waitUntilLast { $0.banner == nil }
+
+        #expect(sut.state.alarmButton == .hidden)
+        #expect(sut.state.routeCard?.tone == .past)
+        #expect(sut.state.routeCard?.badgeText == "지난 막차")
+        #expect(sut.state.routeCard?.departureTimeText.hasSuffix("출발이었어요") == true)
+
+        // 틱이 종료됐다 — 살아 있다면 1ms 틱이 상태를 계속 다시 쓴다.
+        let stateCount = recorder.states.count
+        try? await Task.sleep(for: .milliseconds(30))
+        #expect(recorder.states.count == stateCount)
     }
 
     @Test
@@ -518,8 +566,8 @@ struct HomeViewModelTests {
     }
 
     @Test
-    func alarmSync_pastDeparture_doesNotStartCountdown() async {
-        // 이미 출발한 시각의 동기화 복원 — "출발까지 0분" 카운트다운을 되살리지 않는다.
+    func alarmSync_pastGraceDeparture_doesNotStartCountdown() async {
+        // 유예(출발+60초)가 지난 시각의 동기화 복원 — 지난 막차 배너를 되살리지 않는다.
         // 못 탐 판정이 고정한 실패 배너를 후속 동기화가 덮어쓰는 것도 같은 가드가 막는다.
         let (stream, continuation) = AsyncStream<AlarmInfo>.makeStream()
         let sut = makeSUT(alarmUpdates: { stream })
@@ -538,6 +586,29 @@ struct HomeViewModelTests {
         await recorder.waitUntilLast { $0.alarmButton == .cancel }
 
         #expect(sut.state.banner == nil)
+    }
+
+    @Test
+    func alarmSync_withinGrace_restoresDepartNowBanner() async {
+        // 발화~유예 창의 동기화 복원 — 2단계 "지금 출발하세요"도 복원 대상이다 (Phase 13).
+        let (stream, continuation) = AsyncStream<AlarmInfo>.makeStream()
+        let sut = makeSUT(alarmUpdates: { stream })
+        let recorder = StateRecorder()
+        recorder.attach(to: sut)
+
+        sut.viewDidLoad()
+        continuation.yield(
+            AlarmInfo(
+                lastRouteId: "r1",
+                departureTime: fixedNow.addingTimeInterval(-30),
+                updatedAt: nil,
+                isReal: true
+            )
+        )
+        await recorder.waitUntilLast { $0.banner != nil }
+
+        #expect(sut.state.banner == .init(text: "지금 출발하세요", urgency: .imminent))
+        #expect(sut.state.alarmButton == .cancel)
     }
 
     @Test

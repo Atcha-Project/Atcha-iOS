@@ -1,25 +1,35 @@
 import UIKit
 
 public final class DSRouteCard: UIView {
+    /// 카드 톤 — normal이 기본, muted는 "지난 막차" 등 더 이상 행동할 수 없는
+    /// 정보를 비활성 시각으로 남길 때 쓴다.
+    public enum Tone: Equatable {
+        case normal
+        case muted
+    }
+
     public struct Content {
         public let badgeText: String?
         public let departureTimeText: String
         public let legs: [DSTransportBadge.Kind]
         public let summaryText: String?
         public let destinationText: String?
+        public let tone: Tone
 
         public init(
             badgeText: String? = nil,
             departureTimeText: String,
             legs: [DSTransportBadge.Kind] = [],
             summaryText: String? = nil,
-            destinationText: String? = nil
+            destinationText: String? = nil,
+            tone: Tone = .normal
         ) {
             self.badgeText = badgeText
             self.departureTimeText = departureTimeText
             self.legs = legs
             self.summaryText = summaryText
             self.destinationText = destinationText
+            self.tone = tone
         }
     }
 
@@ -75,6 +85,8 @@ public final class DSRouteCard: UIView {
     }
 
     public func configure(with content: Content) {
+        applyTone(content.tone)
+
         badgeLabel.text = content.badgeText
         badgeLabel.isHidden = content.badgeText == nil
 
@@ -104,6 +116,27 @@ public final class DSRouteCard: UIView {
 
         destinationLabel.text = content.destinationText
         destinationLabel.isHidden = content.destinationText == nil
+    }
+
+    /// 톤별 색 적용 — 재사용(configure 재호출) 시 양방향 모두 명시적으로 되돌린다.
+    private func applyTone(_ tone: Tone) {
+        switch tone {
+        case .normal:
+            badgeLabel.textColor = DSColor.Accent.default
+            badgeLabel.backgroundColor = DSColor.Accent.container
+            departureTimeLabel.textColor = DSColor.Text.primary
+            summaryLabel.textColor = DSColor.Text.primary
+            destinationLabel.textColor = DSColor.Text.secondary
+            legsStack.alpha = 1
+        case .muted:
+            badgeLabel.textColor = DSColor.Text.secondary
+            badgeLabel.backgroundColor = DSColor.Fill.elevated
+            departureTimeLabel.textColor = DSColor.Text.secondary
+            summaryLabel.textColor = DSColor.Text.tertiary
+            destinationLabel.textColor = DSColor.Text.tertiary
+            // 수단 배지는 자체 색을 갖는다 — 톤 다운은 투명도로 일괄 적용.
+            legsStack.alpha = 0.55
+        }
     }
 
     @available(*, unavailable)

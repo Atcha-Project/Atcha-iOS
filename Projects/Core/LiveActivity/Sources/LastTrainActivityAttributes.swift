@@ -52,10 +52,14 @@ public enum LastTrainUrgency: String, Codable, Hashable, Sendable {
     case imminent
 }
 
-/// 세션 상태. `missed` = 못 타게 됨(앞당겨짐이 이미 비행동 가능),
+/// 세션 상태. `departed` = 알람 발화 확인("지금 출발하세요" — Phase 13 신설),
+/// `missed` = 못 타게 됨(앞당겨짐이 이미 비행동 가능),
 /// `serviceEnded` = 운행 종료·경로 소멸.
+/// 케이스 추가는 wire 안전 — 앱·익스텐션 동일 바이너리 배포이고, 방어값 정책상
+/// 미지 rawValue는 `.active`로 떨어진다(어댑터의 rawValue 매핑 참조).
 public enum LastTrainSessionStatus: String, Codable, Hashable, Sendable {
     case active
+    case departed
     case missed
     case serviceEnded
 }

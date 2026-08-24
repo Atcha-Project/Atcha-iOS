@@ -1,3 +1,4 @@
+import AppIntents
 @testable import CoreAlarm
 import Foundation
 import Synchronization
@@ -5,21 +6,31 @@ import Testing
 
 private struct StubError: Error {}
 
+/// stopIntent 주입 검증용 대역 — perform은 테스트에서 호출되지 않는다.
+private struct StubStopIntent: LiveActivityIntent {
+    static let title: LocalizedStringResource = "stub"
+    func perform() async throws -> some IntentResult { .result() }
+}
+
 /// AlarmKit 대역 — 호출 순서와 시스템에 남아 있는 알람 ID 집합을 흉내 낸다.
 private actor SpyEngine: AlarmEngine {
     private(set) var events: [String] = []
     private var alarmIDsInSystem: [UUID]
     private let authorizationResult: Result<Bool, any Error>
     private let scheduleError: (any Error)?
+    /// true면 stopIntent가 실린 schedule만 실패시킨다 — 인텐트 폴백 경로 검증용.
+    private let failsOnlyWithIntent: Bool
 
     init(
         existingIDs: [UUID] = [],
         authorization: Result<Bool, any Error> = .success(true),
-        scheduleError: (any Error)? = nil
+        scheduleError: (any Error)? = nil,
+        failsOnlyWithIntent: Bool = false
     ) {
         self.alarmIDsInSystem = existingIDs
         self.authorizationResult = authorization
         self.scheduleError = scheduleError
+        self.failsOnlyWithIntent = failsOnlyWithIntent
     }
 
     func requestAuthorization() async throws -> Bool {
@@ -27,8 +38,11 @@ private actor SpyEngine: AlarmEngine {
         return try authorizationResult.get()
     }
 
-    func schedule(id: UUID, fireDate: Date, title: String) async throws {
-        events.append("schedule:\(title)")
+    func schedule(
+        id: UUID, fireDate: Date, title: String, stopIntent: (any LiveActivityIntent)?
+    ) async throws {
+        events.append("schedule:\(title)\(stopIntent == nil ? "" : ":intent")")
+        if failsOnlyWithIntent, stopIntent != nil { throw StubError() }
         if let scheduleError { throw scheduleError }
         alarmIDsInSystem.append(id)
     }
@@ -115,6 +129,51 @@ struct AlarmKitSchedulerTests {
         await engine.removeAllFromSystem()
 
         #expect(await sut.scheduledAlarm() == nil)
+        #expect(store.load() == nil)
+    }
+
+    // MARK: - stopIntent (Phase 13)
+
+    @Test
+    func replaceAlarm_withStopIntent_schedulesIntentCarryingAlarm() async throws {
+        let engine = SpyEngine()
+        let sut = AlarmKitScheduler(
+            engine: engine, recordStore: InMemoryRecordStore(), stopIntent: StubStopIntent()
+        )
+
+        try await sut.replaceAlarm(makeSpec())
+
+        #expect(await engine.events == ["schedule:막차 출발 알림:intent"])
+        #expect(await sut.scheduledAlarm() == makeSpec())
+    }
+
+    @Test
+    func replaceAlarm_intentScheduleFails_retriesWithoutIntent() async throws {
+        // 회귀 금지 계약: 인텐트 주입 실패가 알람 등록을 실패시키면 안 된다.
+        let engine = SpyEngine(failsOnlyWithIntent: true)
+        let store = InMemoryRecordStore()
+        let sut = AlarmKitScheduler(
+            engine: engine, recordStore: store, stopIntent: StubStopIntent()
+        )
+
+        try await sut.replaceAlarm(makeSpec())
+
+        #expect(await engine.events == ["schedule:막차 출발 알림:intent", "schedule:막차 출발 알림"])
+        #expect(store.load() != nil)
+        #expect(await sut.scheduledAlarm() == makeSpec())
+    }
+
+    @Test
+    func replaceAlarm_bothAttemptsFail_throwsAndKeepsNoRecord() async {
+        let engine = SpyEngine(scheduleError: StubError())
+        let store = InMemoryRecordStore()
+        let sut = AlarmKitScheduler(
+            engine: engine, recordStore: store, stopIntent: StubStopIntent()
+        )
+
+        await #expect(throws: StubError.self) {
+            try await sut.replaceAlarm(makeSpec())
+        }
         #expect(store.load() == nil)
     }
 

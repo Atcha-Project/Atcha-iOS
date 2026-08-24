@@ -22,7 +22,8 @@ struct LastTrainLiveActivityWidget: Widget {
         ActivityConfiguration(for: LastTrainActivityAttributes.self) { context in
             LastTrainLockScreenView(
                 routeName: context.attributes.routeName,
-                state: context.state
+                state: context.state,
+                isStale: context.isStale
             )
             // 시스템 변형(항상 켜진 화면·밝기 감소·알림 센터 스택)에서도
             // 무난하도록 배경/시스템 액션 색을 DS 토큰으로 고정.
@@ -30,6 +31,7 @@ struct LastTrainLiveActivityWidget: Widget {
             .activitySystemActionForegroundColor(Color(ds: DSColor.Text.primary))
         } dynamicIsland: { context in
             let state = context.state
+            let isStale = context.isStale
             return DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
                     HStack(spacing: DSSpacing.xs) {
@@ -53,6 +55,12 @@ struct LastTrainLiveActivityWidget: Widget {
                     // ContentState에 도보 필드가 없어 생략 — 아래
                     // LastTrainLockScreenView.departureRow 주석 참고.
                     switch state.status {
+                    case .active where isStale:
+                        // 갱신이 끊긴 채 staleDate(=출발 시각)가 지났다 — 얼어붙은
+                        // 카운트다운 대신 최신성 경고 (Phase 13, 앱 깨움 없는 마지막 방어선).
+                        Text(LastTrainStaleCopy.message)
+                            .font(.headline)
+                            .foregroundStyle(Color(ds: DSColor.Text.secondary))
                     case .active:
                         HStack(alignment: .firstTextBaseline, spacing: DSSpacing.sm) {
                             Text("출발까지")
@@ -68,7 +76,7 @@ struct LastTrainLiveActivityWidget: Widget {
                             }
                             .foregroundStyle(state.urgencyColor)
                         }
-                    case .missed, .serviceEnded:
+                    case .departed, .missed, .serviceEnded:
                         Text(state.finalStatusMessage ?? "")
                             .font(.headline)
                             .foregroundStyle(state.glanceColor)
@@ -80,6 +88,10 @@ struct LastTrainLiveActivityWidget: Widget {
                     .foregroundStyle(state.glanceColor)
             } compactTrailing: {
                 switch state.status {
+                case .active where isStale:
+                    Text("지남")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(Color(ds: DSColor.Text.secondary))
                 case .active:
                     Text(timerInterval: state.countdownRange, countsDown: true)
                         .font(.caption2.weight(.semibold))
@@ -91,6 +103,10 @@ struct LastTrainLiveActivityWidget: Widget {
                         // Text(timerInterval:)는 가용 폭을 전부 차지하려 하므로
                         // 컴팩트 영역에서는 폭을 제한한다.
                         .frame(maxWidth: 56)
+                case .departed:
+                    Text("출발")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(state.glanceColor)
                 case .missed:
                     Text("놓침")
                         .font(.caption2.weight(.semibold))
@@ -124,6 +140,9 @@ struct LastTrainLiveActivityWidget: Widget {
 private struct LastTrainLockScreenView: View {
     let routeName: String
     let state: LastTrainActivityAttributes.ContentState
+    /// staleDate(=출발 시각)가 지나도록 갱신이 없었다 — 강제 종료·고아 케이스의 UI 완충
+    /// (Phase 13). 근본 해소(재부착)는 Phase 14 몫.
+    let isStale: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: DSSpacing.sm) {
@@ -151,11 +170,17 @@ private struct LastTrainLockScreenView: View {
         }
     }
 
-    /// 2행: glance 핵심. active면 카운트다운(긴급도 색),
-    /// final state면 카운트다운을 숨기고 상태 문구만 표시.
+    /// 2행: glance 핵심. active면 카운트다운(긴급도 색), stale이면 최신성 경고,
+    /// departed/final state면 카운트다운을 숨기고 상태 문구만 표시.
     @ViewBuilder
     private var mainRow: some View {
         switch state.status {
+        case .active where isStale:
+            // 갱신이 끊긴 채 staleDate(=출발 시각) 경과 — 얼어붙은 카운트다운을
+            // 신선한 정보처럼 보여주지 않는다 (Phase 13 마지막 방어선).
+            Text(LastTrainStaleCopy.message)
+                .font(.title3.weight(.bold))
+                .foregroundStyle(Color(ds: DSColor.Text.secondary))
         case .active:
             HStack(alignment: .firstTextBaseline, spacing: DSSpacing.sm) {
                 Text("출발까지")
@@ -173,7 +198,7 @@ private struct LastTrainLockScreenView: View {
                 }
                 .foregroundStyle(state.urgencyColor)
             }
-        case .missed, .serviceEnded:
+        case .departed, .missed, .serviceEnded:
             Text(state.finalStatusMessage ?? "")
                 .font(.title3.weight(.bold))
                 .foregroundStyle(state.glanceColor)
@@ -220,12 +245,13 @@ private extension LastTrainActivityAttributes.ContentState {
         }
     }
 
-    /// glance용 대표 색: active면 긴급도 색, missed는 긴급 색(놓침 경고),
+    /// glance용 대표 색: active면 긴급도 색, departed는 imminent와 동일 척도(정책 —
+    /// "지금 출발"은 가장 긴박한 행동 신호), missed는 긴급 색(놓침 경고),
     /// serviceEnded는 보조 색(더 이상 행동 불가 — 시각적 소음 억제).
     var glanceColor: Color {
         switch status {
         case .active: urgencyColor
-        case .missed: Color(ds: DSColor.State.urgent)
+        case .departed, .missed: Color(ds: DSColor.State.urgent)
         case .serviceEnded: Color(ds: DSColor.Text.secondary)
         }
     }
@@ -249,10 +275,16 @@ private extension LastTrainActivityAttributes.ContentState {
     var finalStatusMessage: String? {
         switch status {
         case .active: nil
+        case .departed: "지금 출발하세요"
         case .missed: "막차가 지나갔어요"
         case .serviceEnded: "오늘 운행이 끝났어요"
         }
     }
+}
+
+/// isStale 최신성 경고 문구 — 잠금화면·DI가 같은 카피를 쓴다.
+private enum LastTrainStaleCopy {
+    static let message = "시간이 지났어요 — 앱에서 확인하세요"
 }
 
 // MARK: - Formatting

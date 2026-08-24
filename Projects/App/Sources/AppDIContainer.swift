@@ -28,6 +28,9 @@ final class AppDIContainer {
     // 같은 요청 이력을 봐야 한다. UNUserNotificationCenter를 아는 곳은 이 어댑터뿐.
     private let localNotificationPort: any LocalNotificationPort
     let alarmSyncService: AlarmSyncService
+    /// Phase 13 발화 이후 세션 수명 — stopIntent(AlarmAcknowledgeIntent)가 조합 루트를
+    /// 거쳐 도달하는 지점. AppDelegate 경유로 인텐트 perform()이 접근한다.
+    let alarmSessionLifecycle: AlarmSessionLifecycleService
     #if DEV
     /// DEV 플로팅 디버그 메뉴가 dismiss 기록 강제 토글에 접근하는 유일한 통로 (Phase 12 검수).
     let devLiveActivityAdapter: LastTrainLiveActivityAdapter
@@ -84,12 +87,18 @@ final class AppDIContainer {
         #endif
 
         // 디바이스 포트 어댑터 — CoreLocation/AlarmKit/ActivityKit을 아는 곳은 App의 어댑터뿐.
-        let alarmScheduler = CoreAlarmSchedulerAdapter()
+        // Phase 13: stop 버튼("확인")에 발화 확인 인텐트를 싣는다 — 인텐트 타입은 App 소유,
+        // CoreAlarm은 인스턴스를 전달만 한다(주입 실패 시 인텐트 없이 스케줄되는 폴백 유지).
+        let alarmScheduler = CoreAlarmSchedulerAdapter(
+            scheduling: AlarmKitScheduler(stopIntent: AlarmAcknowledgeIntent())
+        )
         self.alarmScheduler = alarmScheduler
-        // 구체 어댑터로 들고 있다가 두 얼굴로 나눠 준다 — Domain 포트(등록/해제 UseCase)와
-        // App 내부 변경 표출 경로(LastTrainChangeAlerting, Phase 11 훅).
+        // 구체 어댑터로 들고 있다가 세 얼굴로 나눠 준다 — Domain 포트(등록/해제 UseCase),
+        // App 내부 변경 표출 경로(LastTrainChangeAlerting, Phase 11 훅),
+        // 발화 확인 경로(LastTrainDepartureEnding, Phase 13).
         let liveActivityAdapter = LastTrainLiveActivityAdapter()
         self.liveActivityPort = liveActivityAdapter
+        self.alarmSessionLifecycle = AlarmSessionLifecycleService(liveActivity: liveActivityAdapter)
         #if DEV
         self.devLiveActivityAdapter = liveActivityAdapter
         #endif

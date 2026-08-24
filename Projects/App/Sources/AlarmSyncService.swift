@@ -18,6 +18,12 @@ import os
 /// 서버 무관여로 가능하고, push-to-start 재생성은 하지 않는다(지운 의사 존중).
 /// ④ advanced(actionable: false)는 LA를 missed 상태로, sessionEnded는 serviceEnded 최종
 /// 상태로 내리고 로컬 알람을 취소한다. 배너 정리는 changes 스트림을 받은 홈의 몫.
+///
+/// Phase 13 클라 자체 만료: sync 진입 시 보유 세션이 유예(출발+60초)를 넘겼으면 만료
+/// 후보로 잡고, refresh 결과와 무관하게 로컬 sessionEnded 처리한다 — 단 refresh가
+/// 성공해 **미래 출발 시각**을 반환하면 서버 우선(만료 취소, 정상 갱신 경로).
+/// 만료 확정 세션은 기록해 이후 refresh가 같은 과거 세션으로 배너를 되살리지 못하게
+/// 한다(홈의 미래 시각 가드가 1차 방어, 이 기록이 2차).
 // Sendable 프로토콜(AlarmSyncEvents 등) 채택이 기본 MainActor 격리를 nonisolated로
 // 추론시키므로 명시한다 — 상태(subscribers 등)는 전부 메인 액터에서만 만진다.
 @MainActor
@@ -42,6 +48,9 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
     /// 구독 전에 끝난 동기화를 놓치지 않기 위한 replay-1. 홈은 앱 시작 동기화와
     /// 거의 동시에 구독하므로 순서에 기대지 않는다. 변경 판정의 "이전 값"이기도 하다.
     private var lastInfo: AlarmInfo?
+    /// Phase 13 만료 2차 방어 — 로컬 만료를 확정한 세션. 이후 refresh가 같은 routeId의
+    /// 과거 세션을 반환해도 무시한다(미래 출발이 오면 서버 우선으로 해제).
+    private var locallyExpiredSession: AlarmInfo?
     /// 진행 중 동기화 — 트리거가 겹치면(예: 앱 시작 직후 포그라운드 노티) 합류한다.
     private var inFlight: Task<AlarmInfo?, Never>?
     private var foregroundObserver: (any NSObjectProtocol)?
@@ -89,6 +98,8 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
             return await inFlight.value
         }
         Self.logger.info("알람 동기화 시작")
+        // Phase 13 선행 판정 — 확정은 refresh 결과를 본 뒤(미래 출발이면 서버 우선 취소).
+        let expiryCandidate = expireLocallyIfNeeded(now: Date())
         let task = Task { [refreshAlarmUseCase] () -> AlarmInfo? in
             do {
                 return try await refreshAlarmUseCase.execute()
@@ -100,18 +111,64 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
         inFlight = task
         let info = await task.value
         inFlight = nil
-        if let info {
-            Self.logger.info("알람 동기화 성공: route=\(info.lastRouteId, privacy: .public)")
-            let previous = lastInfo
-            lastInfo = info
-            for continuation in subscribers.values {
-                continuation.yield(info)
+
+        guard let info else {
+            // refresh 실패여도 만료는 확정한다 — "refresh 결과와 무관하게"가 정책이다.
+            if let expiryCandidate {
+                await finalizeLocalExpiry(of: expiryCandidate)
             }
-            // Phase 11 피기백 — 이 시점에 알람 재스케줄은 이미 완료돼 있다
-            // (RefreshAlarmUseCase.execute 반환 = 재스케줄 포함). 표출은 그 뒤에만 덧붙는다.
-            await propagateChange(previous: previous, latest: info)
+            return nil
         }
+
+        if let departure = info.departureTime, departure > Date() {
+            // 서버 우선 — 미래 출발 시각이 오면 만료 후보·확정 기록 모두 해제하고 정상 경로.
+            locallyExpiredSession = nil
+        } else if let expiryCandidate {
+            // 성공했지만 여전히 과거 세션(또는 출발 시각 없음) — 만료 확정.
+            // 이 결과는 구독자에게 흘리지 않는다(죽은 세션으로 배너·버튼 복원 금지).
+            await finalizeLocalExpiry(of: expiryCandidate)
+            return info
+        } else if let expired = locallyExpiredSession, expired.lastRouteId == info.lastRouteId {
+            // 만료 확정 후 같은 과거 세션의 재수신 — 무시(2차 방어).
+            Self.logger.info("만료 확정 세션 재수신 → 무시: route=\(info.lastRouteId, privacy: .public)")
+            return info
+        }
+
+        Self.logger.info("알람 동기화 성공: route=\(info.lastRouteId, privacy: .public)")
+        let previous = lastInfo
+        lastInfo = info
+        for continuation in subscribers.values {
+            continuation.yield(info)
+        }
+        // Phase 11 피기백 — 이 시점에 알람 재스케줄은 이미 완료돼 있다
+        // (RefreshAlarmUseCase.execute 반환 = 재스케줄 포함). 표출은 그 뒤에만 덧붙는다.
+        await propagateChange(previous: previous, latest: info)
         return info
+    }
+
+    // MARK: - Phase 13 클라 자체 만료 (wake 시점 판정)
+
+    /// sync 진입 선행 판정 — 보유 세션이 만료 유예(출발+60초, AlarmTiming 단일 기준)를
+    /// 넘겼으면 만료 후보를 반환한다. 판정 자체는 Domain 순수 함수(시각 주입 테스트 대상).
+    private func expireLocallyIfNeeded(now: Date) -> AlarmInfo? {
+        guard let lastInfo,
+              let departure = lastInfo.departureTime,
+              AlarmTiming.isSessionExpired(departureTime: departure, now: now)
+        else { return nil }
+        return lastInfo
+    }
+
+    /// 만료 확정 = 로컬 sessionEnded 처리: 알람 레코드 정리 → LA 최종 종료 →
+    /// changes yield(홈 정리는 기존 sessionEnded 소비 경로 재사용). 서버 계약 무관여.
+    private func finalizeLocalExpiry(of session: AlarmInfo) async {
+        Self.logger.info(
+            "클라 자체 만료 확정(로컬 sessionEnded): route=\(session.lastRouteId, privacy: .public)"
+        )
+        locallyExpiredSession = session
+        // replay-1이 죽은 세션을 재구독자에게 되살리지 않도록 비운다.
+        lastInfo = nil
+        await presentSessionEnded(previous: session, now: Date())
+        yieldChange(.sessionEnded)
     }
 
     // MARK: - Phase 11·12 변경 표출 (판정 → LA/로컬 노티/인앱 채널)
