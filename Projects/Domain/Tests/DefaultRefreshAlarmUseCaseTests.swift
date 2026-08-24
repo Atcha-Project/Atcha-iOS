@@ -51,6 +51,25 @@ private func makeInfo(departureTime: Date?) -> AlarmInfo {
     AlarmInfo(lastRouteId: "route-1", departureTime: departureTime, updatedAt: nil, isReal: true)
 }
 
+private struct StubSnapshotStore: AlarmSessionSnapshotStore {
+    let snapshot: AlarmSessionSnapshot?
+
+    func load() async -> AlarmSessionSnapshot? { snapshot }
+    func save(_ snapshot: AlarmSessionSnapshot) async {}
+    func clear() async {}
+}
+
+private func makeSnapshot(routeId: String, firstWalkSeconds: Int?) -> AlarmSessionSnapshot {
+    AlarmSessionSnapshot(
+        info: AlarmInfo(lastRouteId: routeId, departureTime: nil, updatedAt: nil, isReal: true),
+        firstWalkSeconds: firstWalkSeconds,
+        routeDisplayName: "6411번 버스",
+        transportMode: .bus,
+        acknowledged: false,
+        expired: false
+    )
+}
+
 /// 픽스처가 1970 부근의 작은 epoch를 쓰므로, "기대 발화 시각이 미래일 때만 재스케줄" 가드를
 /// 통과시키려면 now도 그보다 이른 고정값으로 주입한다.
 private let fixedNow: @Sendable () -> Date = { Date(timeIntervalSince1970: 0) }
@@ -78,7 +97,12 @@ struct DefaultRefreshAlarmUseCaseTests {
         let sut = DefaultRefreshAlarmUseCase(
             repository: StubAlarmRepository(log: log, refreshResult: .success(makeInfo(departureTime: departure))),
             // 로컬 알람은 버퍼 반영값으로 스케줄돼 있으므로, 같은 기준으로 비교해야 헛재스케줄이 없다.
-            scheduler: SpyAlarmScheduler(log: log, scheduledDate: AlarmTiming.alarmFireDate(departureTime: departure)),
+            scheduler: SpyAlarmScheduler(
+                log: log,
+                scheduledDate: AlarmTiming.alarmFireDate(
+                    departureTime: departure, firstWalkSeconds: nil
+                )
+            ),
             now: fixedNow
         )
         _ = try await sut.execute()
@@ -125,6 +149,67 @@ struct DefaultRefreshAlarmUseCaseTests {
         )
         _ = try await sut.execute()
         #expect(await log.events == ["refresh"])
+    }
+
+    // MARK: - 도보 반영 (Phase 14 — 스냅샷이 도보 초의 출처)
+
+    @Test
+    func execute_snapshotWalkSeconds_rescheduleUsesWalkAwareFireDate() async throws {
+        let log = CallLog()
+        let departure = Date(timeIntervalSince1970: 2_000)
+        let sut = DefaultRefreshAlarmUseCase(
+            repository: StubAlarmRepository(
+                log: log, refreshResult: .success(makeInfo(departureTime: departure))
+            ),
+            scheduler: SpyAlarmScheduler(log: log, scheduledDate: nil),
+            snapshotStore: StubSnapshotStore(
+                snapshot: makeSnapshot(routeId: "route-1", firstWalkSeconds: 120)
+            ),
+            now: fixedNow
+        )
+        _ = try await sut.execute()
+        // 기대 발화 시각 = 2000 − 120(도보) − 180(버퍼) = 1700 — 등록 경로와 같은 기준.
+        #expect(await log.events == ["refresh", "scheduledFireDate", "replaceAlarm:route-1@1700"])
+    }
+
+    @Test
+    func execute_snapshotWalkMatchingSchedule_doesNotReschedule() async throws {
+        // 로컬 알람이 이미 도보 반영값으로 걸려 있으면 재스케줄하지 않는다(헛돎 금지).
+        let log = CallLog()
+        let departure = Date(timeIntervalSince1970: 2_000)
+        let sut = DefaultRefreshAlarmUseCase(
+            repository: StubAlarmRepository(
+                log: log, refreshResult: .success(makeInfo(departureTime: departure))
+            ),
+            scheduler: SpyAlarmScheduler(
+                log: log, scheduledDate: Date(timeIntervalSince1970: 1_700)
+            ),
+            snapshotStore: StubSnapshotStore(
+                snapshot: makeSnapshot(routeId: "route-1", firstWalkSeconds: 120)
+            ),
+            now: fixedNow
+        )
+        _ = try await sut.execute()
+        #expect(await log.events == ["refresh", "scheduledFireDate"])
+    }
+
+    @Test
+    func execute_snapshotForDifferentRoute_ignoresItsWalkSeconds() async throws {
+        // 서버가 다른 경로로 갈아탔으면 옛 경로의 도보 초는 무효 — 버퍼만 적용한다.
+        let log = CallLog()
+        let departure = Date(timeIntervalSince1970: 2_000)
+        let sut = DefaultRefreshAlarmUseCase(
+            repository: StubAlarmRepository(
+                log: log, refreshResult: .success(makeInfo(departureTime: departure))
+            ),
+            scheduler: SpyAlarmScheduler(log: log, scheduledDate: nil),
+            snapshotStore: StubSnapshotStore(
+                snapshot: makeSnapshot(routeId: "other-route", firstWalkSeconds: 120)
+            ),
+            now: fixedNow
+        )
+        _ = try await sut.execute()
+        #expect(await log.events == ["refresh", "scheduledFireDate", "replaceAlarm:route-1@1820"])
     }
 
     @Test

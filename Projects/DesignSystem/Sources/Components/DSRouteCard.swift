@@ -14,6 +14,8 @@ public final class DSRouteCard: UIView {
         public let legs: [DSTransportBadge.Kind]
         public let summaryText: String?
         public let destinationText: String?
+        /// 카드 하단 푸터(신선도 스탬프 "HH:mm 확인 기준" 등) — nil이면 기존 렌더와 동일.
+        public let footnoteText: String?
         public let tone: Tone
 
         public init(
@@ -22,6 +24,7 @@ public final class DSRouteCard: UIView {
             legs: [DSTransportBadge.Kind] = [],
             summaryText: String? = nil,
             destinationText: String? = nil,
+            footnoteText: String? = nil,
             tone: Tone = .normal
         ) {
             self.badgeText = badgeText
@@ -29,6 +32,7 @@ public final class DSRouteCard: UIView {
             self.legs = legs
             self.summaryText = summaryText
             self.destinationText = destinationText
+            self.footnoteText = footnoteText
             self.tone = tone
         }
     }
@@ -40,6 +44,7 @@ public final class DSRouteCard: UIView {
     private let legsStack = UIStackView()
     private let summaryLabel = UILabel()
     private let destinationLabel = UILabel()
+    private let footnoteLabel = UILabel()
     private let contentStack = UIStackView()
 
     public init() {
@@ -68,10 +73,13 @@ public final class DSRouteCard: UIView {
         destinationLabel.font = DSTypography.caption1.font
         destinationLabel.textColor = DSColor.Text.secondary
 
+        footnoteLabel.font = DSTypography.caption2.font
+        footnoteLabel.textColor = DSColor.Text.tertiary
+
         contentStack.axis = .vertical
         contentStack.alignment = .leading
         contentStack.spacing = DSSpacing.sm
-        [badgeLabel, departureTimeLabel, legsStack, summaryLabel, destinationLabel]
+        [badgeLabel, departureTimeLabel, legsStack, summaryLabel, destinationLabel, footnoteLabel]
             .forEach(contentStack.addArrangedSubview)
 
         contentStack.translatesAutoresizingMaskIntoConstraints = false
@@ -116,6 +124,9 @@ public final class DSRouteCard: UIView {
 
         destinationLabel.text = content.destinationText
         destinationLabel.isHidden = content.destinationText == nil
+
+        footnoteLabel.text = content.footnoteText
+        footnoteLabel.isHidden = content.footnoteText == nil
     }
 
     /// 톤별 색 적용 — 재사용(configure 재호출) 시 양방향 모두 명시적으로 되돌린다.

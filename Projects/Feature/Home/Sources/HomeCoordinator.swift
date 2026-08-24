@@ -1,5 +1,6 @@
 import CoreCoordinator
 import Domain
+import SearchFeatureInterface
 import UIKit
 
 final class HomeCoordinator: Coordinator, CoordinatorFinishDelegate {
@@ -17,8 +18,8 @@ final class HomeCoordinator: Coordinator, CoordinatorFinishDelegate {
 
     func start() {
         let viewController = container.makeHomeViewController(
-            onSearchRequested: { [weak self] onRouteSelected in
-                self?.startSearchFlow(onRouteSelected: onRouteSelected)
+            onSearchRequested: { [weak self] initialField, onRouteSelected in
+                self?.startSearchFlow(initialField: initialField, onRouteSelected: onRouteSelected)
             }
         )
         navigationController?.pushViewController(viewController, animated: false)
@@ -26,10 +27,14 @@ final class HomeCoordinator: Coordinator, CoordinatorFinishDelegate {
 
     // MARK: - 검색 플로우
 
-    private func startSearchFlow(onRouteSelected: @escaping (LastRoute) -> Void) {
+    private func startSearchFlow(
+        initialField: SearchEntryField,
+        onRouteSelected: @escaping (LastRoute, Place) -> Void
+    ) {
         guard let navigationController else { return }
         let child = container.makeSearchCoordinator(
             navigationController: navigationController,
+            initialField: initialField,
             onRouteSelected: onRouteSelected
         )
         // start() 안에서 동기로 finish()될 수 있으므로(예: Example 스텁) 배선을 먼저 끝낸다.

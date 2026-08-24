@@ -1,6 +1,8 @@
 import Foundation
 
-public enum TransportMode: Equatable, Sendable {
+/// Codable: 세션 스냅샷의 수단 기록용(LA 재시작 아이콘 분기) — 미지 케이스 디코딩 실패는
+/// 스냅샷 어댑터가 nil로 무해화한다.
+public enum TransportMode: Equatable, Sendable, Codable {
     case walk
     case bus
     case subway

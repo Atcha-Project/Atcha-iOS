@@ -23,6 +23,11 @@
 
 추가 실측 규약:
 
+- **Mac 화면 잠금 중 대체 경로 (2026-08-24 실측)**: 잠금 중에는 System Events·orca 모두 창 AX 트리가 비어 조작 불가지만, **XCUITest 하니스는 성립한다** — 스크래치 Tuist 프로젝트(더미 host 앱 + `.uiTests` 타겟)에서 `XCUIApplication(bundleIdentifier: "com.atcha.iOS.v2")`로 앱을 구동하면 XCTRunner가 시뮬레이터 디바이스 내부에서 이벤트를 주입하므로 잠금·AX와 무관하다. 증적은 `XCUIScreen.main.screenshot()`을 호스트 경로에 직접 기록(시뮬레이터 프로세스 = 호스트 FS 공유). 시스템 권한 알럿은 `XCUIApplication(bundleIdentifier: "com.apple.springboard")`의 버튼으로 처리하고, **알람 등록 검수는 알림 권한 알럿 응답까지 등록 UseCase가 대기하므로 배너 표출까지 알럿을 반복 소거**해야 한다. 엣지 스와이프 백(좌표 드래그)·셀 스와이프(`swipeLeft`)도 이 경로로 신뢰 가능 — AX 좌표 클릭 불신뢰 제약의 대체다. 한글 `typeText` 입력도 성립.
+- Simulator.app의 AX 트리가 응답하지 않으면(창 열거 0·entire contents 타임아웃) `killall "System Events"` 후 재시도, 그래도 안 되면 Mac 잠금 상태부터 확인할 것(잠금이 원인인 경우가 많다).
+- **위치 권한 알럿 자동화 함정 (2026-08-24 실측)**: 허용 버튼을 `label IN {"앱을 사용하는 동안 허용", "한 번 허용", ...}` 류의 다중 라벨 firstMatch로 누르면 **"한 번 허용(Allow Once)"이 눌린다** — 그 세션은 정상 동작하지만 재실행부터 권한이 소멸하고, 이후의 위치 재조회(`CLLocationUpdate.liveUpdates`)는 **권한 알럿 재표출 없이 nil 업데이트 1건 후 즉시 종료**된다(→ 앱은 unavailable 처리, 증상이 "위치가 조용히 안 잡힘"으로 보여 원인 추적이 어렵다). 허용 검수는 라벨을 **"앱을 사용하는 동안 허용"/"Allow While Using App"으로 한정**할 것.
+- **위치 주입 (2026-08-24 실측)**: While-Using 정식 허용 + 검수 전 `xcrun simctl location <udid> set <lat>,<lon>`(정적 1회)이면 앱 시작 조회뿐 아니라 **재조회 스트림(검색 프리필·홈 재조회 등)에도 픽스가 도달**한다. 반면 Allow Once로 오염된 상태에서는 `location start`(waypoint 연속 시뮬레이션)·`set` 반복 펌프·XCUITest의 `XCUIDevice.shared.location` 어느 것으로도 구제되지 않는다 — 위치가 안 잡히면 주입 수단을 바꾸기 전에 **권한 상태부터 의심**할 것(`simctl privacy grant location <bundle-id>`로 확정 부여 가능).
+
 - **강제 종료 재현은 `xcrun simctl terminate`** — 앱 스위처 스와이프 자동화 불필요.
 - **LA dismiss 검수는 DEV dismiss 토글 사용** — 잠금화면 스와이프 삭제 자동화가 불안정해서 그 용도로 만들어진 수단(플로팅 디버그 메뉴의 dismiss 기록 토글, `devToggleDismissedByUser`)을 쓴다.
 - **막차 변경 주입은 DEV 플로팅 "변경" 버튼** (SceneDelegate) — 앞당김/늦춤/운행 종료. actionable 경로가 필요하면 늦춤 먼저 → 앞당김 순서로 주입한다(실측 관례).

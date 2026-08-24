@@ -1,5 +1,6 @@
 import Domain
 import Foundation
+import SearchFeatureInterface
 
 // Convention: every ViewModel in the codebase is @MainActor.
 @MainActor
@@ -15,6 +16,8 @@ final class SearchViewModel {
         case idle
         case recent([PlaceViewData])
         case places([PlaceViewData])
+        /// 키워드 검색 진행 중(Phase 17) — 디바운스 통과 후에만 진입한다(타이핑 깜빡임 방지).
+        case loadingPlaces
         case loadingRoutes
         case routes(RouteResultsViewData)
         case serviceEnded
@@ -32,8 +35,8 @@ final class SearchViewModel {
     /// Set by the ViewController; always invoked on the main actor.
     var onStateChange: ((State) -> Void)?
     var onFieldsChange: ((FieldsViewData) -> Void)?
-    /// Set by the Coordinator.
-    var onRouteChosen: ((LastRoute) -> Void)?
+    /// Set by the Coordinator. Place = 확정 도착지 — 홈 도착지 필드의 원천이다(Phase 17).
+    var onRouteChosen: ((LastRoute, Place) -> Void)?
     var onBackRequested: (() -> Void)?
 
     private(set) var state: State = .idle {
@@ -64,6 +67,8 @@ final class SearchViewModel {
     private let recentSearchesUseCase: any RecentSearchesUseCase
     // nil이면(예: Example 스텁 구성) 프리필·near 바이어스 없이 동작한다.
     private let getCurrentLocationUseCase: (any GetCurrentLocationUseCase)?
+    // 오늘/내일 라벨 판정의 기준 시각(Phase 17) — 실 Date() 직접 호출 대신 주입(기존 VM 관례).
+    private let now: @Sendable () -> Date
     private let debounceInterval: Duration
 
     private var searchTask: Task<Void, Never>?
@@ -78,13 +83,18 @@ final class SearchViewModel {
         searchLastRoutesUseCase: any SearchLastRoutesUseCase,
         recentSearchesUseCase: any RecentSearchesUseCase,
         getCurrentLocationUseCase: (any GetCurrentLocationUseCase)? = nil,
+        initialField: SearchEntryField = .departure,
+        now: @escaping @Sendable () -> Date = { Date() },
         debounceInterval: Duration = .milliseconds(300)
     ) {
         self.searchPlacesUseCase = searchPlacesUseCase
         self.searchLastRoutesUseCase = searchLastRoutesUseCase
         self.recentSearchesUseCase = recentSearchesUseCase
         self.getCurrentLocationUseCase = getCurrentLocationUseCase
+        self.now = now
         self.debounceInterval = debounceInterval
+        // 탭한 필드로 진입한다(Phase 17) — 초기 활성 슬롯만 정하고 프리필 정책은 불변.
+        fields.activeField = (initialField == .arrival) ? .arrival : .departure
     }
 
     deinit {
@@ -142,6 +152,8 @@ final class SearchViewModel {
                   let useCase = self?.searchPlacesUseCase else { return }
             try? await Task.sleep(for: interval)
             guard !Task.isCancelled else { return }
+            // 디바운스 통과 = 이 키워드로 실제 요청한다 — 로딩은 여기서부터(Phase 17).
+            self?.state = .loadingPlaces
             do {
                 // 현재 위치가 확보된 경우에만 근처 우선 정렬 바이어스를 건다.
                 let places = try await useCase.execute(keyword: trimmed, near: self?.currentCoordinate)
@@ -183,19 +195,32 @@ final class SearchViewModel {
     func didTapMore() {
         guard case .routes = state, !availableRoutes.isEmpty else { return }
         isExpanded.toggle()
-        state = .routes(RouteResultsViewData(entities: availableRoutes, isExpanded: isExpanded))
+        state = .routes(
+            RouteResultsViewData(entities: availableRoutes, isExpanded: isExpanded, now: now())
+        )
     }
 
     func didSelectRoute(at index: Int) {
         guard case .routes = state, availableRoutes.indices.contains(index) else { return }
-        onRouteChosen?(availableRoutes[index])
+        // 불변식: routes 상태는 두 슬롯 확정 시에만 존재한다 — arrival은 항상 있다(방어 가드).
+        guard let arrival else { return }
+        onRouteChosen?(availableRoutes[index], arrival)
     }
 
     func didTapEmptyAction() {
         switch state {
         case .failed where departure != nil && arrival != nil:
             searchRoutes()
-        case .failed, .serviceEnded, .noRoute:
+        case .serviceEnded, .noRoute:
+            // "다시 검색하기" 실동작(Phase 17) — 도착지 슬롯을 비우고 포커스를 넘겨
+            // 즉시 재검색이 가능하게 한다. 출발지는 유지(대개 현재 위치).
+            arrival = nil
+            var newFields = fields
+            newFields.arrivalText = ""
+            newFields.activeField = .arrival
+            fields = newFields
+            showRecent()
+        case .failed:
             showRecent()
         default:
             break
@@ -267,9 +292,12 @@ final class SearchViewModel {
                 guard !Task.isCancelled else { return }
                 switch result {
                 case let .available(routes) where !routes.isEmpty:
-                    self?.availableRoutes = routes
-                    self?.isExpanded = false
-                    self?.state = .routes(RouteResultsViewData(entities: routes, isExpanded: false))
+                    guard let self else { return }
+                    self.availableRoutes = routes
+                    self.isExpanded = false
+                    self.state = .routes(
+                        RouteResultsViewData(entities: routes, isExpanded: false, now: self.now())
+                    )
                 case .available:
                     // 정규화가 놓친 빈 목록 방어.
                     self?.state = .noRoute

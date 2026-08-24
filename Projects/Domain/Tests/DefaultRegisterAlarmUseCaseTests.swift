@@ -50,8 +50,41 @@ private struct SpyAlarmScheduler: AlarmScheduler {
     func scheduledFireDate() async -> Date? { nil }
 }
 
+private struct StubLocalNotificationPort: LocalNotificationPort {
+    let log: CallLog
+    var authorizationOutcome: LocalNotificationAuthorizationOutcome = .alreadySettled
+
+    @discardableResult
+    func requestAuthorizationIfNeeded() async -> LocalNotificationAuthorizationOutcome {
+        await log.append("requestNotiAuth")
+        return authorizationOutcome
+    }
+
+    func post(title: String, body: String) async {
+        await log.append("postNoti:\(title)")
+    }
+}
+
+private actor SpySnapshotStore: AlarmSessionSnapshotStore {
+    private(set) var saved: [AlarmSessionSnapshot] = []
+    private(set) var clearCount = 0
+    var stored: AlarmSessionSnapshot?
+
+    func load() async -> AlarmSessionSnapshot? { stored }
+
+    func save(_ snapshot: AlarmSessionSnapshot) async {
+        saved.append(snapshot)
+        stored = snapshot
+    }
+
+    func clear() async {
+        clearCount += 1
+        stored = nil
+    }
+}
+
 private extension LastRoute {
-    static func fixture(id: String) -> LastRoute {
+    static func fixture(id: String, legs: [TransportLeg] = []) -> LastRoute {
         LastRoute(
             id: id,
             departureTime: Date(timeIntervalSince1970: 1_000),
@@ -60,10 +93,32 @@ private extension LastRoute {
             transferCount: 0,
             totalDistance: 0,
             totalWalkDistance: 0,
-            legs: []
+            legs: legs
         )
     }
 }
+
+private func walkLeg(sectionTime: Int) -> TransportLeg {
+    TransportLeg(
+        mode: .walk, sectionTime: sectionTime, distance: 100, departureTime: nil,
+        routeName: nil, lineType: nil, start: nil, end: nil,
+        subwayFinalStation: nil, subwayDirection: nil,
+        isExpressSubway: false, isLastSubway: false
+    )
+}
+
+private func busLeg(routeName: String) -> TransportLeg {
+    TransportLeg(
+        mode: .bus, sectionTime: 900, distance: 4_000, departureTime: nil,
+        routeName: routeName, lineType: "11", start: nil, end: nil,
+        subwayFinalStation: nil, subwayDirection: nil,
+        isExpressSubway: false, isLastSubway: false
+    )
+}
+
+/// 픽스처가 1970 부근의 작은 epoch를 쓰므로, tooLate 사전 가드(발화 시각 > now)를
+/// 통과시키려면 now도 그보다 이른 고정값으로 주입한다.
+private let fixedNow: @Sendable () -> Date = { Date(timeIntervalSince1970: 0) }
 
 struct DefaultRegisterAlarmUseCaseTests {
     @Test
@@ -72,7 +127,8 @@ struct DefaultRegisterAlarmUseCaseTests {
         let existing = AlarmInfo(lastRouteId: "old", departureTime: nil, updatedAt: nil, isReal: false)
         let sut = DefaultRegisterAlarmUseCase(
             repository: SpyAlarmRepository(log: log, existing: existing),
-            scheduler: SpyAlarmScheduler(log: log)
+            scheduler: SpyAlarmScheduler(log: log),
+            now: fixedNow
         )
         try await sut.execute(route: .fixture(id: "new"))
         // 스케줄 시각은 버퍼 반영값: 출발 1000 − 180 = 820
@@ -84,10 +140,24 @@ struct DefaultRegisterAlarmUseCaseTests {
         let log = CallLog()
         let sut = DefaultRegisterAlarmUseCase(
             repository: SpyAlarmRepository(log: log),
-            scheduler: SpyAlarmScheduler(log: log)
+            scheduler: SpyAlarmScheduler(log: log),
+            now: fixedNow
         )
         try await sut.execute(route: .fixture(id: "new"))
         #expect(await log.events == ["auth:true", "refresh", "register:new", "replaceAlarm:new@820"])
+    }
+
+    @Test
+    func execute_routeWithWalkLeg_schedulesWalkAwareFireDate() async throws {
+        // Phase 14: 발화 시각 = 출발 − 첫 도보 − 버퍼 = 1000 − 120 − 180 = 700.
+        let log = CallLog()
+        let sut = DefaultRegisterAlarmUseCase(
+            repository: SpyAlarmRepository(log: log),
+            scheduler: SpyAlarmScheduler(log: log),
+            now: fixedNow
+        )
+        try await sut.execute(route: .fixture(id: "new", legs: [walkLeg(sectionTime: 120)]))
+        #expect(await log.events == ["auth:true", "refresh", "register:new", "replaceAlarm:new@700"])
     }
 
     @Test
@@ -95,7 +165,8 @@ struct DefaultRegisterAlarmUseCaseTests {
         let log = CallLog()
         let sut = DefaultRegisterAlarmUseCase(
             repository: SpyAlarmRepository(log: log, registerError: StubError()),
-            scheduler: SpyAlarmScheduler(log: log)
+            scheduler: SpyAlarmScheduler(log: log),
+            now: fixedNow
         )
         await #expect(throws: StubError.self) {
             try await sut.execute(route: .fixture(id: "new"))
@@ -108,12 +179,127 @@ struct DefaultRegisterAlarmUseCaseTests {
         let log = CallLog()
         let sut = DefaultRegisterAlarmUseCase(
             repository: SpyAlarmRepository(log: log),
-            scheduler: SpyAlarmScheduler(log: log, authorizationGranted: false)
+            scheduler: SpyAlarmScheduler(log: log, authorizationGranted: false),
+            now: fixedNow
         )
         await #expect(throws: AlarmError.permissionDenied) {
             try await sut.execute(route: .fixture(id: "new"))
         }
         // 권한 거부 시 서버 등록·삭제·로컬 스케줄 어디에도 도달하면 안 된다.
         #expect(await log.events == ["auth:false"])
+    }
+
+    // MARK: - 알림 권한 후속 신호 (Phase 15)
+
+    @Test
+    func execute_notificationDeniedNow_propagatesOutcome() async throws {
+        // 포트가 "이번 호출로 최초 요청·거부"를 답하면 그대로 위로 전달한다 —
+        // 홈이 1회 안내 토스트를 띄울 유일한 트리거.
+        let log = CallLog()
+        let sut = DefaultRegisterAlarmUseCase(
+            repository: SpyAlarmRepository(log: log),
+            scheduler: SpyAlarmScheduler(log: log),
+            notificationPort: StubLocalNotificationPort(log: log, authorizationOutcome: .deniedNow),
+            now: fixedNow
+        )
+        let outcome = try await sut.execute(route: .fixture(id: "new"))
+        #expect(outcome == .deniedNow)
+        // 요청 시점은 여전히 등록 성공 마지막 한 곳이다(미확정 #8 유지).
+        #expect(await log.events.last == "requestNotiAuth")
+    }
+
+    @Test
+    func execute_withoutNotificationPort_returnsAlreadySettled() async throws {
+        // 포트 미주입(Example·스텁 조립)이면 요청 자체가 없다 — 안내도 없다.
+        let log = CallLog()
+        let sut = DefaultRegisterAlarmUseCase(
+            repository: SpyAlarmRepository(log: log),
+            scheduler: SpyAlarmScheduler(log: log),
+            now: fixedNow
+        )
+        let outcome = try await sut.execute(route: .fixture(id: "new"))
+        #expect(outcome == .alreadySettled)
+    }
+
+    // MARK: - tooLate 사전 가드 (Phase 14)
+
+    @Test
+    func execute_fireDateAlreadyPast_throwsTooLateBeforeAnySideEffect() async {
+        let log = CallLog()
+        let store = SpySnapshotStore()
+        // 발화 시각 820 ≤ now 820 — 경계 포함 과거로 본다.
+        let sut = DefaultRegisterAlarmUseCase(
+            repository: SpyAlarmRepository(log: log),
+            scheduler: SpyAlarmScheduler(log: log),
+            snapshotStore: store,
+            now: { Date(timeIntervalSince1970: 820) }
+        )
+        await #expect(throws: AlarmError.tooLate) {
+            try await sut.execute(route: .fixture(id: "new"))
+        }
+        // 권한 팝업·서버 등록·스케줄·스냅샷 어디에도 도달하지 않는다(사전 가드).
+        #expect(await log.events == [])
+        #expect(await store.saved.isEmpty)
+    }
+
+    @Test
+    func execute_walkMakesFireDatePast_throwsTooLate() async {
+        // 도보 반영으로 발화 시각(700)이 now(750)보다 과거가 되는 경우도 가드에 걸린다.
+        let log = CallLog()
+        let sut = DefaultRegisterAlarmUseCase(
+            repository: SpyAlarmRepository(log: log),
+            scheduler: SpyAlarmScheduler(log: log),
+            now: { Date(timeIntervalSince1970: 750) }
+        )
+        await #expect(throws: AlarmError.tooLate) {
+            try await sut.execute(route: .fixture(id: "new", legs: [walkLeg(sectionTime: 120)]))
+        }
+        #expect(await log.events == [])
+    }
+
+    // MARK: - 세션 스냅샷 (Phase 14)
+
+    @Test
+    func execute_success_savesSnapshotWithRouteFacts() async throws {
+        let log = CallLog()
+        let store = SpySnapshotStore()
+        let route = LastRoute.fixture(
+            id: "new", legs: [walkLeg(sectionTime: 120), busLeg(routeName: "간선:6411")]
+        )
+        let sut = DefaultRegisterAlarmUseCase(
+            repository: SpyAlarmRepository(log: log),
+            scheduler: SpyAlarmScheduler(log: log),
+            snapshotStore: store,
+            now: fixedNow
+        )
+        try await sut.execute(route: route)
+
+        let saved = await store.saved
+        #expect(saved.count == 1)
+        #expect(saved.first?.info.lastRouteId == "new")
+        #expect(saved.first?.info.departureTime == route.departureTime)
+        #expect(saved.first?.firstWalkSeconds == 120)
+        #expect(saved.first?.routeDisplayName == "6411번 버스")
+        #expect(saved.first?.transportMode == .bus)
+        #expect(saved.first?.acknowledged == false)
+        #expect(saved.first?.expired == false)
+        // 등록 성공 = 서버 확인 — 신선도 스탬프의 원천이 등록 시각으로 기록된다(Phase 16).
+        #expect(saved.first?.syncedAt == fixedNow())
+    }
+
+    @Test
+    func execute_serverRegisterFails_doesNotSaveSnapshot() async {
+        let log = CallLog()
+        let store = SpySnapshotStore()
+        let sut = DefaultRegisterAlarmUseCase(
+            repository: SpyAlarmRepository(log: log, registerError: StubError()),
+            scheduler: SpyAlarmScheduler(log: log),
+            snapshotStore: store,
+            now: fixedNow
+        )
+        await #expect(throws: StubError.self) {
+            try await sut.execute(route: .fixture(id: "new"))
+        }
+        #expect(await store.saved.isEmpty)
     }
 }

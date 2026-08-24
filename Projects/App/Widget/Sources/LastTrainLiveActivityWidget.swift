@@ -21,7 +21,7 @@ struct LastTrainLiveActivityWidget: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: LastTrainActivityAttributes.self) { context in
             LastTrainLockScreenView(
-                routeName: context.attributes.routeName,
+                attributes: context.attributes,
                 state: context.state,
                 isStale: context.isStale
             )
@@ -35,7 +35,7 @@ struct LastTrainLiveActivityWidget: Widget {
             return DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
                     HStack(spacing: DSSpacing.xs) {
-                        Image(systemName: "bus.fill")
+                        Image(systemName: context.attributes.transportSymbolName)
                             .font(.subheadline)
                             .foregroundStyle(state.glanceColor)
                         Text(context.attributes.routeName)
@@ -83,8 +83,8 @@ struct LastTrainLiveActivityWidget: Widget {
                     }
                 }
             } compactLeading: {
-                // 노선 수단(버스/지하철) 구분 필드가 계약에 없어 버스 아이콘 고정.
-                Image(systemName: "bus.fill")
+                // 수단 필드(Phase 14) 기준 지하철/버스 아이콘 분기 — 구버전 LA(필드 없음)는 버스 폴백.
+                Image(systemName: context.attributes.transportSymbolName)
                     .foregroundStyle(state.glanceColor)
             } compactTrailing: {
                 switch state.status {
@@ -117,7 +117,7 @@ struct LastTrainLiveActivityWidget: Widget {
                         .foregroundStyle(state.glanceColor)
                 }
             } minimal: {
-                Image(systemName: "bus.fill")
+                Image(systemName: context.attributes.transportSymbolName)
                     .foregroundStyle(state.glanceColor)
             }
             .keylineTint(Color(ds: DSColor.Accent.default))
@@ -138,10 +138,10 @@ struct LastTrainLiveActivityWidget: Widget {
 /// glance는 0.5초 — 숫자보다 색·상태가 먼저 읽히도록 카운트다운
 /// 숫자·아이콘에 긴급도 색을 상시 적용한다.
 private struct LastTrainLockScreenView: View {
-    let routeName: String
+    let attributes: LastTrainActivityAttributes
     let state: LastTrainActivityAttributes.ContentState
     /// staleDate(=출발 시각)가 지나도록 갱신이 없었다 — 강제 종료·고아 케이스의 UI 완충
-    /// (Phase 13). 근본 해소(재부착)는 Phase 14 몫.
+    /// (Phase 13). 근본 해소는 Phase 14 재부착 — 이 분기는 최후 방어선으로 유지.
     let isStale: Bool
 
     var body: some View {
@@ -156,10 +156,10 @@ private struct LastTrainLockScreenView: View {
     /// 1행: 노선명 + "⚠ 당겨짐" 배지 슬롯.
     private var headerRow: some View {
         HStack(spacing: DSSpacing.xs) {
-            Image(systemName: "bus.fill")
+            Image(systemName: attributes.transportSymbolName)
                 .font(.subheadline)
                 .foregroundStyle(Color(ds: DSColor.Icon.default))
-            Text("\(routeName) 막차")
+            Text("\(attributes.routeName) 막차")
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(Color(ds: DSColor.Text.primary))
                 .lineLimit(1)
@@ -205,15 +205,35 @@ private struct LastTrainLockScreenView: View {
         }
     }
 
-    /// 3행: 출발 시각. 목업의 "정류장 도보 8분" 자리는 비워둔다 —
-    /// ContentState에 도보 필드가 없고 Phase 9 wire 계약은 고정이라
-    /// attributes/state 확장 금지. Phase 11 미확정 #7(도보 소요 데이터)
-    /// 해소 시 "HH:mm 출발 · 정류장 도보 N분" 형태로 재검토.
+    /// 3행: 출발 시각 + 정류장 도보 소요 (Phase 14 — 미확정 #7 클라 임시안으로 목업 공석 해소).
+    /// 도보 데이터가 없는 세션(구버전 LA·도보 없는 경로)은 출발 시각만 표시한다.
     private var departureRow: some View {
-        Text("\(LastTrainTimeFormat.hhmm(state.departureTime)) 출발")
+        Text(departureRowText)
             .font(.footnote)
             .foregroundStyle(Color(ds: DSColor.Text.secondary))
             .lineLimit(1)
+    }
+
+    private var departureRowText: String {
+        let departureText = "\(LastTrainTimeFormat.hhmm(state.departureTime)) 출발"
+        guard let walkSeconds = attributes.firstWalkSeconds, walkSeconds > 0 else {
+            return departureText
+        }
+        // 올림 표기 — 변경 분 표기와 같은 방향(.up), "0분 도보"는 존재하지 않는다.
+        let walkMinutes = max(1, Int((Double(walkSeconds) / 60).rounded(.up)))
+        return "\(departureText) · 정류장 도보 \(walkMinutes)분"
+    }
+}
+
+// MARK: - Attributes presentation helpers
+
+private extension LastTrainActivityAttributes {
+    /// 수단 → SF Symbol. 필드가 없는 구버전 LA는 버스 폴백(기존 표시 유지).
+    var transportSymbolName: String {
+        switch transportKind {
+        case .subway: "tram.fill"
+        case .bus, .other, nil: "bus.fill"
+        }
     }
 }
 

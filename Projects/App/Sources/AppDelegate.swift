@@ -19,6 +19,14 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
+        // 고아 LA 재부착/정리 (Phase 14) — 인증 부트스트랩과 무관한 로컬 리컨실이라
+        // 앱 시작 최전선에서 1회. 첫 sync보다 먼저 끝나는 것이 보통이지만, 늦어도
+        // 어댑터(actor)가 직렬화하므로 안전하다.
+        let container = container
+        Task { await container.reattachOrphanLiveActivities() }
+        // 노티 탭 라우팅(Phase 15) — launch 완료 전에 등록해야 탭이 앱을 cold start시키는
+        // 경우의 didReceive까지 잡는다. 홈 랜딩 훅 배선은 SceneDelegate 몫.
+        container.notificationTapDelegate.attachToNotificationCenter()
         configureFirebaseIfAvailable()
         if isFirebaseEnabled {
             Messaging.messaging().delegate = self

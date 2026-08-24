@@ -9,7 +9,7 @@ let appTarget = Target.target(
     deploymentTargets: Atcha.v2Deployment,
     infoPlist: .extendingDefault(with: [
         "CFBundleDisplayName": "앗차",
-        "UILaunchScreen": [:],
+        "UILaunchStoryboardName": "LaunchScreen",
         "NSAlarmKitUsageDescription": "막차 시간에 맞춰 알람을 울리기 위해 권한이 필요합니다.",
         "NSLocationWhenInUseUsageDescription": "현재 위치를 출발지로 사용하기 위해 위치 정보 접근 권한이 필요합니다.",
         // 사일런트 푸시(content-available=1) 수신용 — 사용자 알림 권한과 무관.
@@ -35,6 +35,8 @@ let appTarget = Target.target(
     // 배포 서명 시 프로비저닝이 production으로 치환한다.
     entitlements: .dictionary([
         "aps-environment": "development",
+        // 폴백 노티의 .timeSensitive interruptionLevel용(Phase 15) — 집중 모드 관통.
+        "com.apple.developer.usernotifications.time-sensitive": true,
     ]),
     dependencies: [
         .target(name: "AtchaWidget"),
@@ -63,6 +65,20 @@ let appTarget = Target.target(
     ])
 )
 
+// App 타겟 테스트 타겟(Phase 16) — host app 방식: 앱 타겟 의존으로 internal 심볼을
+// @testable 접근한다. AlarmSyncService(판정·폴백·만료 분기)의 회귀 방어가 목적.
+let testTarget = Target.target(
+    name: "AtchaV2Tests",
+    destinations: Atcha.destinations,
+    product: .unitTests,
+    bundleId: "\(Atcha.v2BundleID).tests",
+    deploymentTargets: Atcha.v2Deployment,
+    infoPlist: .default,
+    sources: ["Tests/**"],
+    dependencies: [.target(name: "AtchaV2")],
+    settings: .atchaV2()
+)
+
 let widgetTarget = Target.widgetExtension(
     name: "AtchaWidget",
     bundleId: "\(Atcha.v2BundleID).widget",
@@ -82,12 +98,13 @@ let project = Project(
         developmentRegion: Atcha.developmentRegion
     ),
     settings: .atchaV2(),
-    targets: [appTarget, widgetTarget],
+    targets: [appTarget, widgetTarget, testTarget],
     schemes: [
         .scheme(
             name: "AtchaV2",
             shared: true,
             buildAction: .buildAction(targets: ["AtchaV2"]),
+            testAction: .targets(["AtchaV2Tests"]),
             runAction: .runAction(configuration: "Debug", executable: "AtchaV2"),
             archiveAction: .archiveAction(configuration: "Debug"),
             profileAction: .profileAction(configuration: "Debug", executable: "AtchaV2"),

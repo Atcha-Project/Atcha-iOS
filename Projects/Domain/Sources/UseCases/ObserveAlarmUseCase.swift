@@ -1,7 +1,7 @@
 import Foundation
 
 public protocol ObserveAlarmUseCase: Sendable {
-    func execute() -> AsyncStream<AlarmInfo>
+    func execute() -> AsyncStream<AlarmSyncUpdate>
 }
 
 public struct DefaultObserveAlarmUseCase: ObserveAlarmUseCase {
@@ -11,7 +11,7 @@ public struct DefaultObserveAlarmUseCase: ObserveAlarmUseCase {
         self.events = events
     }
 
-    public func execute() -> AsyncStream<AlarmInfo> {
+    public func execute() -> AsyncStream<AlarmSyncUpdate> {
         events.updates()
     }
 }

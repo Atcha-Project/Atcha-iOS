@@ -14,6 +14,11 @@ nonisolated protocol LastTrainChangeAlerting: Sendable {
     /// Phase 12 dismiss 폴백 트리거 — 유저가 잠금화면에서 LA를 스와이프로 지운 기록.
     /// true면 LA alert는 도달 불가(update가 no-op)라 호출자가 로컬 노티로 갈아탄다.
     var isDismissedByUser: Bool { get async }
+    /// Phase 15 — LA alert 도달 가능성 단일 판정:
+    /// 보유 activity 있음 ∧ areActivitiesEnabled ∧ ¬dismissedByUser.
+    /// false면 update(alert:)가 no-op이거나 잠금화면에 표면이 없다 — 호출자는 로컬 노티로
+    /// 갈아탄다(채널 갈아타기이지 LA 재생성이 아니다 — push-to-start 금지 정책 불변).
+    var isAlertReachable: Bool { get async }
     /// Phase 12 종료 표출 — missed/serviceEnded 최종 상태로 LA를 내린다(Domain 포트와 동일 구현).
     func end(final state: LastTrainActivityState) async
 }
@@ -28,6 +33,21 @@ nonisolated protocol LastTrainDepartureEnding: Sendable {
     func endAsDeparted() async
 }
 
+/// Phase 14 재실행 정합성 경로 — 고아 LA 재부착과 죽은 세션 재시작. Domain 포트는
+/// 시그니처 고정 계약이라 App 내부 확장 포트로 둔다(재부착은 어댑터 내부 동작).
+nonisolated protocol LastTrainSessionRestoring: Sendable {
+    /// 부트스트랩 직후 1회 — 프로세스가 죽는 사이 잠금화면에 남은
+    /// `Activity.activities`를 스캔해, 스냅샷과 routeId가 일치하고 미만료인 세션은
+    /// **adopt**(보관 + 상태 관찰 재개 — 이후 update/end가 정상 동작)하고,
+    /// 불일치·만료·스냅샷 없음은 즉시 정리한다.
+    func reattachOrphans(snapshot: AlarmSessionSnapshot?, now: Date) async
+    /// sync 성공 후 — 스냅샷은 살아 있는데(미만료·미확인) 활성 activity가 없고 dismiss
+    /// 기록도 없으면 LA를 로컬 재시작한다. 8시간 한도로 시스템이 내린 세션·시작 실패
+    /// 세션 커버 — push-to-start 금지 정책과 무관(그 정책은 유저가 지운 LA의 재생성 금지,
+    /// dismiss 기록이 있으면 여기서도 재시작하지 않는다).
+    func restartIfNeeded(snapshot: AlarmSessionSnapshot, now: Date) async
+}
+
 /// ActivityKit → Domain `LastTrainActivityPort` 어댑터. ActivityKit을 import하는 곳은 App에서 이 파일뿐.
 /// 단일 알람 정책과 동일하게 Live Activity도 단일 세션만 유지한다(새 start가 기존 세션을 교체).
 /// 포트 계약대로 어떤 실패도 밖으로 던지지 않는다 — LA 실패가 알람 등록·취소를 실패시키면 안 된다.
@@ -36,7 +56,7 @@ nonisolated protocol LastTrainDepartureEnding: Sendable {
 /// MainActor 클래스의 격리 멤버로는 적합성이 성립하지 않는다(Sendable 경계를 넘는 격리 적합성 불가).
 /// ActivityKit의 `Activity`는 Sendable 미표기이나 스레드 안전 설계라 `@preconcurrency`로 완화한다.
 actor LastTrainLiveActivityAdapter: LastTrainActivityPort, LastTrainChangeAlerting,
-    LastTrainDepartureEnding {
+    LastTrainDepartureEnding, LastTrainSessionRestoring {
     /// 유저 스와이프 dismiss 기록 키 — 앱 재실행 후에도 남아야 Phase 12 폴백 트리거 재료가 된다.
     private static let dismissedDefaultsKey = "la.dismissedByUser"
 
@@ -79,12 +99,18 @@ actor LastTrainLiveActivityAdapter: LastTrainActivityPort, LastTrainChangeAlerti
         }
 
         let departureTime = session.departureTime ?? route.departureTime
+        // 로컬 알람 발화 시각 — register/refresh와 동일 기준(출발 − 도보 − 버퍼, Phase 14).
+        let alarmTime = AlarmTiming.alarmFireDate(
+            departureTime: departureTime,
+            firstWalkSeconds: route.firstWalkSectionSeconds
+        )
         let initialState = LastTrainActivityState(
             departureTime: departureTime,
-            // 로컬 알람 발화 시각 — register/refresh와 동일한 버퍼 반영값(출발 − 3분).
-            alarmTime: AlarmTiming.alarmFireDate(departureTime: departureTime),
+            alarmTime: alarmTime,
+            // 긴급도는 이후 갱신과 같은 척도인 **알람 시각** 기준(Phase 14 정합 — 최초
+            // start만 출발 시각 기준이던 불일치 제거).
             urgency: Domain.LastTrainUrgency.forTimeRemaining(
-                departureTime.timeIntervalSinceNow
+                alarmTime.timeIntervalSinceNow
             ),
             changeBadgeExpiry: nil,
             phase: .active
@@ -94,7 +120,9 @@ actor LastTrainLiveActivityAdapter: LastTrainActivityPort, LastTrainChangeAlerti
             let requested = try Activity.request(
                 attributes: LastTrainActivityAttributes(
                     routeId: route.id,
-                    routeName: Self.displayRouteName(for: route)
+                    routeName: route.sessionDisplayName,
+                    transportKind: Self.transportKind(from: route.boardingLeg?.mode),
+                    firstWalkSeconds: route.firstWalkSectionSeconds
                 ),
                 // staleDate = 출발 시각: 갱신이 끊긴 LA가 출발 시각이 지난 뒤에도
                 // 오래된 정보를 신선한 것처럼 보이지 않게 시스템이 stale 처리하도록 방어.
@@ -107,6 +135,76 @@ actor LastTrainLiveActivityAdapter: LastTrainActivityPort, LastTrainChangeAlerti
             observeActivityState(requested)
         } catch {
             // LA 시작 실패는 흡수한다(포트 계약) — 알람만으로 동작.
+        }
+    }
+
+    // MARK: - LastTrainSessionRestoring (Phase 14)
+
+    func reattachOrphans(snapshot: AlarmSessionSnapshot?, now: Date) async {
+        // 살아 있는 세션을 이미 보관 중이면(이론상 재부착 전 start 경합) 손대지 않는다.
+        var adopted = activity != nil
+        for orphan in Activity<LastTrainActivityAttributes>.activities {
+            if !adopted,
+               // dismiss 기록이 있는 세션은 재부착도 하지 않는다 — 유저가 지운 LA는
+               // 어떤 경로로도 되살리지 않는 정책과 한 몸(정상 흐름에선 지워진 LA가
+               // 목록에 없지만, 기록·상태가 어긋난 경우에도 지운 의사가 이긴다).
+               !dismissedByUser,
+               let snapshot, !snapshot.expired,
+               orphan.attributes.routeId == snapshot.info.lastRouteId,
+               let departure = snapshot.info.departureTime,
+               !AlarmTiming.isSessionExpired(departureTime: departure, now: now),
+               orphan.activityState == .active || orphan.activityState == .stale {
+                // adopt — 보관 + 상태 관찰 재개. 이후 update/end가 정상 동작한다.
+                activity = orphan
+                observeActivityState(orphan)
+                adopted = true
+            } else {
+                // 불일치·만료·스냅샷 없음(고아) — 잠금화면에서 즉시 정리한다.
+                await orphan.end(nil, dismissalPolicy: .immediate)
+            }
+        }
+    }
+
+    func restartIfNeeded(snapshot: AlarmSessionSnapshot, now: Date) async {
+        // dismiss 존중(유저가 지운 LA 재생성 금지)·확인된 세션(departed 소멸 예약 완료)
+        // 재시작 금지. 활성 activity가 있으면 당연히 재시작하지 않는다 — adopt된 세션 포함.
+        guard activity == nil,
+              !dismissedByUser,
+              !snapshot.expired,
+              !snapshot.acknowledged,
+              let departure = snapshot.info.departureTime,
+              !AlarmTiming.isSessionExpired(departureTime: departure, now: now),
+              ActivityAuthorizationInfo().areActivitiesEnabled
+        else { return }
+
+        let alarmTime = AlarmTiming.alarmFireDate(
+            departureTime: departure,
+            firstWalkSeconds: snapshot.firstWalkSeconds
+        )
+        let state = LastTrainActivityState(
+            departureTime: departure,
+            alarmTime: alarmTime,
+            urgency: Domain.LastTrainUrgency.forTimeRemaining(alarmTime.timeIntervalSince(now)),
+            changeBadgeExpiry: nil,
+            phase: .active
+        )
+        do {
+            let requested = try Activity.request(
+                attributes: LastTrainActivityAttributes(
+                    routeId: snapshot.info.lastRouteId,
+                    routeName: snapshot.routeDisplayName.isEmpty ? "막차" : snapshot.routeDisplayName,
+                    transportKind: Self.transportKind(from: snapshot.transportMode),
+                    firstWalkSeconds: snapshot.firstWalkSeconds
+                ),
+                content: ActivityContent(
+                    state: Self.contentState(from: state),
+                    staleDate: departure
+                )
+            )
+            activity = requested
+            observeActivityState(requested)
+        } catch {
+            // 재시작 실패도 흡수한다 — 알람·홈 배너만으로 동작(포트 계약과 동일 태도).
         }
     }
 
@@ -139,6 +237,17 @@ actor LastTrainLiveActivityAdapter: LastTrainActivityPort, LastTrainChangeAlerti
     }
 
     var isDismissedByUser: Bool { dismissedByUser }
+
+    /// Phase 15 폴백 조건 확대 — dismiss 기록 하나로는 "LA를 설정에서 꺼둔 유저"(start가
+    /// no-op이라 activity 자체가 없다)와 "시작 실패·시스템 종료 후 재시작도 막힌 세션"이
+    /// 전부 인지 채널 0으로 남는다. 세 조건을 어댑터가 한 번에 판정한다 — 호출자
+    /// (AlarmSyncService)는 조건을 조립하지 않는다. 죽은 세션 재시작(restartIfNeeded)이
+    /// 표출(propagateChange)보다 선행하므로, 재시작에 성공한 세션은 자연히 도달 가능이다.
+    var isAlertReachable: Bool {
+        activity != nil
+            && ActivityAuthorizationInfo().areActivitiesEnabled
+            && !dismissedByUser
+    }
 
     // MARK: - LastTrainDepartureEnding (Phase 13)
 
@@ -260,26 +369,15 @@ actor LastTrainLiveActivityAdapter: LastTrainActivityPort, LastTrainChangeAlerti
         )
     }
 
-    /// 노선 표시명 — 막차 탑승 구간(departureTime이 있는 첫 대중교통 구간, 없으면 첫 대중교통 구간) 기준.
-    /// 버스 routeName은 "타입:번호"(예: "간선:472") → "472번 버스", 지하철은 노선명 그대로(급행이면 " 급행").
-    private nonisolated static func displayRouteName(for route: LastRoute) -> String {
-        let transitLegs = route.legs.filter { $0.mode == .bus || $0.mode == .subway }
-        guard let leg = transitLegs.first(where: { $0.departureTime != nil }) ?? transitLegs.first
-        else { return "막차" }
-
-        switch leg.mode {
-        case .subway:
-            guard let name = leg.routeName else { return "지하철" }
-            return leg.isExpressSubway ? "\(name) 급행" : name
-        case .bus:
-            guard let routeName = leg.routeName else { return "버스" }
-            guard let colonIndex = routeName.firstIndex(of: ":") else {
-                return "\(routeName)번 버스"
-            }
-            let number = String(routeName[routeName.index(after: colonIndex)...])
-            return "\(number)번 버스"
-        case .walk, .unknown:
-            return "막차"
+    /// Domain 수단 → 위젯 계약 수단 키 (Phase 14 DI 아이콘 분기).
+    private nonisolated static func transportKind(
+        from mode: TransportMode?
+    ) -> LastTrainTransportKind? {
+        switch mode {
+        case .bus: .bus
+        case .subway: .subway
+        case .walk, .unknown: .other
+        case nil: nil
         }
     }
 }

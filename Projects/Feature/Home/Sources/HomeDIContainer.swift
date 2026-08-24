@@ -14,6 +14,10 @@ public final class HomeDIContainer: HomeCoordinatorBuildable {
     private let cancelAlarmUseCase: any CancelAlarmUseCase
     private let observeAlarmUseCase: any ObserveAlarmUseCase
     private let observeAlarmChangeUseCase: any ObserveAlarmChangeUseCase
+    private let requestAlarmSyncUseCase: any RequestAlarmSyncUseCase
+    private let getLastRouteDetailUseCase: any GetLastRouteDetailUseCase
+    private let searchLastRoutesUseCase: any SearchLastRoutesUseCase
+    private let recentSearchesUseCase: any RecentSearchesUseCase
     private let searchCoordinatorBuildable: any SearchCoordinatorBuildable
 
     public init(
@@ -23,6 +27,10 @@ public final class HomeDIContainer: HomeCoordinatorBuildable {
         cancelAlarmUseCase: any CancelAlarmUseCase,
         observeAlarmUseCase: any ObserveAlarmUseCase,
         observeAlarmChangeUseCase: any ObserveAlarmChangeUseCase,
+        requestAlarmSyncUseCase: any RequestAlarmSyncUseCase,
+        getLastRouteDetailUseCase: any GetLastRouteDetailUseCase,
+        searchLastRoutesUseCase: any SearchLastRoutesUseCase,
+        recentSearchesUseCase: any RecentSearchesUseCase,
         searchCoordinatorBuildable: any SearchCoordinatorBuildable
     ) {
         self.getCurrentLocationUseCase = getCurrentLocationUseCase
@@ -31,6 +39,10 @@ public final class HomeDIContainer: HomeCoordinatorBuildable {
         self.cancelAlarmUseCase = cancelAlarmUseCase
         self.observeAlarmUseCase = observeAlarmUseCase
         self.observeAlarmChangeUseCase = observeAlarmChangeUseCase
+        self.requestAlarmSyncUseCase = requestAlarmSyncUseCase
+        self.getLastRouteDetailUseCase = getLastRouteDetailUseCase
+        self.searchLastRoutesUseCase = searchLastRoutesUseCase
+        self.recentSearchesUseCase = recentSearchesUseCase
         self.searchCoordinatorBuildable = searchCoordinatorBuildable
     }
 
@@ -39,7 +51,10 @@ public final class HomeDIContainer: HomeCoordinatorBuildable {
     }
 
     func makeHomeViewController(
-        onSearchRequested: @escaping (_ onRouteSelected: @escaping (LastRoute) -> Void) -> Void
+        onSearchRequested: @escaping (
+            _ initialField: SearchEntryField,
+            _ onRouteSelected: @escaping (LastRoute, Place) -> Void
+        ) -> Void
     ) -> UIViewController {
         let viewModel = HomeViewModel(
             getCurrentLocationUseCase: getCurrentLocationUseCase,
@@ -47,7 +62,11 @@ public final class HomeDIContainer: HomeCoordinatorBuildable {
             registerAlarmUseCase: registerAlarmUseCase,
             cancelAlarmUseCase: cancelAlarmUseCase,
             observeAlarmUseCase: observeAlarmUseCase,
-            observeAlarmChangeUseCase: observeAlarmChangeUseCase
+            observeAlarmChangeUseCase: observeAlarmChangeUseCase,
+            requestAlarmSyncUseCase: requestAlarmSyncUseCase,
+            getLastRouteDetailUseCase: getLastRouteDetailUseCase,
+            searchLastRoutesUseCase: searchLastRoutesUseCase,
+            recentSearchesUseCase: recentSearchesUseCase
         )
         viewModel.onSearchRequested = onSearchRequested
         return HomeViewController(viewModel: viewModel)
@@ -55,10 +74,12 @@ public final class HomeDIContainer: HomeCoordinatorBuildable {
 
     func makeSearchCoordinator(
         navigationController: UINavigationController,
-        onRouteSelected: @escaping (LastRoute) -> Void
+        initialField: SearchEntryField,
+        onRouteSelected: @escaping (LastRoute, Place) -> Void
     ) -> any Coordinator {
         searchCoordinatorBuildable.makeSearchCoordinator(
             navigationController: navigationController,
+            initialField: initialField,
             onRouteSelected: onRouteSelected
         )
     }

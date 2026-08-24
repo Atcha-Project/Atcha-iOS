@@ -27,13 +27,21 @@ final class AppDIContainer {
     // 로컬 노티도 1회 생성 공유 — 권한 요청 훅(등록 UseCase)과 dismiss 폴백 발송(AlarmSyncService)이
     // 같은 요청 이력을 봐야 한다. UNUserNotificationCenter를 아는 곳은 이 어댑터뿐.
     private let localNotificationPort: any LocalNotificationPort
+    // 구체 어댑터 보유 — 고아 LA 재부착(부트스트랩 직후, Phase 14)과 DEV 검수 토글의 통로.
+    private let liveActivityAdapter: LastTrainLiveActivityAdapter
+    /// 세션 스냅샷(Phase 14 재실행 브리지) — 등록/취소/refresh UseCase·수명 서비스·
+    /// 동기화 서비스가 같은 저장소를 봐야 한다(1회 생성 공유).
+    private let alarmSessionSnapshotStore: any AlarmSessionSnapshotStore
     let alarmSyncService: AlarmSyncService
     /// Phase 13 발화 이후 세션 수명 — stopIntent(AlarmAcknowledgeIntent)가 조합 루트를
     /// 거쳐 도달하는 지점. AppDelegate 경유로 인텐트 perform()이 접근한다.
     let alarmSessionLifecycle: AlarmSessionLifecycleService
+    /// 노티 탭 라우팅 델리게이트(Phase 15) — AppDelegate가 launch 시 등록하고,
+    /// SceneDelegate가 홈 랜딩 훅(onTap)을 배선한다.
+    let notificationTapDelegate = NotificationTapRoutingDelegate()
     #if DEV
     /// DEV 플로팅 디버그 메뉴가 dismiss 기록 강제 토글에 접근하는 유일한 통로 (Phase 12 검수).
-    let devLiveActivityAdapter: LastTrainLiveActivityAdapter
+    var devLiveActivityAdapter: LastTrainLiveActivityAdapter { liveActivityAdapter }
     #endif
 
     init() {
@@ -48,8 +56,14 @@ final class AppDIContainer {
             session: URLSession(configuration: sessionConfiguration)
         )
         #else
+        // Phase 16 — 기본 60초 타임아웃은 심야의 약한 연결에서 1분 침묵이다. 빨리
+        // 실패시키고(요청 10초) 멱등 GET 1회 재시도·신선도 스탬프가 정직성을 맡는다.
+        let sessionConfiguration = URLSessionConfiguration.default
+        sessionConfiguration.timeoutIntervalForRequest = 10
+        sessionConfiguration.timeoutIntervalForResource = 30
         let baseClient = URLSessionNetworkClient(
-            baseURL: AppEnvironment.current.apiBaseURL
+            baseURL: AppEnvironment.current.apiBaseURL,
+            session: URLSession(configuration: sessionConfiguration)
         )
         #endif
         let sessionManager = AuthSessionManager(
@@ -93,27 +107,43 @@ final class AppDIContainer {
             scheduling: AlarmKitScheduler(stopIntent: AlarmAcknowledgeIntent())
         )
         self.alarmScheduler = alarmScheduler
-        // 구체 어댑터로 들고 있다가 세 얼굴로 나눠 준다 — Domain 포트(등록/해제 UseCase),
+        // 구체 어댑터로 들고 있다가 네 얼굴로 나눠 준다 — Domain 포트(등록/해제 UseCase),
         // App 내부 변경 표출 경로(LastTrainChangeAlerting, Phase 11 훅),
-        // 발화 확인 경로(LastTrainDepartureEnding, Phase 13).
+        // 발화 확인 경로(LastTrainDepartureEnding, Phase 13),
+        // 재실행 복원 경로(LastTrainSessionRestoring, Phase 14).
         let liveActivityAdapter = LastTrainLiveActivityAdapter()
+        self.liveActivityAdapter = liveActivityAdapter
         self.liveActivityPort = liveActivityAdapter
-        self.alarmSessionLifecycle = AlarmSessionLifecycleService(liveActivity: liveActivityAdapter)
-        #if DEV
-        self.devLiveActivityAdapter = liveActivityAdapter
-        #endif
+        let snapshotStore = AlarmSessionSnapshotStoreAdapter()
+        self.alarmSessionSnapshotStore = snapshotStore
+        self.alarmSessionLifecycle = AlarmSessionLifecycleService(
+            liveActivity: liveActivityAdapter,
+            snapshotStore: snapshotStore
+        )
         let localNotificationAdapter = LocalNotificationAdapter()
         self.localNotificationPort = localNotificationAdapter
         self.alarmSyncService = AlarmSyncService(
             refreshAlarmUseCase: DefaultRefreshAlarmUseCase(
                 repository: alarmRepository,
-                scheduler: alarmScheduler
+                scheduler: alarmScheduler,
+                // refresh 응답에는 도보 정보가 없다 — 등록 시점 스냅샷이 도보 초의 출처.
+                snapshotStore: snapshotStore
             ),
             evaluateChangeUseCase: DefaultEvaluateAlarmChangeUseCase(),
             liveActivity: liveActivityAdapter,
             localNotification: localNotificationAdapter,
-            alarmScheduler: alarmScheduler
+            alarmScheduler: alarmScheduler,
+            snapshotStore: snapshotStore,
+            sessionRestorer: liveActivityAdapter
         )
+    }
+
+    /// 부트스트랩 직후 1회(AppDelegate) — 프로세스가 죽는 사이 잠금화면에 남은 고아 LA를
+    /// 스냅샷과 대조해 재부착하거나 정리한다(Phase 14). 인증·네트워크와 무관한 로컬
+    /// 리컨실이라 앱 시작 최전선에서 수행한다(부트스트랩 실패로 고아가 방치되지 않게).
+    func reattachOrphanLiveActivities() async {
+        let snapshot = await alarmSessionSnapshotStore.load()
+        await liveActivityAdapter.reattachOrphans(snapshot: snapshot, now: Date())
     }
 
     func makeHomeDIContainer() -> any HomeCoordinatorBuildable {
@@ -121,11 +151,17 @@ final class AppDIContainer {
         let locationService = CoreLocationServiceAdapter()
         let getCurrentLocation: any GetCurrentLocationUseCase =
             DefaultGetCurrentLocationUseCase(locationService: locationService)
+        // 원탭 칩(Phase 18) — 검색과 홈이 같은 인스턴스를 봐야 검색의 저장·삭제가
+        // 칩에 그대로 비친다 (recentSearchRepository 1회 생성과 같은 이유).
+        let searchLastRoutes: any SearchLastRoutesUseCase =
+            DefaultSearchLastRoutesUseCase(repository: lastRouteRepository)
+        let recentSearches: any RecentSearchesUseCase =
+            DefaultRecentSearchesUseCase(repository: recentSearchRepository)
 
         let searchContainer = SearchDIContainer(
             searchPlacesUseCase: DefaultSearchPlacesUseCase(repository: placeRepository),
-            searchLastRoutesUseCase: DefaultSearchLastRoutesUseCase(repository: lastRouteRepository),
-            recentSearchesUseCase: DefaultRecentSearchesUseCase(repository: recentSearchRepository),
+            searchLastRoutesUseCase: searchLastRoutes,
+            recentSearchesUseCase: recentSearches,
             getCurrentLocationUseCase: getCurrentLocation
         )
 
@@ -137,15 +173,27 @@ final class AppDIContainer {
                 scheduler: alarmScheduler,
                 activityPort: liveActivityPort,
                 // 알림 권한 요청의 유일한 시점(등록 성공 직후) — UseCase 내부 훅이 호출한다.
-                notificationPort: localNotificationPort
+                notificationPort: localNotificationPort,
+                // 등록 성공 = 스냅샷 저장 시점(Phase 14).
+                snapshotStore: alarmSessionSnapshotStore
             ),
             cancelAlarmUseCase: DefaultCancelAlarmUseCase(
                 repository: alarmRepository,
                 scheduler: alarmScheduler,
-                activityPort: liveActivityPort
+                activityPort: liveActivityPort,
+                snapshotStore: alarmSessionSnapshotStore
             ),
             observeAlarmUseCase: DefaultObserveAlarmUseCase(events: alarmSyncService),
             observeAlarmChangeUseCase: DefaultObserveAlarmChangeUseCase(events: alarmSyncService),
+            // 홈 pull-to-refresh(Phase 16) — 4번째 트리거도 같은 동기화 한 곳으로 합류한다.
+            requestAlarmSyncUseCase: DefaultRequestAlarmSyncUseCase(requesting: alarmSyncService),
+            // 재실행 카드 복원(Phase 14) — 기존 미사용 자산(detail 엔드포인트) 재활용.
+            getLastRouteDetailUseCase: DefaultGetLastRouteDetailUseCase(
+                repository: lastRouteRepository
+            ),
+            // 원탭 칩(Phase 18) — 검색 화면과 같은 인스턴스 공유(위 주석 참조).
+            searchLastRoutesUseCase: searchLastRoutes,
+            recentSearchesUseCase: recentSearches,
             searchCoordinatorBuildable: searchContainer
         )
     }
