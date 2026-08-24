@@ -14,6 +14,7 @@ public final class HomeDIContainer: HomeCoordinatorBuildable {
     private let cancelAlarmUseCase: any CancelAlarmUseCase
     private let observeAlarmUseCase: any ObserveAlarmUseCase
     private let observeAlarmChangeUseCase: any ObserveAlarmChangeUseCase
+    private let getLastRouteDetailUseCase: any GetLastRouteDetailUseCase
     private let searchCoordinatorBuildable: any SearchCoordinatorBuildable
 
     public init(
@@ -23,6 +24,7 @@ public final class HomeDIContainer: HomeCoordinatorBuildable {
         cancelAlarmUseCase: any CancelAlarmUseCase,
         observeAlarmUseCase: any ObserveAlarmUseCase,
         observeAlarmChangeUseCase: any ObserveAlarmChangeUseCase,
+        getLastRouteDetailUseCase: any GetLastRouteDetailUseCase,
         searchCoordinatorBuildable: any SearchCoordinatorBuildable
     ) {
         self.getCurrentLocationUseCase = getCurrentLocationUseCase
@@ -31,6 +33,7 @@ public final class HomeDIContainer: HomeCoordinatorBuildable {
         self.cancelAlarmUseCase = cancelAlarmUseCase
         self.observeAlarmUseCase = observeAlarmUseCase
         self.observeAlarmChangeUseCase = observeAlarmChangeUseCase
+        self.getLastRouteDetailUseCase = getLastRouteDetailUseCase
         self.searchCoordinatorBuildable = searchCoordinatorBuildable
     }
 
@@ -47,7 +50,8 @@ public final class HomeDIContainer: HomeCoordinatorBuildable {
             registerAlarmUseCase: registerAlarmUseCase,
             cancelAlarmUseCase: cancelAlarmUseCase,
             observeAlarmUseCase: observeAlarmUseCase,
-            observeAlarmChangeUseCase: observeAlarmChangeUseCase
+            observeAlarmChangeUseCase: observeAlarmChangeUseCase,
+            getLastRouteDetailUseCase: getLastRouteDetailUseCase
         )
         viewModel.onSearchRequested = onSearchRequested
         return HomeViewController(viewModel: viewModel)

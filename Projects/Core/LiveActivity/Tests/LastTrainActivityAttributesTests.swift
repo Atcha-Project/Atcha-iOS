@@ -35,11 +35,37 @@ struct LastTrainActivityAttributesTests {
 
     @Test
     func attributes_roundTripCodable_preservesFixedSessionInfo() throws {
-        let attributes = LastTrainActivityAttributes(routeId: "route-42", routeName: "9호선 급행")
+        let attributes = LastTrainActivityAttributes(
+            routeId: "route-42",
+            routeName: "9호선 급행",
+            transportKind: .subway,
+            firstWalkSeconds: 120
+        )
         let data = try JSONEncoder().encode(attributes)
         let decoded = try JSONDecoder().decode(LastTrainActivityAttributes.self, from: data)
         #expect(decoded.routeId == "route-42")
         #expect(decoded.routeName == "9호선 급행")
+        #expect(decoded.transportKind == .subway)
+        #expect(decoded.firstWalkSeconds == 120)
+    }
+
+    @Test
+    func attributes_legacyPayloadWithoutPhase14Fields_stillDecodes() throws {
+        // 재부착(Phase 14)은 구버전 앱이 남긴 활성 LA의 attributes를 디코딩한다 —
+        // 새 필드(수단·도보)가 없는 payload가 실패하면 재부착 자체가 불가능해진다.
+        let legacy = Data(#"{"routeId":"route-42","routeName":"9호선 급행"}"#.utf8)
+        let decoded = try JSONDecoder().decode(LastTrainActivityAttributes.self, from: legacy)
+        #expect(decoded.routeId == "route-42")
+        #expect(decoded.transportKind == nil)
+        #expect(decoded.firstWalkSeconds == nil)
+    }
+
+    @Test
+    func transportKind_rawValuesAreStable() {
+        // Raw values ride inside ActivityKit's persisted attributes — wire 계약.
+        #expect(LastTrainTransportKind.bus.rawValue == "bus")
+        #expect(LastTrainTransportKind.subway.rawValue == "subway")
+        #expect(LastTrainTransportKind.other.rawValue == "other")
     }
 
     @Test

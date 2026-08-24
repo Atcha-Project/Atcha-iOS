@@ -1,14 +1,18 @@
 import Foundation
 
 /// 버퍼 = 스누즈 예산 (정책 5). 알람은 기준 시각 − 버퍼에 울린다. 버퍼 고정 3분, 설정 없음(v1).
-/// TODO(미확정 #7): 기준 시각 = departureTime − 첫 도보 구간 시간이 원칙이나, refresh 응답에
-/// 도보 정보가 없어 register/refresh 이중 시각이 생기므로 확정 전까지 버퍼만 균일 적용한다.
+/// 기준 시각(미확정 #7 클라 임시안, Phase 14 확정) = departureTime − 첫 도보 구간 시간 —
+/// 도보 초는 등록 시점 경로에서 취득해 스냅샷에 저장하고, 서버 필드가 생기면 대체한다.
 public enum AlarmTiming {
     public static let bufferSeconds: TimeInterval = 180
 
-    /// 로컬 알람 발화 시각 = departureTime − bufferSeconds.
-    public static func alarmFireDate(departureTime: Date) -> Date {
-        departureTime.addingTimeInterval(-bufferSeconds)
+    /// 로컬 알람 발화 시각 = departureTime − firstWalkSeconds − bufferSeconds.
+    /// 등록/refresh 재스케줄/LA alarmTime/홈 배너 4곳이 전부 이 함수를 탄다(이중 시각 금지) —
+    /// 기본값을 두지 않아 콜사이트가 도보 초의 출처(경로·스냅샷·없음)를 명시하게 강제한다.
+    public static func alarmFireDate(departureTime: Date, firstWalkSeconds: Int?) -> Date {
+        departureTime.addingTimeInterval(
+            -(TimeInterval(firstWalkSeconds ?? 0) + bufferSeconds)
+        )
     }
 
     /// 클라 자체 만료 유예 — 출발 시각 + 60초가 지나면 세션을 로컬 만료로 판정한다

@@ -61,9 +61,13 @@ struct DevDemoFallbackLastRouteRepository: LastRouteRepository {
         do { return try await base.lastRoute(id: id) }
         catch {
             print("⚠️ [DEV 우회] 경로 상세 실패 → 데모 경로 반환: \(error)")
+            // 카드 복원(Phase 14) 검수 정합: 알려진 세션(재실행 후에도 영속)의 출발 시각을
+            // 재사용해야 배너·LA와 카드의 시각이 어긋나지 않는다. 모르면 새 데모 시각.
+            let knownDeparture = await DevChangeSimulator.shared.knownSessionDeparture(routeId: id)
             let route = Self.demoRoute(
                 start: Coordinate(latitude: 37.4979, longitude: 127.0276),
-                end: Coordinate(latitude: 37.4853, longitude: 126.9015)
+                end: Coordinate(latitude: 37.4853, longitude: 126.9015),
+                departure: knownDeparture
             )
             await DevChangeSimulator.shared.noteKnownSession(
                 routeId: route.id, departureTime: route.departureTime
@@ -72,10 +76,13 @@ struct DevDemoFallbackLastRouteRepository: LastRouteRepository {
         }
     }
 
-    /// 출발 시각은 8분 뒤 — 알람이 버퍼(−3분) 반영으로 +5분 시점에 걸린다.
-    /// (3분이면 알람 시각 ≈ now라 등록 탭 시점에 이미 과거가 되어 AlarmKit이 거부한다.)
-    private static func demoRoute(start: Coordinate, end: Coordinate) -> LastRoute {
-        let departure = Date().addingTimeInterval(8 * 60)
+    /// 출발 시각은 8분 뒤 — 알람이 도보(첫 walk leg 120초)+버퍼(180초) 반영으로 +3분
+    /// 시점에 걸린다(Phase 14 검수 ③: 배너·LA·발화가 전부 "출발 − 도보 − 3분" 기준).
+    /// 더 이르면 등록 탭 시점에 이미 과거가 되어 tooLate 가드·AlarmKit 거부에 걸린다.
+    private static func demoRoute(
+        start: Coordinate, end: Coordinate, departure: Date? = nil
+    ) -> LastRoute {
+        let departure = departure ?? Date().addingTimeInterval(8 * 60)
         return LastRoute(
             id: "dev-demo-route",
             departureTime: departure,
@@ -85,6 +92,20 @@ struct DevDemoFallbackLastRouteRepository: LastRouteRepository {
             totalDistance: 14200,
             totalWalkDistance: 700,
             legs: [
+                TransportLeg(
+                    mode: .walk,
+                    sectionTime: 120,
+                    distance: 150,
+                    departureTime: nil,
+                    routeName: nil,
+                    lineType: nil,
+                    start: nil,
+                    end: RoutePoint(name: "강남역", coordinate: start),
+                    subwayFinalStation: nil,
+                    subwayDirection: nil,
+                    isExpressSubway: false,
+                    isLastSubway: false
+                ),
                 TransportLeg(
                     mode: .subway,
                     sectionTime: 1500,
@@ -168,12 +189,21 @@ final class DevChangeSimulator {
         case end
     }
 
+    /// 알려진 세션의 UserDefaults 키 (Phase 14 검수) — 강제 종료·재실행 검수에서
+    /// 기준 출발 시각을 잃으면 주입 diff·카드 복원 시각이 어긋나므로 DEV 한정 영속화한다.
+    private static let knownRouteIdKey = "dev.sim.knownRouteId"
+    private static let knownDepartureKey = "dev.sim.knownDeparture"
+
     private var pending: Injection?
     /// 마지막으로 알려진 세션 — 데모 경로 생성·등록·refresh 성공·주입 적용 시 갱신된다.
     private var knownRouteId: String?
     private var knownDepartureTime: Date?
 
-    private init() {}
+    private init() {
+        knownRouteId = UserDefaults.standard.string(forKey: Self.knownRouteIdKey)
+        let epoch = UserDefaults.standard.double(forKey: Self.knownDepartureKey)
+        knownDepartureTime = epoch > 0 ? Date(timeIntervalSince1970: epoch) : nil
+    }
 
     /// 주입 예약 — 다음 refresh() 1회가 소비한다.
     func inject(_ injection: Injection) {
@@ -184,7 +214,18 @@ final class DevChangeSimulator {
     /// departureTime이 nil이면 routeId만 갱신한다(등록 경로는 출발 시각을 모른다).
     func noteKnownSession(routeId: String, departureTime: Date?) {
         knownRouteId = routeId
-        if let departureTime { knownDepartureTime = departureTime }
+        UserDefaults.standard.set(routeId, forKey: Self.knownRouteIdKey)
+        if let departureTime {
+            knownDepartureTime = departureTime
+            UserDefaults.standard.set(
+                departureTime.timeIntervalSince1970, forKey: Self.knownDepartureKey
+            )
+        }
+    }
+
+    /// 알려진 세션의 출발 시각 — routeId가 일치할 때만 (데모 상세의 시각 정합용).
+    func knownSessionDeparture(routeId: String) -> Date? {
+        knownRouteId == routeId ? knownDepartureTime : nil
     }
 
     /// 보류 중 주입을 소비해 변형된 AlarmInfo를 만든다. 주입이 없으면 nil.
@@ -204,6 +245,11 @@ final class DevChangeSimulator {
         case .end: departure = nil
         }
         knownDepartureTime = departure
+        if let departure {
+            UserDefaults.standard.set(
+                departure.timeIntervalSince1970, forKey: Self.knownDepartureKey
+            )
+        }
         return AlarmInfo(
             lastRouteId: routeId,
             departureTime: departure,

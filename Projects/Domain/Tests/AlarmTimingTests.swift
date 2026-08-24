@@ -4,9 +4,27 @@ import Testing
 
 struct AlarmTimingTests {
     @Test
-    func alarmFireDate_isDepartureMinusBuffer() {
+    func alarmFireDate_withoutWalk_isDepartureMinusBuffer() {
         let departure = Date(timeIntervalSince1970: 1_000)
-        #expect(AlarmTiming.alarmFireDate(departureTime: departure) == Date(timeIntervalSince1970: 820))
+        #expect(
+            AlarmTiming.alarmFireDate(departureTime: departure, firstWalkSeconds: nil)
+                == Date(timeIntervalSince1970: 820)
+        )
+    }
+
+    @Test
+    func alarmFireDate_withWalk_subtractsWalkAndBuffer() {
+        // Phase 14 (미확정 #7 클라 임시안): 기준 시각 = 출발 − 도보 − 버퍼.
+        let departure = Date(timeIntervalSince1970: 1_000)
+        #expect(
+            AlarmTiming.alarmFireDate(departureTime: departure, firstWalkSeconds: 120)
+                == Date(timeIntervalSince1970: 700)
+        )
+        // 0초 도보는 없음과 동일하다.
+        #expect(
+            AlarmTiming.alarmFireDate(departureTime: departure, firstWalkSeconds: 0)
+                == Date(timeIntervalSince1970: 820)
+        )
     }
 
     @Test
