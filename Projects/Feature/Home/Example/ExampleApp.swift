@@ -43,6 +43,8 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             observeAlarmChangeUseCase: PreviewObserveAlarmChangeUseCase(),
             requestAlarmSyncUseCase: PreviewRequestAlarmSyncUseCase(),
             getLastRouteDetailUseCase: PreviewGetLastRouteDetailUseCase(),
+            searchLastRoutesUseCase: PreviewSearchLastRoutesUseCase(),
+            recentSearchesUseCase: PreviewRecentSearchesUseCase(),
             searchCoordinatorBuildable: PreviewSearchCoordinatorBuildable()
         )
         let coordinator = container.makeHomeCoordinator(navigationController: navigationController)
@@ -114,6 +116,24 @@ struct PreviewGetLastRouteDetailUseCase: GetLastRouteDetailUseCase {
         try? await Task.sleep(for: .milliseconds(300))
         return PreviewSearchCoordinator.makeCannedRoute()
     }
+}
+
+/// 원탭 칩 재검색 스텁(Phase 18) — canned 경로 1건을 돌려줘 칩 탭 → 카드 시연이 성립한다.
+struct PreviewSearchLastRoutesUseCase: SearchLastRoutesUseCase {
+    func execute(start: Coordinate, end: Coordinate) async throws -> LastRouteSearchResult {
+        try? await Task.sleep(for: .milliseconds(400))
+        return .available([PreviewSearchCoordinator.makeCannedRoute()])
+    }
+}
+
+/// 최근 검색 스텁(Phase 18) — canned 1건으로 칩이 즉시 표출된다. save/remove는 no-op.
+struct PreviewRecentSearchesUseCase: RecentSearchesUseCase {
+    func fetch() async throws -> [Place] {
+        [PreviewSearchCoordinator.makeCannedArrival()]
+    }
+
+    func save(_ place: Place) async throws {}
+    func remove(_ place: Place) async throws {}
 }
 
 /// 검색 플로우 스텁: 화면 전환 없이 canned 경로를 즉시 반환한다.

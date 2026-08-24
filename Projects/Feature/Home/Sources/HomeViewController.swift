@@ -25,6 +25,18 @@ final class HomeViewController: UIViewController {
     private lazy var arrivalRow = makeFieldRow(
         icon: DSIcon.place24, field: arrivalField, entry: .arrival
     )
+    // 최근 경로 원탭 칩(Phase 18) — 자기 크기 컴포넌트라 스택 전폭으로 늘리지 않고
+    // 래퍼의 leading에 붙인다. 표시·활성은 render가 State로 반영한다.
+    private let recentRouteChip = DSChip()
+    private lazy var chipRow: UIView = {
+        let row = UIView()
+        row.addSubview(recentRouteChip)
+        recentRouteChip.snp.makeConstraints { make in
+            make.leading.top.bottom.equalToSuperview()
+            make.trailing.lessThanOrEqualToSuperview()
+        }
+        return row
+    }()
     private let routeCard = DSRouteCard()
     private let registerButton = DSButton(title: "알람 등록하기")
     // DSButton은 title이 init 고정이라 토글은 버튼 2개의 표시 전환으로 구현한다.
@@ -79,6 +91,8 @@ final class HomeViewController: UIViewController {
         super.viewWillAppear(animated)
         // 홈은 자체 타이틀을 그린다 — 시스템 내비바 숨김(Search와 동일 규약).
         navigationController?.setNavigationBarHidden(true, animated: animated)
+        // 검색 화면을 다녀오며 바뀐 최근 검색(삭제 포함)을 칩에 반영한다(Phase 18).
+        viewModel.viewWillAppear()
     }
 
     // MARK: - UI
@@ -106,18 +120,25 @@ final class HomeViewController: UIViewController {
             make.width.equalTo(scrollView.frameLayoutGuide).offset(-DSSpacing.md * 2)
         }
 
-        [titleLabel, banner, departureRow, arrivalRow, routeCard, registerButton, cancelButton]
+        [titleLabel, banner, departureRow, arrivalRow, chipRow, routeCard, registerButton, cancelButton]
             .forEach(contentStack.addArrangedSubview)
         contentStack.addArrangedSubview(makeCaptionStack())
         contentStack.setCustomSpacing(DSSpacing.lg20, after: titleLabel)
         contentStack.setCustomSpacing(DSSpacing.sm, after: departureRow)
+        // 칩이 숨겨져도 필드→카드 간격이 기존(lg)과 같도록 앞뒤 모두 lg를 쓴다.
         contentStack.setCustomSpacing(DSSpacing.lg, after: arrivalRow)
+        contentStack.setCustomSpacing(DSSpacing.lg, after: chipRow)
 
         banner.isHidden = true
+        chipRow.isHidden = true
         routeCard.isHidden = true
         registerButton.isHidden = true
         cancelButton.isHidden = true
 
+        recentRouteChip.addAction(
+            UIAction { [weak self] _ in self?.viewModel.chipTapped() },
+            for: .touchUpInside
+        )
         registerButton.addAction(
             UIAction { [weak self] _ in self?.viewModel.registerAlarmTapped() },
             for: .touchUpInside
@@ -221,6 +242,15 @@ final class HomeViewController: UIViewController {
         // 도착지 필드 = 선택 경로의 도착지명(Phase 17). nil이면 placeholder가 유도한다.
         arrivalField.setText(state.arrivalText ?? "")
 
+        // 최근 경로 원탭 칩(Phase 18) — nil이면 숨김, 재검색 진행 중엔 비활성(더블 탭 방지).
+        if let chipText = state.recentRouteChipText {
+            recentRouteChip.setText(chipText)
+            chipRow.isHidden = false
+        } else {
+            chipRow.isHidden = true
+        }
+        recentRouteChip.isEnabled = !state.isChipBusy
+
         if let card = state.routeCard {
             // 신선도 스탬프(Phase 16)는 세션 상태라 State가 따로 나른다 — 표출 시점 합성.
             routeCard.configure(with: card.dsContent(footnote: state.freshnessText))
@@ -277,6 +307,15 @@ final class HomeViewController: UIViewController {
         case .locationRestricted:
             // restricted는 설정으로 못 푸는 제약 — "설정으로 이동"을 안내하지 않는다(Phase 17).
             DSToast.show("이 기기에선 위치를 사용할 수 없어요. 출발지를 검색해 주세요", in: view)
+        case .chipLocationUnavailable:
+            DSToast.show("현재 위치를 확인하지 못했어요. 잠시 후 다시 시도해 주세요", in: view)
+        case .chipSearchFailed:
+            DSToast.show("막차를 찾지 못했어요. 다시 시도해 주세요", in: view)
+        case .chipServiceEnded:
+            // 검색 화면 빈 상태 제목과 같은 어휘(Phase 18) — 화면 간 표기 통일.
+            DSToast.show("오늘 막차가 끊겼어요", in: view)
+        case .chipNoRoute:
+            DSToast.show("대중교통 경로를 찾지 못했어요", in: view)
         case .alarmPermissionNeeded:
             DSToast.show(
                 "알람 권한이 꺼져 있어요",

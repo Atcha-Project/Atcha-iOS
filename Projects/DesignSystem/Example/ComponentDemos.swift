@@ -22,6 +22,21 @@ final class ButtonsDemoViewController: GalleryScreenViewController {
         let disabled = DSButton(title: "비활성", style: .primary)
         disabled.isEnabled = false
         contentStack.addArrangedSubview(disabled)
+
+        addSectionTitle("DSChip")
+        let chip = DSChip()
+        chip.setText("→ 신림동")
+        let disabledChip = DSChip()
+        disabledChip.setText("→ 구로디지털단지역")
+        disabledChip.isEnabled = false
+        [chip, disabledChip].forEach { contentStack.addArrangedSubview(leadingRow($0)) }
+    }
+
+    /// 칩은 자기 크기 컴포넌트 — 스택 전폭으로 늘리지 않고 leading에 붙인다(홈과 같은 배치).
+    private func leadingRow(_ view: UIView) -> UIStackView {
+        let row = UIStackView(arrangedSubviews: [view, UIView()])
+        row.axis = .horizontal
+        return row
     }
 }
 
