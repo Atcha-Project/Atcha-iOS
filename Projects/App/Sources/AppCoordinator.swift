@@ -67,9 +67,8 @@ final class AppCoordinator: Coordinator, CoordinatorFinishDelegate {
     /// 스플래시 단계의 탭이면 popToRoot가 스플래시에 머무를 뿐 — 부트스트랩 후 홈 자연 랜딩.
     func returnToHome() {
         navigationController.presentedViewController?.dismiss(animated: false)
-        // 프로그램적 pop은 SearchCoordinator.closeFlow()를 타지 않아 자식 코디네이터가
-        // 잔존할 수 있다 — 스와이프 백 누수와 같은 계열이라 Phase 17
-        // (UINavigationControllerDelegate 정리)이 일괄 해소한다. 여기서 선취하지 않는다.
+        // 프로그램적 pop도 SearchCoordinator의 didShow 정리 경로를 탄다(Phase 17) —
+        // 백 버튼·스와이프 백과 같은 단일 지점에서 자식 코디네이터가 finish된다.
         navigationController.popToRootViewController(animated: false)
     }
 

@@ -1,5 +1,6 @@
 import Domain
 import Foundation
+import SearchFeatureInterface
 
 // Convention: every ViewModel in the codebase is @MainActor.
 @MainActor
@@ -9,7 +10,8 @@ final class HomeViewModel {
         /// 역지오코딩된 현재 위치 라벨.
         case current(name: String)
         /// 위치를 쓸 수 없어 검색으로 출발지를 정해야 하는 상태.
-        case needsSearch(deniedPermission: Bool)
+        /// 실패 사유는 ToastEvent가 나른다(Phase 17) — 표시 상태는 사유와 무관하다.
+        case needsSearch
     }
 
     nonisolated struct BannerViewData: Equatable {
@@ -28,6 +30,9 @@ final class HomeViewModel {
 
     struct State: Equatable {
         var departure: DepartureState = .loading
+        /// 도착지 필드 표시값(Phase 17) — 선택 경로의 도착지명. nil이면 placeholder.
+        /// 재실행 복원 경로는 도착지 명칭 원천이 없어 채우지 않는다(결정사항 — 수용).
+        var arrivalText: String?
         var routeCard: RouteCardViewData?
         var banner: BannerViewData?
         var isAlarmBusy = false
@@ -41,6 +46,10 @@ final class HomeViewModel {
     /// 재방출되면 안 되는 원샷 안내 — 상태와 분리한다.
     enum ToastEvent: Equatable {
         case locationPermissionNeeded
+        /// 기기 전역 위치 서비스 OFF(Phase 17) — 앱 권한이 아니라 시스템 설정의 문제.
+        case locationServicesDisabled
+        /// 스크린타임·MDM 제약(Phase 17) — 설정으로 못 푼다. "설정으로 이동" 안내 금지.
+        case locationRestricted
         case alarmPermissionNeeded
         case alarmRegisterFailed
         case alarmCancelFailed
@@ -63,8 +72,12 @@ final class HomeViewModel {
     /// pull-to-refresh 종료 훅(Phase 16) — 성공/실패 불문 동기화가 끝나면 불린다
     /// (VC가 refreshControl.endRefreshing). 실패는 무음 — 결과 표출은 스트림·스탬프 몫.
     var onManualSyncFinished: (() -> Void)?
-    /// Set by the Coordinator: 검색 플로우를 열고, 선택 경로를 reply 클로저로 돌려받는다.
-    var onSearchRequested: ((_ onRouteSelected: @escaping (LastRoute) -> Void) -> Void)?
+    /// Set by the Coordinator: 검색 플로우를 열고, 선택 경로·도착지를 reply 클로저로
+    /// 돌려받는다. initialField = 탭한 필드가 그대로 진입 슬롯이 된다(Phase 17).
+    var onSearchRequested: ((
+        _ initialField: SearchEntryField,
+        _ onRouteSelected: @escaping (LastRoute, Place) -> Void
+    ) -> Void)?
 
     private(set) var state = State() {
         didSet { if state != oldValue { onStateChange?(state) } }
@@ -170,17 +183,19 @@ final class HomeViewModel {
         }
     }
 
-    /// 출발지/도착지 어느 필드를 탭해도 동일하게 검색 플로우로 진입한다.
-    func searchFieldTapped() {
-        onSearchRequested? { [weak self] route in
-            self?.routeSelected(route)
+    /// 탭한 필드가 그대로 검색 진입 슬롯이 된다(Phase 17) — 도착지 탭이면 도착지부터.
+    func searchFieldTapped(_ field: SearchEntryField) {
+        onSearchRequested?(field) { [weak self] route, arrival in
+            self?.routeSelected(route, arrival: arrival)
         }
     }
 
-    func routeSelected(_ route: LastRoute) {
+    func routeSelected(_ route: LastRoute, arrival: Place) {
         selectedRoute = route
         var newState = state
-        newState.routeCard = RouteCardViewData(entity: route)
+        newState.routeCard = RouteCardViewData(entity: route, now: now())
+        // 도착지 필드를 선택 경로의 도착지명과 정합시킨다(Phase 17) — placeholder 공존 해소.
+        newState.arrivalText = arrival.name
         // 새 경로 선택 = 기존 배너는 더 이상 유효하지 않다 (재등록 전까지 숨김).
         newState.banner = nil
         newState.alarmButton = Self.alarmButtonMode(
@@ -320,7 +335,8 @@ final class HomeViewModel {
                   self.state.routeCard == nil else { return }
             self.selectedRoute = route
             var newState = self.state
-            newState.routeCard = RouteCardViewData(entity: route)
+            // 복원 경로는 도착지 명칭 원천이 없다 — arrivalText는 placeholder 유지(Phase 17 수용).
+            newState.routeCard = RouteCardViewData(entity: route, now: self.now())
             newState.alarmButton = Self.alarmButtonMode(
                 selectedRouteId: route.id,
                 registeredRouteId: self.registeredRouteId
@@ -399,14 +415,21 @@ final class HomeViewModel {
                 let place = try await geocodeUseCase.execute(coordinate: coordinate)
                 guard !Task.isCancelled else { return }
                 self?.state.departure = .current(name: place.name)
-            } catch LocationError.permissionDenied {
+            } catch let error as LocationError {
                 guard !Task.isCancelled else { return }
-                self?.state.departure = .needsSearch(deniedPermission: true)
-                self?.onToast?(.locationPermissionNeeded)
+                self?.state.departure = .needsSearch
+                // 사유별 안내 분기(Phase 17) — 회복 경로가 다르다. restricted는 설정으로
+                // 못 푸는 제약이라 "설정으로 이동"을 안내하지 않는다(VC 매핑).
+                switch error {
+                case .permissionDenied: self?.onToast?(.locationPermissionNeeded)
+                case .servicesDisabled: self?.onToast?(.locationServicesDisabled)
+                case .restricted: self?.onToast?(.locationRestricted)
+                case .unavailable: break // 일시 실패 — 검색 유도만, 안내 없음.
+                }
             } catch {
                 guard !Task.isCancelled else { return }
                 // 역지오코딩 실패 포함 — 검색으로 출발지를 정하면 된다.
-                self?.state.departure = .needsSearch(deniedPermission: false)
+                self?.state.departure = .needsSearch
             }
         }
     }

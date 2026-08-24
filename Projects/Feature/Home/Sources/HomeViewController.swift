@@ -1,5 +1,6 @@
 import DesignSystem
 import Domain
+import SearchFeatureInterface
 import SnapKit
 import UIKit
 
@@ -18,8 +19,12 @@ final class HomeViewController: UIViewController {
     private let banner = DSBanner()
     private let departureField = DSTextField(placeholder: "출발지를 검색해 주세요", showsAccentDot: true)
     private let arrivalField = DSTextField(placeholder: "도착지를 검색해 주세요")
-    private lazy var departureRow = makeFieldRow(icon: DSIcon.myLocation24, field: departureField)
-    private lazy var arrivalRow = makeFieldRow(icon: DSIcon.place24, field: arrivalField)
+    private lazy var departureRow = makeFieldRow(
+        icon: DSIcon.myLocation24, field: departureField, entry: .departure
+    )
+    private lazy var arrivalRow = makeFieldRow(
+        icon: DSIcon.place24, field: arrivalField, entry: .arrival
+    )
     private let routeCard = DSRouteCard()
     private let registerButton = DSButton(title: "알람 등록하기")
     // DSButton은 title이 init 고정이라 토글은 버튼 2개의 표시 전환으로 구현한다.
@@ -125,7 +130,10 @@ final class HomeViewController: UIViewController {
 
     /// 홈의 필드는 편집이 아니라 검색 진입 트리거다. DSTextField에는 편집 시작 훅이
     /// 없으므로 필드 터치를 통째로 죽이고 UIControl 래퍼가 탭을 가져간다.
-    private func makeFieldRow(icon: UIImage, field: DSTextField) -> UIControl {
+    /// 탭한 필드가 검색 진입 슬롯이 된다(Phase 17) — entry가 그대로 넘어간다.
+    private func makeFieldRow(
+        icon: UIImage, field: DSTextField, entry: SearchEntryField
+    ) -> UIControl {
         let row = UIControl()
         let iconView = UIImageView(image: icon)
         iconView.tintColor = DSColor.Icon.default
@@ -143,7 +151,7 @@ final class HomeViewController: UIViewController {
             make.top.trailing.bottom.equalToSuperview()
         }
         row.addAction(
-            UIAction { [weak self] _ in self?.viewModel.searchFieldTapped() },
+            UIAction { [weak self] _ in self?.viewModel.searchFieldTapped(entry) },
             for: .touchUpInside
         )
         return row
@@ -210,6 +218,9 @@ final class HomeViewController: UIViewController {
             departureField.setText("")
         }
 
+        // 도착지 필드 = 선택 경로의 도착지명(Phase 17). nil이면 placeholder가 유도한다.
+        arrivalField.setText(state.arrivalText ?? "")
+
         if let card = state.routeCard {
             // 신선도 스탬프(Phase 16)는 세션 상태라 State가 따로 나른다 — 표출 시점 합성.
             routeCard.configure(with: card.dsContent(footnote: state.freshnessText))
@@ -254,6 +265,18 @@ final class HomeViewController: UIViewController {
                     UIApplication.shared.open(url)
                 }
             )
+        case .locationServicesDisabled:
+            DSToast.show(
+                "기기의 위치 서비스가 꺼져 있어요",
+                in: view,
+                action: .init(title: "설정으로 이동") {
+                    guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+                    UIApplication.shared.open(url)
+                }
+            )
+        case .locationRestricted:
+            // restricted는 설정으로 못 푸는 제약 — "설정으로 이동"을 안내하지 않는다(Phase 17).
+            DSToast.show("이 기기에선 위치를 사용할 수 없어요. 출발지를 검색해 주세요", in: view)
         case .alarmPermissionNeeded:
             DSToast.show(
                 "알람 권한이 꺼져 있어요",
