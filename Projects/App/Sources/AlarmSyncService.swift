@@ -13,8 +13,9 @@ import os
 /// 홈 배너 강조·토스트)을 덧붙인다. 알람 재스케줄은 `RefreshAlarmUseCase.execute()` 안에서
 /// 이미 끝난 뒤라(반환 = 재스케줄 완료) LA·인앱 표출 실패가 알람을 막을 구조 자체가 없다.
 ///
-/// Phase 12 폴백·종료: ③ 유저가 LA를 스와이프로 지운 기록(`isDismissedByUser`)이 있으면
-/// 백그라운드 alert 채널을 로컬 노티(같은 문구)로 갈아탄다 — 피기백 시점엔 앱이 깨어 있으므로
+/// Phase 12 폴백·종료(15에서 조건 확대): ③ LA alert가 도달 불가한 상태(dismissed ∨ 활성
+/// activity 없음 ∨ LA 비활성 — 어댑터의 `isAlertReachable` 단일 판정)면 백그라운드 alert
+/// 채널을 로컬 노티(같은 문구, time-sensitive)로 갈아탄다 — 피기백 시점엔 앱이 깨어 있으므로
 /// 서버 무관여로 가능하고, push-to-start 재생성은 하지 않는다(지운 의사 존중).
 /// ④ advanced(actionable: false)는 LA를 missed 상태로, sessionEnded는 serviceEnded 최종
 /// 상태로 내리고 로컬 알람을 취소한다. 배너 정리는 changes 스트림을 받은 홈의 몫.
@@ -329,24 +330,32 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
 
         guard alarmTime > now else {
             // 새 알람 시각이 이미 과거(출발은 미래) — 마지노선 침범. 원래 울렸어야 할 알람
-            // 시점이 지나 있으므로 조용한 채널로는 늦다: 포그라운드 여부와 무관하게 즉시 최후통첩.
+            // 시점이 지나 있으므로 조용한 채널로는 늦다: 백그라운드면 즉시 최후통첩.
+            let ultimatumState = LastTrainActivityState(
+                departureTime: departure,
+                alarmTime: alarmTime,
+                urgency: .imminent,
+                changeBadgeExpiry: badgeExpiry,
+                phase: .active
+            )
+            if UIApplication.shared.applicationState == .active {
+                // 포그라운드 — LA alert 소리·로컬 노티 없이 조용한 상태 갱신만(Phase 15
+                // 이중 알림 제거). 사용자 주의는 인앱 채널(changes 스트림 → 배너 강조 +
+                // 토스트)이 단독으로 맡는다 — 일반 advanced·missed 분기와 동일 구조.
+                await liveActivity.update(state: ultimatumState, alert: nil)
+                return
+            }
             let alert = (
                 title: LastTrainChangeMessages.ultimatumTitle,
                 body: LastTrainChangeMessages.ultimatumBody(latestDeparture: departure)
             )
-            if await liveActivity.isDismissedByUser {
-                // dismiss 폴백(Phase 12) — LA는 유저가 지웠다: alert를 실을 update는 no-op이고
-                // push-to-start 재생성은 하지 않는다(어차피 세션도 없고, 지운 의사 존중이 정책).
+            if await liveActivity.isAlertReachable {
+                await liveActivity.update(state: ultimatumState, alert: alert)
+            } else {
+                // 도달 불가 폴백(Phase 12→15 확대) — dismissed·activity 없음·LA 비활성
+                // 전부 로컬 노티로 갈아탄다. push-to-start 재생성은 하지 않는다(정책 불변).
                 // 피기백 시점엔 앱이 깨어 있으므로 서버 무관여 로컬 노티로 같은 문구를 보낸다.
                 await localNotification.post(title: alert.title, body: alert.body)
-            } else {
-                await liveActivity.update(state: LastTrainActivityState(
-                    departureTime: departure,
-                    alarmTime: alarmTime,
-                    urgency: .imminent,
-                    changeBadgeExpiry: badgeExpiry,
-                    phase: .active
-                ), alert: alert)
             }
             return
         }
@@ -373,13 +382,13 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
             title: LastTrainChangeMessages.advancedAlertTitle(minutesEarlier: minutesEarlier),
             body: LastTrainChangeMessages.advancedAlertBody(from: previousDeparture, to: departure)
         )
-        if await liveActivity.isDismissedByUser {
-            // dismiss 폴백(Phase 12) — LA alert 대신 같은 행동 중심 문구의 로컬 노티.
-            // push-to-start 재생성 금지(정책) — 지워진 LA를 되살리지 않는다.
-            await localNotification.post(title: alert.title, body: alert.body)
-        } else {
+        if await liveActivity.isAlertReachable {
             // 잠금화면 alert + "당겨짐" 배지(만료 now+10분).
             await liveActivity.update(state: state, alert: alert)
+        } else {
+            // 도달 불가 폴백(Phase 12→15 확대) — LA alert 대신 같은 행동 중심 문구의
+            // 로컬 노티. push-to-start 재생성 금지(정책) — 지워진 LA를 되살리지 않는다.
+            await localNotification.post(title: alert.title, body: alert.body)
         }
     }
 
@@ -408,11 +417,12 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents {
         if UIApplication.shared.applicationState == .active {
             // 포그라운드 — 상태 전환만 조용히. 사용자 주의는 인앱 채널이 맡는다(이중 알림 방지).
             await liveActivity.update(state: state, alert: nil)
-        } else if await liveActivity.isDismissedByUser {
-            // dismiss 폴백(Phase 12) — push-to-start 재생성 금지, 같은 문구의 로컬 노티로 대신한다.
-            await localNotification.post(title: alert.title, body: alert.body)
-        } else {
+        } else if await liveActivity.isAlertReachable {
             await liveActivity.update(state: state, alert: alert)
+        } else {
+            // 도달 불가 폴백(Phase 12→15 확대) — push-to-start 재생성 금지, 같은 문구의
+            // 로컬 노티로 대신한다.
+            await localNotification.post(title: alert.title, body: alert.body)
         }
     }
 

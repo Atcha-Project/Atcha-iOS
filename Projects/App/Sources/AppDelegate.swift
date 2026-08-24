@@ -24,6 +24,9 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         // 어댑터(actor)가 직렬화하므로 안전하다.
         let container = container
         Task { await container.reattachOrphanLiveActivities() }
+        // 노티 탭 라우팅(Phase 15) — launch 완료 전에 등록해야 탭이 앱을 cold start시키는
+        // 경우의 didReceive까지 잡는다. 홈 랜딩 훅 배선은 SceneDelegate 몫.
+        container.notificationTapDelegate.attachToNotificationCenter()
         configureFirebaseIfAvailable()
         if isFirebaseEnabled {
             Messaging.messaging().delegate = self

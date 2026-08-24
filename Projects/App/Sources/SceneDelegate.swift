@@ -25,6 +25,10 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         self.window = window
         appCoordinator = coordinator
         coordinator.start()
+        // 노티 탭 → 홈 랜딩 배선(Phase 15). 델리게이트 등록은 AppDelegate(launch 시점) 몫.
+        container.notificationTapDelegate.onTap = { [weak coordinator] in
+            coordinator?.returnToHome()
+        }
 
         #if DEV
         installDevChangeButton(in: window, container: container)

@@ -47,6 +47,19 @@ final class HomeViewController: UIViewController {
         configureUI()
         bind()
         viewModel.viewDidLoad()
+        // 설정을 다녀온 뒤의 위치 권한 회복 재확인(Phase 15) — 재조회 여부는 VM이 판정한다.
+        // 셀렉터 기반 관찰: 해제가 자동(iOS 9+)이라 deinit 정리가 필요 없고, 알림은
+        // 메인 스레드에서 발송되므로 MainActor VC 메서드 직결로 충분하다.
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleDidBecomeActive),
+            name: UIApplication.didBecomeActiveNotification,
+            object: nil
+        )
+    }
+
+    @objc private func handleDidBecomeActive() {
+        viewModel.didBecomeActive()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -222,6 +235,15 @@ final class HomeViewController: UIViewController {
             DSToast.show("알람 등록에 실패했어요. 다시 시도해 주세요.", in: view)
         case .alarmTooLate:
             DSToast.show("이미 출발 시간이 지난 경로예요", in: view)
+        case .notificationPermissionDenied:
+            DSToast.show(
+                "막차 변경 알림을 받으려면 설정에서 알림을 허용해주세요",
+                in: view,
+                action: .init(title: "설정으로 이동") {
+                    guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+                    UIApplication.shared.open(url)
+                }
+            )
         case .alarmCancelFailed:
             DSToast.show("알람 해제에 실패했어요. 다시 시도해 주세요.", in: view)
         case let .lastTrainAdvanced(minutes):

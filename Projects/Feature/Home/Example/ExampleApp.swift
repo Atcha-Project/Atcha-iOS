@@ -72,8 +72,10 @@ struct PreviewReverseGeocodeUseCase: ReverseGeocodeUseCase {
 }
 
 struct PreviewRegisterAlarmUseCase: RegisterAlarmUseCase {
-    func execute(route: LastRoute) async throws {
+    @discardableResult
+    func execute(route: LastRoute) async throws -> LocalNotificationAuthorizationOutcome {
         try? await Task.sleep(for: .milliseconds(500))
+        return .alreadySettled
     }
 }
 

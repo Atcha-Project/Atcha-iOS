@@ -14,6 +14,11 @@ nonisolated protocol LastTrainChangeAlerting: Sendable {
     /// Phase 12 dismiss 폴백 트리거 — 유저가 잠금화면에서 LA를 스와이프로 지운 기록.
     /// true면 LA alert는 도달 불가(update가 no-op)라 호출자가 로컬 노티로 갈아탄다.
     var isDismissedByUser: Bool { get async }
+    /// Phase 15 — LA alert 도달 가능성 단일 판정:
+    /// 보유 activity 있음 ∧ areActivitiesEnabled ∧ ¬dismissedByUser.
+    /// false면 update(alert:)가 no-op이거나 잠금화면에 표면이 없다 — 호출자는 로컬 노티로
+    /// 갈아탄다(채널 갈아타기이지 LA 재생성이 아니다 — push-to-start 금지 정책 불변).
+    var isAlertReachable: Bool { get async }
     /// Phase 12 종료 표출 — missed/serviceEnded 최종 상태로 LA를 내린다(Domain 포트와 동일 구현).
     func end(final state: LastTrainActivityState) async
 }
@@ -232,6 +237,17 @@ actor LastTrainLiveActivityAdapter: LastTrainActivityPort, LastTrainChangeAlerti
     }
 
     var isDismissedByUser: Bool { dismissedByUser }
+
+    /// Phase 15 폴백 조건 확대 — dismiss 기록 하나로는 "LA를 설정에서 꺼둔 유저"(start가
+    /// no-op이라 activity 자체가 없다)와 "시작 실패·시스템 종료 후 재시작도 막힌 세션"이
+    /// 전부 인지 채널 0으로 남는다. 세 조건을 어댑터가 한 번에 판정한다 — 호출자
+    /// (AlarmSyncService)는 조건을 조립하지 않는다. 죽은 세션 재시작(restartIfNeeded)이
+    /// 표출(propagateChange)보다 선행하므로, 재시작에 성공한 세션은 자연히 도달 가능이다.
+    var isAlertReachable: Bool {
+        activity != nil
+            && ActivityAuthorizationInfo().areActivitiesEnabled
+            && !dismissedByUser
+    }
 
     // MARK: - LastTrainDepartureEnding (Phase 13)
 
