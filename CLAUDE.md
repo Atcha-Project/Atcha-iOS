@@ -79,7 +79,7 @@ AtchaV2(앱, 조합 루트: 어댑터·스플래시·AlarmSyncService) ─► Ho
 
 ### 미완 상태 (작업 시 참고)
 
-- **인증은 소셜 로그인(카카오·애플)** — 익명 세션 스텁은 제거됐고, 강제 로그인(게스트 없음)으로 `AuthFeature`가 최초 토큰을 발급받는다(`GET /auth/check`·`/auth/login`, 소셜 토큰을 Bearer로 — plain client 전용). 카카오 키는 `TUIST_KAKAO_APP_KEY` env로 주입(미주입 시 카카오 버튼만 런타임 비활성, DEV는 로그인 시트의 "DEV 건너뛰기"로 우회 가능). 잔여: 카카오/Apple 콘솔에 V2 번들 등록, 서버 audience 허용 확인. Debug(DEV)의 `DevDemoFallbacks`는 실서버 인증 검증 후 제거.
+- **인증은 소셜 로그인(카카오·애플), 가입까지 완결** — 강제 로그인(게스트 없음)으로 `AuthFeature`가 최초 토큰을 발급받는다(`GET /auth/check`·`/auth/login`·`POST /auth/sign-up`, 소셜 토큰을 Bearer로 — plain client 전용). 미가입 계정은 `SignInUseCase`가 온보딩 화면 없이 **최소 가입**(현재 위치+역지오코딩 주소, 실패 시 레거시 실측 폴백 `""`·(0,0), 알림 빈도 [1,10])까지 자동 수행한다. 로그아웃(`POST /auth/logout` — refresh 토큰을 Bearer로 싣는 특례, CoreAuth `AuthSessionManager.signOut()`)·회원탈퇴(`DELETE /members/me`)·유저 정보(`GET /members/me`, 홈주소/알림빈도 PATCH — `UserRepository`)는 UseCase까지 구현됐고 **설정 화면은 미구현**(로그아웃 진입점은 DEV 플로팅 메뉴뿐). 카카오 키는 `TUIST_KAKAO_APP_KEY` env로 주입(미주입 시 카카오 버튼만 런타임 비활성). 잔여: 카카오/Apple 콘솔에 V2 번들 등록, 서버 audience 허용 확인. `DevDemoFallbacks`(실패 은폐 데모 폴백)와 "DEV 건너뛰기"는 제거됨 — DEV에 남은 것은 막차 변경 주입용 `DevChangeSimulator`(refresh 가로채기 전용, 에러 은폐 없음)뿐이라 서버 실패가 DEV에서도 그대로 표면화된다.
 - `AppEnvironment`의 base URL은 dev/live 실주소 반영 완료. **Stage는 dev 호스트를 공유 중** — 전용 호스트만 미정.
 - `Projects/App/Resources/GoogleService-Info.plist`는 **레거시 번들 ID(`com.atcha.iOS`)용 파일**이라 존재 가드만 통과할 뿐 V2(`com.atcha.iOS.v2`)로의 사일런트 푸시가 성립하지 않는다 — V2용 재발급·교체 필요. FCM 토큰 서버 전달도 미구현(로깅만)이라 갱신 채널은 현재 폴링(앱 시작·포그라운드 복귀)과 홈 pull-to-refresh(수동)뿐.
 - AtchaV2는 iOS 26 전용. AlarmKit(CoreAlarm)·Live Activity(CoreLiveActivity + AtchaWidget 익스텐션)는 Phase 9~12에서 구축 완료.

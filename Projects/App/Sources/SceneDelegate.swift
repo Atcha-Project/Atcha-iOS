@@ -102,6 +102,14 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         add("10분 늦춤 (3초 후)", injection: .delay(10 * 60), delay: 3)
         add("운행 종료 (3초 후)", injection: .end, delay: 3, style: .destructive)
         add("즉시 refresh", injection: nil, delay: 0)
+        // 로그아웃 엔드투엔드 검수(설정 화면 前 유일한 진입점) — 서버 /auth/logout 베스트
+        // 에포트 후 sessionExpired 경유로 로그인 시트에 복귀해야 정상이다.
+        sheet.addAction(UIAlertAction(title: "로그아웃 (DEV)", style: .destructive) { _ in
+            Task { @MainActor in
+                await container.makeLogoutUseCase().execute()
+                print("⚠️ [DEV] 로그아웃 실행 — sessionExpired 라우팅으로 로그인 시트 복귀 기대")
+            }
+        })
         // Phase 12 dismiss 폴백 검수용 — 잠금화면 스와이프 자동화가 불안정할 때 기록을 강제한다.
         // 켠 뒤 앞당김/운행 종료를 주입하면 LA alert 대신 로컬 노티 경로를 탄다.
         // 표시용 현재값은 UserDefaults 동기 읽기 — 어댑터가 캐시와 함께 갱신하므로 어긋나지 않는다.
