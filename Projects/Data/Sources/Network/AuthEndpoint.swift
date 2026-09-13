@@ -8,17 +8,20 @@ import Foundation
 enum AuthEndpoint: Endpoint {
     case check(SocialCredential)
     case login(SocialCredential, fcmToken: String?)
+    case signUp(SocialCredential, SignUpRequestDTO)
 
     var path: String {
         switch self {
         case .check: "/auth/check"
         case .login: "/auth/login"
+        case .signUp: "/auth/sign-up"
         }
     }
 
     var method: HTTPMethod {
         switch self {
         case .check, .login: .get
+        case .signUp: .post
         }
     }
 
@@ -26,6 +29,11 @@ enum AuthEndpoint: Endpoint {
         switch self {
         case let .check(credential), let .login(credential, _):
             ["Authorization": "Bearer \(credential.accessToken)"]
+        case let .signUp(credential, _):
+            [
+                "Authorization": "Bearer \(credential.accessToken)",
+                "Content-Type": "application/json",
+            ]
         }
     }
 
@@ -39,6 +47,14 @@ enum AuthEndpoint: Endpoint {
                 // 레거시 실측: FCM 토큰 부재 시 빈 문자열 전송.
                 URLQueryItem(name: "fcmToken", value: fcmToken ?? ""),
             ]
+        case .signUp: []
+        }
+    }
+
+    var body: Data? {
+        switch self {
+        case .check, .login: nil
+        case let .signUp(_, request): try? JSONEncoder().encode(request)
         }
     }
 }

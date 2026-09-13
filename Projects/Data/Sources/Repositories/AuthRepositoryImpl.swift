@@ -23,4 +23,26 @@ public struct AuthRepositoryImpl: AuthRepository {
         )
         return try dto.toEntity()
     }
+
+    public func signUp(
+        credential: SocialCredential,
+        form: SignUpForm,
+        fcmToken: String?
+    ) async throws -> LoginSession {
+        let request = SignUpRequestDTO(
+            provider: credential.provider.serverCode,
+            userName: form.userName,
+            address: form.address,
+            lat: form.coordinate.latitude,
+            lon: form.coordinate.longitude,
+            alertFrequencies: form.alertFrequencies,
+            // 레거시 실측: FCM 토큰 부재 시 빈 문자열 전송.
+            fcmToken: fcmToken ?? ""
+        )
+        // 응답 계약은 /auth/login과 동일 — LoginResponseDTO 재사용.
+        let dto: LoginResponseDTO = try await networkClient.requestEnveloped(
+            AuthEndpoint.signUp(credential, request)
+        )
+        return try dto.toEntity()
+    }
 }

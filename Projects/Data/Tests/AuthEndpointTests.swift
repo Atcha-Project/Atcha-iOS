@@ -50,4 +50,39 @@ struct AuthEndpointTests {
             URLQueryItem(name: "fcmToken", value: ""),
         ])
     }
+
+    /// 레거시 실측 계약 핀: sign-up도 소셜 토큰이 Bearer로, 필드는 JSON body로.
+    @Test
+    func signUp_sendsSocialBearerAndJSONBody() throws {
+        let request = SignUpRequestDTO(
+            provider: 0,
+            userName: "",
+            address: "서울 어딘가 1-2",
+            lat: 37.5,
+            lon: 127.0,
+            alertFrequencies: [1, 10],
+            fcmToken: ""
+        )
+        let endpoint = AuthEndpoint.signUp(kakaoCredential, request)
+
+        #expect(endpoint.path == "/auth/sign-up")
+        #expect(endpoint.method == .post)
+        #expect(endpoint.headers == [
+            "Authorization": "Bearer KAKAO_AT",
+            "Content-Type": "application/json",
+        ])
+        #expect(endpoint.queryItems.isEmpty)
+
+        let body = try #require(endpoint.body)
+        let json = try #require(
+            try JSONSerialization.jsonObject(with: body) as? [String: Any]
+        )
+        #expect(json["provider"] as? Int == 0)
+        #expect(json["userName"] as? String == "")
+        #expect(json["address"] as? String == "서울 어딘가 1-2")
+        #expect(json["lat"] as? Double == 37.5)
+        #expect(json["lon"] as? Double == 127.0)
+        #expect(json["alertFrequencies"] as? [Int] == [1, 10])
+        #expect(json["fcmToken"] as? String == "")
+    }
 }
