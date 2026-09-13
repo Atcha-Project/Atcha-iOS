@@ -54,6 +54,22 @@ public actor AuthSessionManager {
         try tokenStore.clear()
     }
 
+    /// Logout: best-effort server call (legacy special case — the *refresh*
+    /// token rides as Bearer), then local expiry either way. Offline or a
+    /// server failure must never trap the user in a session they asked to end.
+    public func signOut() async {
+        if let refreshToken = try? tokenStore.refreshToken() {
+            _ = try? await networkClient.data(for: LogoutEndpoint(refreshToken: refreshToken))
+        }
+        _ = expireSession()
+    }
+
+    /// Post-withdrawal cleanup: the server already revoked the tokens, so no
+    /// network call — just local expiry and the login-routing yield.
+    public func invalidateSession() {
+        _ = expireSession()
+    }
+
     /// Single entry point for 401 recovery: refresh, or declare the session
     /// dead (`AuthError.loginRequired` + a `sessionExpired` yield). Concurrent
     /// callers join the in-flight recovery instead of starting another.

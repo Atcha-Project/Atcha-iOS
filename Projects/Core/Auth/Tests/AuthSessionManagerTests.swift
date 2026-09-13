@@ -56,6 +56,67 @@ struct AuthSessionManagerTests {
         #expect(manager.bootstrapState() == .loginRequired)
     }
 
+    // MARK: - signOut / invalidateSession
+
+    /// Pins the legacy-measured logout contract: POST /auth/logout with the
+    /// *refresh* token as the Bearer credential.
+    @Test
+    func signOut_sendsPostLogoutWithBearerRefreshHeader_thenClearsAndYields() async throws {
+        try tokenStore.save(TokenPair(accessToken: "A", refreshToken: "R"))
+        let (manager, network) = makeManager()
+
+        await manager.signOut()
+
+        let logouts = network.recordedCalls(to: "/auth/logout")
+        #expect(logouts.count == 1)
+        #expect(logouts.first?.method == .post)
+        #expect(logouts.first?.headers["Authorization"] == "Bearer R")
+        #expect(try tokenStore.accessToken() == nil)
+        #expect(try tokenStore.refreshToken() == nil)
+
+        var iterator = manager.sessionExpired.makeAsyncIterator()
+        #expect(await iterator.next() != nil)
+    }
+
+    /// Best-effort: a server failure must not trap the user in the session.
+    @Test
+    func signOut_serverFailure_stillClearsTokensAndYields() async throws {
+        try tokenStore.save(TokenPair(accessToken: "A", refreshToken: "R"))
+        let (manager, _) = makeManager(handler: { _, _ in
+            throw NetworkError.offline(underlying: URLError(.notConnectedToInternet))
+        })
+
+        await manager.signOut()
+
+        #expect(try tokenStore.accessToken() == nil)
+        var iterator = manager.sessionExpired.makeAsyncIterator()
+        #expect(await iterator.next() != nil)
+    }
+
+    /// No refresh token → nothing to revoke server-side; local expiry only.
+    @Test
+    func signOut_withoutRefreshToken_skipsServerCall() async throws {
+        let (manager, network) = makeManager()
+
+        await manager.signOut()
+
+        #expect(network.recorded.isEmpty)
+    }
+
+    /// Post-withdrawal path: no network call, local expiry + yield only.
+    @Test
+    func invalidateSession_clearsTokensAndYieldsWithoutNetwork() async throws {
+        try tokenStore.save(TokenPair(accessToken: "A", refreshToken: "R"))
+        let (manager, network) = makeManager()
+
+        await manager.invalidateSession()
+
+        #expect(network.recorded.isEmpty)
+        #expect(try tokenStore.accessToken() == nil)
+        var iterator = manager.sessionExpired.makeAsyncIterator()
+        #expect(await iterator.next() != nil)
+    }
+
     // MARK: - recoverSession
 
     /// Pins the legacy-measured reissue contract: GET /auth/reissue with the
