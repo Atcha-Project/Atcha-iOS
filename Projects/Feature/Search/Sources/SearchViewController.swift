@@ -16,8 +16,9 @@ final class SearchViewController: UIViewController {
     private let navigationBar = DSNavigationBar(style: .backOnly)
     private let departureField = DSTextField(placeholder: "출발지 입력")
     private let arrivalField = DSTextField(placeholder: "도착지 입력", showsAccentDot: true)
-    private let fieldsStack = UIStackView()
-    private let separator = DSSeparator(axis: .horizontal)
+    // 홈의 필드 카드와 같은 그룹 카드 — DSTextField bg가 카드와 같은 surface라
+    // 시각적으로 융합되고, 포커스 라임 보더가 카드 안에서 그대로 동작한다.
+    private lazy var fieldCard = DSGroupedCard(rows: [departureField, arrivalField])
     private let tableView = UITableView(frame: .zero, style: .plain)
     private let emptyState = DSEmptyState(content: .init(title: ""))
     private let activityIndicator = UIActivityIndicatorView(style: .medium)
@@ -25,6 +26,9 @@ final class SearchViewController: UIViewController {
     private var rows: [Row] = []
     private var showsRecentHeader = false
     private var focusedField: SearchViewModel.Field?
+
+    // 진입 페이드는 최초 1회만 — 홈과 같은 규약.
+    private var hasPlayedEntry = false
 
     init(viewModel: SearchViewModel) {
         self.viewModel = viewModel
@@ -47,6 +51,7 @@ final class SearchViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(true, animated: animated)
+        prepareEntryTransitionIfNeeded()
     }
 
     // 숨긴 내비바는 스와이프 백 제스처를 죽인다 — delegate를 잡아 되살린다(Phase 17).
@@ -54,6 +59,32 @@ final class SearchViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         navigationController?.interactivePopGestureRecognizer?.delegate = self
+        playEntryTransitionIfNeeded()
+    }
+
+    // MARK: - 진입 페이드 (최초 1회)
+
+    private func prepareEntryTransitionIfNeeded() {
+        guard !hasPlayedEntry else { return }
+        let translation = UIAccessibility.isReduceMotionEnabled
+            ? CGAffineTransform.identity
+            : CGAffineTransform(translationX: 0, y: 8)
+        [fieldCard, tableView].forEach {
+            $0.alpha = 0
+            $0.transform = translation
+        }
+    }
+
+    private func playEntryTransitionIfNeeded() {
+        guard !hasPlayedEntry else { return }
+        hasPlayedEntry = true
+        UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseOut) { [weak self] in
+            guard let self else { return }
+            [fieldCard, tableView].forEach {
+                $0.alpha = 1
+                $0.transform = .identity
+            }
+        }
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -63,10 +94,6 @@ final class SearchViewController: UIViewController {
 
     private func configureUI() {
         view.backgroundColor = DSColor.Background.base
-
-        fieldsStack.axis = .vertical
-        fieldsStack.spacing = DSSpacing.sm
-        [departureField, arrivalField].forEach(fieldsStack.addArrangedSubview)
 
         tableView.backgroundColor = .clear
         tableView.separatorStyle = .none
@@ -83,23 +110,19 @@ final class SearchViewController: UIViewController {
 
         emptyState.isHidden = true
 
-        [navigationBar, fieldsStack, separator, tableView, emptyState, activityIndicator]
+        [navigationBar, fieldCard, tableView, emptyState, activityIndicator]
             .forEach(view.addSubview)
 
         navigationBar.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide)
             make.leading.trailing.equalToSuperview()
         }
-        fieldsStack.snp.makeConstraints { make in
+        fieldCard.snp.makeConstraints { make in
             make.top.equalTo(navigationBar.snp.bottom).offset(DSSpacing.xs)
             make.leading.trailing.equalToSuperview().inset(DSSpacing.md)
         }
-        separator.snp.makeConstraints { make in
-            make.top.equalTo(fieldsStack.snp.bottom).offset(DSSpacing.sm12)
-            make.leading.trailing.equalToSuperview()
-        }
         tableView.snp.makeConstraints { make in
-            make.top.equalTo(separator.snp.bottom)
+            make.top.equalTo(fieldCard.snp.bottom).offset(DSSpacing.sm12)
             make.leading.trailing.bottom.equalToSuperview()
         }
         // 빈 상태·스피너는 키보드 위 가시 영역의 중앙에 둔다(Phase 17) — 타이핑 중 뜨는
@@ -108,7 +131,9 @@ final class SearchViewController: UIViewController {
         let aboveKeyboardArea = UILayoutGuide()
         view.addLayoutGuide(aboveKeyboardArea)
         NSLayoutConstraint.activate([
-            aboveKeyboardArea.topAnchor.constraint(equalTo: separator.bottomAnchor),
+            aboveKeyboardArea.topAnchor.constraint(
+                equalTo: fieldCard.bottomAnchor, constant: DSSpacing.sm12
+            ),
             aboveKeyboardArea.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             aboveKeyboardArea.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             aboveKeyboardArea.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor),
@@ -401,6 +426,12 @@ private final class SearchRouteCardCell: UITableViewCell {
             make.leading.trailing.equalToSuperview().inset(DSSpacing.md)
             make.top.bottom.equalToSuperview().inset(DSSpacing.sm)
         }
+    }
+
+    // selectionStyle .none이라도 하이라이트 콜백은 온다 — 카드에 프레스 스케일만 준다.
+    override func setHighlighted(_ highlighted: Bool, animated: Bool) {
+        super.setHighlighted(highlighted, animated: animated)
+        DSPressEffect.setPressed(highlighted, on: card)
     }
 
     func configure(with content: DSRouteCard.Content) {

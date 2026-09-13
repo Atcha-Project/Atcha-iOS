@@ -59,22 +59,6 @@ final class ScriptedNetworkClient: NetworkClient {
     }
 }
 
-final class StubIssuer: AnonymousSessionIssuing {
-    private let result: Result<TokenPair, any Error>
-    private let callCount = Mutex<Int>(0)
-
-    init(result: Result<TokenPair, any Error>) {
-        self.result = result
-    }
-
-    var issueCallCount: Int { callCount.withLock { $0 } }
-
-    func issueSession() async throws -> TokenPair {
-        callCount.withLock { $0 += 1 }
-        return try result.get()
-    }
-}
-
 /// Deterministic concurrency gate: `wait()` suspends until `open()`; once
 /// opened, all current and future waiters pass immediately.
 final class AsyncGate: Sendable {

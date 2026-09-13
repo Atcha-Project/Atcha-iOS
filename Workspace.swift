@@ -4,6 +4,7 @@ let workspace = Workspace(
     name: "Atcha",
     projects: [
         "Projects/App",
+        "Projects/Feature/Auth",
         "Projects/Feature/Home",
         "Projects/Feature/Search",
         "Projects/Domain",
