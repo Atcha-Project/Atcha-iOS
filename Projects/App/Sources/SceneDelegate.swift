@@ -1,3 +1,4 @@
+import KakaoSDKAuth
 import UIKit
 
 final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
@@ -33,6 +34,12 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         #if DEV
         installDevChangeButton(in: window, container: container)
         #endif
+    }
+
+    /// 카카오톡 앱 로그인 리디렉션(kakao{KEY}:// 스킴) 복귀 처리 — 레거시 동일.
+    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+        guard let url = URLContexts.first?.url, AuthApi.isKakaoTalkLoginUrl(url) else { return }
+        _ = AuthController.handleOpenUrl(url: url)
     }
 
     #if DEV

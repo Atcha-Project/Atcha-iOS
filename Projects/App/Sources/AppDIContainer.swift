@@ -1,4 +1,6 @@
 import AtchaData
+import AuthFeature
+import AuthFeatureInterface
 import CoreAlarm
 import CoreAuth
 import CoreNetwork
@@ -14,6 +16,9 @@ import SearchFeatureInterface
 /// Presentation modules depend on Domain protocols only.
 final class AppDIContainer {
     private let networkClient: any NetworkClient
+    /// 데코레이터 미적용 클라이언트 — reissue(AuthSessionManager)와 소셜 Bearer를 실어야
+    /// 하는 로그인 API(AuthRepositoryImpl)만 쓴다.
+    private let plainNetworkClient: any NetworkClient
     let authSessionManager: AuthSessionManager
 
     // 알람 스택은 1회 생성해 공유한다 — AlarmSyncService(갱신 일원화)와
@@ -66,6 +71,7 @@ final class AppDIContainer {
             session: URLSession(configuration: sessionConfiguration)
         )
         #endif
+        self.plainNetworkClient = baseClient
         let sessionManager = AuthSessionManager(
             tokenStore: TokenStore(store: KeychainStore()),
             // The plain client, not the decorator — reissue must never recurse
@@ -141,6 +147,18 @@ final class AppDIContainer {
     func reattachOrphanLiveActivities() async {
         let snapshot = await alarmSessionSnapshotStore.load()
         await liveActivityAdapter.reattachOrphans(snapshot: snapshot, now: Date())
+    }
+
+    func makeAuthDIContainer() -> any AuthCoordinatorBuildable {
+        AuthDIContainer(
+            signInUseCase: DefaultSignInUseCase(
+                socialLoginService: SocialLoginAdapter(),
+                // plain client — 소셜 Bearer 보존 + 401이 세션 복구를 촉발하지 않게.
+                authRepository: AuthRepositoryImpl(networkClient: plainNetworkClient),
+                sessionStore: AuthSessionStoreAdapter(sessionManager: authSessionManager),
+                pushTokenProvider: FCMPushTokenAdapter()
+            )
+        )
     }
 
     func makeHomeDIContainer() -> any HomeCoordinatorBuildable {
