@@ -98,10 +98,6 @@ final class LoginViewController: UIViewController {
 
         kakaoButton.addTarget(self, action: #selector(didTapKakao), for: .touchUpInside)
         appleButton.addTarget(self, action: #selector(didTapApple), for: .touchUpInside)
-
-        #if DEV
-        setupDevSkipButton()
-        #endif
     }
 
     private func bindViewModel() {
@@ -122,14 +118,6 @@ final class LoginViewController: UIViewController {
 
     private func handle(_ event: LoginViewModel.Event) {
         switch event {
-        case .showSignUpNotice:
-            let alert = UIAlertController(
-                title: nil,
-                message: LoginViewModel.signUpNoticeMessage,
-                preferredStyle: .alert
-            )
-            alert.addAction(UIAlertAction(title: "확인", style: .default))
-            present(alert, animated: true)
         case let .showFailureToast(message):
             DSToast.show(message, in: view)
         }
@@ -142,28 +130,6 @@ final class LoginViewController: UIViewController {
     @objc private func didTapApple() {
         viewModel.appleTapped()
     }
-
-    #if DEV
-    /// 시뮬레이터 자동 검수용 우회 진입점 — 시트 레이아웃을 건드리지 않도록 dim 상단에 둔다.
-    private func setupDevSkipButton() {
-        let skipButton = UIButton(type: .system)
-        skipButton.setAttributedTitle(
-            DSTypography.caption1.attributed("DEV 건너뛰기", color: DSColor.Text.tertiary),
-            for: .normal
-        )
-        skipButton.accessibilityIdentifier = "login.devSkip"
-        view.addSubview(skipButton)
-        skipButton.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(DSSpacing.sm)
-            make.trailing.equalToSuperview().inset(DSSpacing.lg)
-        }
-        skipButton.addTarget(self, action: #selector(didTapDevSkip), for: .touchUpInside)
-    }
-
-    @objc private func didTapDevSkip() {
-        viewModel.devSkipTapped()
-    }
-    #endif
 
     @available(*, unavailable)
     required init?(coder: NSCoder) {

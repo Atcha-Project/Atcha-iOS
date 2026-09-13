@@ -7,16 +7,16 @@ import Testing
 private final class StubSignInUseCase: SignInUseCase {
     private(set) var executeCallCount = 0
     private(set) var providers: [SocialLoginProvider] = []
-    private var result: Result<SignInOutcome, any Error>
+    private var result: Result<Void, any Error>
     private let suspends: Bool
-    private var continuation: CheckedContinuation<SignInOutcome, any Error>?
+    private var continuation: CheckedContinuation<Void, any Error>?
 
-    init(result: Result<SignInOutcome, any Error> = .success(.success), suspends: Bool = false) {
+    init(result: Result<Void, any Error> = .success(()), suspends: Bool = false) {
         self.result = result
         self.suspends = suspends
     }
 
-    func execute(provider: SocialLoginProvider) async throws -> SignInOutcome {
+    func execute(provider: SocialLoginProvider) async throws {
         executeCallCount += 1
         providers.append(provider)
         if suspends {
@@ -25,8 +25,8 @@ private final class StubSignInUseCase: SignInUseCase {
         return try result.get()
     }
 
-    func resume(with outcome: SignInOutcome) {
-        continuation?.resume(returning: outcome)
+    func resumeSuccessfully() {
+        continuation?.resume(returning: ())
         continuation = nil
     }
 }
@@ -57,7 +57,7 @@ private struct StubError: Error {}
 struct LoginViewModelTests {
     @Test
     func kakaoTapped_success_callsOnAuthenticatedWithoutIdleFlicker() async {
-        let useCase = StubSignInUseCase(result: .success(.success))
+        let useCase = StubSignInUseCase()
         let sut = LoginViewModel(signInUseCase: useCase)
         let recorder = Recorder()
         recorder.attach(to: sut)
@@ -73,7 +73,7 @@ struct LoginViewModelTests {
 
     @Test
     func appleTapped_passesAppleProvider() async {
-        let useCase = StubSignInUseCase(result: .success(.success))
+        let useCase = StubSignInUseCase()
         let sut = LoginViewModel(signInUseCase: useCase)
         let recorder = Recorder()
         recorder.attach(to: sut)
@@ -82,20 +82,6 @@ struct LoginViewModelTests {
         await recorder.waitUntil { recorder.authenticatedCount == 1 }
 
         #expect(useCase.providers == [.apple])
-    }
-
-    @Test
-    func tapped_needsSignUp_returnsIdleAndEmitsNotice() async {
-        let useCase = StubSignInUseCase(result: .success(.needsSignUp))
-        let sut = LoginViewModel(signInUseCase: useCase)
-        let recorder = Recorder()
-        recorder.attach(to: sut)
-
-        sut.kakaoTapped()
-        await recorder.waitUntil { recorder.states.last == .idle }
-
-        #expect(recorder.events == [.showSignUpNotice])
-        #expect(recorder.authenticatedCount == 0)
     }
 
     @Test
@@ -141,7 +127,7 @@ struct LoginViewModelTests {
         #expect(useCase.executeCallCount == 1)
         #expect(recorder.states == [.loading(.kakao)])
 
-        useCase.resume(with: .success)
+        useCase.resumeSuccessfully()
         await recorder.waitUntil { recorder.authenticatedCount == 1 }
     }
 }

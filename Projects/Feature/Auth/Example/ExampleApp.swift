@@ -78,7 +78,7 @@ private final class LauncherViewController: UIViewController {
         title = "AuthFeature Example"
 
         let startButton = UIButton(type: .system)
-        startButton.setTitle("로그인 시트 열기 (미가입→실패→성공 순환)", for: .normal)
+        startButton.setTitle("로그인 시트 열기 (실패→성공 순환)", for: .normal)
         startButton.addAction(UIAction { [weak self] _ in self?.onStart?() }, for: .touchUpInside)
         startButton.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(startButton)
@@ -89,7 +89,8 @@ private final class LauncherViewController: UIViewController {
     }
 }
 
-/// 탭할 때마다 미가입 안내 → 실패 토스트 → 성공을 순환 — 세 UX를 모두 시연한다.
+/// 탭할 때마다 실패 토스트 → 성공을 순환 — 두 UX를 모두 시연한다
+/// (미가입은 UseCase 내부에서 자동 가입으로 흡수돼 화면 분기가 없다).
 /// (스텁이 Tests와 중복되는 것은 의도된 트레이드오프 — 규약 참고.)
 @MainActor
 private final class PreviewSignInUseCase: SignInUseCase {
@@ -97,13 +98,9 @@ private final class PreviewSignInUseCase: SignInUseCase {
 
     private struct PreviewError: Error {}
 
-    func execute(provider: SocialLoginProvider) async throws -> SignInOutcome {
+    func execute(provider: SocialLoginProvider) async throws {
         try? await Task.sleep(for: .seconds(1))
         defer { attempt += 1 }
-        switch attempt % 3 {
-        case 0: return .needsSignUp
-        case 1: throw PreviewError()
-        default: return .success
-        }
+        if attempt % 2 == 0 { throw PreviewError() }
     }
 }
