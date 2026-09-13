@@ -13,23 +13,22 @@ struct AuthenticatedNetworkClientTests {
     /// and the manager's reissue transport.
     private func makeSUT(
         handler: @escaping @Sendable (any Endpoint, Int) async throws -> Data,
-        issuer: StubIssuer = StubIssuer(result: .failure(AuthError.issuerNotConfigured)),
         publicPathSuffixes: [String] = ["/auth/reissue"]
-    ) -> (sut: AuthenticatedNetworkClient, network: ScriptedNetworkClient, issuer: StubIssuer) {
+    ) -> (sut: AuthenticatedNetworkClient, network: ScriptedNetworkClient) {
         let network = ScriptedNetworkClient(handler: handler)
-        let manager = AuthSessionManager(tokenStore: tokenStore, networkClient: network, issuer: issuer)
+        let manager = AuthSessionManager(tokenStore: tokenStore, networkClient: network)
         let sut = AuthenticatedNetworkClient(
             base: network,
             sessionManager: manager,
             publicPathSuffixes: publicPathSuffixes
         )
-        return (sut, network, issuer)
+        return (sut, network)
     }
 
     @Test
     func dataFor_withStoredAccessToken_attachesBearerHeader() async throws {
         try tokenStore.save(TokenPair(accessToken: "A", refreshToken: "R"))
-        let (sut, network, _) = makeSUT(handler: { _, _ in Data("ok".utf8) })
+        let (sut, network) = makeSUT(handler: { _, _ in Data("ok".utf8) })
 
         let result = try await sut.data(for: TestEndpoint())
 
@@ -39,7 +38,7 @@ struct AuthenticatedNetworkClientTests {
 
     @Test
     func dataFor_withoutToken_sendsWithoutAuthorizationHeader() async throws {
-        let (sut, network, _) = makeSUT(handler: { _, _ in Data() })
+        let (sut, network) = makeSUT(handler: { _, _ in Data() })
 
         _ = try await sut.data(for: TestEndpoint())
 
@@ -49,7 +48,7 @@ struct AuthenticatedNetworkClientTests {
     @Test
     func dataFor_publicPathSuffix_skipsAuthorizationHeader() async throws {
         try tokenStore.save(TokenPair(accessToken: "A", refreshToken: "R"))
-        let (sut, network, _) = makeSUT(
+        let (sut, network) = makeSUT(
             handler: { _, _ in Data() },
             publicPathSuffixes: ["/public/thing"]
         )
@@ -62,7 +61,7 @@ struct AuthenticatedNetworkClientTests {
     @Test
     func dataFor_on401_refreshesAndRetriesWithNewToken() async throws {
         try tokenStore.save(TokenPair(accessToken: "OLD", refreshToken: "R"))
-        let (sut, network, _) = makeSUT(handler: { endpoint, index in
+        let (sut, network) = makeSUT(handler: { endpoint, index in
             switch (endpoint.path, index) {
             case ("/things", 0): throw unauthorizedError()
             case ("/things", _): return Data("ok".utf8)
@@ -82,7 +81,7 @@ struct AuthenticatedNetworkClientTests {
     @Test
     func dataFor_on401RetryAlso401_throwsWithoutSecondRefresh() async throws {
         try tokenStore.save(TokenPair(accessToken: "OLD", refreshToken: "R"))
-        let (sut, network, _) = makeSUT(handler: { endpoint, _ in
+        let (sut, network) = makeSUT(handler: { endpoint, _ in
             if endpoint.path == "/things" { throw unauthorizedError() }
             return reissueSuccessBody(access: "NEW", refresh: "R2")
         })
@@ -100,7 +99,7 @@ struct AuthenticatedNetworkClientTests {
     @Test
     func dataFor_on401RecoveryFails_rethrowsOriginalUnauthorized() async throws {
         let marker = Data("original-401".utf8)
-        let (sut, network, _) = makeSUT(handler: { _, _ in
+        let (sut, network) = makeSUT(handler: { _, _ in
             throw NetworkError.unacceptableStatus(code: 401, data: marker)
         })
 
@@ -118,32 +117,30 @@ struct AuthenticatedNetworkClientTests {
         #expect(network.recordedCalls(to: "/things").count == 1)
     }
 
+    /// A definitively rejected refresh kills the session: the decorator
+    /// rethrows the original 401 without an unauthenticated retry, and the
+    /// dead tokens are cleared.
     @Test
-    func dataFor_401RefreshFailsIssuerSucceeds_retriesWithIssuedToken() async throws {
+    func dataFor_401RefreshRejected_rethrowsOriginal401AndClearsTokens() async throws {
         try tokenStore.save(TokenPair(accessToken: "OLD", refreshToken: "DEAD"))
-        let issued = TokenPair(accessToken: "ISSUED", refreshToken: "R2")
-        let (sut, network, issuer) = makeSUT(
-            handler: { endpoint, index in
-                switch (endpoint.path, index) {
-                case ("/things", 0): throw unauthorizedError()
-                case ("/things", _): return Data("ok".utf8)
-                default: throw unauthorizedError() // reissue rejected — refresh is dead
-                }
-            },
-            issuer: StubIssuer(result: .success(issued))
-        )
+        let (sut, network) = makeSUT(handler: { endpoint, _ in
+            if endpoint.path == "/things" { throw unauthorizedError() }
+            return reissueRejectedBody(responseCode: "AUTH_401")
+        })
 
-        let result = try await sut.data(for: TestEndpoint())
+        await #expect(throws: NetworkError.self) {
+            try await sut.data(for: TestEndpoint())
+        }
 
-        #expect(result == Data("ok".utf8))
-        #expect(issuer.issueCallCount == 1)
-        #expect(network.recordedCalls(to: "/things").last?.headers["Authorization"] == "Bearer ISSUED")
+        #expect(network.recordedCalls(to: "/things").count == 1)
+        #expect(network.recordedCalls(to: "/auth/reissue").count == 1)
+        #expect(try tokenStore.accessToken() == nil)
     }
 
     @Test
     func dataFor_non401Status_propagatesWithoutRecovery() async throws {
         try tokenStore.save(TokenPair(accessToken: "A", refreshToken: "R"))
-        let (sut, network, _) = makeSUT(handler: { _, _ in
+        let (sut, network) = makeSUT(handler: { _, _ in
             throw NetworkError.unacceptableStatus(code: 500, data: Data())
         })
 
@@ -161,7 +158,7 @@ struct AuthenticatedNetworkClientTests {
             let value: String
         }
         try tokenStore.save(TokenPair(accessToken: "OLD", refreshToken: "R"))
-        let (sut, network, _) = makeSUT(handler: { endpoint, index in
+        let (sut, network) = makeSUT(handler: { endpoint, index in
             switch (endpoint.path, index) {
             case ("/things", 0): throw unauthorizedError()
             case ("/things", _): return Data(#"{"value": "hi"}"#.utf8)
@@ -178,7 +175,7 @@ struct AuthenticatedNetworkClientTests {
     @Test
     func dataFor_endpointWithCustomHeaders_preservesThemAndAddsBearer() async throws {
         try tokenStore.save(TokenPair(accessToken: "A", refreshToken: "R"))
-        let (sut, network, _) = makeSUT(handler: { _, _ in Data() })
+        let (sut, network) = makeSUT(handler: { _, _ in Data() })
 
         _ = try await sut.data(for: TestEndpoint(headers: ["X-Custom": "1"]))
 
@@ -194,7 +191,7 @@ struct AuthenticatedNetworkClientTests {
         try tokenStore.save(TokenPair(accessToken: "OLD", refreshToken: "R"))
         let reissueReached = AsyncGate()
         let reissueRelease = AsyncGate()
-        let (sut, network, _) = makeSUT(handler: { endpoint, _ in
+        let (sut, network) = makeSUT(handler: { endpoint, _ in
             if endpoint.path == "/auth/reissue" {
                 reissueReached.open()
                 await reissueRelease.wait()

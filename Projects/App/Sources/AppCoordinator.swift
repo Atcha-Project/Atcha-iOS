@@ -10,15 +10,10 @@ final class AppCoordinator: Coordinator, CoordinatorFinishDelegate {
     private let container: AppDIContainer
 
     private weak var splashViewController: SplashViewController?
-    private var bootstrapTask: Task<Void, Never>?
 
     init(navigationController: UINavigationController, container: AppDIContainer) {
         self.navigationController = navigationController
         self.container = container
-    }
-
-    deinit {
-        bootstrapTask?.cancel()
     }
 
     func start() {
@@ -30,23 +25,16 @@ final class AppCoordinator: Coordinator, CoordinatorFinishDelegate {
     }
 
     private func bootstrap() {
-        bootstrapTask?.cancel()
         splashViewController?.showLoading()
-        bootstrapTask = Task { [weak self] in
-            guard let self else { return }
-            do {
-                try await self.container.authSessionManager.bootstrap()
-                guard !Task.isCancelled else { return }
-                self.startHome()
-                // 앱 시작 동기화 + 포그라운드 관찰 시작 — 세션이 준비된 뒤에만.
-                self.container.alarmSyncService.activate()
-            } catch {
-                guard !Task.isCancelled else { return }
-                // 원인별 문구 분기(Phase 16) — 오프라인만 구분, 그 외는 일시 장애 안내.
-                self.splashViewController?.showRetry(
-                    message: BootstrapFailureMessage.text(for: error)
-                )
-            }
+        // 세션 판정은 동기(키체인 존재 여부) — 토큰 유효성은 첫 인증 요청이 증명한다.
+        switch container.authSessionManager.bootstrapState() {
+        case .active:
+            startHome()
+            // 앱 시작 동기화 + 포그라운드 관찰 시작 — 세션이 준비된 뒤에만.
+            container.alarmSyncService.activate()
+        case .loginRequired:
+            // 임시(커밋 1): AuthFeature 통합 커밋에서 로그인 시트 present로 교체.
+            splashViewController?.showRetry(message: "로그인이 필요해요")
         }
     }
 

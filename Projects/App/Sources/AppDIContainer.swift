@@ -70,10 +70,7 @@ final class AppDIContainer {
             tokenStore: TokenStore(store: KeychainStore()),
             // The plain client, not the decorator — reissue must never recurse
             // into the 401-recovery path.
-            networkClient: baseClient,
-            // 미확정 입력 #2: swap in the real issuer here once the anonymous
-            // issuance endpoint spec is confirmed.
-            issuer: UnconfiguredAnonymousSessionIssuer()
+            networkClient: baseClient
         )
         self.authSessionManager = sessionManager
         let networkClient = AuthenticatedNetworkClient(
