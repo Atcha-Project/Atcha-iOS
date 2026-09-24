@@ -11,7 +11,7 @@ final class AlarmSessionLifecycleService {
     private let liveActivity: any LastTrainDepartureEnding
     /// 확인 기록 영속화 (Phase 14) — 강제 종료·재실행 후에도 남아 재시작 판정
     /// (확인된 세션 재시작 금지)의 재료가 된다.
-    private let snapshotStore: any AlarmSessionSnapshotStore
+    private let sessionStore: AlarmSessionStore
     private static let logger = Logger(
         subsystem: "com.atcha.iOS.v2", category: "SessionLifecycle"
     )
@@ -21,10 +21,10 @@ final class AlarmSessionLifecycleService {
 
     init(
         liveActivity: any LastTrainDepartureEnding,
-        snapshotStore: any AlarmSessionSnapshotStore
+        sessionStore: AlarmSessionStore
     ) {
         self.liveActivity = liveActivity
-        self.snapshotStore = snapshotStore
+        self.sessionStore = sessionStore
     }
 
     /// 알람 "확인" 탭(stopIntent 실행) — ① 확인 기록(스냅샷 영속화) ② LA departed 전환
@@ -37,9 +37,7 @@ final class AlarmSessionLifecycleService {
         isAcknowledged = true
         // 세션 스냅샷이 있을 때만 기록한다 — 스냅샷 없는 확인(이론상 경합)은 남길 곳이 없고,
         // 그 경우의 정리는 wake 시점 리컨실이 맡는다.
-        if let snapshot = await snapshotStore.load() {
-            await snapshotStore.save(snapshot.updating(acknowledged: true))
-        }
+        await sessionStore.acknowledge()
         await liveActivity.endAsDeparted()
     }
 }

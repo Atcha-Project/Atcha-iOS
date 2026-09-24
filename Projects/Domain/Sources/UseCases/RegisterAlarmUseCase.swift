@@ -14,8 +14,8 @@ public struct DefaultRegisterAlarmUseCase: RegisterAlarmUseCase {
     private let activityPort: (any LastTrainActivityPort)?
     /// 로컬 노티 포트 — nil이면 알림 권한 요청 없이 동작한다(Example·기존 콜사이트 호환).
     private let notificationPort: (any LocalNotificationPort)?
-    /// 세션 스냅샷(Phase 14 재실행 브리지) — nil이면 영속화 없이 동작한다(Example 호환).
-    private let snapshotStore: (any AlarmSessionSnapshotStore)?
+    /// 세션 영속화 — nil이면 저장 없이 동작한다(Example 호환).
+    private let sessionStore: (any AlarmSessionStoring)?
     private let now: @Sendable () -> Date
 
     public init(
@@ -23,14 +23,14 @@ public struct DefaultRegisterAlarmUseCase: RegisterAlarmUseCase {
         scheduler: any AlarmScheduler,
         activityPort: (any LastTrainActivityPort)? = nil,
         notificationPort: (any LocalNotificationPort)? = nil,
-        snapshotStore: (any AlarmSessionSnapshotStore)? = nil,
+        sessionStore: (any AlarmSessionStoring)? = nil,
         now: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.repository = repository
         self.scheduler = scheduler
         self.activityPort = activityPort
         self.notificationPort = notificationPort
-        self.snapshotStore = snapshotStore
+        self.sessionStore = sessionStore
         self.now = now
     }
 
@@ -69,13 +69,14 @@ public struct DefaultRegisterAlarmUseCase: RegisterAlarmUseCase {
         // **알람이 도보 시간만큼 늦게 울린다**(도보 3분이면 3분 늦음).
         // 저장은 throws가 아니라 실패를 흡수하므로 이 순서가 등록을 막지 않는다.
         // syncedAt = 등록 시각(Phase 16) — 서버가 방금 이 값을 받아들였으므로 확인이다.
-        await snapshotStore?.save(AlarmSessionSnapshot(
-            info: session,
-            firstWalkSeconds: route.firstWalkSectionSeconds,
-            routeDisplayName: route.sessionDisplayName,
-            transportMode: route.boardingLeg?.mode,
-            acknowledged: false,
-            expired: false,
+        await sessionStore?.saveSession(AlarmSession(
+            server: session,
+            local: .init(
+                firstWalkSeconds: route.firstWalkSectionSeconds,
+                routeDisplayName: route.sessionDisplayName,
+                transportMode: route.boardingLeg?.mode
+            ),
+            lifecycle: .active,
             syncedAt: now()
         ))
         // 단일 알람 정책: 서버 등록이 성공한 뒤에만 로컬 알람을 교체한다.

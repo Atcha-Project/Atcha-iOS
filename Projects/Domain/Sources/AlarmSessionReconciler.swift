@@ -53,6 +53,17 @@ public enum AlarmSessionReconciler {
         }
     }
 
+    /// 시계 틱 전용 진입점 — 서버 왕복 없이 **시간 경과만으로** 세션이 죽었는지 본다.
+    ///
+    /// 별도 진입점을 두는 이유: 이 판정이 없으면 앱이 켜져 있는 동안 출발 시각이
+    /// 지나도 아무도 알아채지 못한다. 이전에는 홈 ViewModel의 배너 타이머가 이걸
+    /// 겸하면서 **화면이 세션을 끝내는** 구조였고, 그게 만료 판정이 여러 곳에 흩어진
+    /// 원인 중 하나였다.
+    public static func tick(current: AlarmSession?, now: Date) -> Outcome {
+        guard let session = current, !session.isEnded else { return .ignoredStaleEcho }
+        return expiryOutcome(for: session, now: now) ?? .refreshed(session)
+    }
+
     // MARK: -
 
     private static func reconcile(
@@ -78,6 +89,12 @@ public enum AlarmSessionReconciler {
         // 서버가 출발 시각을 안 줬다 — 세션이 서버에서 사라진 것으로 본다.
         guard info.departureTime != nil else { return .ended }
 
+        // **만료 판정은 진입 시점 세션(`session`)으로 한다.** 서버가 방금 준 시각이
+        // 과거라는 사실은 만료가 아니라 "막차가 지나갔다"는 **변경 판정(missed)의
+        // 재료**다 — 조용히 세션을 끝내면 LA가 종료되고 '막차가 지나갔어요' 알림이
+        // 나가지 않아 사용자가 인지 기회를 잃는다.
+        guard session.hasPassedDeparture(now: now) else { return .refreshed(merged) }
+        // 보유 세션이 만료 상태였다면, 서버가 미래 시각을 줄 때만 되살린다(서버 우선).
         return expiryOutcome(for: merged, now: now) ?? .refreshed(merged)
     }
 

@@ -138,3 +138,11 @@ public extension AlarmSession.LocalFacts {
         .init(firstWalkSeconds: nil, routeDisplayName: "", transportMode: nil)
     }
 }
+
+/// 세션 영속화 포트 — 구현(저장 백엔드)은 App에 둔다.
+/// 디코딩 실패는 구현이 nil로 무해화한다(자가치유 — 다음 save가 덮어쓴다).
+public protocol AlarmSessionStoring: Sendable {
+    func loadSession() async -> AlarmSession?
+    func saveSession(_ session: AlarmSession) async
+    func clearSession() async
+}

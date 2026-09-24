@@ -36,8 +36,12 @@ final class AppDIContainer {
     private let liveActivityAdapter: LastTrainLiveActivityAdapter
     /// 세션 스냅샷(Phase 14 재실행 브리지) — 등록/취소/refresh UseCase·수명 서비스·
     /// 동기화 서비스가 같은 저장소를 봐야 한다(1회 생성 공유).
-    private let alarmSessionSnapshotStore: any AlarmSessionSnapshotStore
+    /// 알람 세션의 단일 소유자 — 동기화·수명·정리·등록/취소 UseCase가 같은
+    /// 인스턴스를 봐야 한다(actor 격리는 인스턴스 단위).
+    let alarmSessionStore: AlarmSessionStore
     let alarmSyncService: AlarmSyncService
+    /// 변경 표출 — 홈의 변경 스트림(`AlarmChangeEvents`) 제공자.
+    let alarmChangePresenter: AlarmChangePresenter
     /// Phase 13 발화 이후 세션 수명 — stopIntent(AlarmAcknowledgeIntent)가 조합 루트를
     /// 거쳐 도달하는 지점. AppDelegate 경유로 인텐트 perform()이 접근한다.
     let alarmSessionLifecycle: AlarmSessionLifecycleService
@@ -112,36 +116,41 @@ final class AppDIContainer {
         let liveActivityAdapter = LastTrainLiveActivityAdapter()
         self.liveActivityAdapter = liveActivityAdapter
         self.liveActivityPort = liveActivityAdapter
-        let snapshotStore = AlarmSessionSnapshotStoreAdapter()
-        self.alarmSessionSnapshotStore = snapshotStore
+        let sessionStore = AlarmSessionStore(store: UserDefaultsKeyValueStore())
+        self.alarmSessionStore = sessionStore
         self.alarmSessionLifecycle = AlarmSessionLifecycleService(
             liveActivity: liveActivityAdapter,
-            snapshotStore: snapshotStore
+            sessionStore: sessionStore
         )
         let localNotificationAdapter = LocalNotificationAdapter()
         self.localNotificationPort = localNotificationAdapter
-        self.alarmSyncService = AlarmSyncService(
-            refreshAlarmUseCase: DefaultRefreshAlarmUseCase(
-                repository: alarmRepository,
-                scheduler: alarmScheduler,
-                // refresh 응답에는 도보 정보가 없다 — 등록 시점 스냅샷이 도보 초의 출처.
-                snapshotStore: snapshotStore
-            ),
+        // 변경 표출과 트리거 수집을 나눈다 — 셋(세션·표출·트리거)이 서로를 알 필요가 없다.
+        let presenter = AlarmChangePresenter(
             evaluateChangeUseCase: DefaultEvaluateAlarmChangeUseCase(),
             liveActivity: liveActivityAdapter,
             localNotification: localNotificationAdapter,
             alarmScheduler: alarmScheduler,
-            snapshotStore: snapshotStore,
+            sessionStore: sessionStore
+        )
+        self.alarmChangePresenter = presenter
+        self.alarmSyncService = AlarmSyncService(
+            // 도보 초는 호출자가 세션으로 넘긴다 — refresh 응답에 도보 정보가 없다.
+            refreshAlarmUseCase: DefaultRefreshAlarmUseCase(
+                repository: alarmRepository,
+                scheduler: alarmScheduler
+            ),
+            presenter: presenter,
+            sessionStore: sessionStore,
             sessionRestorer: liveActivityAdapter
         )
     }
 
     /// 부트스트랩 직후 1회(AppDelegate) — 프로세스가 죽는 사이 잠금화면에 남은 고아 LA를
-    /// 스냅샷과 대조해 재부착하거나 정리한다(Phase 14). 인증·네트워크와 무관한 로컬
+    /// 세션 기록과 대조해 재부착하거나 정리한다(Phase 14). 인증·네트워크와 무관한 로컬
     /// 리컨실이라 앱 시작 최전선에서 수행한다(부트스트랩 실패로 고아가 방치되지 않게).
     func reattachOrphanLiveActivities() async {
-        let snapshot = await alarmSessionSnapshotStore.load()
-        await liveActivityAdapter.reattachOrphans(snapshot: snapshot, now: Date())
+        let session = await alarmSessionStore.loadSession()
+        await liveActivityAdapter.reattachOrphans(session: session, now: Date())
     }
 
     /// 게스트 부트스트랩(서버 계약: POST /auth/guest) — 앱 시작 시 토큰이 없으면 이걸로 받는다.
@@ -171,7 +180,7 @@ final class AppDIContainer {
             alarmRepository: alarmRepository,
             scheduler: alarmScheduler,
             activityPort: liveActivityPort,
-            snapshotStore: alarmSessionSnapshotStore,
+            sessionStore: alarmSessionStore,
             syncService: alarmSyncService
         )
     }
@@ -259,16 +268,17 @@ final class AppDIContainer {
                 // 알림 권한 요청의 유일한 시점(등록 성공 직후) — UseCase 내부 훅이 호출한다.
                 notificationPort: localNotificationPort,
                 // 등록 성공 = 스냅샷 저장 시점(Phase 14).
-                snapshotStore: alarmSessionSnapshotStore
+                sessionStore: alarmSessionStore
             ),
             cancelAlarmUseCase: DefaultCancelAlarmUseCase(
                 repository: alarmRepository,
                 scheduler: alarmScheduler,
                 activityPort: liveActivityPort,
-                snapshotStore: alarmSessionSnapshotStore
+                sessionStore: alarmSessionStore
             ),
-            observeAlarmUseCase: DefaultObserveAlarmUseCase(events: alarmSyncService),
-            observeAlarmChangeUseCase: DefaultObserveAlarmChangeUseCase(events: alarmSyncService),
+            // 세션 스트림은 소유자(Store)가 제공한다 — AlarmSyncService는 사건 채널만.
+            observeAlarmUseCase: DefaultObserveAlarmUseCase(events: alarmSessionStore),
+            observeAlarmChangeUseCase: DefaultObserveAlarmChangeUseCase(events: alarmChangePresenter),
             // 홈 pull-to-refresh(Phase 16) — 4번째 트리거도 같은 동기화 한 곳으로 합류한다.
             requestAlarmSyncUseCase: DefaultRequestAlarmSyncUseCase(requesting: alarmSyncService),
             // 재실행 카드 복원(Phase 14) — 기존 미사용 자산(detail 엔드포인트) 재활용.

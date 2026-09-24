@@ -109,7 +109,6 @@ final class HomeViewModel {
     private let searchLastRoutesUseCase: any SearchLastRoutesUseCase
     private let recentSearchesUseCase: any RecentSearchesUseCase
     private let now: @Sendable () -> Date
-    private let bannerTickInterval: Duration
 
     private var selectedRoute: LastRoute?
     /// 칩의 원본 도착지(Phase 18) — 표시는 문자열(State), 재검색은 이 Place가 한다.
@@ -123,7 +122,6 @@ final class HomeViewModel {
     private var alarmTask: Task<Void, Never>?
     private var observeTask: Task<Void, Never>?
     private var changeTask: Task<Void, Never>?
-    private var bannerTask: Task<Void, Never>?
     private var restoreCardTask: Task<Void, Never>?
     private var refreshTask: Task<Void, Never>?
     private var chipTask: Task<Void, Never>?
@@ -142,8 +140,7 @@ final class HomeViewModel {
         getLastRouteDetailUseCase: any GetLastRouteDetailUseCase,
         searchLastRoutesUseCase: any SearchLastRoutesUseCase,
         recentSearchesUseCase: any RecentSearchesUseCase,
-        now: @escaping @Sendable () -> Date = { Date() },
-        bannerTickInterval: Duration = .seconds(60)
+        now: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.getCurrentLocationUseCase = getCurrentLocationUseCase
         self.reverseGeocodeUseCase = reverseGeocodeUseCase
@@ -156,7 +153,6 @@ final class HomeViewModel {
         self.searchLastRoutesUseCase = searchLastRoutesUseCase
         self.recentSearchesUseCase = recentSearchesUseCase
         self.now = now
-        self.bannerTickInterval = bannerTickInterval
     }
 
     deinit {
@@ -164,7 +160,6 @@ final class HomeViewModel {
         alarmTask?.cancel()
         observeTask?.cancel()
         changeTask?.cancel()
-        bannerTask?.cancel()
         restoreCardTask?.cancel()
         refreshTask?.cancel()
         chipTask?.cancel()
@@ -249,7 +244,6 @@ final class HomeViewModel {
             registeredRouteId: registeredRouteId
         )
         state = newState
-        bannerTask?.cancel()
         promoteChipDestination(arrival)
     }
 
@@ -326,7 +320,7 @@ final class HomeViewModel {
                 self.state.isAlarmBusy = false
                 self.refreshAlarmButton()
                 self.refreshFreshness()
-                self.startBannerTimer(
+                self.renderBanner(
                     departure: route.departureTime,
                     firstWalkSeconds: route.firstWalkSectionSeconds
                 )
@@ -360,7 +354,6 @@ final class HomeViewModel {
             do {
                 try await useCase.execute(lastRouteId: routeId)
                 guard !Task.isCancelled, let self else { return }
-                self.bannerTask?.cancel()
                 self.registeredRouteId = nil
                 self.lastCheckedAt = nil
                 var newState = self.state
@@ -414,12 +407,10 @@ final class HomeViewModel {
            !AlarmTiming.isSessionExpired(departureTime: departure, now: now()) {
             // 도보 초는 등록 시점 경로에서만 안다 — 같은 경로가 화면에 있으면 그 값,
             // 재실행 복원(카드 없음)이면 상세 재조회가 끝난 뒤 재시작하며 반영한다.
-            startBannerTimer(
-                departure: departure,
-                firstWalkSeconds: selectedRoute?.id == info.lastRouteId
-                    ? selectedRoute?.firstWalkSectionSeconds
-                    : nil
-            )
+            // 도보 초는 스트림이 싣고 온다 — 세션이 유일한 출처라, 재실행 복원처럼
+            // 카드가 없는 상황에서도 정확한 시각을 그린다(이전에는 화면의 경로에서
+            // 추측했고 카드가 없으면 버퍼만 적용됐다).
+            renderBanner(departure: departure, firstWalkSeconds: update.firstWalkSeconds)
         }
         restoreRouteCardIfNeeded(info)
     }
@@ -446,10 +437,10 @@ final class HomeViewModel {
                 registeredRouteId: self.registeredRouteId
             )
             self.state = newState
-            // 배너를 도보 반영 기준으로 재시작한다(등록/refresh/LA와 같은 값 — 이중 시각 금지).
+            // 배너를 도보 반영 기준으로 다시 그린다(등록/refresh/LA와 같은 값 — 이중 시각 금지).
             if let departure = info.departureTime,
                !AlarmTiming.isSessionExpired(departureTime: departure, now: self.now()) {
-                self.startBannerTimer(
+                self.renderBanner(
                     departure: departure,
                     firstWalkSeconds: route.firstWalkSectionSeconds
                 )
@@ -482,15 +473,13 @@ final class HomeViewModel {
             // 이미 못 타는 앞당김 — 카운트다운을 멈추고 배너를 실패 문구로 고정한다.
             // 알람·LA·서버 정리는 App(AlarmSyncService)·Domain 몫이고, 홈은 표출만 바꾼다.
             // 긴급 스타일(imminent)은 유지 — 텍스트만 실패 문구로 교체된 같은 배너다.
-            bannerTask?.cancel()
-            state.banner = BannerViewData(text: "막차가 지나갔어요", urgency: .imminent)
+                state.banner = BannerViewData(text: "막차가 지나갔어요", urgency: .imminent)
             onToast?(.lastTrainMissed)
         case .sessionEnded:
             // 운행 종료·경로 소멸 — 알람 세션이 사라졌으므로 배너·버튼·등록 기록을 전부
             // 정리한다. 직전 info 이벤트(alarmSynced)가 남긴 죽은 registeredRouteId도
             // 여기서 지워진다. LA final state 종료·알람 취소는 App/Domain 경로의 몫.
-            bannerTask?.cancel()
-            registeredRouteId = nil
+                registeredRouteId = nil
             lastCheckedAt = nil
             var newState = state
             newState.banner = nil
@@ -499,6 +488,17 @@ final class HomeViewModel {
                 registeredRouteId: nil
             )
             newState.freshnessText = nil
+            // 출발 시각이 이미 지났으면 "지난 막차"로 전환한다 — 유예 경과로 인한 로컬
+            // 만료가 이 경로로 온다(이전에는 홈의 배너 타이머가 직접 전환했다).
+            // 서버발 운행 종료(출발 전 경로 소멸)는 카드를 그대로 둔다 — 지나간 것이
+            // 아니라 사라진 것이라 "지난 막차"는 오정보다.
+            if let departure = selectedRoute?.departureTime,
+               AlarmTiming.isSessionExpired(departureTime: departure, now: now()) {
+                newState.routeCard = newState.routeCard?.asPastTrain(departure: departure)
+                // 지난 막차에는 등록 버튼을 두지 않는다 — 누르면 tooLate로 실패할 뿐이다.
+                newState.alarmButton = .hidden
+                selectedRoute = nil
+            }
             state = newState
             onToast?(.lastTrainServiceEnded)
         case .delayed, .unchanged:
@@ -583,41 +583,15 @@ final class HomeViewModel {
         )
     }
 
-    private func startBannerTimer(departure: Date, firstWalkSeconds: Int?) {
-        bannerTask?.cancel()
-        // 매 틱 departure 기준으로 재계산 — 누적 드리프트가 없다.
-        bannerTask = Task { [weak self] in
-            while !Task.isCancelled {
-                guard let now = self?.now() else { return }
-                guard let banner = Self.makeBanner(
-                    departure: departure, firstWalkSeconds: firstWalkSeconds, now: now
-                ) else {
-                    // 유예 경과(3단계) — 배너·버튼을 내리고 카드를 "지난 막차"로 전환,
-                    // 틱 종료. 알람·LA·서버 정리는 App(AlarmSyncService)의 wake 판정 몫.
-                    self?.sessionExpired(departure: departure)
-                    return
-                }
-                self?.state.banner = banner
-                // sleep 동안 self를 잡지 않는다 — deinit cancel이 즉시 먹혀야 한다.
-                guard let interval = self?.bannerTickInterval else { return }
-                try? await Task.sleep(for: interval)
-            }
-        }
-    }
-
-    /// 유예 경과(클라 자체 만료, Phase 13) — 지나간 막차를 "탈 수 있다"고 보여주는
-    /// 서피스를 전부 내린다. 카드가 없으면(재실행 복원 상태) 배너·버튼 정리만 남는다.
-    private func sessionExpired(departure: Date) {
-        registeredRouteId = nil
-        selectedRoute = nil
-        lastCheckedAt = nil
-        var newState = state
-        newState.banner = nil
-        newState.routeCard = newState.routeCard?.asPastTrain(departure: departure)
-        newState.alarmButton = .hidden
-        // "지난 막차" 카드에는 스탬프가 없다 — 세션이 끝난 값의 신선도는 무의미하다.
-        newState.freshnessText = nil
-        state = newState
+    /// 스트림이 세션을 방출할 때마다 배너를 다시 그린다.
+    ///
+    /// 이전에는 여기서 타이머를 돌리며 유예 경과를 감지하고 **화면이 세션을 끝냈다**
+    /// (`sessionExpired`). 이제 틱과 만료 판정은 세션 소유자(Store)가 하고, 홈은
+    /// 받은 값을 그리기만 한다 — 만료 시엔 `.sessionEnded` 변경 이벤트가 온다.
+    private func renderBanner(departure: Date, firstWalkSeconds: Int?) {
+        state.banner = Self.makeBanner(
+            departure: departure, firstWalkSeconds: firstWalkSeconds, now: now()
+        )
     }
 
     // MARK: - 순수 계산

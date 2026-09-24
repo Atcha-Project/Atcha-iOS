@@ -68,19 +68,19 @@ private struct StubLocalNotificationPort: LocalNotificationPort {
     }
 }
 
-private actor SpySnapshotStore: AlarmSessionSnapshotStore {
-    private(set) var saved: [AlarmSessionSnapshot] = []
+private actor SpySessionStore: AlarmSessionStoring {
+    private(set) var saved: [AlarmSession] = []
     private(set) var clearCount = 0
-    var stored: AlarmSessionSnapshot?
+    var stored: AlarmSession?
 
-    func load() async -> AlarmSessionSnapshot? { stored }
+    func loadSession() async -> AlarmSession? { stored }
 
-    func save(_ snapshot: AlarmSessionSnapshot) async {
-        saved.append(snapshot)
-        stored = snapshot
+    func saveSession(_ session: AlarmSession) async {
+        saved.append(session)
+        stored = session
     }
 
-    func clear() async {
+    func clearSession() async {
         clearCount += 1
         stored = nil
     }
@@ -229,12 +229,12 @@ struct DefaultRegisterAlarmUseCaseTests {
     @Test
     func execute_fireDateAlreadyPast_throwsTooLateBeforeAnySideEffect() async {
         let log = CallLog()
-        let store = SpySnapshotStore()
+        let store = SpySessionStore()
         // 발화 시각 820 ≤ now 820 — 경계 포함 과거로 본다.
         let sut = DefaultRegisterAlarmUseCase(
             repository: SpyAlarmRepository(log: log),
             scheduler: SpyAlarmScheduler(log: log),
-            snapshotStore: store,
+            sessionStore: store,
             now: { Date(timeIntervalSince1970: 820) }
         )
         await #expect(throws: AlarmError.tooLate) {
@@ -265,27 +265,26 @@ struct DefaultRegisterAlarmUseCaseTests {
     @Test
     func execute_success_savesSnapshotWithRouteFacts() async throws {
         let log = CallLog()
-        let store = SpySnapshotStore()
+        let store = SpySessionStore()
         let route = LastRoute.fixture(
             id: "new", legs: [walkLeg(sectionTime: 120), busLeg(routeName: "간선:6411")]
         )
         let sut = DefaultRegisterAlarmUseCase(
             repository: SpyAlarmRepository(log: log),
             scheduler: SpyAlarmScheduler(log: log),
-            snapshotStore: store,
+            sessionStore: store,
             now: fixedNow
         )
         try await sut.execute(route: route)
 
         let saved = await store.saved
         #expect(saved.count == 1)
-        #expect(saved.first?.info.lastRouteId == "new")
-        #expect(saved.first?.info.departureTime == route.departureTime)
-        #expect(saved.first?.firstWalkSeconds == 120)
-        #expect(saved.first?.routeDisplayName == "6411번 버스")
-        #expect(saved.first?.transportMode == .bus)
-        #expect(saved.first?.acknowledged == false)
-        #expect(saved.first?.expired == false)
+        #expect(saved.first?.server.lastRouteId == "new")
+        #expect(saved.first?.server.departureTime == route.departureTime)
+        #expect(saved.first?.local.firstWalkSeconds == 120)
+        #expect(saved.first?.local.routeDisplayName == "6411번 버스")
+        #expect(saved.first?.local.transportMode == .bus)
+        #expect(saved.first?.lifecycle == .active)
         // 등록 성공 = 서버 확인 — 신선도 스탬프의 원천이 등록 시각으로 기록된다(Phase 16).
         #expect(saved.first?.syncedAt == fixedNow())
     }
@@ -293,11 +292,11 @@ struct DefaultRegisterAlarmUseCaseTests {
     @Test
     func execute_serverRegisterFails_doesNotSaveSnapshot() async {
         let log = CallLog()
-        let store = SpySnapshotStore()
+        let store = SpySessionStore()
         let sut = DefaultRegisterAlarmUseCase(
             repository: SpyAlarmRepository(log: log, registerError: StubError()),
             scheduler: SpyAlarmScheduler(log: log),
-            snapshotStore: store,
+            sessionStore: store,
             now: fixedNow
         )
         await #expect(throws: StubError.self) {
@@ -315,11 +314,11 @@ struct DefaultRegisterAlarmUseCaseTests {
     @Test
     func execute_localScheduleFails_stillPersistsLocalFacts() async {
         let log = CallLog()
-        let store = SpySnapshotStore()
+        let store = SpySessionStore()
         let sut = DefaultRegisterAlarmUseCase(
             repository: SpyAlarmRepository(log: log),
             scheduler: SpyAlarmScheduler(log: log, replaceError: StubError()),
-            snapshotStore: store,
+            sessionStore: store,
             now: fixedNow
         )
 
@@ -334,8 +333,8 @@ struct DefaultRegisterAlarmUseCaseTests {
         let saved = await store.saved
         #expect(saved.count == 1)
         // 도보 초가 보존돼야 한다 — 이게 없으면 복구 시 알람이 늦는다.
-        #expect(saved.first?.firstWalkSeconds == 300)
-        #expect(saved.first?.info.lastRouteId == "new")
+        #expect(saved.first?.local.firstWalkSeconds == 300)
+        #expect(saved.first?.server.lastRouteId == "new")
         // 로컬 스케줄은 실제로 시도됐고 실패했다(저장이 스케줄을 건너뛴 게 아니다).
         #expect(await log.events.contains { $0.hasPrefix("replaceAlarm:new") })
     }

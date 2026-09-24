@@ -44,12 +44,12 @@ private struct SpyAlarmScheduler: AlarmScheduler {
     func scheduledFireDate() async -> Date? { nil }
 }
 
-private actor SpySnapshotStore: AlarmSessionSnapshotStore {
+private actor SpySessionStore: AlarmSessionStoring {
     private(set) var clearCount = 0
 
-    func load() async -> AlarmSessionSnapshot? { nil }
-    func save(_ snapshot: AlarmSessionSnapshot) async {}
-    func clear() async { clearCount += 1 }
+    func loadSession() async -> AlarmSession? { nil }
+    func saveSession(_ session: AlarmSession) async {}
+    func clearSession() async { clearCount += 1 }
 }
 
 struct DefaultCancelAlarmUseCaseTests {
@@ -82,11 +82,11 @@ struct DefaultCancelAlarmUseCaseTests {
     @Test
     func execute_success_clearsSnapshot() async throws {
         let log = CallLog()
-        let store = SpySnapshotStore()
+        let store = SpySessionStore()
         let sut = DefaultCancelAlarmUseCase(
             repository: SpyAlarmRepository(log: log),
             scheduler: SpyAlarmScheduler(log: log),
-            snapshotStore: store
+            sessionStore: store
         )
         try await sut.execute(lastRouteId: "route-1")
         #expect(await store.clearCount == 1)
@@ -96,11 +96,11 @@ struct DefaultCancelAlarmUseCaseTests {
     func execute_serverCancelFails_keepsSnapshot() async {
         // 세션은 아직 살아 있다 — 실패한 취소가 재실행 브리지를 지우면 안 된다.
         let log = CallLog()
-        let store = SpySnapshotStore()
+        let store = SpySessionStore()
         let sut = DefaultCancelAlarmUseCase(
             repository: SpyAlarmRepository(log: log, cancelError: StubError()),
             scheduler: SpyAlarmScheduler(log: log),
-            snapshotStore: store
+            sessionStore: store
         )
         await #expect(throws: StubError.self) {
             try await sut.execute(lastRouteId: "route-1")

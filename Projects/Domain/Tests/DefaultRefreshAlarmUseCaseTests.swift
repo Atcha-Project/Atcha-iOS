@@ -51,22 +51,16 @@ private func makeInfo(departureTime: Date?) -> AlarmInfo {
     AlarmInfo(lastRouteId: "route-1", departureTime: departureTime, updatedAt: nil, isReal: true)
 }
 
-private struct StubSnapshotStore: AlarmSessionSnapshotStore {
-    let snapshot: AlarmSessionSnapshot?
-
-    func load() async -> AlarmSessionSnapshot? { snapshot }
-    func save(_ snapshot: AlarmSessionSnapshot) async {}
-    func clear() async {}
-}
-
-private func makeSnapshot(routeId: String, firstWalkSeconds: Int?) -> AlarmSessionSnapshot {
-    AlarmSessionSnapshot(
-        info: AlarmInfo(lastRouteId: routeId, departureTime: nil, updatedAt: nil, isReal: true),
-        firstWalkSeconds: firstWalkSeconds,
-        routeDisplayName: "6411번 버스",
-        transportMode: .bus,
-        acknowledged: false,
-        expired: false
+/// 도보 초의 출처. 이전에는 UseCase가 저장소를 직접 로드했지만, 이제 호출자가
+/// 세션을 넘기고 `AlarmSession.merging`이 routeId 일치까지 판단한다.
+private func makeSession(routeId: String, firstWalkSeconds: Int?) -> AlarmSession {
+    AlarmSession(
+        server: AlarmInfo(lastRouteId: routeId, departureTime: nil, updatedAt: nil, isReal: true),
+        local: .init(
+            firstWalkSeconds: firstWalkSeconds,
+            routeDisplayName: "6411번 버스",
+            transportMode: .bus
+        )
     )
 }
 
@@ -84,7 +78,7 @@ struct DefaultRefreshAlarmUseCaseTests {
             scheduler: SpyAlarmScheduler(log: log, scheduledDate: Date(timeIntervalSince1970: 1_000)),
             now: fixedNow
         )
-        let info = try await sut.execute()
+        let info = try await sut.execute(current: nil)
         #expect(info.departureTime == newDeparture)
         // 스케줄 시각은 버퍼 반영값: 2000 − 180 = 1820
         #expect(await log.events == ["refresh", "scheduledFireDate", "replaceAlarm:route-1@1820"])
@@ -105,7 +99,7 @@ struct DefaultRefreshAlarmUseCaseTests {
             ),
             now: fixedNow
         )
-        _ = try await sut.execute()
+        _ = try await sut.execute(current: nil)
         #expect(await log.events == ["refresh", "scheduledFireDate"])
     }
 
@@ -118,7 +112,7 @@ struct DefaultRefreshAlarmUseCaseTests {
             scheduler: SpyAlarmScheduler(log: log, scheduledDate: nil),
             now: fixedNow
         )
-        _ = try await sut.execute()
+        _ = try await sut.execute(current: nil)
         // 스케줄 시각은 버퍼 반영값: 3000 − 180 = 2820
         #expect(await log.events == ["refresh", "scheduledFireDate", "replaceAlarm:route-1@2820"])
     }
@@ -136,7 +130,7 @@ struct DefaultRefreshAlarmUseCaseTests {
             scheduler: SpyAlarmScheduler(log: log, scheduledDate: nil),
             now: { Date(timeIntervalSince1970: 1_900) }
         )
-        _ = try await sut.execute()
+        _ = try await sut.execute(current: nil)
         #expect(await log.events == ["refresh"])
     }
 
@@ -147,14 +141,14 @@ struct DefaultRefreshAlarmUseCaseTests {
             repository: StubAlarmRepository(log: log, refreshResult: .success(makeInfo(departureTime: nil))),
             scheduler: SpyAlarmScheduler(log: log)
         )
-        _ = try await sut.execute()
+        _ = try await sut.execute(current: nil)
         #expect(await log.events == ["refresh"])
     }
 
     // MARK: - 도보 반영 (Phase 14 — 스냅샷이 도보 초의 출처)
 
     @Test
-    func execute_snapshotWalkSeconds_rescheduleUsesWalkAwareFireDate() async throws {
+    func execute_sessionWalkSeconds_rescheduleUsesWalkAwareFireDate() async throws {
         let log = CallLog()
         let departure = Date(timeIntervalSince1970: 2_000)
         let sut = DefaultRefreshAlarmUseCase(
@@ -162,18 +156,17 @@ struct DefaultRefreshAlarmUseCaseTests {
                 log: log, refreshResult: .success(makeInfo(departureTime: departure))
             ),
             scheduler: SpyAlarmScheduler(log: log, scheduledDate: nil),
-            snapshotStore: StubSnapshotStore(
-                snapshot: makeSnapshot(routeId: "route-1", firstWalkSeconds: 120)
-            ),
             now: fixedNow
         )
-        _ = try await sut.execute()
+        _ = try await sut.execute(
+            current: makeSession(routeId: "route-1", firstWalkSeconds: 120)
+        )
         // 기대 발화 시각 = 2000 − 120(도보) − 180(버퍼) = 1700 — 등록 경로와 같은 기준.
         #expect(await log.events == ["refresh", "scheduledFireDate", "replaceAlarm:route-1@1700"])
     }
 
     @Test
-    func execute_snapshotWalkMatchingSchedule_doesNotReschedule() async throws {
+    func execute_sessionWalkMatchingSchedule_doesNotReschedule() async throws {
         // 로컬 알람이 이미 도보 반영값으로 걸려 있으면 재스케줄하지 않는다(헛돎 금지).
         let log = CallLog()
         let departure = Date(timeIntervalSince1970: 2_000)
@@ -184,17 +177,16 @@ struct DefaultRefreshAlarmUseCaseTests {
             scheduler: SpyAlarmScheduler(
                 log: log, scheduledDate: Date(timeIntervalSince1970: 1_700)
             ),
-            snapshotStore: StubSnapshotStore(
-                snapshot: makeSnapshot(routeId: "route-1", firstWalkSeconds: 120)
-            ),
             now: fixedNow
         )
-        _ = try await sut.execute()
+        _ = try await sut.execute(
+            current: makeSession(routeId: "route-1", firstWalkSeconds: 120)
+        )
         #expect(await log.events == ["refresh", "scheduledFireDate"])
     }
 
     @Test
-    func execute_snapshotForDifferentRoute_ignoresItsWalkSeconds() async throws {
+    func execute_sessionForDifferentRoute_ignoresItsWalkSeconds() async throws {
         // 서버가 다른 경로로 갈아탔으면 옛 경로의 도보 초는 무효 — 버퍼만 적용한다.
         let log = CallLog()
         let departure = Date(timeIntervalSince1970: 2_000)
@@ -203,12 +195,11 @@ struct DefaultRefreshAlarmUseCaseTests {
                 log: log, refreshResult: .success(makeInfo(departureTime: departure))
             ),
             scheduler: SpyAlarmScheduler(log: log, scheduledDate: nil),
-            snapshotStore: StubSnapshotStore(
-                snapshot: makeSnapshot(routeId: "other-route", firstWalkSeconds: 120)
-            ),
             now: fixedNow
         )
-        _ = try await sut.execute()
+        _ = try await sut.execute(
+            current: makeSession(routeId: "other-route", firstWalkSeconds: 120)
+        )
         #expect(await log.events == ["refresh", "scheduledFireDate", "replaceAlarm:route-1@1820"])
     }
 
@@ -220,7 +211,7 @@ struct DefaultRefreshAlarmUseCaseTests {
             scheduler: SpyAlarmScheduler(log: log)
         )
         await #expect(throws: StubError.self) {
-            _ = try await sut.execute()
+            _ = try await sut.execute(current: nil)
         }
         #expect(await log.events == ["refresh"])
     }

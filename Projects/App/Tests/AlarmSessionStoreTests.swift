@@ -13,13 +13,22 @@ private final class InMemoryKeyValueStore: KeyValueStore {
     func removeValue(forKey key: String) throws { storage.withLock { $0[key] = nil } }
 }
 
+/// 틱 콜백은 메인 액터 밖에서도 읽히므로 락으로 감싼다.
+private final class ValueBox<Value: Sendable>: @unchecked Sendable {
+    private let lock = NSLock()
+    private var value: Value
+    init(_ value: Value) { self.value = value }
+    func get() -> Value { lock.lock(); defer { lock.unlock() }; return value }
+    func set(_ newValue: Value) { lock.lock(); value = newValue; lock.unlock() }
+}
+
 @MainActor
 struct AlarmSessionStoreTests {
     private let now = Date(timeIntervalSince1970: 1_700_000_000)
     private let store = InMemoryKeyValueStore()
 
-    private func makeSUT() -> AlarmSessionStore {
-        AlarmSessionStore(store: store)
+    private func makeSUT(now: @escaping @Sendable () -> Date = { Date() }) -> AlarmSessionStore {
+        AlarmSessionStore(store: store, now: now)
     }
 
     private func session(
@@ -183,7 +192,66 @@ struct AlarmSessionStoreTests {
         #expect(sut.current == nil)
     }
 
+    // MARK: - 시계 틱
+    //
+    // 홈 ViewModel의 배너 타이머가 하던 일을 Store가 가져왔다 — 화면이 세션을 끝내는
+    // 구조를 없애고, 홈이 떠 있지 않아도 만료가 감지되게 한다.
+
+    /// 출발 + 유예가 지나면 틱이 세션을 끝내고 콜백으로 알린다.
+    @Test
+    func tick_pastDeparture_expiresAndNotifies() async {
+        let sut = makeSUT(now: { self.now })
+        // 이미 지난 막차 — 다음 틱에서 만료돼야 한다.
+        await sut.register(session: session(departureOffset: -120))
+        let expired = ValueBox<AlarmSession?>(nil)
+
+        sut.startTicking(interval: .milliseconds(10)) { session in
+            expired.set(session)
+        }
+        for _ in 0..<80 where expired.get() == nil { try? await Task.sleep(for: .milliseconds(10)) }
+        sut.stopTicking()
+
+        #expect(expired.get()?.lifecycle == .ended)
+        #expect(sut.current?.lifecycle == .ended)
+    }
+
+    /// 살아 있는 세션은 끝내지 않는다 — 대신 매 틱 재방출해 "출발까지 N분"이 갱신된다.
+    @Test
+    func tick_liveSession_doesNotExpire() async {
+        let sut = makeSUT(now: { self.now })
+        await sut.register(session: session(departureOffset: 900))
+        let expired = ValueBox<AlarmSession?>(nil)
+
+        sut.startTicking(interval: .milliseconds(10)) { session in
+            expired.set(session)
+        }
+        try? await Task.sleep(for: .milliseconds(120))
+        sut.stopTicking()
+
+        #expect(expired.get() == nil)
+        #expect(sut.current?.lifecycle == .active)
+    }
+
+    /// 이미 끝난 세션을 반복 통지하면 구독자가 같은 종료를 여러 번 처리한다.
+    @Test
+    func tick_endedSession_doesNotNotifyAgain() async {
+        let sut = makeSUT(now: { self.now })
+        await sut.register(session: session(departureOffset: -120, lifecycle: .ended))
+        let expired = ValueBox<AlarmSession?>(nil)
+
+        sut.startTicking(interval: .milliseconds(10)) { session in
+            expired.set(session)
+        }
+        try? await Task.sleep(for: .milliseconds(120))
+        sut.stopTicking()
+
+        #expect(expired.get() == nil)
+    }
+
     // MARK: - 구독 (replay-1)
+    //
+    // 세션 그대로를 보는 내부 스트림. 홈이 보는 `AlarmSyncEvents.updates()`는 이 위에
+    // 얹힌 매핑이고, 끝난 세션을 흘리지 않는다(아래 별도 검증).
 
     /// 구독 전에 끝난 부트스트랩을 놓치지 않아야 한다.
     @Test
@@ -192,7 +260,7 @@ struct AlarmSessionStoreTests {
         let existing = session()
         await sut.register(session: existing)
 
-        var iterator = sut.updates().makeAsyncIterator()
+        var iterator = sut.sessionUpdates().makeAsyncIterator()
         let first = await iterator.next()
 
         #expect(first == existing)
@@ -202,7 +270,7 @@ struct AlarmSessionStoreTests {
     func updates_emitsOnApply() async {
         let sut = makeSUT()
         await sut.bootstrap()
-        var iterator = sut.updates().makeAsyncIterator()
+        var iterator = sut.sessionUpdates().makeAsyncIterator()
         _ = await iterator.next() // replay(nil)
 
         let next = session()
@@ -211,11 +279,37 @@ struct AlarmSessionStoreTests {
         #expect(await iterator.next() == next)
     }
 
+    /// 홈 계약(`AlarmSyncEvents`)은 **끝난 세션을 흘리지 않는다** — 죽은 세션으로
+    /// 배너·해제 버튼이 복원되면 안 된다.
+    @Test
+    func syncEventsUpdates_skipsEndedSession() async {
+        let sut = makeSUT()
+        await sut.register(session: session(lifecycle: .ended))
+
+        var iterator = sut.updates().makeAsyncIterator()
+        // replay에 끝난 세션이 실리지 않으므로, 살아 있는 세션을 넣어야 값이 온다.
+        await sut.apply(.refreshed(session(lifecycle: .active)))
+
+        let update = await iterator.next()
+        #expect(update?.info.lastRouteId == "R1")
+    }
+
+    @Test
+    func syncEventsUpdates_carriesSyncedAtAsCheckedAt() async {
+        let sut = makeSUT()
+        await sut.register(session: session())
+
+        var iterator = sut.updates().makeAsyncIterator()
+
+        // 스탬프의 원천은 세션의 syncedAt이다 — 수신 시각이 아니다.
+        #expect(await iterator.next()?.checkedAt == now)
+    }
+
     @Test
     func updates_emitsNilOnClear() async {
         let sut = makeSUT()
         await sut.register(session: session())
-        var iterator = sut.updates().makeAsyncIterator()
+        var iterator = sut.sessionUpdates().makeAsyncIterator()
         _ = await iterator.next() // replay(session)
 
         await sut.clear()
