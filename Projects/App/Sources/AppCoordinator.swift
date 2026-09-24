@@ -14,8 +14,6 @@ final class AppCoordinator: Coordinator, CoordinatorFinishDelegate {
     /// 게스트 부트스트랩 in-flight — 만료 스트림의 중복 yield나 재시도 연타에
     /// /auth/guest를 겹쳐 쏘지 않는다.
     private var bootstrapTask: Task<Void, Never>?
-    /// 로그인 플로우 표시 중 가드 — 만료 스트림의 중복 yield에 로그인을 겹치지 않는다.
-    private var isShowingLogin = false
     /// 세션 만료 경유 재인증이면 성공 직후 수동 동기화 1회 — activate()의 시작
     /// 동기화는 최초 1회 가드라 재인증 경로에선 돌지 않기 때문.
     private var needsSyncAfterLogin = false
@@ -111,38 +109,8 @@ final class AppCoordinator: Coordinator, CoordinatorFinishDelegate {
         }
     }
 
-    /// 소셜 로그인 시트 — 스플래시를 root로 유지한 채 present한다
-    /// (스플래시 배경 위 바텀시트 = 레거시와 같은 시각 결과).
-    ///
-    /// 게스트 인증 전환(2026-09-24) 이후 **호출처가 없다.** 서버가 게스트 계정으로
-    /// 부트스트랩을 처리하므로 강제 로그인 단계 자체가 사라졌다. 소셜 계정 승격이
-    /// 도입되면 이 경로가 그대로 진입점이 되므로 AuthFeature와 함께 남겨둔다.
-    @available(*, deprecated, message: "게스트 부트스트랩으로 대체됨. 소셜 계정 승격 도입 시 재사용.")
-    private func showLogin() {
-        guard !isShowingLogin else { return }
-        isShowingLogin = true
-        let loginCoordinator = container.makeAuthDIContainer().makeLoginCoordinator(
-            navigationController: navigationController,
-            onAuthenticated: { [weak self] in
-                guard let self else { return }
-                self.isShowingLogin = false
-                self.startHome()
-                self.container.alarmSyncService.activate()
-                self.syncPushTokenAfterLogin()
-                if self.needsSyncAfterLogin {
-                    self.needsSyncAfterLogin = false
-                    let syncService = self.container.alarmSyncService
-                    Task { await syncService.syncNow() }
-                }
-            }
-        )
-        loginCoordinator.finishDelegate = self
-        addChild(loginCoordinator)
-        loginCoordinator.start()
-    }
-
-    /// refresh 확정 사망(AuthSessionManager.sessionExpired) 관찰 — 홈을 접고 스플래시
-    /// 위 로그인으로 되돌린다. 스트림은 단일 소비자(이 코디네이터) 전제.
+    /// refresh 확정 사망(AuthSessionManager.sessionExpired) 관찰 — 홈을 접고 스플래시로
+    /// 되돌린 뒤 게스트 재인증한다. 스트림은 단일 소비자(이 코디네이터) 전제.
     private func observeSessionExpiry() {
         sessionExpiryTask = Task { [weak self] in
             guard let stream = self?.container.authSessionManager.sessionExpired else { return }
@@ -154,7 +122,7 @@ final class AppCoordinator: Coordinator, CoordinatorFinishDelegate {
     }
 
     private func handleSessionExpiry() {
-        guard bootstrapTask == nil, !isShowingLogin else { return }
+        guard bootstrapTask == nil else { return }
         needsSyncAfterLogin = true
         // 로그아웃·탈퇴·강제 만료 공통 합류점 — 이전 계정의 알람이 로그인 화면에서 울리지 않게
         // 로컬 정리를 여기서 한 번 더 보장한다(로그아웃 경로의 선행 정리와 겹쳐도 멱등).
