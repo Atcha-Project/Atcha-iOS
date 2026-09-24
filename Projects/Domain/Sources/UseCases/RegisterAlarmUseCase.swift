@@ -52,7 +52,7 @@ public struct DefaultRegisterAlarmUseCase: RegisterAlarmUseCase {
         }
         // TODO: [미확정 #4] 단일 알람 규약(서버 교체 여부) 확정 전까지 클라이언트가 삭제 후 등록한다.
         //       기존 알람 확인 실패(= 등록된 알람 없음)와 삭제 실패는 등록을 막지 않는다.
-        if let existing = try? await repository.refresh() {
+        if let existing = (try? await repository.refresh())?.info {
             try? await repository.cancel(lastRouteId: existing.lastRouteId)
         }
         try await repository.register(lastRouteId: route.id)

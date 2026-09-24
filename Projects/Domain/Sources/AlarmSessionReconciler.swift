@@ -24,21 +24,23 @@ public enum AlarmSessionReconciler {
 
     /// - Parameters:
     ///   - current: 로컬이 아는 세션(없으면 nil).
-    ///   - server: refresh 결과. 실패·오프라인이면 nil을 넘긴다 —
-    ///             그때도 로컬 만료 판정은 돌아야 한다.
+    ///   - server: refresh 결과. **조회를 못 했으면(실패·오프라인) nil**을 넘긴다 —
+    ///             그때도 로컬 만료 판정은 돌아야 한다. 서버가 "없다"고 **답한** 것은
+    ///             nil이 아니라 `.notRegistered`다. 둘을 같은 값으로 넘기면 네트워크
+    ///             실패가 세션을 지워 버린다.
     ///   - now: 주입된 현재 시각(실 `Date()` 의존 금지 규약).
     public static func reconcile(
         current: AlarmSession?,
-        server: AlarmInfo?,
+        server: AlarmRefreshOutcome?,
         now: Date
     ) -> Outcome {
         switch (current, server) {
-        case (nil, nil):
+        case (nil, nil), (nil, .notRegistered):
             return .ended
 
         // 로컬에 기록이 없고 서버에 세션이 있다 — 재실행 후 발견이거나 첫 sync다.
         // 로컬 사실을 모르므로 `.empty`로 시작하고, 다음 등록이 채운다.
-        case let (nil, .some(info)):
+        case let (nil, .registered(info)):
             let discovered = AlarmSession(server: info, local: .empty, syncedAt: now)
             return expiryOutcome(for: discovered, now: now) ?? .refreshed(discovered)
 
@@ -48,7 +50,13 @@ public enum AlarmSessionReconciler {
             if session.isEnded { return .ignoredStaleEcho }
             return expiryOutcome(for: session, now: now) ?? .refreshed(session)
 
-        case let (.some(session), .some(info)):
+        // 서버가 **없다고 확정했다**(URT_001). 로컬 기록까지 정리한다 — 다른 기기나
+        // 서버 쪽 정리로 세션이 사라졌는데 이 기기만 붙들고 있으면, 울리지 않을 알람을
+        // 믿고 자게 된다. 이미 끝난 세션이면 지울 것도 없다.
+        case let (.some(session), .notRegistered):
+            return session.isEnded ? .ignoredStaleEcho : .ended
+
+        case let (.some(session), .registered(info)):
             return reconcile(session: session, server: info, now: now)
         }
     }

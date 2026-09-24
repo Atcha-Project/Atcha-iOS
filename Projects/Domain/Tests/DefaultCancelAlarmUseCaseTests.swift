@@ -22,7 +22,7 @@ private struct SpyAlarmRepository: AlarmRepository {
         if let cancelError { throw cancelError }
     }
 
-    func refresh() async throws -> AlarmInfo {
+    func refresh() async throws -> AlarmRefreshOutcome {
         await log.append("refresh")
         throw StubError()
     }

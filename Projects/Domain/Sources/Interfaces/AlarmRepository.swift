@@ -3,5 +3,6 @@
 public protocol AlarmRepository: Sendable {
     func register(lastRouteId: String) async throws
     func cancel(lastRouteId: String) async throws
-    func refresh() async throws -> AlarmInfo
+    /// throw = 조회 실패(세션을 지킨다). `.notRegistered` = 서버가 없다고 확정(정리한다).
+    func refresh() async throws -> AlarmRefreshOutcome
 }

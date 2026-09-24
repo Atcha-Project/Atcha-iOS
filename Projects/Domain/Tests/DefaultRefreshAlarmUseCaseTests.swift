@@ -12,6 +12,8 @@ private struct StubError: Error {}
 private struct StubAlarmRepository: AlarmRepository {
     let log: CallLog
     var refreshResult: Result<AlarmInfo, any Error>
+    /// 서버가 "등록된 알람 없음"을 확정한 경우(URT_001) — 설정되면 refreshResult보다 우선한다.
+    var notRegistered = false
 
     func register(lastRouteId: String) async throws {
         await log.append("register:\(lastRouteId)")
@@ -21,9 +23,10 @@ private struct StubAlarmRepository: AlarmRepository {
         await log.append("cancel:\(lastRouteId)")
     }
 
-    func refresh() async throws -> AlarmInfo {
+    func refresh() async throws -> AlarmRefreshOutcome {
         await log.append("refresh")
-        return try refreshResult.get()
+        if notRegistered { return .notRegistered }
+        return .registered(try refreshResult.get())
     }
 }
 
@@ -78,8 +81,8 @@ struct DefaultRefreshAlarmUseCaseTests {
             scheduler: SpyAlarmScheduler(log: log, scheduledDate: Date(timeIntervalSince1970: 1_000)),
             now: fixedNow
         )
-        let info = try await sut.execute(current: nil)
-        #expect(info.departureTime == newDeparture)
+        let outcome = try await sut.execute(current: nil)
+        #expect(outcome.info?.departureTime == newDeparture)
         // 스케줄 시각은 버퍼 반영값: 2000 − 180 = 1820
         #expect(await log.events == ["refresh", "scheduledFireDate", "replaceAlarm:route-1@1820"])
     }
@@ -213,6 +216,28 @@ struct DefaultRefreshAlarmUseCaseTests {
         await #expect(throws: StubError.self) {
             _ = try await sut.execute(current: nil)
         }
+        #expect(await log.events == ["refresh"])
+    }
+
+    /// 서버가 "등록된 알람 없음"(URT_001)을 확정하면 **재스케줄 대상이 없다** —
+    /// 스케줄러를 건드리지 않고 그대로 올려 보낸다. 이전에는 이 응답이 throw로 흘러
+    /// 조회 실패와 구분되지 않았다.
+    @Test
+    func execute_serverSaysNotRegistered_passesThroughWithoutTouchingScheduler() async throws {
+        let log = CallLog()
+        let sut = DefaultRefreshAlarmUseCase(
+            repository: StubAlarmRepository(
+                log: log,
+                refreshResult: .success(makeInfo(departureTime: Date(timeIntervalSince1970: 9_000))),
+                notRegistered: true
+            ),
+            scheduler: SpyAlarmScheduler(log: log, scheduledDate: nil),
+            now: fixedNow
+        )
+
+        let outcome = try await sut.execute(current: nil)
+
+        #expect(outcome == .notRegistered)
         #expect(await log.events == ["refresh"])
     }
 }

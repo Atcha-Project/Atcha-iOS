@@ -46,7 +46,7 @@ struct AlarmSessionReconcilerTests {
     func noCurrent_futureDeparture_refreshes() {
         let outcome = AlarmSessionReconciler.reconcile(
             current: nil,
-            server: info(departureOffset: 600),
+            server: .registered(info(departureOffset: 600)),
             now: now
         )
 
@@ -65,7 +65,7 @@ struct AlarmSessionReconcilerTests {
     func noCurrent_pastDeparture_expiresImmediately() {
         let outcome = AlarmSessionReconciler.reconcile(
             current: nil,
-            server: info(departureOffset: -120),
+            server: .registered(info(departureOffset: -120)),
             now: now
         )
 
@@ -89,7 +89,7 @@ struct AlarmSessionReconcilerTests {
     func pastDeparture_serverGivesFuture_refreshesNotExpires() {
         let outcome = AlarmSessionReconciler.reconcile(
             current: session(departureOffset: -120),
-            server: info(departureOffset: 900),
+            server: .registered(info(departureOffset: 900)),
             now: now
         )
 
@@ -108,7 +108,7 @@ struct AlarmSessionReconcilerTests {
     func liveSession_serverReturnsPastDeparture_refreshesForMissedVerdict() {
         let outcome = AlarmSessionReconciler.reconcile(
             current: session(departureOffset: 3600), // 아직 살아 있다
-            server: info(departureOffset: -100), // 서버가 방금 지나갔다고 알림
+            server: .registered(info(departureOffset: -100)), // 서버가 방금 지나갔다고 알림
             now: now
         )
 
@@ -123,7 +123,7 @@ struct AlarmSessionReconcilerTests {
     func pastDeparture_serverConfirmsSamePast_expires() {
         let outcome = AlarmSessionReconciler.reconcile(
             current: session(departureOffset: -120),
-            server: info(departureOffset: -120),
+            server: .registered(info(departureOffset: -120)),
             now: now
         )
 
@@ -137,7 +137,7 @@ struct AlarmSessionReconcilerTests {
     func endedSession_serverGivesFuture_revives() {
         let outcome = AlarmSessionReconciler.reconcile(
             current: session(departureOffset: -600, lifecycle: .ended),
-            server: info(departureOffset: 900),
+            server: .registered(info(departureOffset: 900)),
             now: now
         )
 
@@ -152,7 +152,7 @@ struct AlarmSessionReconcilerTests {
     func endedSession_serverEchoesSamePast_isIgnored() {
         let outcome = AlarmSessionReconciler.reconcile(
             current: session(departureOffset: -600, lifecycle: .ended),
-            server: info(departureOffset: -600),
+            server: .registered(info(departureOffset: -600)),
             now: now
         )
 
@@ -164,7 +164,7 @@ struct AlarmSessionReconcilerTests {
     func endedSession_differentRoute_acceptsAsNewSession() {
         let outcome = AlarmSessionReconciler.reconcile(
             current: session(route: "R1", departureOffset: -600, lifecycle: .ended),
-            server: info(route: "R2", departureOffset: 900),
+            server: .registered(info(route: "R2", departureOffset: 900)),
             now: now
         )
 
@@ -182,7 +182,7 @@ struct AlarmSessionReconcilerTests {
     func sameRoute_preservesLocalFacts() {
         let outcome = AlarmSessionReconciler.reconcile(
             current: session(route: "R1", departureOffset: 600, walkSeconds: 300),
-            server: info(route: "R1", departureOffset: 900),
+            server: .registered(info(route: "R1", departureOffset: 900)),
             now: now
         )
 
@@ -199,7 +199,7 @@ struct AlarmSessionReconcilerTests {
     func differentRoute_dropsLocalFacts() {
         let outcome = AlarmSessionReconciler.reconcile(
             current: session(route: "R1", departureOffset: 600, walkSeconds: 300),
-            server: info(route: "R2", departureOffset: 900),
+            server: .registered(info(route: "R2", departureOffset: 900)),
             now: now
         )
 
@@ -216,7 +216,7 @@ struct AlarmSessionReconcilerTests {
     func acknowledgedSession_refresh_keepsLifecycle() {
         let outcome = AlarmSessionReconciler.reconcile(
             current: session(departureOffset: 600, lifecycle: .acknowledged),
-            server: info(departureOffset: 900),
+            server: .registered(info(departureOffset: 900)),
             now: now
         )
 
@@ -239,6 +239,56 @@ struct AlarmSessionReconcilerTests {
             Issue.record("expired 기대, 실제 \(outcome)"); return
         }
         #expect(session.lifecycle == .ended)
+    }
+
+    // MARK: - 서버가 "없다"고 확정 (URT_001)
+
+    /// **이 구분이 이 enum의 존재 이유다.** 서버가 세션 없음을 확정하면(404 URT_001)
+    /// 로컬 기록까지 정리한다 — 다른 기기나 서버 쪽 정리로 세션이 사라졌는데 이 기기만
+    /// 붙들고 있으면, 사용자가 울리지 않을 알람을 믿고 자게 된다.
+    @Test
+    func serverSaysNotRegistered_withLiveSession_ends() {
+        let outcome = AlarmSessionReconciler.reconcile(
+            current: session(departureOffset: 600),
+            server: .notRegistered,
+            now: now
+        )
+
+        #expect(outcome == .ended)
+    }
+
+    /// 바로 위와 **같은 세션, 다른 입력**. 조회를 못 한 것(nil)은 세션을 지킨다 —
+    /// 두 경우를 같은 값으로 넘기면 네트워크 실패가 세션을 지워 버린다.
+    @Test
+    func serverUnreachable_withSameLiveSession_keepsIt() {
+        let outcome = AlarmSessionReconciler.reconcile(
+            current: session(departureOffset: 600),
+            server: nil,
+            now: now
+        )
+
+        guard case .refreshed = outcome else {
+            Issue.record("refreshed 기대, 실제 \(outcome)"); return
+        }
+    }
+
+    @Test
+    func serverSaysNotRegistered_withoutLocalSession_ends() {
+        #expect(
+            AlarmSessionReconciler.reconcile(current: nil, server: .notRegistered, now: now) == .ended
+        )
+    }
+
+    /// 이미 끝난 세션이면 지울 것이 없다 — 톰스톤을 건드리지 않는다.
+    @Test
+    func serverSaysNotRegistered_withTombstone_isIgnored() {
+        let outcome = AlarmSessionReconciler.reconcile(
+            current: session(departureOffset: -600, lifecycle: .ended),
+            server: .notRegistered,
+            now: now
+        )
+
+        #expect(outcome == .ignoredStaleEcho)
     }
 
     // MARK: - 서버 응답 없음 (오프라인·실패)
@@ -277,7 +327,7 @@ struct AlarmSessionReconcilerTests {
     func serverDropsDepartureTime_isEnded() {
         let outcome = AlarmSessionReconciler.reconcile(
             current: session(departureOffset: 600),
-            server: info(departureOffset: nil),
+            server: .registered(info(departureOffset: nil)),
             now: now
         )
 

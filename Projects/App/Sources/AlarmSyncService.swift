@@ -43,7 +43,7 @@ final class AlarmSyncService: AlarmSyncRequesting {
     /// 세션은 Store가 소유하고, 이건 diff 한 번에만 쓰이는 지역 기억이다.
     private var previousServerInfo: AlarmInfo?
     /// 진행 중 동기화 — 트리거가 겹치면(예: 앱 시작 직후 포그라운드 노티) 합류한다.
-    private var inFlight: Task<AlarmInfo?, Never>?
+    private var inFlight: Task<AlarmRefreshOutcome?, Never>?
     private var foregroundObserver: (any NSObjectProtocol)?
 
     // 앱 수명 객체(조합 루트 소유) — 해제 경로가 없어 관찰 해지/태스크 취소 정리가 없다.
@@ -120,7 +120,7 @@ final class AlarmSyncService: AlarmSyncRequesting {
     @discardableResult
     private func sync() async -> AlarmInfo? {
         if let inFlight {
-            return await inFlight.value
+            return await inFlight.value?.info
         }
         Self.logger.info("알람 동기화 시작")
         // 재실행 브리지 복원 — 세션을 디스크에서 되살린다. Store가 1회만 수행한다.
@@ -129,7 +129,10 @@ final class AlarmSyncService: AlarmSyncRequesting {
         // diff의 "이전 값"은 이번 갱신 **전**의 서버 값이다.
         previousServerInfo = current?.server
 
-        let task = Task { [refreshAlarmUseCase, current] () -> AlarmInfo? in
+        // nil = 조회 실패(세션 유지). `.notRegistered` = 서버가 없다고 확정(정리).
+        // 이 구분이 없던 시절엔 서버의 "등록된 알람 없음"(404 URT_001)이 실패로 흘러,
+        // 세션이 사라져도 앱이 계속 붙들고 매 실행마다 에러 로그가 남았다.
+        let task = Task { [refreshAlarmUseCase, current] () -> AlarmRefreshOutcome? in
             do {
                 return try await refreshAlarmUseCase.execute(current: current)
             } catch {
@@ -138,18 +141,19 @@ final class AlarmSyncService: AlarmSyncRequesting {
             }
         }
         inFlight = task
-        let info = await task.value
+        let outcome = await task.value
         inFlight = nil
+        let info = outcome?.info
 
         // 만료·서버 우선·톰스톤 메아리 판정이 전부 여기 한 번에 일어난다.
         // 이전에는 이 판단이 선행 만료 후보 → refresh → 3분기 서버 우선 → 톰스톤 기록으로
         // 흩어져 있었다(그래서 "1차 방어 / 2차 방어" 주석이 붙었다).
-        let outcome = AlarmSessionReconciler.reconcile(
-            current: current, server: info, now: now()
+        let reconciled = AlarmSessionReconciler.reconcile(
+            current: current, server: outcome, now: now()
         )
-        await sessionStore.apply(outcome)
+        await sessionStore.apply(reconciled)
 
-        switch outcome {
+        switch reconciled {
         case let .refreshed(session):
             Self.logger.info(
                 "알람 동기화 성공: route=\(session.server.lastRouteId, privacy: .public)"

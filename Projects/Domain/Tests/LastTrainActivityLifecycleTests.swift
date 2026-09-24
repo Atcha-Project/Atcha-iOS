@@ -32,7 +32,7 @@ private struct SpyAlarmRepository: AlarmRepository {
         await log.append("cancel:\(lastRouteId)")
     }
 
-    func refresh() async throws -> AlarmInfo {
+    func refresh() async throws -> AlarmRefreshOutcome {
         await log.append("refresh")
         throw StubError()
     }
