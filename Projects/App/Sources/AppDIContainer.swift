@@ -44,9 +44,8 @@ final class AppDIContainer {
     /// 노티 탭 라우팅 델리게이트(Phase 15) — AppDelegate가 launch 시 등록하고,
     /// SceneDelegate가 홈 랜딩 훅(onTap)을 배선한다.
     let notificationTapDelegate = NotificationTapRoutingDelegate()
-    /// FCM 토큰 갱신 전달 — 프로세스 내 중복 방지 상태를 갖으므로 1회 생성 공유한다.
-    let syncPushTokenUseCase: any SyncPushTokenUseCase =
-        DefaultSyncPushTokenUseCase(repository: UnconfirmedPushTokenRepository())
+    /// FCM 토큰 갱신 전달 — 프로세스 내 중복 방지 상태를 갖으므로 1회 생성 공유한다(init에서 배선).
+    let syncPushTokenUseCase: any SyncPushTokenUseCase
     #if DEV
     /// DEV 플로팅 디버그 메뉴가 dismiss 기록 강제 토글에 접근하는 유일한 통로 (Phase 12 검수).
     var devLiveActivityAdapter: LastTrainLiveActivityAdapter { liveActivityAdapter }
@@ -84,6 +83,9 @@ final class AppDIContainer {
         self.networkClient = networkClient
 
         self.placeRepository = PlaceRepositoryImpl(networkClient: networkClient)
+        self.syncPushTokenUseCase = DefaultSyncPushTokenUseCase(
+            repository: PushTokenRepositoryImpl(networkClient: networkClient)
+        )
         self.lastRouteRepository = LastRouteRepositoryImpl(networkClient: networkClient)
         #if DEV
         // 막차 "변경"(앞당김/늦춤/운행종료)은 실서버가 임의로 재현해줄 수 없다 —

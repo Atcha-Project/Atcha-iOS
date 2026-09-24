@@ -44,6 +44,18 @@ struct UserEndpointTests {
         #expect(json["alertFrequencies"] as? [Int] == [1, 10])
     }
 
+    /// 서버 확정 계약 핀: FCM 토큰 갱신은 PUT /members/me {fcmToken}.
+    @Test
+    func updateFcmToken_putsTokenBody() throws {
+        let endpoint = UserEndpoint.updateFcmToken(FcmTokenUpdateRequestDTO(fcmToken: "FCM"))
+
+        #expect(endpoint.path == "/members/me")
+        #expect(endpoint.method == .put)
+
+        let json = try decodeBody(endpoint)
+        #expect(json["fcmToken"] as? String == "FCM")
+    }
+
     private func decodeBody(_ endpoint: any Endpoint) throws -> [String: Any] {
         let body = try #require(endpoint.body)
         return try #require(try JSONSerialization.jsonObject(with: body) as? [String: Any])

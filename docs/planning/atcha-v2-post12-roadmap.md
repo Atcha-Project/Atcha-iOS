@@ -39,8 +39,8 @@ Phase 1~12로 "검색 → 알람 등록 → 변경 인지"의 전반부는 완�
 
 ### 서버에 전달할 질문 리스트
 
-1. **(2026-09 재개 — 게스트 전용 MVP)** 게스트 토큰 발급 엔드포인트. 클라 제안: `POST /auth/guest`, body `{deviceId, fcmToken?}`, 응답은 로그인과 같은 envelope `{id, accessToken, refreshToken}`, 무토큰 호출. **같은 deviceId면 같은 게스트 회원 반환(멱등)** 필수 — 재설치·refresh 만료 후 알람·집 주소 유지의 전제. 게스트 회원이 `/routes/user-routes`·`/members/me`·home-address PATCH를 그대로 쓸 수 있는지도 확인
-2. FCM 토큰을 익명 체계에서 어떻게 등록하나 (엔드포인트·토큰 로테이션 처리)
+1. ✅ **서버 확정(2026-09-24)** — 게스트 토큰 발급 `POST /api/auth/guest`, 만료 시 `/api/auth/reissue` → 실패하면 재발급으로 같은 계정. 당시 클라 제안: `POST /auth/guest`, body `{deviceId, fcmToken?}`, 응답은 로그인과 같은 envelope `{id, accessToken, refreshToken}`, 무토큰 호출. **같은 deviceId면 같은 게스트 회원 반환(멱등)** 필수 — 재설치·refresh 만료 후 알람·집 주소 유지의 전제. 게스트 회원이 `/routes/user-routes`·`/members/me`·home-address PATCH를 그대로 쓸 수 있는지도 확인
+2. ✅ **서버 확정(2026-09-24)** — FCM 토큰 갱신 `PUT /api/members/me {fcmToken}`(users.fcm_token 갱신, 알람 등록 시 Redis로 복사)
 3. `GET /routes/last-routes`가 "오늘 막차 종료"와 "경로 없음"을 각각 어떤 responseCode로 주나 (실측값)
 4. 등록된 알람이 없을 때 `GET /routes/user-routes/refresh`가 무엇을 반환하나 (에러 코드? 빈 성공?)
 5. `POST /routes/user-routes`는 기존 알람이 있으면 교체하나, 클라가 삭제 후 등록해야 하나
@@ -51,7 +51,8 @@ Phase 1~12로 "검색 → 알람 등록 → 변경 인지"의 전반부는 완�
 10. (2026-09 설정 연동) `GET /app/version` 응답 형식 — 최신 버전 문자열만인가, `minSupportedVersion`/`forceUpdate`를 줄 수 있나 (없으면 강제 업데이트 불가, 권장만)
 11. (2026-09 설정 연동) `GET /locations/is-service-region` 응답이 envelope `result: Bool`인가
 12. (2026-09 설정 연동) V2가 레거시 스토어 앱(id6747877903)을 잇는가 — 별도 앱이면 App Store ID
-13. (2026-09 설정 연동) 탈퇴 응답 유실 후 재호출 시 서버 응답(401/404?) — 로컬 무효화로 수렴시킬지 판단용
+13. ~~(2026-09 설정 연동) 탈퇴 응답 유실 후 재호출 시 서버 응답~~ — 게스트 전용 전환으로 탈퇴 제거, 철회
+14. (2026-09 게스트 흐름) 서버 게스트 흐름 표에 없는 V2 사용 API가 **게스트 JWT를 허용하는지**: `GET /routes/last-routes`(+`/{id}`, 서버 표는 게스트 SSE `/v3/guest/last-routes/stream`을 제시 — V2는 기존 GET 유지 결정), `/locations`, `/locations/rgeo`, `/locations/is-service-region`, `GET /members/me`, `PATCH /members/me/home-address`, `/app/version`
 
 ---
 
@@ -62,10 +63,10 @@ Phase 1~12로 "검색 → 알람 등록 → 변경 인지"의 전반부는 완�
 | # | 항목 | 상태 (2026-08-23) |
 |---|---|---|
 | 1 | 실서버 base URL | **부분 해결** — dev/live 실주소 반영(`AppEnvironment.swift`, 레거시 trust-evaluator에서 복원·사용자 승인). Stage는 dev 호스트 공유 — 전용 호스트만 미정 |
-| 2 | 익명 인증 발급 엔드포인트 | **재개 (2026-09-24)** — 소셜 로그인 제거, 게스트 전용 MVP로 전환. 클라는 제안 계약 `POST /auth/guest`로 구현 완료, 서버 구현·합의 대기(질문 #1) |
+| 2 | 익명 인증 발급 엔드포인트 | **해결 (2026-09-24)** — 게스트 전용 MVP, 서버 확정 `POST /api/auth/guest` 구현 완료. base URL `/api` 누락 버그도 함께 수정 |
 | 3 | responseCode 실측 | **미해결 (S3)** — `.noRoute` 도달 불가 상태 |
 | 4 | 단일 알람 규약 | 미해결 — 클라 refresh→cancel→register 우회 동작 중 |
-| 5 | FCM 토큰 전달 | **부분 (2026-09)** — 로그인/가입 파라미터 전달 + 갱신 전달 UseCase·호출 지점 배선 완료, 서버 API 미확정이라 no-op 저장소(`UnconfirmedPushTokenRepository`) 주입 중. 질문 #2 |
+| 5 | FCM 토큰 전달 | **해결 (2026-09-24)** — 게스트 발급 요청 + 갱신은 `PUT /api/members/me {fcmToken}`(서버 확정) 실구현. 푸시 성립은 #6·10 plist 교체에 달림 |
 | 6·10 | GoogleService-Info.plist | **잘못 해결 (S2)** — 레거시 번들 ID plist가 커밋돼 가드 무력화. 재발급·교체 필요 |
 | 7 | 알람 기준 시각 서버 필드 | 미해결·타협(균일 −3분, 도보 미반영) → **Phase 14 클라 임시안이 해소** (등록 시점 walk leg 저장). 서버 필드 확정 시 대체 |
 | 8 | 알림 권한 요청 시점 | 임시 동작 유지 (알람 등록 성공 직후) — 확정만 남음 |
