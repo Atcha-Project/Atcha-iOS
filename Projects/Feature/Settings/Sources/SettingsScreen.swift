@@ -49,13 +49,6 @@ class SettingsScreen: UIViewController, UIGestureRecognizerDelegate {
         DSToast.show(message, in: view)
     }
 
-    func confirm(title: String, confirmTitle: String, onConfirm: @escaping () -> Void) {
-        let alert = UIAlertController(title: title, message: nil, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "취소", style: .cancel))
-        alert.addAction(UIAlertAction(title: confirmTitle, style: .destructive) { _ in onConfirm() })
-        present(alert, animated: true)
-    }
-
     func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
         (navigationController?.viewControllers.count ?? 0) > 1
     }

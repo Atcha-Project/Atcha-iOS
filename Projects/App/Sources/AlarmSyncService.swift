@@ -136,24 +136,6 @@ final class AlarmSyncService: AlarmSyncEvents, AlarmChangeEvents, AlarmSyncReque
         await sync() != nil ? .newData : .failed
     }
 
-    // MARK: - 계정 세션 종료 (로그아웃·탈퇴·만료)
-
-    /// 현재 보유 세션 — 로그아웃 시 서버 취소 대상 routeId의 출처(스냅샷 부재 대비).
-    var currentSession: AlarmInfo? { lastInfo }
-
-    /// 계정이 바뀌면 이전 계정의 세션 기억이 새 계정의 diff·만료 판정을 오염시킨다 —
-    /// 메모리 상태를 전부 비우고, 다음 로그인의 첫 sync가 (이미 비워진) 스냅샷부터 다시 시딩한다.
-    func resetForSignOut() {
-        inFlight?.cancel()
-        inFlight = nil
-        lastInfo = nil
-        lastCheckedAt = nil
-        locallyExpiredSession = nil
-        sessionWalkSeconds = nil
-        changeBadgeExpiry = nil
-        isSeededFromSnapshot = false
-    }
-
     // MARK: - AlarmSyncRequesting (Phase 16 — 홈 pull-to-refresh)
 
     /// 수동 갱신 트리거(4번째) — 기존 sync()에 그대로 합류한다. 실패는 던지지 않고

@@ -1,14 +1,14 @@
 import CoreNetwork
 
 /// Whether a stored session exists at launch. The splash decides between the
-/// home flow (`active`) and the login flow (`loginRequired`) on this alone —
+/// home flow (`active`) and guest issuance (`noSession`) on this alone —
 /// token validity is proven lazily by the first authenticated request.
 public enum SessionState: Sendable, Equatable {
     case active
-    case loginRequired
+    case noSession
 }
 
-/// Owns the session lifecycle: adopting server tokens after social login,
+/// Owns the session lifecycle: adopting server tokens after guest issuance,
 /// token refresh via GET /auth/reissue, and the 401-recovery chain.
 /// Single-flight is guaranteed by keeping the in-progress recovery task on
 /// the actor — the legacy interceptor's waiting-queue semantics without the
@@ -20,7 +20,7 @@ public actor AuthSessionManager {
 
     /// Yields once each time the session dies for good (no refresh token, or
     /// the server rejected the refresh). Single-consumer stream — the app
-    /// coordinator subscribes and routes back to login; yields are buffered
+    /// coordinator subscribes and re-issues a guest session; yields are buffered
     /// until consumed.
     public nonisolated let sessionExpired: AsyncStream<Void>
 
@@ -39,35 +39,13 @@ public actor AuthSessionManager {
     /// Splash-time check: no network, no throw — a keychain read failure just
     /// means there is no usable session.
     public nonisolated func bootstrapState() -> SessionState {
-        ((try? tokenStore.accessToken()) != nil) ? .active : .loginRequired
+        ((try? tokenStore.accessToken()) != nil) ? .active : .noSession
     }
 
-    /// Adopts the server token pair obtained by social login. Actor-isolated
+    /// Adopts the server token pair obtained by guest issuance. Actor-isolated
     /// so adoption serializes with any in-flight recovery.
     public func adopt(_ tokens: TokenPair) throws {
         try tokenStore.save(tokens)
-    }
-
-    /// Logout/withdrawal path (screens are a later phase — the clear path
-    /// ships now so callers never reach into TokenStore directly).
-    public func clearSession() throws {
-        try tokenStore.clear()
-    }
-
-    /// Logout: best-effort server call (legacy special case — the *refresh*
-    /// token rides as Bearer), then local expiry either way. Offline or a
-    /// server failure must never trap the user in a session they asked to end.
-    public func signOut() async {
-        if let refreshToken = try? tokenStore.refreshToken() {
-            _ = try? await networkClient.data(for: LogoutEndpoint(refreshToken: refreshToken))
-        }
-        _ = expireSession()
-    }
-
-    /// Post-withdrawal cleanup: the server already revoked the tokens, so no
-    /// network call — just local expiry and the login-routing yield.
-    public func invalidateSession() {
-        _ = expireSession()
     }
 
     /// Single entry point for 401 recovery: refresh, or declare the session

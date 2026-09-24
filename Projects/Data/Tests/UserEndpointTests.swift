@@ -44,18 +44,6 @@ struct UserEndpointTests {
         #expect(json["alertFrequencies"] as? [Int] == [1, 10])
     }
 
-    /// 레거시 실측: 탈퇴는 DELETE지만 body로 사유를 싣는다.
-    @Test
-    func withdraw_deletesWithReasonBody() throws {
-        let endpoint = UserEndpoint.withdraw(WithdrawRequestDTO(reason: "서비스 미사용"))
-
-        #expect(endpoint.path == "/members/me")
-        #expect(endpoint.method == .delete)
-
-        let json = try decodeBody(endpoint)
-        #expect(json["reason"] as? String == "서비스 미사용")
-    }
-
     private func decodeBody(_ endpoint: any Endpoint) throws -> [String: Any] {
         let body = try #require(endpoint.body)
         return try #require(try JSONSerialization.jsonObject(with: body) as? [String: Any])

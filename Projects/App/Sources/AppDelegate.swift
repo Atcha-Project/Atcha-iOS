@@ -1,6 +1,5 @@
 import FirebaseCore
 import FirebaseMessaging
-import KakaoSDKCommon
 import UIKit
 import os
 
@@ -28,10 +27,6 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         // 노티 탭 라우팅(Phase 15) — launch 완료 전에 등록해야 탭이 앱을 cold start시키는
         // 경우의 didReceive까지 잡는다. 홈 랜딩 훅 배선은 SceneDelegate 몫.
         container.notificationTapDelegate.attachToNotificationCenter()
-        // 카카오 로그인 — 키 미주입(TUIST_KAKAO_APP_KEY 부재) 빌드에선 건너뛴다.
-        if let kakaoAppKey = KakaoConfig.appKey {
-            KakaoSDK.initSDK(appKey: kakaoAppKey)
-        }
         configureFirebaseIfAvailable()
         if isFirebaseEnabled {
             Messaging.messaging().delegate = self
@@ -94,7 +89,7 @@ extension AppDelegate: MessagingDelegate {
     nonisolated func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
         guard let fcmToken else { return }
         Task { @MainActor in
-            // 로그인 전 토큰은 로그인/가입 파라미터가 싣는다 — 여기선 세션이 있을 때의 갱신만.
+            // 세션 전 토큰은 게스트 발급 요청이 싣는다 — 여기선 세션이 있을 때의 갱신만.
             guard container.authSessionManager.bootstrapState() == .active else { return }
             await container.syncPushTokenUseCase.execute(token: fcmToken)
         }

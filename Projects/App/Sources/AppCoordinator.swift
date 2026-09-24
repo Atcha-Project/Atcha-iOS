@@ -11,11 +11,8 @@ final class AppCoordinator: Coordinator, CoordinatorFinishDelegate {
 
     private weak var splashViewController: SplashViewController?
     private var sessionExpiryTask: Task<Void, Never>?
-    /// 로그인 플로우 표시 중 가드 — 만료 스트림의 중복 yield에 로그인을 겹치지 않는다.
-    private var isShowingLogin = false
-    /// 세션 만료 경유 재로그인이면 성공 직후 수동 동기화 1회 — activate()의 시작
-    /// 동기화는 최초 1회 가드라 재로그인 경로에선 돌지 않기 때문.
-    private var needsSyncAfterLogin = false
+    /// 만료 스트림의 중복 yield(동시 401 등)에 게스트 재발급을 겹치지 않는다.
+    private var isReissuingSession = false
 
     init(navigationController: UINavigationController, container: AppDIContainer) {
         self.navigationController = navigationController
@@ -55,7 +52,7 @@ final class AppCoordinator: Coordinator, CoordinatorFinishDelegate {
         alert.addAction(UIAlertAction(title: "업데이트", style: .default) { _ in
             UIApplication.shared.open(AppEnvironment.current.appStoreURL)
         })
-        // 로그인 시트가 떠 있으면 그 위에 — 가장 위의 presented에 얹는다.
+        // 다른 화면이 present돼 있으면 그 위에 — 가장 위의 presented에 얹는다.
         var top: UIViewController = navigationController
         while let presented = top.presentedViewController { top = presented }
         top.present(alert, animated: true)
@@ -66,41 +63,29 @@ final class AppCoordinator: Coordinator, CoordinatorFinishDelegate {
         // 세션 판정은 동기(키체인 존재 여부) — 토큰 유효성은 첫 인증 요청이 증명한다.
         switch container.authSessionManager.bootstrapState() {
         case .active:
-            startHome()
-            // 앱 시작 동기화 + 포그라운드 관찰 시작 — 세션이 준비된 뒤에만.
-            container.alarmSyncService.activate()
-        case .loginRequired:
-            showLogin()
+            enterHome()
+        case .noSession:
+            // 게스트 전용 — 로그인 화면 없이 기기 ID로 게스트 세션을 발급받는다.
+            let issueGuestSession = container.issueGuestSessionUseCase
+            Task { [weak self] in
+                do {
+                    try await issueGuestSession.execute()
+                    self?.enterHome()
+                } catch {
+                    self?.splashViewController?.showRetry(message: BootstrapFailureMessage.text(for: error))
+                }
+            }
         }
     }
 
-    /// 강제 로그인 — 스플래시를 root로 유지한 채 로그인 시트를 present한다
-    /// (스플래시 배경 위 바텀시트 = 레거시와 같은 시각 결과).
-    private func showLogin() {
-        guard !isShowingLogin else { return }
-        isShowingLogin = true
-        let loginCoordinator = container.makeAuthDIContainer().makeLoginCoordinator(
-            navigationController: navigationController,
-            onAuthenticated: { [weak self] in
-                guard let self else { return }
-                self.isShowingLogin = false
-                self.startHome()
-                self.container.alarmSyncService.activate()
-                self.syncPushTokenAfterLogin()
-                if self.needsSyncAfterLogin {
-                    self.needsSyncAfterLogin = false
-                    let syncService = self.container.alarmSyncService
-                    Task { await syncService.syncNow() }
-                }
-            }
-        )
-        loginCoordinator.finishDelegate = self
-        addChild(loginCoordinator)
-        loginCoordinator.start()
+    private func enterHome() {
+        startHome()
+        // 앱 시작 동기화 + 포그라운드 관찰 시작 — 세션이 준비된 뒤에만.
+        container.alarmSyncService.activate()
+        syncPushToken()
     }
 
-    /// refresh 확정 사망(AuthSessionManager.sessionExpired) 관찰 — 홈을 접고 스플래시
-    /// 위 로그인으로 되돌린다. 스트림은 단일 소비자(이 코디네이터) 전제.
+    /// refresh 확정 사망(AuthSessionManager.sessionExpired) 관찰. 스트림은 단일 소비자(이 코디네이터) 전제.
     private func observeSessionExpiry() {
         sessionExpiryTask = Task { [weak self] in
             guard let stream = self?.container.authSessionManager.sessionExpired else { return }
@@ -111,27 +96,24 @@ final class AppCoordinator: Coordinator, CoordinatorFinishDelegate {
         }
     }
 
+    /// 게스트는 돌아갈 로그인 화면이 없다 — 화면은 그대로 두고 같은 기기 ID로 조용히 재발급한다.
+    /// 서버가 같은 게스트 회원을 돌려주는 계약이라 알람·집 주소는 정리하지 않는다.
+    /// 재발급이 실패하면 다음 401이 다시 만료를 yield해 자연 재시도가 된다.
     private func handleSessionExpiry() {
-        guard !isShowingLogin else { return }
-        needsSyncAfterLogin = true
-        // 로그아웃·탈퇴·강제 만료 공통 합류점 — 이전 계정의 알람이 로그인 화면에서 울리지 않게
-        // 로컬 정리를 여기서 한 번 더 보장한다(로그아웃 경로의 선행 정리와 겹쳐도 멱등).
-        let teardown = container.alarmSessionTeardown
-        Task { await teardown.tearDown(cancelOnServer: false) }
-        // 다음 계정에는 같은 FCM 토큰이라도 다시 전달해야 한다.
-        container.syncPushTokenUseCase.reset()
-        navigationController.presentedViewController?.dismiss(animated: false)
-        // setViewControllers가 didShow를 태워 SearchCoordinator류의 정리 경로도 돈다.
-        let splash = SplashViewController()
-        splash.onRetryTapped = { [weak self] in self?.bootstrap() }
-        splashViewController = splash
-        navigationController.setViewControllers([splash], animated: false)
-        childCoordinators.removeAll()
-        showLogin()
+        guard !isReissuingSession else { return }
+        isReissuingSession = true
+        let issueGuestSession = container.issueGuestSessionUseCase
+        let syncService = container.alarmSyncService
+        Task { [weak self] in
+            let succeeded = (try? await issueGuestSession.execute()) != nil
+            self?.isReissuingSession = false
+            // 만료 사이에 실패한 동기화를 메운다(activate의 시작 동기화는 최초 1회 가드).
+            if succeeded { await syncService.syncNow() }
+        }
     }
 
-    /// 로그인 중에 토큰이 갱신됐을 수 있다 — 세션이 생긴 직후 현재 토큰을 한 번 맞춘다.
-    private func syncPushTokenAfterLogin() {
+    /// 발급 요청 이후 토큰이 갱신됐을 수 있다 — 세션이 생긴 직후 현재 토큰을 한 번 맞춘다.
+    private func syncPushToken() {
         let syncPushToken = container.syncPushTokenUseCase
         Task {
             guard let token = await FCMPushTokenAdapter().currentPushToken() else { return }

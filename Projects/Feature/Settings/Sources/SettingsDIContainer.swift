@@ -8,8 +8,6 @@ import UIKit
 /// coordinator initializers.
 public final class SettingsDIContainer: SettingsCoordinatorBuildable {
     private let getUserProfileUseCase: any GetUserProfileUseCase
-    private let logoutUseCase: any LogoutUseCase
-    private let withdrawUseCase: any WithdrawUseCase
     private let updateHomeAddressUseCase: any UpdateHomeAddressUseCase
     private let searchPlacesUseCase: any SearchPlacesUseCase
     private let getCurrentLocationUseCase: any GetCurrentLocationUseCase
@@ -20,8 +18,6 @@ public final class SettingsDIContainer: SettingsCoordinatorBuildable {
 
     public init(
         getUserProfileUseCase: any GetUserProfileUseCase,
-        logoutUseCase: any LogoutUseCase,
-        withdrawUseCase: any WithdrawUseCase,
         updateHomeAddressUseCase: any UpdateHomeAddressUseCase,
         searchPlacesUseCase: any SearchPlacesUseCase,
         getCurrentLocationUseCase: any GetCurrentLocationUseCase,
@@ -31,8 +27,6 @@ public final class SettingsDIContainer: SettingsCoordinatorBuildable {
         appStoreURL: URL? = nil
     ) {
         self.getUserProfileUseCase = getUserProfileUseCase
-        self.logoutUseCase = logoutUseCase
-        self.withdrawUseCase = withdrawUseCase
         self.updateHomeAddressUseCase = updateHomeAddressUseCase
         self.searchPlacesUseCase = searchPlacesUseCase
         self.getCurrentLocationUseCase = getCurrentLocationUseCase
@@ -49,16 +43,11 @@ public final class SettingsDIContainer: SettingsCoordinatorBuildable {
     func makeSettingsScreen() -> (UIViewController, SettingsViewModel) {
         let viewModel = SettingsViewModel(
             getUserProfileUseCase: getUserProfileUseCase,
-            logoutUseCase: logoutUseCase,
             checkAppUpdateUseCase: checkAppUpdateUseCase,
             currentVersion: currentVersion,
             appStoreURL: appStoreURL
         )
         return (SettingsViewController(viewModel: viewModel), viewModel)
-    }
-
-    func makeWithdrawViewController() -> UIViewController {
-        WithdrawViewController(viewModel: WithdrawViewModel(withdrawUseCase: withdrawUseCase))
     }
 
     func makeHomeAddressViewController(onSaved: @escaping () -> Void) -> UIViewController {

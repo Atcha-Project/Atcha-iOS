@@ -1,6 +1,4 @@
 import AtchaData
-import AuthFeature
-import AuthFeatureInterface
 import CoreAlarm
 import CoreAuth
 import CoreNetwork
@@ -18,8 +16,8 @@ import SettingsFeatureInterface
 /// Presentation modules depend on Domain protocols only.
 final class AppDIContainer {
     private let networkClient: any NetworkClient
-    /// 데코레이터 미적용 클라이언트 — reissue(AuthSessionManager)와 소셜 Bearer를 실어야
-    /// 하는 로그인 API(AuthRepositoryImpl)만 쓴다.
+    /// 데코레이터 미적용 클라이언트 — reissue(AuthSessionManager)와 토큰 없이 부르는
+    /// 게스트 발급(AuthRepositoryImpl)만 쓴다.
     private let plainNetworkClient: any NetworkClient
     let authSessionManager: AuthSessionManager
 
@@ -75,11 +73,10 @@ final class AppDIContainer {
         let networkClient = AuthenticatedNetworkClient(
             base: baseClient,
             sessionManager: sessionManager,
-            // /auth/* 는 전부 plain client 또는 CoreAuth 내부에서 특수 Bearer(소셜·refresh)로
-            // 호출되지만, 실수로 이 데코레이터를 타도 그 Authorization이 서버 access 토큰으로
-            // 조용히 덮이지 않도록 이중 방어로 전부 public 처리한다(레거시 allowlist 대응).
+            // /auth/* 는 plain client(CoreAuth reissue·게스트 발급)로만 호출되지만, 실수로 이
+            // 데코레이터를 타도 401 복구가 발급 경로로 재귀하지 않도록 이중 방어로 public 처리한다.
             publicPathSuffixes: [
-                "/auth/reissue", "/auth/check", "/auth/login", "/auth/sign-up", "/auth/logout",
+                "/auth/reissue", "/auth/guest",
                 // 로그인 전 스플래시에서 호출된다 — 토큰이 없어 401 복구가 로그인 라우팅을 촉발하면 안 된다.
                 "/app/version",
             ]
@@ -144,50 +141,21 @@ final class AppDIContainer {
         await liveActivityAdapter.reattachOrphans(snapshot: snapshot, now: Date())
     }
 
-    func makeAuthDIContainer() -> any AuthCoordinatorBuildable {
-        AuthDIContainer(
-            signInUseCase: DefaultSignInUseCase(
-                socialLoginService: SocialLoginAdapter(),
-                // plain client — 소셜 Bearer 보존 + 401이 세션 복구를 촉발하지 않게.
-                authRepository: AuthRepositoryImpl(networkClient: plainNetworkClient),
-                sessionStore: AuthSessionStoreAdapter(sessionManager: authSessionManager),
-                pushTokenProvider: FCMPushTokenAdapter(),
-                // 최소 가입 폼 재료 — 신규 계정일 때만 쓰인다(현재 위치 + 역지오코딩 주소).
-                getCurrentLocationUseCase: DefaultGetCurrentLocationUseCase(
-                    locationService: CoreLocationServiceAdapter()
-                ),
-                reverseGeocodeUseCase: DefaultReverseGeocodeUseCase(repository: placeRepository)
-            )
+    /// 앱 시작(토큰 없음)·refresh 확정 만료 두 경로가 같은 발급 UseCase를 쓴다.
+    var issueGuestSessionUseCase: any IssueGuestSessionUseCase {
+        DefaultIssueGuestSessionUseCase(
+            // plain client — 토큰 없는 발급 요청 + 401이 세션 복구를 촉발하지 않게.
+            authRepository: AuthRepositoryImpl(networkClient: plainNetworkClient),
+            sessionStore: AuthSessionStoreAdapter(sessionManager: authSessionManager),
+            deviceIdentifier: KeychainDeviceIdentifier(),
+            pushTokenProvider: FCMPushTokenAdapter()
         )
     }
 
-    // MARK: - 계정 스택 (설정 화면 + DEV 디버그 메뉴의 로그아웃)
+    // MARK: - 설정
 
     private var userRepository: any UserRepository {
         UserRepositoryImpl(networkClient: networkClient)
-    }
-
-    private var sessionEnding: any SessionEnding {
-        AuthSessionEndingAdapter(sessionManager: authSessionManager)
-    }
-
-    /// 세션 종료 시 알람 정리 — 등록/취소 UseCase와 같은 공유 인스턴스를 봐야 한다.
-    var alarmSessionTeardown: any AlarmSessionTeardown {
-        AlarmSessionTeardownAdapter(
-            alarmRepository: alarmRepository,
-            scheduler: alarmScheduler,
-            activityPort: liveActivityPort,
-            snapshotStore: alarmSessionSnapshotStore,
-            syncService: alarmSyncService
-        )
-    }
-
-    func makeLogoutUseCase() -> any LogoutUseCase {
-        DefaultLogoutUseCase(sessionEnding: sessionEnding, alarmTeardown: alarmSessionTeardown)
-    }
-
-    func makeWithdrawUseCase() -> any WithdrawUseCase {
-        DefaultWithdrawUseCase(userRepository: userRepository, sessionEnding: sessionEnding)
     }
 
     func makeSettingsDIContainer(
@@ -195,8 +163,6 @@ final class AppDIContainer {
     ) -> any SettingsCoordinatorBuildable {
         SettingsDIContainer(
             getUserProfileUseCase: DefaultGetUserProfileUseCase(userRepository: userRepository),
-            logoutUseCase: makeLogoutUseCase(),
-            withdrawUseCase: makeWithdrawUseCase(),
             updateHomeAddressUseCase: DefaultUpdateHomeAddressUseCase(
                 userRepository: userRepository,
                 placeRepository: placeRepository

@@ -6,7 +6,6 @@ import Foundation
 final class SettingsViewModel {
     enum Route: Equatable {
         case homeAddress
-        case withdraw
         case externalLink(URL)
     }
 
@@ -15,8 +14,6 @@ final class SettingsViewModel {
         case privacyPolicy
         case feedback
         case version(text: String, hasUpdate: Bool)
-        case logout
-        case withdraw
     }
 
     struct Section: Equatable {
@@ -36,27 +33,22 @@ final class SettingsViewModel {
 
     private var addressText = "불러오는 중…"
     private var hasUpdate = false
-    private var isLoggingOut = false
 
     private let getUserProfileUseCase: any GetUserProfileUseCase
-    private let logoutUseCase: any LogoutUseCase
     private let checkAppUpdateUseCase: (any CheckAppUpdateUseCase)?
     private let currentVersion: String
     private let appStoreURL: URL?
 
     private var profileTask: Task<Void, Never>?
     private var updateTask: Task<Void, Never>?
-    private var logoutTask: Task<Void, Never>?
 
     init(
         getUserProfileUseCase: any GetUserProfileUseCase,
-        logoutUseCase: any LogoutUseCase,
         checkAppUpdateUseCase: (any CheckAppUpdateUseCase)? = nil,
         currentVersion: String,
         appStoreURL: URL? = nil
     ) {
         self.getUserProfileUseCase = getUserProfileUseCase
-        self.logoutUseCase = logoutUseCase
         self.checkAppUpdateUseCase = checkAppUpdateUseCase
         self.currentVersion = currentVersion
         self.appStoreURL = appStoreURL
@@ -66,7 +58,6 @@ final class SettingsViewModel {
     deinit {
         profileTask?.cancel()
         updateTask?.cancel()
-        logoutTask?.cancel()
     }
 
     func viewDidLoad() {
@@ -88,19 +79,6 @@ final class SettingsViewModel {
         case .version(_, hasUpdate: true):
             if let appStoreURL { onRoute?(.externalLink(appStoreURL)) }
         case .version: break
-        case .withdraw: onRoute?(.withdraw)
-        // 확인 팝업은 VC 몫 — 확정되면 logoutConfirmed()로 들어온다.
-        case .logout: break
-        }
-    }
-
-    /// 로그인 화면 복귀는 세션 만료 관찰(App)이 한다 — 여기선 중복 탭만 막는다.
-    func logoutConfirmed() {
-        guard !isLoggingOut else { return }
-        isLoggingOut = true
-        logoutTask = Task { [weak self] in
-            guard let useCase = self?.logoutUseCase else { return }
-            await useCase.execute()
         }
     }
 
@@ -142,7 +120,6 @@ final class SettingsViewModel {
                 .feedback,
                 .version(text: currentVersion, hasUpdate: hasUpdate),
             ]),
-            Section(title: nil, rows: [.logout, .withdraw]),
         ]
     }
 }

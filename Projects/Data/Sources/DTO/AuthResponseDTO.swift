@@ -1,12 +1,8 @@
 import CoreNetwork
 import Domain
 
-struct AuthCheckResponseDTO: Decodable, Sendable {
-    let exists: Bool
-}
-
-/// `/auth/login` 응답(레거시 LoginDTO 실측) — 전 필드 옵셔널, 좌표 키는 "lat"/"lon".
-/// lat/lon(집 좌표)은 현 스코프 미사용이라 디코딩만 하고 엔티티로 올리지 않는다.
+/// 토큰 발급 응답 — 레거시 LoginDTO 실측 형태(전 필드 옵셔널, 좌표 키 "lat"/"lon")를
+/// 게스트 발급도 그대로 쓴다고 제안했다. lat/lon은 미사용이라 디코딩만 한다.
 struct LoginResponseDTO: Decodable, Sendable {
     let id: Int?
     let accessToken: String?

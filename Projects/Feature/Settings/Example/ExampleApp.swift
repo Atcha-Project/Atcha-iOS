@@ -47,8 +47,6 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     private func startSettingsFlow() {
         let container = SettingsDIContainer(
             getUserProfileUseCase: PreviewGetUserProfileUseCase(),
-            logoutUseCase: PreviewLogoutUseCase(),
-            withdrawUseCase: PreviewWithdrawUseCase(),
             updateHomeAddressUseCase: PreviewUpdateHomeAddressUseCase(),
             searchPlacesUseCase: PreviewSearchPlacesUseCase(),
             getCurrentLocationUseCase: PreviewGetCurrentLocationUseCase(),
@@ -93,23 +91,10 @@ private final class LauncherViewController: UIViewController {
 // Example 스텁 — Data 무의존으로 피처 단독 실행(Tests 스텁과의 중복은 의도된 트레이드오프).
 // "부산" 검색 결과를 고르면 서비스 지역 밖 토스트, 그 외는 저장 성공 경로를 시연한다.
 
-private struct PreviewError: Error {}
-
 private struct PreviewGetUserProfileUseCase: GetUserProfileUseCase {
     func execute() async throws -> UserProfile {
         try? await Task.sleep(for: .milliseconds(500))
         return UserProfile(userID: 1, providerID: nil, nickname: nil, address: "서울 중구 세종대로 110", coordinate: nil, appVersion: nil)
-    }
-}
-
-private struct PreviewLogoutUseCase: LogoutUseCase {
-    func execute() async {}
-}
-
-private struct PreviewWithdrawUseCase: WithdrawUseCase {
-    func execute(reason: String?) async throws {
-        try? await Task.sleep(for: .seconds(1))
-        throw PreviewError()
     }
 }
 
