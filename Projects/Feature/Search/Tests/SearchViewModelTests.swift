@@ -153,13 +153,13 @@ private func makeSUT(
 @MainActor
 private func driveBothSlotsConfirmed(sut: SearchViewModel, recorder: StateRecorder) async {
     sut.viewDidLoad()
-    await recorder.waitUntilLast { if case .recent = $0 { true } else { false } }
+    await recorder.waitUntilLast { if case .recent = $0.content { true } else { false } }
     sut.keywordDidChange("강남", in: .departure)
-    await recorder.waitUntilLast { if case .places = $0 { true } else { false } }
+    await recorder.waitUntilLast { if case .places = $0.content { true } else { false } }
     sut.didSelectListItem(at: 0)
-    await recorder.waitUntilLast { if case .recent = $0 { true } else { false } }
+    await recorder.waitUntilLast { if case .recent = $0.content { true } else { false } }
     sut.keywordDidChange("회사", in: .arrival)
-    await recorder.waitUntilLast { if case .places = $0 { true } else { false } }
+    await recorder.waitUntilLast { if case .places = $0.content { true } else { false } }
     sut.didSelectListItem(at: 0)
 }
 
@@ -175,9 +175,9 @@ struct SearchViewModelTests {
         recorder.attach(to: sut)
 
         sut.viewDidLoad()
-        await recorder.waitUntilLast { if case .recent = $0 { true } else { false } }
+        await recorder.waitUntilLast { if case .recent = $0.content { true } else { false } }
 
-        #expect(recorder.states.last == .recent(recents.map(PlaceViewData.init(entity:))))
+        #expect(recorder.states.last?.content == .recent(recents.map(PlaceViewData.init(entity:))))
     }
 
     @Test
@@ -197,10 +197,10 @@ struct SearchViewModelTests {
         sut.keywordDidChange("강", in: .departure)
         await Task.yield()
         sut.keywordDidChange("강남", in: .departure)
-        await recorder.waitUntilLast { $0 == .places([PlaceViewData(entity: fresh)]) }
+        await recorder.waitUntilLast { $0.content == .places([PlaceViewData(entity: fresh)]) }
 
-        #expect(!recorder.states.contains(.places([PlaceViewData(entity: stale)])))
-        #expect(!recorder.states.contains { if case .failed = $0 { true } else { false } })
+        #expect(!recorder.states.contains { $0.content == .places([PlaceViewData(entity: stale)]) })
+        #expect(!recorder.states.contains { if case .failed = $0.content { true } else { false } })
     }
 
     @Test
@@ -215,11 +215,11 @@ struct SearchViewModelTests {
         recorder.attach(to: sut)
 
         await driveBothSlotsConfirmed(sut: sut, recorder: recorder)
-        await recorder.waitUntilLast { if case .routes = $0 { true } else { false } }
+        await recorder.waitUntilLast { if case .routes = $0.content { true } else { false } }
 
-        #expect(recorder.states.contains(.loadingRoutes))
+        #expect(recorder.states.contains { $0.content == .loadingRoutes })
         let expected = RouteResultsViewData(entities: routes, isExpanded: false, now: fixedNow)
-        #expect(recorder.states.last == .routes(expected))
+        #expect(recorder.states.last?.content == .routes(expected))
         #expect(expected.featured.badgeText == "가장 늦은 차")
         #expect(expected.alternatives.count == 1)
     }
@@ -234,9 +234,9 @@ struct SearchViewModelTests {
         recorder.attach(to: sut)
 
         await driveBothSlotsConfirmed(sut: sut, recorder: recorder)
-        await recorder.waitUntilLast { $0 == .serviceEnded }
+        await recorder.waitUntilLast { $0.content == .serviceEnded }
 
-        #expect(recorder.states.last == .serviceEnded)
+        #expect(recorder.states.last?.content == .serviceEnded)
     }
 
     @Test
@@ -249,9 +249,9 @@ struct SearchViewModelTests {
         recorder.attach(to: sut)
 
         await driveBothSlotsConfirmed(sut: sut, recorder: recorder)
-        await recorder.waitUntilLast { $0 == .noRoute }
+        await recorder.waitUntilLast { $0.content == .noRoute }
 
-        #expect(recorder.states.last == .noRoute)
+        #expect(recorder.states.last?.content == .noRoute)
     }
 
     @Test
@@ -261,9 +261,9 @@ struct SearchViewModelTests {
         recorder.attach(to: sut)
 
         sut.keywordDidChange("강남", in: .departure)
-        await recorder.waitUntilLast { if case .failed = $0 { true } else { false } }
+        await recorder.waitUntilLast { if case .failed = $0.content { true } else { false } }
 
-        #expect(recorder.states.last == .failed(message: "검색에 실패했어요"))
+        #expect(recorder.states.last?.content == .failed(message: "검색에 실패했어요"))
     }
 
     @Test
@@ -276,9 +276,9 @@ struct SearchViewModelTests {
         recorder.attach(to: sut)
 
         await driveBothSlotsConfirmed(sut: sut, recorder: recorder)
-        await recorder.waitUntilLast { if case .failed = $0 { true } else { false } }
+        await recorder.waitUntilLast { if case .failed = $0.content { true } else { false } }
 
-        #expect(recorder.states.last == .failed(message: "막차를 찾지 못했어요"))
+        #expect(recorder.states.last?.content == .failed(message: "막차를 찾지 못했어요"))
     }
 
     @Test
@@ -291,13 +291,13 @@ struct SearchViewModelTests {
         let recorder = StateRecorder()
         recorder.attach(to: sut)
         await driveBothSlotsConfirmed(sut: sut, recorder: recorder)
-        await recorder.waitUntilLast { if case .routes = $0 { true } else { false } }
+        await recorder.waitUntilLast { if case .routes = $0.content { true } else { false } }
 
         sut.didTapMore()
-        #expect(recorder.states.last == .routes(RouteResultsViewData(entities: routes, isExpanded: true, now: fixedNow)))
+        #expect(recorder.states.last?.content == .routes(RouteResultsViewData(entities: routes, isExpanded: true, now: fixedNow)))
 
         sut.didTapMore()
-        #expect(recorder.states.last == .routes(RouteResultsViewData(entities: routes, isExpanded: false, now: fixedNow)))
+        #expect(recorder.states.last?.content == .routes(RouteResultsViewData(entities: routes, isExpanded: false, now: fixedNow)))
     }
 
     @Test
@@ -309,13 +309,13 @@ struct SearchViewModelTests {
         recorder.attach(to: sut)
 
         sut.keywordDidChange("강남", in: .departure)
-        await recorder.waitUntilLast { if case .places = $0 { true } else { false } }
+        await recorder.waitUntilLast { if case .places = $0.content { true } else { false } }
         sut.didSelectListItem(at: 0)
-        await recorder.waitUntilLast { if case .recent = $0 { true } else { false } }
+        await recorder.waitUntilLast { if case .recent = $0.content { true } else { false } }
 
         #expect(await store.saved == [place])
-        #expect(sut.fields.departureText == "강남역")
-        #expect(sut.fields.activeField == .arrival)
+        #expect(sut.state.fields.departureText == "강남역")
+        #expect(sut.state.fields.activeField == .arrival)
     }
 
     @Test
@@ -328,9 +328,9 @@ struct SearchViewModelTests {
         recorder.attach(to: sut)
 
         sut.viewDidLoad()
-        await recorder.waitUntilLast { if case .recent = $0 { true } else { false } }
+        await recorder.waitUntilLast { if case .recent = $0.content { true } else { false } }
         sut.didDeleteRecent(at: 0)
-        await recorder.waitUntilLast { $0 == .recent([PlaceViewData(entity: second)]) }
+        await recorder.waitUntilLast { $0.content == .recent([PlaceViewData(entity: second)]) }
 
         #expect(await store.removed == [first])
     }
@@ -341,10 +341,10 @@ struct SearchViewModelTests {
         let sut = makeSUT(location: { coordinate })
 
         sut.viewDidLoad()
-        while sut.fields.departureText.isEmpty { await Task.yield() }
+        while sut.state.fields.departureText.isEmpty { await Task.yield() }
 
-        #expect(sut.fields.departureText == "현재 위치")
-        #expect(sut.fields.activeField == .arrival)
+        #expect(sut.state.fields.departureText == "현재 위치")
+        #expect(sut.state.fields.activeField == .arrival)
     }
 
     @Test
@@ -354,11 +354,11 @@ struct SearchViewModelTests {
         recorder.attach(to: sut)
 
         sut.viewDidLoad()
-        await recorder.waitUntilLast { if case .recent = $0 { true } else { false } }
+        await recorder.waitUntilLast { if case .recent = $0.content { true } else { false } }
         for _ in 0..<20 { await Task.yield() }
 
-        #expect(sut.fields.departureText.isEmpty)
-        #expect(sut.fields.activeField == .departure)
+        #expect(sut.state.fields.departureText.isEmpty)
+        #expect(sut.state.fields.activeField == .departure)
     }
 
     @Test
@@ -376,13 +376,13 @@ struct SearchViewModelTests {
 
         sut.viewDidLoad()
         sut.keywordDidChange("강남", in: .departure)
-        await recorder.waitUntilLast { if case .places = $0 { true } else { false } }
+        await recorder.waitUntilLast { if case .places = $0.content { true } else { false } }
 
         continuation.yield(Coordinate(latitude: 37.49, longitude: 127.02))
         continuation.finish()
         for _ in 0..<20 { await Task.yield() }
 
-        #expect(sut.fields.departureText == "강남")
+        #expect(sut.state.fields.departureText == "강남")
     }
 
     @Test
@@ -400,9 +400,9 @@ struct SearchViewModelTests {
         recorder.attach(to: sut)
 
         sut.viewDidLoad()
-        while sut.fields.departureText.isEmpty { await Task.yield() }
+        while sut.state.fields.departureText.isEmpty { await Task.yield() }
         sut.keywordDidChange("회사", in: .arrival)
-        await recorder.waitUntilLast { if case .places = $0 { true } else { false } }
+        await recorder.waitUntilLast { if case .places = $0.content { true } else { false } }
 
         #expect(await log.coordinates == [coordinate])
     }
@@ -419,13 +419,13 @@ struct SearchViewModelTests {
         recorder.attach(to: sut)
 
         sut.viewDidLoad()
-        while sut.fields.departureText.isEmpty { await Task.yield() }
+        while sut.state.fields.departureText.isEmpty { await Task.yield() }
         sut.keywordDidChange("회사", in: .arrival)
-        await recorder.waitUntilLast { if case .places = $0 { true } else { false } }
+        await recorder.waitUntilLast { if case .places = $0.content { true } else { false } }
         sut.didSelectListItem(at: 0)
-        await recorder.waitUntilLast { if case .routes = $0 { true } else { false } }
+        await recorder.waitUntilLast { if case .routes = $0.content { true } else { false } }
 
-        #expect(recorder.states.last == .routes(RouteResultsViewData(entities: routes, isExpanded: false, now: fixedNow)))
+        #expect(recorder.states.last?.content == .routes(RouteResultsViewData(entities: routes, isExpanded: false, now: fixedNow)))
     }
 
     @Test
@@ -446,7 +446,7 @@ struct SearchViewModelTests {
         let recorder = StateRecorder()
         recorder.attach(to: sut)
         await driveBothSlotsConfirmed(sut: sut, recorder: recorder)
-        await recorder.waitUntilLast { if case .routes = $0 { true } else { false } }
+        await recorder.waitUntilLast { if case .routes = $0.content { true } else { false } }
 
         sut.didSelectRoute(at: 0)
 
@@ -459,10 +459,10 @@ struct SearchViewModelTests {
     @Test
     func initialFieldArrival_startsWithArrivalSlotActive() {
         let sut = makeSUT(initialField: .arrival)
-        #expect(sut.fields.activeField == .arrival)
+        #expect(sut.state.fields.activeField == .arrival)
 
         let departureEntry = makeSUT(initialField: .departure)
-        #expect(departureEntry.fields.activeField == .departure)
+        #expect(departureEntry.state.fields.activeField == .departure)
     }
 
     @Test
@@ -473,10 +473,10 @@ struct SearchViewModelTests {
         recorder.attach(to: sut)
 
         sut.keywordDidChange("강남", in: .departure)
-        await recorder.waitUntilLast { if case .places = $0 { true } else { false } }
+        await recorder.waitUntilLast { if case .places = $0.content { true } else { false } }
 
         // 디바운스 통과 후 요청 직전의 로딩 상태를 반드시 거친다.
-        #expect(recorder.states.contains(.loadingPlaces))
+        #expect(recorder.states.contains { $0.content == .loadingPlaces })
     }
 
     @Test
@@ -486,10 +486,10 @@ struct SearchViewModelTests {
         recorder.attach(to: sut)
 
         sut.keywordDidChange("결과없는키워드", in: .arrival)
-        await recorder.waitUntilLast { $0 == .places([]) }
+        await recorder.waitUntilLast { $0.content == .places([]) }
 
         // 0건도 .places로 흐른다 — VC가 빈 상태("검색 결과가 없어요")를 그린다.
-        #expect(recorder.states.last == .places([]))
+        #expect(recorder.states.last?.content == .places([]))
     }
 
     @Test
@@ -502,16 +502,16 @@ struct SearchViewModelTests {
         let recorder = StateRecorder()
         recorder.attach(to: sut)
         await driveBothSlotsConfirmed(sut: sut, recorder: recorder)
-        await recorder.waitUntilLast { $0 == .serviceEnded }
-        #expect(!sut.fields.arrivalText.isEmpty)
+        await recorder.waitUntilLast { $0.content == .serviceEnded }
+        #expect(!sut.state.fields.arrivalText.isEmpty)
 
         sut.didTapEmptyAction()
-        await recorder.waitUntilLast { if case .recent = $0 { true } else { false } }
+        await recorder.waitUntilLast { if case .recent = $0.content { true } else { false } }
 
-        #expect(sut.fields.arrivalText.isEmpty)
-        #expect(sut.fields.activeField == .arrival)
+        #expect(sut.state.fields.arrivalText.isEmpty)
+        #expect(sut.state.fields.activeField == .arrival)
         // 출발지는 유지 — 즉시 새 도착지 검색이 가능하다.
-        #expect(sut.fields.departureText == "강남역")
+        #expect(sut.state.fields.departureText == "강남역")
     }
 
     @Test
@@ -523,13 +523,13 @@ struct SearchViewModelTests {
         let recorder = StateRecorder()
         recorder.attach(to: sut)
         await driveBothSlotsConfirmed(sut: sut, recorder: recorder)
-        await recorder.waitUntilLast { $0 == .noRoute }
+        await recorder.waitUntilLast { $0.content == .noRoute }
 
         sut.didTapEmptyAction()
-        await recorder.waitUntilLast { if case .recent = $0 { true } else { false } }
+        await recorder.waitUntilLast { if case .recent = $0.content { true } else { false } }
 
-        #expect(sut.fields.arrivalText.isEmpty)
-        #expect(sut.fields.activeField == .arrival)
+        #expect(sut.state.fields.arrivalText.isEmpty)
+        #expect(sut.state.fields.activeField == .arrival)
     }
 
     @Test

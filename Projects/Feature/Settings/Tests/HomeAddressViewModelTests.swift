@@ -30,7 +30,7 @@ struct HomeAddressViewModelTests {
         sut.onSaved = { savedCount += 1 }
 
         sut.keywordDidChange("시청")
-        await waitUntil { if case .places = sut.state { true } else { false } }
+        await waitUntil { if case .places = sut.state.content { true } else { false } }
         sut.didSelectPlace(at: 0)
         await waitUntil { savedCount == 1 }
 
@@ -50,7 +50,7 @@ struct HomeAddressViewModelTests {
         await waitUntil { !toasts.isEmpty }
 
         #expect(toasts == ["앗차는 현재 서울, 경기, 인천에서만 이용 가능해요"])
-        #expect(sut.isSaving == false)
+        #expect(sut.state.isSaving == false)
     }
 
     @Test
