@@ -33,6 +33,8 @@ private struct SpyAlarmRepository: AlarmRepository {
 private struct SpyAlarmScheduler: AlarmScheduler {
     let log: CallLog
     var authorizationGranted = true
+    /// 로컬 스케줄 실패 주입 — AlarmKit이 과거 fixed date를 거부하는 등의 상황.
+    var replaceError: (any Error)?
 
     func requestAuthorization() async -> Bool {
         await log.append("auth:\(authorizationGranted)")
@@ -41,6 +43,7 @@ private struct SpyAlarmScheduler: AlarmScheduler {
 
     func replaceAlarm(id: String, fireDate: Date, title: String) async throws {
         await log.append("replaceAlarm:\(id)@\(Int(fireDate.timeIntervalSince1970))")
+        if let replaceError { throw replaceError }
     }
 
     func cancelAlarm() async {
@@ -301,5 +304,39 @@ struct DefaultRegisterAlarmUseCaseTests {
             try await sut.execute(route: .fixture(id: "new"))
         }
         #expect(await store.saved.isEmpty)
+    }
+
+    /// 회귀: 서버 등록은 성공했는데 로컬 스케줄이 실패하는 경우.
+    ///
+    /// 스냅샷 저장이 `replaceAlarm` **뒤에** 있던 시절에는 이 경로에서 저장이 건너뛰어져
+    /// 서버에는 세션이 있고 로컬에는 도보 초가 없는 상태가 됐다. 그러면 다음 refresh가
+    /// 세션을 발견해도 버퍼만 적용된 시각으로 복구되어 **알람이 도보 시간만큼 늦게**
+    /// 울린다(도보 5분이면 5분 늦음). 저장을 서버 등록 직후로 옮겨 막는다.
+    @Test
+    func execute_localScheduleFails_stillPersistsLocalFacts() async {
+        let log = CallLog()
+        let store = SpySnapshotStore()
+        let sut = DefaultRegisterAlarmUseCase(
+            repository: SpyAlarmRepository(log: log),
+            scheduler: SpyAlarmScheduler(log: log, replaceError: StubError()),
+            snapshotStore: store,
+            now: fixedNow
+        )
+
+        let route = LastRoute.fixture(
+            id: "new", legs: [walkLeg(sectionTime: 300), busLeg(routeName: "간선:6411")]
+        )
+
+        await #expect(throws: StubError.self) {
+            try await sut.execute(route: route)
+        }
+
+        let saved = await store.saved
+        #expect(saved.count == 1)
+        // 도보 초가 보존돼야 한다 — 이게 없으면 복구 시 알람이 늦는다.
+        #expect(saved.first?.firstWalkSeconds == 300)
+        #expect(saved.first?.info.lastRouteId == "new")
+        // 로컬 스케줄은 실제로 시도됐고 실패했다(저장이 스케줄을 건너뛴 게 아니다).
+        #expect(await log.events.contains { $0.hasPrefix("replaceAlarm:new") })
     }
 }

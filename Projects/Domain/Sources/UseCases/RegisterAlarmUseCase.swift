@@ -56,20 +56,18 @@ public struct DefaultRegisterAlarmUseCase: RegisterAlarmUseCase {
             try? await repository.cancel(lastRouteId: existing.lastRouteId)
         }
         try await repository.register(lastRouteId: route.id)
-        // 단일 알람 정책: 서버 등록이 성공한 뒤에만 로컬 알람을 교체한다.
-        try await scheduler.replaceAlarm(
-            id: route.id,
-            fireDate: fireDate,
-            title: AlarmSchedulingDefaults.title
-        )
         let session = AlarmInfo(
             lastRouteId: route.id,
             departureTime: route.departureTime,
             updatedAt: nil, // 등록 직후라 서버 재계산 값이 아직 없다 — refresh가 갱신한다.
             isReal: true
         )
-        // 등록 성공 = 스냅샷 저장 시점(Phase 14) — 재실행 시 diff 기준·LA 재부착·카드
-        // 복원의 재료. 도보 초·표시명·수단은 등록 시점 경로에서만 얻을 수 있다.
+        // 스냅샷을 **로컬 스케줄보다 먼저** 저장한다. 도보 초·표시명·수단은 등록 시점
+        // 경로에서만 얻을 수 있는데, 아래 replaceAlarm이 throw하면(AlarmKit 거부 등)
+        // 이 저장이 건너뛰어져 서버에는 세션이 있고 로컬에는 도보 초가 없는 상태가 된다.
+        // 그러면 다음 refresh가 세션을 발견해도 버퍼만 적용된 시각으로 복구되어
+        // **알람이 도보 시간만큼 늦게 울린다**(도보 3분이면 3분 늦음).
+        // 저장은 throws가 아니라 실패를 흡수하므로 이 순서가 등록을 막지 않는다.
         // syncedAt = 등록 시각(Phase 16) — 서버가 방금 이 값을 받아들였으므로 확인이다.
         await snapshotStore?.save(AlarmSessionSnapshot(
             info: session,
@@ -80,6 +78,12 @@ public struct DefaultRegisterAlarmUseCase: RegisterAlarmUseCase {
             expired: false,
             syncedAt: now()
         ))
+        // 단일 알람 정책: 서버 등록이 성공한 뒤에만 로컬 알람을 교체한다.
+        try await scheduler.replaceAlarm(
+            id: route.id,
+            fireDate: fireDate,
+            title: AlarmSchedulingDefaults.title
+        )
         // 수명 정책: 알람 등록(서버+로컬)이 전부 성공한 뒤에만 LA를 시작한다.
         // start는 throws가 아니므로 LA 실패가 알람 등록을 실패시킬 수 없다.
         if let activityPort {
