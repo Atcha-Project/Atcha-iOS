@@ -405,6 +405,8 @@ final class HomeViewController: UIViewController {
             DSToast.show("오늘 막차가 끊겼어요", in: toastHost)
         case .chipNoRoute:
             DSToast.show("대중교통 경로를 찾지 못했어요", in: toastHost)
+        case .chipOutOfServiceRegion:
+            DSToast.show("앗차는 현재 서울, 경기, 인천에서만 이용 가능해요", in: toastHost)
         case .alarmPermissionNeeded:
             DSToast.show(
                 "알람 권한이 꺼져 있어요",

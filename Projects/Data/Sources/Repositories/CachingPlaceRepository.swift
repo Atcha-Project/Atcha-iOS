@@ -13,8 +13,9 @@ import Foundation
 /// | 장소 검색 | 새로 생긴 가게가 안 보인다 | 캐시. POI는 생기고 없어지므로 1시간 |
 /// | 서비스 지역 판정 | **서비스가 되는데 안 된다고 막는다** | **캐시하지 않음** — 지역 확장이 즉시 반영돼야 하고, 호출 빈도도 집 주소 저장 시 1회뿐이라 아낄 게 없다 |
 ///
-/// 실패는 캐시하지 않는다. 지하철에서 한 번 실패한 키워드가 지상에 나와도 계속
-/// 실패로 답하는 게 더 나쁘다.
+/// 실패도, **빈 결과도** 캐시하지 않는다. 지하철에서 한 번 실패한 키워드가 지상에 나와도
+/// 계속 실패로 답하는 게 더 나쁘고, 빈 결과를 TTL 내내 박아 두면 원인이 사라져도 화면이
+/// 회복되지 않는다.
 public struct CachingPlaceRepository: PlaceRepository {
     private let upstream: any PlaceRepository
     private let geocodeCache: ExpiringCache<PlaceRecordDTO>
@@ -46,7 +47,12 @@ public struct CachingPlaceRepository: PlaceRepository {
             return cached.map { $0.toEntity() }
         }
         let places = try await upstream.searchPlaces(keyword: keyword, near: coordinate)
-        try? await searchCache.setValue(places.map(PlaceRecordDTO.init), forKey: key)
+        // **빈 결과는 캐시하지 않는다.** 빈 배열도 성공 응답이라 그냥 담으면, 한 번 비어서
+        // 온 키워드가 원인이 사라진 뒤에도 TTL 내내 비어 보인다 — 실패를 캐시하지 않는
+        // 이유와 같은 이유이고, 아낄 왕복 하나보다 피해가 크다.
+        if !places.isEmpty {
+            try? await searchCache.setValue(places.map(PlaceRecordDTO.init), forKey: key)
+        }
         return places
     }
 

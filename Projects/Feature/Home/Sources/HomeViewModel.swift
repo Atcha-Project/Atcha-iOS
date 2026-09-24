@@ -87,6 +87,8 @@ final class HomeViewModel {
         case chipServiceEnded
         /// 칩 재검색 결과 경로 없음(Phase 18).
         case chipNoRoute
+        /// 칩 재검색 결과 서비스 지역 밖 — 서버 TRS_012.
+        case chipOutOfServiceRegion
         case alarmPermissionNeeded
         case alarmRegisterFailed
         case alarmCancelFailed
@@ -318,6 +320,8 @@ final class HomeViewModel {
                     self.onToast?(.chipServiceEnded)
                 case .noRoute:
                     self.onToast?(.chipNoRoute)
+                case .outOfServiceRegion:
+                    self.onToast?(.chipOutOfServiceRegion)
                 }
             } catch {
                 guard !Task.isCancelled else { return }

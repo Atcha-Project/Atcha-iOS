@@ -19,15 +19,23 @@ public struct DefaultSearchLastRoutesUseCase: SearchLastRoutesUseCase {
             }
             throw error
         }
-        // TODO: [미확정 #3] 서버의 "막차 종료" 표현 실측 전까지 빈 목록을 종료로 간주한다.
+        // TODO: [미확정 #3] 막차 종료의 전용 responseCode는 아직 관측되지 않았다
+        //       (2026-09-25 실측 시각이 막차 전이라 재현 못 함). 그때까지 빈 목록을 종료로 간주한다.
         guard !routes.isEmpty else { return .serviceEnded }
         return .available(routes)
     }
 
-    // TODO: [미확정 #3] "막차 종료"/"경로 없음"의 responseCode 실측값이 확정되면 이 매핑에만 추가한다.
-    //       레거시 단서(의미 미확인): URT_001, LRT_001, LRT_003, REQ_004
+    /// 서버가 **정상 상태를 에러 코드로 알리는** 경우를 결과로 되돌린다. 매핑이 비어 있던
+    /// 동안 이 둘은 그대로 throw되어 화면에 "검색에 실패했어요"만 떴다 — 사용자는 무엇을
+    /// 바꿔야 하는지 알 수 없었다.
+    ///
+    /// 2026-09-25 실측:
+    /// - `TRS_011` "출발지와 도착지 간 거리가 너무 가깝습니다." (같은 지점으로 조회)
+    /// - `TRS_012` "서비스 지역이 아닙니다: (129.0415, 35.1151)" (부산으로 조회)
     private static func normalizedResult(code: String) -> LastRouteSearchResult? {
         switch code {
+        case "TRS_011": .noRoute
+        case "TRS_012": .outOfServiceRegion
         default: nil
         }
     }
