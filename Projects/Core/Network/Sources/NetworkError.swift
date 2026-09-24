@@ -27,3 +27,30 @@ public enum NetworkError: Error, Sendable {
         return false
     }
 }
+
+extension NetworkError: CustomDebugStringConvertible {
+    /// 진단용 한 줄. transport/offline이 URLError 코드를 삼키면 "타임아웃(-1001)"과
+    /// "호스트에 연결 못 함(-1004)", "TLS 실패(-1200)"가 구분되지 않는다 — 원인이
+    /// 앱인지 서버인지 네트워크인지 가르는 첫 단서라 코드를 그대로 노출한다.
+    public var debugDescription: String {
+        switch self {
+        case .invalidURL:
+            "invalidURL"
+        case let .offline(underlying):
+            "offline(\(Self.describe(underlying)))"
+        case let .transport(underlying):
+            "transport(\(Self.describe(underlying)))"
+        case .invalidResponse:
+            "invalidResponse(non-HTTP)"
+        case let .unacceptableStatus(code, data):
+            "unacceptableStatus(\(code), \(data.count)B)"
+        case let .decoding(underlying):
+            "decoding(\(underlying))"
+        }
+    }
+
+    private static func describe(_ error: any Error) -> String {
+        guard let urlError = error as? URLError else { return "\(error)" }
+        return "URLError \(urlError.code.rawValue) \(urlError.localizedDescription)"
+    }
+}

@@ -29,6 +29,12 @@ private struct StubAuthRepository: AuthRepository {
     var session = LoginSession(userID: 1, accessToken: "SA", refreshToken: "SR")
     var signUpError: (any Error)?
 
+    /// 소셜 경로 테스트에서는 쓰이지 않는다 — 게스트 경로는 별도 스위트가 검증한다.
+    func signInAsGuest(deviceID: String, fcmToken: String?) async throws -> LoginSession {
+        recorder.record("guest(device:\(deviceID)/fcm:\(fcmToken ?? "nil"))")
+        return session
+    }
+
     func checkRegistration(credential: SocialCredential) async throws -> Bool {
         recorder.record("check(\(credential.accessToken))")
         return exists

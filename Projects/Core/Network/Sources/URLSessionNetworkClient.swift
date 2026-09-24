@@ -1,4 +1,11 @@
 import Foundation
+import os
+
+/// 요청 단위 진단 로그(DEBUG 전용). 이 스택에는 인터셉터·로거가 없어서 실패가
+/// 전부 같은 얼굴로 보였다 — base URL이 틀렸는지, 서버가 죽었는지, 디코딩이
+/// 깨졌는지를 Console.app에서 한 줄로 가르기 위한 최소 계측이다.
+/// Authorization 헤더와 본문은 절대 남기지 않는다(토큰이 실린다).
+private let networkLogger = Logger(subsystem: "com.atcha.network", category: "request")
 
 public struct URLSessionNetworkClient: NetworkClient {
     private let baseURL: URL
@@ -34,20 +41,66 @@ public struct URLSessionNetworkClient: NetworkClient {
     }
 
     private func send(_ request: URLRequest) async throws -> Data {
+        let started = ContinuousClock.now
         let data: Data
         let response: URLResponse
         do {
             (data, response) = try await session.data(for: request)
         } catch {
-            throw NetworkError.classifyingTransport(error)
+            throw Self.logging(NetworkError.classifyingTransport(error), request, started)
         }
         guard let http = response as? HTTPURLResponse else {
-            throw NetworkError.invalidResponse
+            throw Self.logging(NetworkError.invalidResponse, request, started)
         }
         guard (200 ..< 300).contains(http.statusCode) else {
-            throw NetworkError.unacceptableStatus(code: http.statusCode, data: data)
+            throw Self.logging(
+                NetworkError.unacceptableStatus(code: http.statusCode, data: data),
+                request,
+                started
+            )
         }
+        Self.logSuccess(request, status: http.statusCode, started: started)
         return data
+    }
+
+    /// 실패를 로그에 남기고 그대로 돌려준다 — 호출부의 `throw` 흐름을 바꾸지 않는다.
+    private static func logging(
+        _ error: NetworkError,
+        _ request: URLRequest,
+        _ started: ContinuousClock.Instant
+    ) -> NetworkError {
+        #if DEBUG
+        networkLogger.error(
+            """
+            \(request.httpMethod ?? "?", privacy: .public) \
+            \(request.url?.absoluteString ?? "?", privacy: .public) \
+            → \(error.debugDescription, privacy: .public) \
+            (\(Self.elapsedMilliseconds(since: started), privacy: .public)ms)
+            """
+        )
+        #endif
+        return error
+    }
+
+    private static func logSuccess(
+        _ request: URLRequest,
+        status: Int,
+        started: ContinuousClock.Instant
+    ) {
+        #if DEBUG
+        networkLogger.debug(
+            """
+            \(request.httpMethod ?? "?", privacy: .public) \
+            \(request.url?.absoluteString ?? "?", privacy: .public) \
+            → \(status, privacy: .public) \
+            (\(Self.elapsedMilliseconds(since: started), privacy: .public)ms)
+            """
+        )
+        #endif
+    }
+
+    private static func elapsedMilliseconds(since started: ContinuousClock.Instant) -> Int {
+        Int((ContinuousClock.now - started) / .milliseconds(1))
     }
 
     public func request<Response: Decodable & Sendable>(

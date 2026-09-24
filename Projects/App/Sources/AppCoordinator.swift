@@ -11,10 +11,13 @@ final class AppCoordinator: Coordinator, CoordinatorFinishDelegate {
 
     private weak var splashViewController: SplashViewController?
     private var sessionExpiryTask: Task<Void, Never>?
+    /// 게스트 부트스트랩 in-flight — 만료 스트림의 중복 yield나 재시도 연타에
+    /// /auth/guest를 겹쳐 쏘지 않는다.
+    private var bootstrapTask: Task<Void, Never>?
     /// 로그인 플로우 표시 중 가드 — 만료 스트림의 중복 yield에 로그인을 겹치지 않는다.
     private var isShowingLogin = false
-    /// 세션 만료 경유 재로그인이면 성공 직후 수동 동기화 1회 — activate()의 시작
-    /// 동기화는 최초 1회 가드라 재로그인 경로에선 돌지 않기 때문.
+    /// 세션 만료 경유 재인증이면 성공 직후 수동 동기화 1회 — activate()의 시작
+    /// 동기화는 최초 1회 가드라 재인증 경로에선 돌지 않기 때문.
     private var needsSyncAfterLogin = false
 
     init(navigationController: UINavigationController, container: AppDIContainer) {
@@ -24,6 +27,7 @@ final class AppCoordinator: Coordinator, CoordinatorFinishDelegate {
 
     deinit {
         sessionExpiryTask?.cancel()
+        bootstrapTask?.cancel()
     }
 
     func start() {
@@ -66,16 +70,54 @@ final class AppCoordinator: Coordinator, CoordinatorFinishDelegate {
         // 세션 판정은 동기(키체인 존재 여부) — 토큰 유효성은 첫 인증 요청이 증명한다.
         switch container.authSessionManager.bootstrapState() {
         case .active:
-            startHome()
-            // 앱 시작 동기화 + 포그라운드 관찰 시작 — 세션이 준비된 뒤에만.
-            container.alarmSyncService.activate()
+            enterHome()
         case .loginRequired:
-            showLogin()
+            signInAsGuest()
         }
     }
 
-    /// 강제 로그인 — 스플래시를 root로 유지한 채 로그인 시트를 present한다
+    private func enterHome() {
+        startHome()
+        // 앱 시작 동기화 + 포그라운드 관찰 시작 — 세션이 준비된 뒤에만.
+        container.alarmSyncService.activate()
+    }
+
+    /// 게스트 부트스트랩(POST /auth/guest) — 토큰이 없으면 deviceId로 계정을 만들거나
+    /// 되찾는다. 서버 호출이라 여기서 부트스트랩이 비동기가 되고, 그래서 비로소
+    /// 스플래시의 실패 표면화(showRetry)가 실제로 쓰인다.
+    private func signInAsGuest() {
+        // in-flight면 재시도 연타·만료 중복 yield에도 /auth/guest를 겹쳐 쏘지 않는다.
+        guard bootstrapTask == nil else { return }
+        let useCase = container.makeSignInAsGuestUseCase()
+        bootstrapTask = Task { [weak self] in
+            defer { self?.bootstrapTask = nil }
+            do {
+                try await useCase.execute()
+                guard let self, !Task.isCancelled else { return }
+                self.enterHome()
+                // 게스트 가입 시 FCM 토큰이 아직 없었을 수 있다 — 세션이 생긴 직후 한 번 맞춘다.
+                self.syncPushTokenAfterLogin()
+                if self.needsSyncAfterLogin {
+                    self.needsSyncAfterLogin = false
+                    let syncService = self.container.alarmSyncService
+                    Task { await syncService.syncNow() }
+                }
+            } catch {
+                guard let self, !Task.isCancelled else { return }
+                self.splashViewController?.showRetry(
+                    message: BootstrapFailureMessage.text(for: error)
+                )
+            }
+        }
+    }
+
+    /// 소셜 로그인 시트 — 스플래시를 root로 유지한 채 present한다
     /// (스플래시 배경 위 바텀시트 = 레거시와 같은 시각 결과).
+    ///
+    /// 게스트 인증 전환(2026-09-24) 이후 **호출처가 없다.** 서버가 게스트 계정으로
+    /// 부트스트랩을 처리하므로 강제 로그인 단계 자체가 사라졌다. 소셜 계정 승격이
+    /// 도입되면 이 경로가 그대로 진입점이 되므로 AuthFeature와 함께 남겨둔다.
+    @available(*, deprecated, message: "게스트 부트스트랩으로 대체됨. 소셜 계정 승격 도입 시 재사용.")
     private func showLogin() {
         guard !isShowingLogin else { return }
         isShowingLogin = true
@@ -112,7 +154,7 @@ final class AppCoordinator: Coordinator, CoordinatorFinishDelegate {
     }
 
     private func handleSessionExpiry() {
-        guard !isShowingLogin else { return }
+        guard bootstrapTask == nil, !isShowingLogin else { return }
         needsSyncAfterLogin = true
         // 로그아웃·탈퇴·강제 만료 공통 합류점 — 이전 계정의 알람이 로그인 화면에서 울리지 않게
         // 로컬 정리를 여기서 한 번 더 보장한다(로그아웃 경로의 선행 정리와 겹쳐도 멱등).
@@ -127,7 +169,10 @@ final class AppCoordinator: Coordinator, CoordinatorFinishDelegate {
         splashViewController = splash
         navigationController.setViewControllers([splash], animated: false)
         childCoordinators.removeAll()
-        showLogin()
+        splash.showLoading()
+        // 서버 계약: reissue가 죽어도 같은 deviceId로 /auth/guest를 부르면 같은 계정이
+        // 돌아온다 — 만료가 로그인 화면이 아니라 조용한 재인증으로 끝나는 근거다.
+        signInAsGuest()
     }
 
     /// 로그인 중에 토큰이 갱신됐을 수 있다 — 세션이 생긴 직후 현재 토큰을 한 번 맞춘다.

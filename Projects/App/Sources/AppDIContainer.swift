@@ -79,6 +79,8 @@ final class AppDIContainer {
             // 호출되지만, 실수로 이 데코레이터를 타도 그 Authorization이 서버 access 토큰으로
             // 조용히 덮이지 않도록 이중 방어로 전부 public 처리한다(레거시 allowlist 대응).
             publicPathSuffixes: [
+                // 게스트 진입 — 토큰이 없는 것이 정상이므로 빈 Authorization이 붙으면 안 된다.
+                "/auth/guest",
                 "/auth/reissue", "/auth/check", "/auth/login", "/auth/sign-up", "/auth/logout",
                 // 로그인 전 스플래시에서 호출된다 — 토큰이 없어 401 복구가 로그인 라우팅을 촉발하면 안 된다.
                 "/app/version",
@@ -142,6 +144,17 @@ final class AppDIContainer {
     func reattachOrphanLiveActivities() async {
         let snapshot = await alarmSessionSnapshotStore.load()
         await liveActivityAdapter.reattachOrphans(snapshot: snapshot, now: Date())
+    }
+
+    /// 게스트 부트스트랩(서버 계약: POST /auth/guest) — 앱 시작 시 토큰이 없으면 이걸로 받는다.
+    /// plain client: 게스트는 토큰이 없고, 401이 세션 복구를 촉발해서도 안 된다.
+    func makeSignInAsGuestUseCase() -> any SignInAsGuestUseCase {
+        DefaultSignInAsGuestUseCase(
+            authRepository: AuthRepositoryImpl(networkClient: plainNetworkClient),
+            sessionStore: AuthSessionStoreAdapter(sessionManager: authSessionManager),
+            deviceIdentifierProvider: KeychainDeviceIdentifierAdapter(),
+            pushTokenProvider: FCMPushTokenAdapter()
+        )
     }
 
     func makeAuthDIContainer() -> any AuthCoordinatorBuildable {
