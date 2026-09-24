@@ -16,9 +16,6 @@ final class AlarmSessionLifecycleService {
         subsystem: "com.atcha.iOS.v2", category: "SessionLifecycle"
     )
 
-    /// stopIntent 확인 기록 — 스냅샷 영속화의 인메모리 미러.
-    private(set) var isAcknowledged = false
-
     init(
         liveActivity: any LastTrainDepartureEnding,
         sessionStore: AlarmSessionStore
@@ -34,7 +31,6 @@ final class AlarmSessionLifecycleService {
     func alarmAcknowledged() async {
         // 로그는 자동 검수 ②(강제 종료 후 인텐트 실행 여부 판정)의 증적 채널이다.
         Self.logger.info("알람 확인(stopIntent) 수신 — departed 전환 + 자동 소멸 예약")
-        isAcknowledged = true
         // 세션 스냅샷이 있을 때만 기록한다 — 스냅샷 없는 확인(이론상 경합)은 남길 곳이 없고,
         // 그 경우의 정리는 wake 시점 리컨실이 맡는다.
         await sessionStore.acknowledge()
