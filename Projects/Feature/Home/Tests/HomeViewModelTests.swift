@@ -33,24 +33,27 @@ private struct StubCancelAlarmUseCase: CancelAlarmUseCase {
     func execute(lastRouteId: String) async throws { try await handler(lastRouteId) }
 }
 
-private struct StubObserveAlarmUseCase: ObserveAlarmUseCase {
+// Domain 포트를 직접 스텁한다 — 위임만 하던 UseCase 계층이 사라졌다.
+private struct StubAlarmSyncEvents: AlarmSyncEvents {
     let handler: @Sendable () -> AsyncStream<AlarmSyncUpdate>
-    func execute() -> AsyncStream<AlarmSyncUpdate> { handler() }
+    func updates() -> AsyncStream<AlarmSyncUpdate> { handler() }
 }
 
-private struct StubRequestAlarmSyncUseCase: RequestAlarmSyncUseCase {
+private struct StubAlarmSyncRequesting: AlarmSyncRequesting {
     let handler: @Sendable () async -> Void
-    func execute() async { await handler() }
+    func syncNow() async { await handler() }
 }
 
-private struct StubObserveAlarmChangeUseCase: ObserveAlarmChangeUseCase {
+private struct StubAlarmChangeEvents: AlarmChangeEvents {
     let handler: @Sendable () -> AsyncStream<AlarmChangeVerdict>
-    func execute() -> AsyncStream<AlarmChangeVerdict> { handler() }
+    func changes() -> AsyncStream<AlarmChangeVerdict> { handler() }
 }
 
-private struct StubGetLastRouteDetailUseCase: GetLastRouteDetailUseCase {
+private struct StubLastRouteRepository: LastRouteRepository {
     let handler: @Sendable (String) async throws -> LastRoute
-    func execute(routeId: String) async throws -> LastRoute { try await handler(routeId) }
+    func lastRoute(id: String) async throws -> LastRoute { try await handler(id) }
+    // 홈은 상세 조회만 쓴다 — 검색은 SearchLastRoutesUseCase가 맡는다.
+    func searchLastRoutes(start: Coordinate, end: Coordinate) async throws -> [LastRoute] { [] }
 }
 
 private struct StubSearchLastRoutesUseCase: SearchLastRoutesUseCase {
@@ -202,10 +205,10 @@ private func makeSUT(
             handler: register, authorizationOutcome: registerOutcome
         ),
         cancelAlarmUseCase: StubCancelAlarmUseCase(handler: cancel),
-        observeAlarmUseCase: StubObserveAlarmUseCase(handler: alarmUpdates),
-        observeAlarmChangeUseCase: StubObserveAlarmChangeUseCase(handler: alarmChanges),
-        requestAlarmSyncUseCase: StubRequestAlarmSyncUseCase(handler: requestSync),
-        getLastRouteDetailUseCase: StubGetLastRouteDetailUseCase(handler: routeDetail),
+        alarmSyncEvents: StubAlarmSyncEvents(handler: alarmUpdates),
+        alarmChangeEvents: StubAlarmChangeEvents(handler: alarmChanges),
+        alarmSyncRequesting: StubAlarmSyncRequesting(handler: requestSync),
+        lastRouteRepository: StubLastRouteRepository(handler: routeDetail),
         searchLastRoutesUseCase: StubSearchLastRoutesUseCase(handler: searchRoutes),
         recentSearchesUseCase: StubRecentSearchesUseCase(
             fetchHandler: recentFetch, saveHandler: recentSave

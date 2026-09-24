@@ -46,7 +46,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     private func startSettingsFlow() {
         let container = SettingsDIContainer(
-            getUserProfileUseCase: PreviewGetUserProfileUseCase(),
+            userRepository: PreviewUserRepository(),
             logoutUseCase: PreviewLogoutUseCase(),
             withdrawUseCase: PreviewWithdrawUseCase(),
             updateHomeAddressUseCase: PreviewUpdateHomeAddressUseCase(),
@@ -95,11 +95,19 @@ private final class LauncherViewController: UIViewController {
 
 private struct PreviewError: Error {}
 
-private struct PreviewGetUserProfileUseCase: GetUserProfileUseCase {
-    func execute() async throws -> UserProfile {
+private struct PreviewUserRepository: UserRepository {
+    func fetchMe() async throws -> UserProfile {
         try? await Task.sleep(for: .milliseconds(500))
-        return UserProfile(userID: 1, providerID: nil, nickname: nil, address: "서울 중구 세종대로 110", coordinate: nil, appVersion: nil)
+        return UserProfile(
+            userID: 1, providerID: nil, nickname: nil,
+            address: "서울 중구 세종대로 110", coordinate: nil, appVersion: nil
+        )
     }
+
+    // 설정 프리뷰는 조회만 쓴다 — 나머지는 no-op.
+    func updateHomeAddress(address: String?, coordinate: Coordinate?) async throws {}
+    func updateAlertFrequencies(_ frequencies: [Int]) async throws {}
+    func withdraw(reason: String?) async throws {}
 }
 
 private struct PreviewLogoutUseCase: LogoutUseCase {

@@ -197,7 +197,7 @@ final class AppDIContainer {
         getCurrentLocationUseCase: any GetCurrentLocationUseCase
     ) -> any SettingsCoordinatorBuildable {
         SettingsDIContainer(
-            getUserProfileUseCase: DefaultGetUserProfileUseCase(userRepository: userRepository),
+            userRepository: userRepository,
             logoutUseCase: makeLogoutUseCase(),
             withdrawUseCase: makeWithdrawUseCase(),
             updateHomeAddressUseCase: DefaultUpdateHomeAddressUseCase(
@@ -276,15 +276,13 @@ final class AppDIContainer {
                 activityPort: liveActivityPort,
                 sessionStore: alarmSessionStore
             ),
-            // 세션 스트림은 소유자(Store)가 제공한다 — AlarmSyncService는 사건 채널만.
-            observeAlarmUseCase: DefaultObserveAlarmUseCase(events: alarmSessionStore),
-            observeAlarmChangeUseCase: DefaultObserveAlarmChangeUseCase(events: alarmChangePresenter),
+            // 세션 스트림은 소유자(Store)가, 변경 사건은 Presenter가 제공한다.
+            alarmSyncEvents: alarmSessionStore,
+            alarmChangeEvents: alarmChangePresenter,
             // 홈 pull-to-refresh(Phase 16) — 4번째 트리거도 같은 동기화 한 곳으로 합류한다.
-            requestAlarmSyncUseCase: DefaultRequestAlarmSyncUseCase(requesting: alarmSyncService),
+            alarmSyncRequesting: alarmSyncService,
             // 재실행 카드 복원(Phase 14) — 기존 미사용 자산(detail 엔드포인트) 재활용.
-            getLastRouteDetailUseCase: DefaultGetLastRouteDetailUseCase(
-                repository: lastRouteRepository
-            ),
+            lastRouteRepository: lastRouteRepository,
             // 원탭 칩(Phase 18) — 검색 화면과 같은 인스턴스 공유(위 주석 참조).
             searchLastRoutesUseCase: searchLastRoutes,
             recentSearchesUseCase: recentSearches,

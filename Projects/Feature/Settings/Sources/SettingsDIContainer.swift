@@ -7,7 +7,7 @@ import UIKit
 /// screen/ViewModel assembly stays here so adding screens never bloats
 /// coordinator initializers.
 public final class SettingsDIContainer: SettingsCoordinatorBuildable {
-    private let getUserProfileUseCase: any GetUserProfileUseCase
+    private let userRepository: any UserRepository
     private let logoutUseCase: any LogoutUseCase
     private let withdrawUseCase: any WithdrawUseCase
     private let updateHomeAddressUseCase: any UpdateHomeAddressUseCase
@@ -19,7 +19,7 @@ public final class SettingsDIContainer: SettingsCoordinatorBuildable {
     private let appStoreURL: URL?
 
     public init(
-        getUserProfileUseCase: any GetUserProfileUseCase,
+        userRepository: any UserRepository,
         logoutUseCase: any LogoutUseCase,
         withdrawUseCase: any WithdrawUseCase,
         updateHomeAddressUseCase: any UpdateHomeAddressUseCase,
@@ -30,7 +30,7 @@ public final class SettingsDIContainer: SettingsCoordinatorBuildable {
         currentVersion: String,
         appStoreURL: URL? = nil
     ) {
-        self.getUserProfileUseCase = getUserProfileUseCase
+        self.userRepository = userRepository
         self.logoutUseCase = logoutUseCase
         self.withdrawUseCase = withdrawUseCase
         self.updateHomeAddressUseCase = updateHomeAddressUseCase
@@ -48,7 +48,7 @@ public final class SettingsDIContainer: SettingsCoordinatorBuildable {
 
     func makeSettingsScreen() -> (UIViewController, SettingsViewModel) {
         let viewModel = SettingsViewModel(
-            getUserProfileUseCase: getUserProfileUseCase,
+            userRepository: userRepository,
             logoutUseCase: logoutUseCase,
             checkAppUpdateUseCase: checkAppUpdateUseCase,
             currentVersion: currentVersion,
