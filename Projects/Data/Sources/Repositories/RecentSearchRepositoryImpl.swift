@@ -22,7 +22,7 @@ public actor RecentSearchRepositoryImpl: RecentSearchRepository {
     public func save(_ place: Place) async throws {
         var records = loadRecords()
         records.removeAll { $0.toEntity() == place }
-        records.insert(RecentSearchRecordDTO(place), at: 0)
+        records.insert(PlaceRecordDTO(place), at: 0)
         try store.setValue(Array(records.prefix(maxCount)), forKey: storageKey)
     }
 
@@ -33,7 +33,7 @@ public actor RecentSearchRepositoryImpl: RecentSearchRepository {
     }
 
     /// 부재·손상 데이터는 빈 목록으로 — 일회성 캐시라 다음 save가 덮어써 자가 치유한다.
-    private func loadRecords() -> [RecentSearchRecordDTO] {
-        (try? store.value([RecentSearchRecordDTO].self, forKey: storageKey)) ?? []
+    private func loadRecords() -> [PlaceRecordDTO] {
+        (try? store.value([PlaceRecordDTO].self, forKey: storageKey)) ?? []
     }
 }

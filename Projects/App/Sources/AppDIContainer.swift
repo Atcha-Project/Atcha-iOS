@@ -90,7 +90,21 @@ final class AppDIContainer {
         )
         self.networkClient = networkClient
 
-        self.placeRepository = PlaceRepositoryImpl(networkClient: networkClient)
+        // 장소 조회는 캐시를 통과시킨다. 검색 화면은 진입할 때마다 위치 획득 + 역지오코딩을
+        // 다시 돌았고, 같은 키워드를 다시 쳐도 매번 왕복했다. 캐시 인스턴스는 여기서 1회만
+        // 만든다 — ExpiringCache의 격리는 인스턴스 단위라 나눠 만들면 직렬화가 깨진다.
+        let placeCacheStore = FileKeyValueStore(namespace: .cache("PlaceCache"))
+        self.placeRepository = CachingPlaceRepository(
+            upstream: PlaceRepositoryImpl(networkClient: networkClient),
+            // 7일: 좌표→주소는 행정구역 개편 수준에서만 바뀐다.
+            geocodeCache: ExpiringCache(
+                store: placeCacheStore, key: "reverseGeocode", ttl: .seconds(7 * 24 * 60 * 60), limit: 50
+            ),
+            // 1시간: POI는 생기고 없어진다. 한 세션의 반복 입력을 흡수하는 게 목적이다.
+            searchCache: ExpiringCache(
+                store: placeCacheStore, key: "search", ttl: .seconds(60 * 60), limit: 30
+            )
+        )
         self.lastRouteRepository = LastRouteRepositoryImpl(networkClient: networkClient)
         #if DEV
         // 막차 "변경"(앞당김/늦춤/운행종료)은 실서버가 임의로 재현해줄 수 없다 —
