@@ -46,9 +46,9 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     private func startSearchFlow() {
         let container = SearchDIContainer(
-            searchPlacesUseCase: PreviewSearchPlacesUseCase(),
+            placeRepository: PreviewPlaceRepository(),
             searchLastRoutesUseCase: PreviewSearchLastRoutesUseCase(),
-            recentSearchesUseCase: PreviewRecentSearchesUseCase()
+            recentSearchRepository: PreviewRecentSearchRepository()
         )
         let coordinator = container.makeSearchCoordinator(
             navigationController: navigationController,
@@ -122,13 +122,20 @@ nonisolated enum PreviewScenario {
     ]
 }
 
-struct PreviewSearchPlacesUseCase: SearchPlacesUseCase {
-    func execute(keyword: String, near coordinate: Coordinate?) async throws -> [Place] {
+struct PreviewPlaceRepository: PlaceRepository {
+    func searchPlaces(keyword: String, near coordinate: Coordinate?) async throws -> [Place] {
         // 디바운스가 체감되도록 실서버 지연을 흉내낸다.
         try? await Task.sleep(for: .milliseconds(300))
         let matches = PreviewScenario.catalog.filter { $0.name.localizedStandardContains(keyword) }
         return matches.isEmpty ? PreviewScenario.catalog : matches
     }
+
+    // 검색은 장소 검색만 쓴다 — 나머지는 프리뷰에서 호출되지 않는다.
+    func reverseGeocode(_ coordinate: Coordinate) async throws -> Place {
+        Place(name: "강남역", address: "서울 강남구 강남대로 396", coordinate: coordinate)
+    }
+
+    func isServiceRegion(_ coordinate: Coordinate) async throws -> Bool { true }
 }
 
 struct PreviewSearchLastRoutesUseCase: SearchLastRoutesUseCase {
@@ -212,7 +219,7 @@ actor PreviewRecentSearchesStore {
     }
 }
 
-struct PreviewRecentSearchesUseCase: RecentSearchesUseCase {
+struct PreviewRecentSearchRepository: RecentSearchRepository {
     // 데모 장소를 최근 검색에 심어 3가지 상태를 바로 시연할 수 있게 한다.
     private let store = PreviewRecentSearchesStore(seed: [
         PreviewScenario.catalog[0],
@@ -220,7 +227,7 @@ struct PreviewRecentSearchesUseCase: RecentSearchesUseCase {
         PreviewScenario.catalog[5],
     ])
 
-    func fetch() async throws -> [Place] { await store.fetch() }
+    func recentSearches() async throws -> [Place] { await store.fetch() }
     func save(_ place: Place) async throws { await store.save(place) }
     func remove(_ place: Place) async throws { await store.remove(place) }
 }

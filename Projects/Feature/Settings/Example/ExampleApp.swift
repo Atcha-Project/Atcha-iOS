@@ -50,9 +50,8 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             logoutUseCase: PreviewLogoutUseCase(),
             withdrawUseCase: PreviewWithdrawUseCase(),
             updateHomeAddressUseCase: PreviewUpdateHomeAddressUseCase(),
-            searchPlacesUseCase: PreviewSearchPlacesUseCase(),
-            getCurrentLocationUseCase: PreviewGetCurrentLocationUseCase(),
-            reverseGeocodeUseCase: PreviewReverseGeocodeUseCase(),
+            placeRepository: PreviewPlaceRepository(),
+            locationService: PreviewLocationService(),
             checkAppUpdateUseCase: PreviewCheckAppUpdateUseCase(),
             currentVersion: "2.0.0",
             appStoreURL: URL(string: "https://apps.apple.com")
@@ -128,26 +127,28 @@ private struct PreviewUpdateHomeAddressUseCase: UpdateHomeAddressUseCase {
     }
 }
 
-private struct PreviewSearchPlacesUseCase: SearchPlacesUseCase {
-    func execute(keyword: String, near coordinate: Coordinate?) async throws -> [Place] {
-        [
-            Place(name: "\(keyword) 서울점", address: "서울 중구 세종대로 110", coordinate: Coordinate(latitude: 37.5665, longitude: 126.9780)),
-            Place(name: "\(keyword) 부산점", address: "부산 해운대구 해운대해변로 264", coordinate: Coordinate(latitude: 35.1587, longitude: 129.1604)),
+private struct PreviewPlaceRepository: PlaceRepository {
+    func searchPlaces(keyword: String, near coordinate: Coordinate?) async throws -> [Place] {
+        try? await Task.sleep(for: .milliseconds(300))
+        return [
+            Place(name: "서울시청", address: "서울 중구 세종대로 110",
+                  coordinate: Coordinate(latitude: 37.5663, longitude: 126.9779)),
         ]
     }
+
+    func reverseGeocode(_ coordinate: Coordinate) async throws -> Place {
+        Place(name: "서울시청", address: "서울 중구 세종대로 110", coordinate: coordinate)
+    }
+
+    func isServiceRegion(_ coordinate: Coordinate) async throws -> Bool { true }
 }
 
-private struct PreviewGetCurrentLocationUseCase: GetCurrentLocationUseCase {
-    func execute() async throws -> Coordinate {
+private struct PreviewLocationService: LocationService {
+    func currentLocation() async throws -> Coordinate {
         Coordinate(latitude: 37.5665, longitude: 126.9780)
     }
 }
 
-private struct PreviewReverseGeocodeUseCase: ReverseGeocodeUseCase {
-    func execute(coordinate: Coordinate) async throws -> Place {
-        Place(name: "서울시청", address: "서울 중구 세종대로 110", coordinate: coordinate)
-    }
-}
 
 private struct PreviewCheckAppUpdateUseCase: CheckAppUpdateUseCase {
     func execute(currentVersion: String) async throws -> AppUpdateStatus {

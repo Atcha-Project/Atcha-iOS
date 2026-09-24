@@ -7,21 +7,21 @@ import UIKit
 /// screen/ViewModel assembly stays here so adding screens never bloats
 /// coordinator initializers.
 public final class SearchDIContainer: SearchCoordinatorBuildable {
-    private let searchPlacesUseCase: any SearchPlacesUseCase
+    private let placeRepository: any PlaceRepository
     private let searchLastRoutesUseCase: any SearchLastRoutesUseCase
-    private let recentSearchesUseCase: any RecentSearchesUseCase
-    private let getCurrentLocationUseCase: (any GetCurrentLocationUseCase)?
+    private let recentSearchRepository: any RecentSearchRepository
+    private let locationService: (any LocationService)?
 
     public init(
-        searchPlacesUseCase: any SearchPlacesUseCase,
+        placeRepository: any PlaceRepository,
         searchLastRoutesUseCase: any SearchLastRoutesUseCase,
-        recentSearchesUseCase: any RecentSearchesUseCase,
-        getCurrentLocationUseCase: (any GetCurrentLocationUseCase)? = nil
+        recentSearchRepository: any RecentSearchRepository,
+        locationService: (any LocationService)? = nil
     ) {
-        self.searchPlacesUseCase = searchPlacesUseCase
+        self.placeRepository = placeRepository
         self.searchLastRoutesUseCase = searchLastRoutesUseCase
-        self.recentSearchesUseCase = recentSearchesUseCase
-        self.getCurrentLocationUseCase = getCurrentLocationUseCase
+        self.recentSearchRepository = recentSearchRepository
+        self.locationService = locationService
     }
 
     public func makeSearchCoordinator(
@@ -43,10 +43,10 @@ public final class SearchDIContainer: SearchCoordinatorBuildable {
         onBack: @escaping () -> Void
     ) -> UIViewController {
         let viewModel = SearchViewModel(
-            searchPlacesUseCase: searchPlacesUseCase,
+            placeRepository: placeRepository,
             searchLastRoutesUseCase: searchLastRoutesUseCase,
-            recentSearchesUseCase: recentSearchesUseCase,
-            getCurrentLocationUseCase: getCurrentLocationUseCase,
+            recentSearchRepository: recentSearchRepository,
+            locationService: locationService,
             initialField: initialField
         )
         viewModel.onRouteChosen = onRouteChosen

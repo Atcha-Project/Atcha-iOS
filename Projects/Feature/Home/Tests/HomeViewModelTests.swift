@@ -6,14 +6,18 @@ import Testing
 
 private struct StubError: Error {}
 
-private struct StubGetCurrentLocationUseCase: GetCurrentLocationUseCase {
+private struct StubLocationService: LocationService {
     let handler: @Sendable () async throws -> Coordinate
-    func execute() async throws -> Coordinate { try await handler() }
+    func currentLocation() async throws -> Coordinate { try await handler() }
 }
 
-private struct StubReverseGeocodeUseCase: ReverseGeocodeUseCase {
+private struct StubPlaceRepository: PlaceRepository {
     let handler: @Sendable (Coordinate) async throws -> Place
-    func execute(coordinate: Coordinate) async throws -> Place { try await handler(coordinate) }
+    func reverseGeocode(_ coordinate: Coordinate) async throws -> Place { try await handler(coordinate) }
+
+    // 홈은 역지오코딩만 쓴다 — 나머지는 호출되지 않는다.
+    func searchPlaces(keyword: String, near coordinate: Coordinate?) async throws -> [Place] { [] }
+    func isServiceRegion(_ coordinate: Coordinate) async throws -> Bool { true }
 }
 
 private struct StubRegisterAlarmUseCase: RegisterAlarmUseCase {
@@ -63,10 +67,10 @@ private struct StubSearchLastRoutesUseCase: SearchLastRoutesUseCase {
     }
 }
 
-private struct StubRecentSearchesUseCase: RecentSearchesUseCase {
+private struct StubRecentSearchRepository: RecentSearchRepository {
     let fetchHandler: @Sendable () async throws -> [Place]
     let saveHandler: @Sendable (Place) async throws -> Void
-    func fetch() async throws -> [Place] { try await fetchHandler() }
+    func recentSearches() async throws -> [Place] { try await fetchHandler() }
     func save(_ place: Place) async throws { try await saveHandler(place) }
     func remove(_ place: Place) async throws {}
 }
@@ -199,8 +203,8 @@ private func makeSUT(
     now: @escaping @Sendable () -> Date = { fixedNow }
 ) -> HomeViewModel {
     HomeViewModel(
-        getCurrentLocationUseCase: StubGetCurrentLocationUseCase(handler: location),
-        reverseGeocodeUseCase: StubReverseGeocodeUseCase(handler: geocode),
+        locationService: StubLocationService(handler: location),
+        placeRepository: StubPlaceRepository(handler: geocode),
         registerAlarmUseCase: StubRegisterAlarmUseCase(
             handler: register, authorizationOutcome: registerOutcome
         ),
@@ -210,7 +214,7 @@ private func makeSUT(
         alarmSyncRequesting: StubAlarmSyncRequesting(handler: requestSync),
         lastRouteRepository: StubLastRouteRepository(handler: routeDetail),
         searchLastRoutesUseCase: StubSearchLastRoutesUseCase(handler: searchRoutes),
-        recentSearchesUseCase: StubRecentSearchesUseCase(
+        recentSearchRepository: StubRecentSearchRepository(
             fetchHandler: recentFetch, saveHandler: recentSave
         ),
         now: now

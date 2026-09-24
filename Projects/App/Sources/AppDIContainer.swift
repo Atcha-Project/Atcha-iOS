@@ -194,7 +194,7 @@ final class AppDIContainer {
     }
 
     func makeSettingsDIContainer(
-        getCurrentLocationUseCase: any GetCurrentLocationUseCase
+        locationService: any LocationService
     ) -> any SettingsCoordinatorBuildable {
         SettingsDIContainer(
             userRepository: userRepository,
@@ -204,9 +204,8 @@ final class AppDIContainer {
                 userRepository: userRepository,
                 placeRepository: placeRepository
             ),
-            searchPlacesUseCase: DefaultSearchPlacesUseCase(repository: placeRepository),
-            getCurrentLocationUseCase: getCurrentLocationUseCase,
-            reverseGeocodeUseCase: DefaultReverseGeocodeUseCase(repository: placeRepository),
+            placeRepository: placeRepository,
+            locationService: locationService,
             checkAppUpdateUseCase: DefaultCheckAppUpdateUseCase(
                 repository: AppVersionRepositoryImpl(networkClient: networkClient)
             ),
@@ -241,26 +240,21 @@ final class AppDIContainer {
 
     func makeHomeDIContainer() -> any HomeCoordinatorBuildable {
         let recentSearchRepository = RecentSearchRepositoryImpl(store: UserDefaultsKeyValueStore())
-        let locationService = CoreLocationServiceAdapter()
-        let getCurrentLocation: any GetCurrentLocationUseCase =
-            DefaultGetCurrentLocationUseCase(locationService: locationService)
+        let locationService: any LocationService = CoreLocationServiceAdapter()
         // 원탭 칩(Phase 18) — 검색과 홈이 같은 인스턴스를 봐야 검색의 저장·삭제가
         // 칩에 그대로 비친다 (recentSearchRepository 1회 생성과 같은 이유).
         let searchLastRoutes: any SearchLastRoutesUseCase =
             DefaultSearchLastRoutesUseCase(repository: lastRouteRepository)
-        let recentSearches: any RecentSearchesUseCase =
-            DefaultRecentSearchesUseCase(repository: recentSearchRepository)
-
         let searchContainer = SearchDIContainer(
-            searchPlacesUseCase: DefaultSearchPlacesUseCase(repository: placeRepository),
+            placeRepository: placeRepository,
             searchLastRoutesUseCase: searchLastRoutes,
-            recentSearchesUseCase: recentSearches,
-            getCurrentLocationUseCase: getCurrentLocation
+            recentSearchRepository: recentSearchRepository,
+            locationService: locationService
         )
 
         return HomeDIContainer(
-            getCurrentLocationUseCase: getCurrentLocation,
-            reverseGeocodeUseCase: DefaultReverseGeocodeUseCase(repository: placeRepository),
+            locationService: locationService,
+            placeRepository: placeRepository,
             registerAlarmUseCase: DefaultRegisterAlarmUseCase(
                 repository: alarmRepository,
                 scheduler: alarmScheduler,
@@ -285,10 +279,10 @@ final class AppDIContainer {
             lastRouteRepository: lastRouteRepository,
             // 원탭 칩(Phase 18) — 검색 화면과 같은 인스턴스 공유(위 주석 참조).
             searchLastRoutesUseCase: searchLastRoutes,
-            recentSearchesUseCase: recentSearches,
+            recentSearchRepository: recentSearchRepository,
             searchCoordinatorBuildable: searchContainer,
             settingsCoordinatorBuildable: makeSettingsDIContainer(
-                getCurrentLocationUseCase: getCurrentLocation
+                locationService: locationService
             )
         )
     }

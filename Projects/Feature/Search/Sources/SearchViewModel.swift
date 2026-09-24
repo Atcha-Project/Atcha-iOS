@@ -66,11 +66,11 @@ final class SearchViewModel {
     private var availableRoutes: [LastRoute] = []
     private var isExpanded = false
 
-    private let searchPlacesUseCase: any SearchPlacesUseCase
+    private let placeRepository: any PlaceRepository
     private let searchLastRoutesUseCase: any SearchLastRoutesUseCase
-    private let recentSearchesUseCase: any RecentSearchesUseCase
+    private let recentSearchRepository: any RecentSearchRepository
     // nil이면(예: Example 스텁 구성) 프리필·near 바이어스 없이 동작한다.
-    private let getCurrentLocationUseCase: (any GetCurrentLocationUseCase)?
+    private let locationService: (any LocationService)?
     // 오늘/내일 라벨 판정의 기준 시각(Phase 17) — 실 Date() 직접 호출 대신 주입(기존 VM 관례).
     private let now: @Sendable () -> Date
     private let debounceInterval: Duration
@@ -83,18 +83,18 @@ final class SearchViewModel {
     private var saveTask: Task<Void, Never>?
 
     init(
-        searchPlacesUseCase: any SearchPlacesUseCase,
+        placeRepository: any PlaceRepository,
         searchLastRoutesUseCase: any SearchLastRoutesUseCase,
-        recentSearchesUseCase: any RecentSearchesUseCase,
-        getCurrentLocationUseCase: (any GetCurrentLocationUseCase)? = nil,
+        recentSearchRepository: any RecentSearchRepository,
+        locationService: (any LocationService)? = nil,
         initialField: SearchEntryField = .departure,
         now: @escaping @Sendable () -> Date = { Date() },
         debounceInterval: Duration = .milliseconds(300)
     ) {
-        self.searchPlacesUseCase = searchPlacesUseCase
+        self.placeRepository = placeRepository
         self.searchLastRoutesUseCase = searchLastRoutesUseCase
-        self.recentSearchesUseCase = recentSearchesUseCase
-        self.getCurrentLocationUseCase = getCurrentLocationUseCase
+        self.recentSearchRepository = recentSearchRepository
+        self.locationService = locationService
         self.now = now
         self.debounceInterval = debounceInterval
         // 탭한 필드로 진입한다(Phase 17) — 초기 활성 슬롯만 정하고 프리필 정책은 불변.
@@ -153,14 +153,14 @@ final class SearchViewModel {
         // [weak self]: the in-flight task must not keep the ViewModel alive.
         searchTask = Task { [weak self] in
             guard let interval = self?.debounceInterval,
-                  let useCase = self?.searchPlacesUseCase else { return }
+                  let useCase = self?.placeRepository else { return }
             try? await Task.sleep(for: interval)
             guard !Task.isCancelled else { return }
             // 디바운스 통과 = 이 키워드로 실제 요청한다 — 로딩은 여기서부터(Phase 17).
             self?.state.content = .loadingPlaces
             do {
                 // 현재 위치가 확보된 경우에만 근처 우선 정렬 바이어스를 건다.
-                let places = try await useCase.execute(keyword: trimmed, near: self?.currentCoordinate)
+                let places = try await useCase.searchPlaces(keyword: trimmed, near: self?.currentCoordinate)
                 guard !Task.isCancelled else { return }
                 self?.listedPlaces = places
                 self?.state.content = .places(places.map(PlaceViewData.init(entity:)))
@@ -187,9 +187,9 @@ final class SearchViewModel {
         let place = listedPlaces[index]
         recentTask?.cancel()
         recentTask = Task { [weak self] in
-            guard let useCase = self?.recentSearchesUseCase else { return }
-            try? await useCase.remove(place)
-            let places = (try? await useCase.fetch()) ?? []
+            guard let repository = self?.recentSearchRepository else { return }
+            try? await repository.remove(place)
+            let places = (try? await repository.recentSearches()) ?? []
             guard !Task.isCancelled else { return }
             self?.listedPlaces = places
             self?.state.content = .recent(places.map(PlaceViewData.init(entity:)))
@@ -239,9 +239,9 @@ final class SearchViewModel {
 
     /// 출발지 기본값 = 현재 위치. 실패·권한 거부는 조용히 무시한다 (권한 안내 UX는 홈 담당).
     private func prefillDepartureWithCurrentLocation() {
-        guard let useCase = getCurrentLocationUseCase else { return }
+        guard let locationService else { return }
         locationTask = Task { [weak self] in
-            guard let coordinate = try? await useCase.execute() else { return }
+            guard let coordinate = try? await locationService.currentLocation() else { return }
             guard !Task.isCancelled, let self else { return }
             self.currentCoordinate = coordinate
             // 사용자가 이미 출발지를 만졌다면 덮어쓰지 않는다.
@@ -259,7 +259,7 @@ final class SearchViewModel {
     private func confirm(_ place: Place, in field: Field) {
         searchTask?.cancel()
         saveTask = Task { [weak self] in
-            guard let useCase = self?.recentSearchesUseCase else { return }
+            guard let useCase = self?.recentSearchRepository else { return }
             try? await useCase.save(place)
         }
 
@@ -320,9 +320,9 @@ final class SearchViewModel {
     private func showRecent() {
         recentTask?.cancel()
         recentTask = Task { [weak self] in
-            guard let useCase = self?.recentSearchesUseCase else { return }
+            guard let repository = self?.recentSearchRepository else { return }
             // 최근 검색 로드 실패는 빈 목록으로 무해화한다.
-            let places = (try? await useCase.fetch()) ?? []
+            let places = (try? await repository.recentSearches()) ?? []
             guard !Task.isCancelled else { return }
             self?.listedPlaces = places
             self?.state.content = .recent(places.map(PlaceViewData.init(entity:)))
