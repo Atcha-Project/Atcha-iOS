@@ -22,6 +22,8 @@ final class SearchViewModel {
         case routes(RouteResultsViewData)
         case serviceEnded
         case noRoute
+        /// 서비스 지역 밖 — 재검색을 권할 수 없고 목적지를 바꿔야 한다.
+        case outOfServiceRegion
         case failed(message: String)
     }
 
@@ -215,7 +217,7 @@ final class SearchViewModel {
         switch state.content {
         case .failed where departure != nil && arrival != nil:
             searchRoutes()
-        case .serviceEnded, .noRoute:
+        case .serviceEnded, .noRoute, .outOfServiceRegion:
             // "다시 검색하기" 실동작(Phase 17) — 도착지 슬롯을 비우고 포커스를 넘겨
             // 즉시 재검색이 가능하게 한다. 출발지는 유지(대개 현재 위치).
             arrival = nil
@@ -284,6 +286,9 @@ final class SearchViewModel {
     }
 
     private func searchRoutes() {
+        // 두 슬롯이 다 찬 뒤에만 호출된다(`confirm`이 게이트) — 여기 가드는 방어용이다.
+        // 출발지가 없는 상태의 사용자 안내는 `confirm`의 else 분기가 이미 한다
+        // (포커스를 출발지로 옮기고 최근 검색을 보여준다).
         guard let start = departure?.coordinate, let end = arrival?.coordinate else { return }
         searchTask?.cancel()
         recentTask?.cancel()
@@ -309,6 +314,8 @@ final class SearchViewModel {
                     self?.state.content = .serviceEnded
                 case .noRoute:
                     self?.state.content = .noRoute
+                case .outOfServiceRegion:
+                    self?.state.content = .outOfServiceRegion
                 }
             } catch {
                 guard !Task.isCancelled else { return }

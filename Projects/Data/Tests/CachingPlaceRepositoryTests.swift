@@ -21,6 +21,7 @@ private final class SpyPlaceRepository: PlaceRepository, @unchecked Sendable {
     private let searchCalls = Mutex(0)
     private let serviceRegionCalls = Mutex(0)
     private let shouldFail = Mutex(false)
+    private let emptyResult = Mutex(false)
 
     var geocodeCount: Int { geocodeCalls.withLock { $0 } }
     var searchCount: Int { searchCalls.withLock { $0 } }
@@ -29,10 +30,15 @@ private final class SpyPlaceRepository: PlaceRepository, @unchecked Sendable {
         get { shouldFail.withLock { $0 } }
         set { shouldFail.withLock { $0 = newValue } }
     }
+    var returnsEmpty: Bool {
+        get { emptyResult.withLock { $0 } }
+        set { emptyResult.withLock { $0 = newValue } }
+    }
 
     func searchPlaces(keyword: String, near coordinate: Coordinate?) async throws -> [Place] {
         searchCalls.withLock { $0 += 1 }
         if fails { throw UpstreamError() }
+        if returnsEmpty { return [] }
         return [makePlace("\(keyword) 결과")]
     }
 
@@ -161,6 +167,24 @@ struct CachingPlaceRepositoryTests {
         _ = try await sut.searchPlaces(keyword: "강남", near: Coordinate(latitude: 37.5665, longitude: 126.9780))
 
         #expect(upstream.searchCount == 2)
+    }
+
+    /// **빈 결과는 캐시하지 않는다.** 빈 배열도 성공 응답이라 그냥 담으면, 한 번 비어서 온
+    /// 키워드가 원인이 사라진 뒤에도 TTL 내내 비어 보인다 — 화면이 스스로 회복하지 못한다.
+    @Test
+    func searchPlaces_emptyResult_isNotCached() async throws {
+        let sut = makeSUT()
+        upstream.returnsEmpty = true
+
+        let first = try await sut.searchPlaces(keyword: "강남", near: nil)
+        #expect(first.isEmpty)
+
+        // 상류가 회복되면 같은 키워드가 **즉시** 결과를 돌려줘야 한다.
+        upstream.returnsEmpty = false
+        let second = try await sut.searchPlaces(keyword: "강남", near: nil)
+
+        #expect(upstream.searchCount == 2)
+        #expect(!second.isEmpty)
     }
 
     // MARK: - 캐시하지 않는 것

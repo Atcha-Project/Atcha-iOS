@@ -249,6 +249,13 @@ final class SearchViewController: UIViewController {
                 message: "출발지나 도착지를 바꿔 보세요",
                 actionTitle: "다시 검색하기"
             )
+        case .outOfServiceRegion:
+            rows = []
+            // 재검색 버튼을 두지 않는다 — 같은 목적지로 다시 눌러도 결과가 같다.
+            showEmptyState(
+                title: "아직 갈 수 없는 지역이에요",
+                message: "앗차는 현재 서울, 경기, 인천에서만 이용 가능해요"
+            )
         case let .failed(message):
             rows = []
             showEmptyState(title: "앗차!", message: message, actionTitle: "다시 시도")
