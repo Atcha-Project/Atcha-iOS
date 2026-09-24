@@ -184,6 +184,9 @@ struct AlarmSessionStoreTests {
     }
 
     // MARK: - 구독 (replay-1)
+    //
+    // 세션 그대로를 보는 내부 스트림. 홈이 보는 `AlarmSyncEvents.updates()`는 이 위에
+    // 얹힌 매핑이고, 끝난 세션을 흘리지 않는다(아래 별도 검증).
 
     /// 구독 전에 끝난 부트스트랩을 놓치지 않아야 한다.
     @Test
@@ -192,7 +195,7 @@ struct AlarmSessionStoreTests {
         let existing = session()
         await sut.register(session: existing)
 
-        var iterator = sut.updates().makeAsyncIterator()
+        var iterator = sut.sessionUpdates().makeAsyncIterator()
         let first = await iterator.next()
 
         #expect(first == existing)
@@ -202,7 +205,7 @@ struct AlarmSessionStoreTests {
     func updates_emitsOnApply() async {
         let sut = makeSUT()
         await sut.bootstrap()
-        var iterator = sut.updates().makeAsyncIterator()
+        var iterator = sut.sessionUpdates().makeAsyncIterator()
         _ = await iterator.next() // replay(nil)
 
         let next = session()
@@ -211,11 +214,37 @@ struct AlarmSessionStoreTests {
         #expect(await iterator.next() == next)
     }
 
+    /// 홈 계약(`AlarmSyncEvents`)은 **끝난 세션을 흘리지 않는다** — 죽은 세션으로
+    /// 배너·해제 버튼이 복원되면 안 된다.
+    @Test
+    func syncEventsUpdates_skipsEndedSession() async {
+        let sut = makeSUT()
+        await sut.register(session: session(lifecycle: .ended))
+
+        var iterator = sut.updates().makeAsyncIterator()
+        // replay에 끝난 세션이 실리지 않으므로, 살아 있는 세션을 넣어야 값이 온다.
+        await sut.apply(.refreshed(session(lifecycle: .active)))
+
+        let update = await iterator.next()
+        #expect(update?.info.lastRouteId == "R1")
+    }
+
+    @Test
+    func syncEventsUpdates_carriesSyncedAtAsCheckedAt() async {
+        let sut = makeSUT()
+        await sut.register(session: session())
+
+        var iterator = sut.updates().makeAsyncIterator()
+
+        // 스탬프의 원천은 세션의 syncedAt이다 — 수신 시각이 아니다.
+        #expect(await iterator.next()?.checkedAt == now)
+    }
+
     @Test
     func updates_emitsNilOnClear() async {
         let sut = makeSUT()
         await sut.register(session: session())
-        var iterator = sut.updates().makeAsyncIterator()
+        var iterator = sut.sessionUpdates().makeAsyncIterator()
         _ = await iterator.next() // replay(session)
 
         await sut.clear()

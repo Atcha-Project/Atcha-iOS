@@ -99,6 +99,26 @@ struct AlarmSessionReconcilerTests {
         #expect(session.lifecycle == .active)
     }
 
+    /// 회귀: **살아 있던 세션**에 서버가 방금 과거 시각을 주는 경우.
+    ///
+    /// 이건 만료가 아니라 "막차가 지나갔다"는 변경 판정(missed)의 재료다. 만료로
+    /// 처리하면 LA가 조용히 종료되고 '막차가 지나갔어요' 알림이 나가지 않아 사용자가
+    /// 인지 기회를 잃는다. 만료 판정은 **진입 시점 세션**으로만 한다.
+    @Test
+    func liveSession_serverReturnsPastDeparture_refreshesForMissedVerdict() {
+        let outcome = AlarmSessionReconciler.reconcile(
+            current: session(departureOffset: 3600), // 아직 살아 있다
+            server: info(departureOffset: -100), // 서버가 방금 지나갔다고 알림
+            now: now
+        )
+
+        guard case let .refreshed(session) = outcome else {
+            Issue.record("refreshed 기대, 실제 \(outcome)"); return
+        }
+        #expect(session.lifecycle == .active)
+        #expect(session.server.departureTime == now.addingTimeInterval(-100))
+    }
+
     @Test
     func pastDeparture_serverConfirmsSamePast_expires() {
         let outcome = AlarmSessionReconciler.reconcile(

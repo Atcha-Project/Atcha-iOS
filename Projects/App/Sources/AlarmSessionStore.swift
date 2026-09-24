@@ -1,6 +1,7 @@
 import CoreStorage
 import Domain
 import Foundation
+import Synchronization
 import os
 
 /// 알람 세션을 소유하는 **유일한 지점**. 읽기도 쓰기도 여기를 통한다.
@@ -16,15 +17,25 @@ import os
 /// 경로가 이미 `inFlight` 합류로 직렬화되므로, 메인 액터 격리만으로 단일 writer가
 /// 보장된다.
 @MainActor
-final class AlarmSessionStore {
+final class AlarmSessionStore: AlarmSessionStoring, AlarmSyncEvents {
     private static let logger = Logger(subsystem: "com.atcha.alarm", category: "session")
 
     /// 새 키다 — 기존 `alarm.sessionSnapshot`과 스키마가 다르다. V2가 미출시이므로
     /// 마이그레이션을 두지 않고, 구 키는 전환이 끝난 뒤 정리한다.
-    static let storageKey = "alarm.session"
+    nonisolated static let storageKey = "alarm.session"
 
     private let document: DocumentStore<AlarmSession>
     private var subscribers: [UUID: AsyncStream<AlarmSession?>.Continuation] = [:]
+    /// `AlarmSyncEvents` 구독자 — 세션을 `AlarmSyncUpdate`로 매핑해 흘린다.
+    ///
+    /// `Mutex`인 이유: 프로토콜의 `updates()`가 **동기** 메서드라 `@MainActor` 상태를
+    /// 직접 만질 수 없다. `Task`로 등록하면 등록이 비동기가 되어 그 사이에 일어난
+    /// 방출을 구독자가 통째로 놓치고, 오지 않을 값을 영원히 기다린다(실제로 테스트가
+    /// 행에 걸렸다). 등록과 replay 값 읽기는 반드시 동기여야 한다.
+    private let updateSubscribers =
+        Mutex<[UUID: AsyncStream<AlarmSyncUpdate>.Continuation]>([:])
+    /// replay-1 버퍼 — 구독 시점에 동기로 읽어야 하므로 메인 액터 밖에 둔다.
+    private let lastUpdate = Mutex<AlarmSyncUpdate?>(nil)
 
     /// 메모리 캐시 = 동기 읽기의 근거. 디스크 로드는 `bootstrap()`에서 1회만 한다.
     private(set) var current: AlarmSession?
@@ -98,6 +109,29 @@ final class AlarmSessionStore {
         broadcast()
     }
 
+    // MARK: - AlarmSessionStoring (Domain 포트)
+    //
+    // 등록/취소 UseCase가 쓰는 경로. 프로토콜 요구사항이 nonisolated라 격리를 명시해야
+    // 한다 — 그러지 않으면 Swift가 적합성에 맞춰 nonisolated로 추론해 `current`에
+    // 접근할 수 없다. 요구사항이 `async`이므로 호출자는 await로 메인 액터에 진입하고,
+    // 쓰기 지점이 하나로 유지된다.
+
+    @MainActor
+    func loadSession() async -> AlarmSession? {
+        await bootstrap()
+        return current
+    }
+
+    @MainActor
+    func saveSession(_ session: AlarmSession) async {
+        await persist(session)
+    }
+
+    @MainActor
+    func clearSession() async {
+        await clear()
+    }
+
     /// 로그아웃·탈퇴 — 로컬 기록을 비우고 구독자에게도 알린다.
     func reset() async {
         await clear()
@@ -105,9 +139,31 @@ final class AlarmSessionStore {
 
     // MARK: - 구독
 
-    /// 구독자마다 독립 스트림. **replay-1** — 구독 전에 끝난 부트스트랩·동기화를
-    /// 놓치지 않아야 한다. (변경 *사건*은 replay하지 않는 별도 채널이 맡는다.)
-    func updates() -> AsyncStream<AlarmSession?> {
+    /// `AlarmSyncEvents` — 구독자(홈)가 보는 계약. 세션 스트림을 그대로 매핑한다.
+    ///
+    /// **Store가 직접 구현하는 이유**: 다른 타입이 이 스트림을 중계하면 끝나지 않는
+    /// 스트림을 `for await`로 구독하는 Task가 생기고, 그 Task가 해제되지 않아
+    /// 테스트 프로세스가 종료되지 못한다(실제로 행이 걸렸다). 소유자가 계약도 갖는다.
+    ///
+    /// **끝난 세션은 흘리지 않는다** — 죽은 세션으로 배너·해제 버튼이 복원되면 안 된다.
+    nonisolated func updates() -> AsyncStream<AlarmSyncUpdate> {
+        let id = UUID()
+        return AsyncStream { continuation in
+            // 등록을 먼저, 동기로 — 이후의 모든 방출을 받는다.
+            updateSubscribers.withLock { $0[id] = continuation }
+            if let last = lastUpdate.withLock({ $0 }) {
+                continuation.yield(last)
+            }
+            // Mutex는 non-copyable이라 캡처 리스트에 담을 수 없다 — self를 캡처한다.
+            // Store는 앱 수명 객체라 순환 참조 문제가 없다.
+            continuation.onTermination = { _ in
+                self.updateSubscribers.withLock { $0[id] = nil }
+            }
+        }
+    }
+
+    /// 세션 그대로를 보는 내부 스트림 — 홈이 아닌 App 내부 소비자용.
+    func sessionUpdates() -> AsyncStream<AlarmSession?> {
         let id = UUID()
         return AsyncStream { continuation in
             subscribers[id] = continuation
@@ -131,6 +187,13 @@ final class AlarmSessionStore {
     private func broadcast() {
         for continuation in subscribers.values {
             continuation.yield(current)
+        }
+        // 끝난 세션은 홈 계약으로 흘리지 않는다(위 updates() 주석 참조).
+        guard let session = current, !session.isEnded else { return }
+        let update = AlarmSyncUpdate(info: session.server, checkedAt: session.syncedAt)
+        lastUpdate.withLock { $0 = update }
+        for continuation in updateSubscribers.withLock({ Array($0.values) }) {
+            continuation.yield(update)
         }
     }
 }

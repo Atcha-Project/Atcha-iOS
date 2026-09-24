@@ -1,4 +1,5 @@
 @testable import AtchaV2
+import CoreStorage
 import Domain
 import Foundation
 import Testing
@@ -47,7 +48,7 @@ private final class RefreshStub: RefreshAlarmUseCase, @unchecked Sendable {
         defer { lock.unlock() }
         return queue.isEmpty ? nil : queue.removeFirst()
     }
-    func execute() async throws -> AlarmInfo {
+    func execute(current: AlarmSession?) async throws -> AlarmInfo {
         guard let next = dequeue() else { throw StubError() }
         return try next.get()
     }
@@ -104,18 +105,38 @@ private actor SchedulerSpy: AlarmScheduler {
     func scheduledFireDate() async -> Date? { nil }
 }
 
-private actor StoreStub: AlarmSessionSnapshotStore {
-    private(set) var snapshot: AlarmSessionSnapshot?
-    init(_ snapshot: AlarmSessionSnapshot?) { self.snapshot = snapshot }
-    func load() async -> AlarmSessionSnapshot? { snapshot }
-    func save(_ snapshot: AlarmSessionSnapshot) async { self.snapshot = snapshot }
-    func clear() async { snapshot = nil }
+/// 세션은 실제 `AlarmSessionStore`를 쓴다 — 스텁으로 대체하면 Store가 담당하는
+/// 부트스트랩·톰스톤·replay 규칙이 검증에서 빠진다.
+private final class MemoryKeyValueStore: KeyValueStore, @unchecked Sendable {
+    private let lock = NSLock()
+    private var storage: [String: Data] = [:]
+
+    init(seeded: AlarmSession? = nil) {
+        if let seeded, let data = try? JSONEncoder().encode(seeded) {
+            storage[AlarmSessionStore.storageKey] = data
+        }
+    }
+
+    func data(forKey key: String) throws -> Data? {
+        lock.lock(); defer { lock.unlock() }
+        return storage[key]
+    }
+
+    func set(_ data: Data, forKey key: String) throws {
+        lock.lock(); defer { lock.unlock() }
+        storage[key] = data
+    }
+
+    func removeValue(forKey key: String) throws {
+        lock.lock(); defer { lock.unlock() }
+        storage[key] = nil
+    }
 }
 
 private actor RestorerSpy: LastTrainSessionRestoring {
     private(set) var restartCount = 0
-    func reattachOrphans(snapshot: AlarmSessionSnapshot?, now: Date) async {}
-    func restartIfNeeded(snapshot: AlarmSessionSnapshot, now: Date) async {
+    func reattachOrphans(session: AlarmSession?, now: Date) async {}
+    func restartIfNeeded(session: AlarmSession, now: Date) async {
         restartCount += 1
     }
 }
@@ -128,7 +149,7 @@ private struct Harness {
     let activity: ActivitySpy
     let noti: NotiSpy
     let scheduler: SchedulerSpy
-    let store: StoreStub
+    let store: AlarmSessionStore
     let active: ValueBox<Bool>
 
     /// 이전 값(diff 기준)을 심는 선행 동기화 — unchanged 판정으로 조용히 지나간다.
@@ -140,7 +161,7 @@ private struct Harness {
 
 @MainActor
 private func makeHarness(
-    seeded: AlarmSessionSnapshot? = nil,
+    seeded: AlarmSession? = nil,
     isAppActive: Bool = false
 ) -> Harness {
     let refresh = RefreshStub([])
@@ -148,7 +169,7 @@ private func makeHarness(
     let activity = ActivitySpy()
     let noti = NotiSpy()
     let scheduler = SchedulerSpy()
-    let store = StoreStub(seeded)
+    let store = AlarmSessionStore(store: MemoryKeyValueStore(seeded: seeded))
     let restorer = RestorerSpy()
     let active = ValueBox(isAppActive)
     let sut = AlarmSyncService(
@@ -157,7 +178,7 @@ private func makeHarness(
         liveActivity: activity,
         localNotification: noti,
         alarmScheduler: scheduler,
-        snapshotStore: store,
+        sessionStore: store,
         sessionRestorer: restorer,
         isAppActive: { active.get() },
         now: { fixedNow }
@@ -181,13 +202,13 @@ struct AlarmSyncServiceTests {
         await harness.sut.syncNow()
 
         // replay-1이 확인 시각을 함께 나른다 — 스탬프의 원천은 sync 성공 시각(주입 now)뿐.
-        var iterator = harness.sut.updates().makeAsyncIterator()
+        var iterator = harness.store.updates().makeAsyncIterator()
         let replayed = await iterator.next()
         #expect(replayed == AlarmSyncUpdate(
             info: info(route: "r1", departure: departure), checkedAt: fixedNow
         ))
         // 재실행 브리지에도 같은 시각이 영속화된다.
-        #expect(await harness.store.snapshot?.syncedAt == fixedNow)
+        #expect(harness.store.current?.syncedAt == fixedNow)
     }
 
     @Test
@@ -196,19 +217,19 @@ struct AlarmSyncServiceTests {
         // 마지막 확인 시각이어야 한다 — 낡음을 숨기지 않는다.
         let seededCheckedAt = fixedNow.addingTimeInterval(-2400)
         let departure = fixedNow.addingTimeInterval(1800)
-        let harness = makeHarness(seeded: AlarmSessionSnapshot(
-            info: info(route: "r1", departure: departure),
-            firstWalkSeconds: nil,
-            routeDisplayName: "6411번 버스",
-            transportMode: .bus,
-            acknowledged: false,
-            expired: false,
+        let harness = makeHarness(seeded: AlarmSession(
+            server: info(route: "r1", departure: departure),
+            local: .init(
+                firstWalkSeconds: nil,
+                routeDisplayName: "6411번 버스",
+                transportMode: .bus
+            ),
             syncedAt: seededCheckedAt
         ))
 
         await harness.sut.syncNow() // refresh 큐 비어 있음 → 실패(무음)
 
-        var iterator = harness.sut.updates().makeAsyncIterator()
+        var iterator = harness.store.updates().makeAsyncIterator()
         let replayed = await iterator.next()
         #expect(replayed?.info.lastRouteId == "r1")
         #expect(replayed?.checkedAt == seededCheckedAt)
@@ -311,14 +332,14 @@ struct AlarmSyncServiceTests {
     func sessionEnded_cancelsAlarmClearsSnapshotAndEndsActivity() async {
         let harness = makeHarness(isAppActive: false)
         await harness.primePreviousSession(departure: fixedNow.addingTimeInterval(3600))
-        #expect(await harness.store.snapshot != nil)
+        #expect(harness.store.current != nil)
 
         harness.evaluate.fix(.sessionEnded)
         harness.refresh.enqueue(.success(info(route: "r1", departure: nil)))
         await harness.sut.syncNow()
 
         #expect(await harness.scheduler.cancelCount == 1)
-        #expect(await harness.store.snapshot == nil)
+        #expect(harness.store.current == nil)
         #expect(await harness.activity.finals.last?.phase == .serviceEnded)
         #expect(await harness.noti.posted.isEmpty) // 종료는 행동을 요구하지 않는다 — 폴백 없음.
     }
@@ -329,13 +350,9 @@ struct AlarmSyncServiceTests {
     func localExpiry_refreshFailure_finalizesTombstoneAndCancelsAlarm() async {
         // 시딩된 과거 세션(출발+유예 경과) + refresh 실패 → 로컬 sessionEnded 확정.
         let pastDeparture = fixedNow.addingTimeInterval(-120)
-        let harness = makeHarness(seeded: AlarmSessionSnapshot(
-            info: info(route: "r1", departure: pastDeparture),
-            firstWalkSeconds: nil,
-            routeDisplayName: "",
-            transportMode: nil,
-            acknowledged: false,
-            expired: false,
+        let harness = makeHarness(seeded: AlarmSession(
+            server: info(route: "r1", departure: pastDeparture),
+            local: .empty,
             syncedAt: fixedNow.addingTimeInterval(-3600)
         ))
         var changeIterator = harness.sut.changes().makeAsyncIterator()
@@ -344,7 +361,7 @@ struct AlarmSyncServiceTests {
         await harness.sut.syncNow() // refresh 큐 비어 있음 → 실패여도 만료는 확정된다.
 
         #expect(await harness.scheduler.cancelCount == 1)
-        #expect(await harness.store.snapshot?.expired == true)
+        #expect(harness.store.current?.lifecycle == .ended)
         #expect(await harness.activity.finals.last?.phase == .serviceEnded)
         let verdict = await changeIterator.next()
         #expect(verdict == .sessionEnded)
@@ -353,13 +370,9 @@ struct AlarmSyncServiceTests {
     @Test
     func localExpiry_serverReturnsFutureDeparture_serverWins() async {
         // 만료 후보 상태에서 refresh가 미래 출발을 주면 만료를 취소한다(서버 우선).
-        let harness = makeHarness(seeded: AlarmSessionSnapshot(
-            info: info(route: "r1", departure: fixedNow.addingTimeInterval(-120)),
-            firstWalkSeconds: nil,
-            routeDisplayName: "",
-            transportMode: nil,
-            acknowledged: false,
-            expired: false
+        let harness = makeHarness(seeded: AlarmSession(
+            server: info(route: "r1", departure: fixedNow.addingTimeInterval(-120)),
+            local: .empty
         ))
         let future = fixedNow.addingTimeInterval(1800)
         harness.refresh.enqueue(.success(info(route: "r1", departure: future)))
@@ -367,8 +380,8 @@ struct AlarmSyncServiceTests {
         await harness.sut.syncNow()
 
         #expect(await harness.scheduler.cancelCount == 0)
-        #expect(await harness.store.snapshot?.expired == false)
-        #expect(await harness.store.snapshot?.info.departureTime == future)
+        #expect(harness.store.current?.lifecycle != .ended)
+        #expect(harness.store.current?.server.departureTime == future)
     }
 
     // MARK: - 수동 갱신 합류 (Phase 16)
@@ -384,7 +397,7 @@ struct AlarmSyncServiceTests {
         async let second: Void = harness.sut.syncNow()
         _ = await (first, second)
 
-        var iterator = harness.sut.updates().makeAsyncIterator()
+        var iterator = harness.store.updates().makeAsyncIterator()
         let replayed = await iterator.next()
         #expect(replayed?.info.lastRouteId == "r1")
     }

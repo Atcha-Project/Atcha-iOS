@@ -78,6 +78,12 @@ public enum AlarmSessionReconciler {
         // 서버가 출발 시각을 안 줬다 — 세션이 서버에서 사라진 것으로 본다.
         guard info.departureTime != nil else { return .ended }
 
+        // **만료 판정은 진입 시점 세션(`session`)으로 한다.** 서버가 방금 준 시각이
+        // 과거라는 사실은 만료가 아니라 "막차가 지나갔다"는 **변경 판정(missed)의
+        // 재료**다 — 조용히 세션을 끝내면 LA가 종료되고 '막차가 지나갔어요' 알림이
+        // 나가지 않아 사용자가 인지 기회를 잃는다.
+        guard session.hasPassedDeparture(now: now) else { return .refreshed(merged) }
+        // 보유 세션이 만료 상태였다면, 서버가 미래 시각을 줄 때만 되살린다(서버 우선).
         return expiryOutcome(for: merged, now: now) ?? .refreshed(merged)
     }
 

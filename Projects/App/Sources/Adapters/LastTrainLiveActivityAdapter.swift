@@ -40,12 +40,12 @@ nonisolated protocol LastTrainSessionRestoring: Sendable {
     /// `Activity.activities`를 스캔해, 스냅샷과 routeId가 일치하고 미만료인 세션은
     /// **adopt**(보관 + 상태 관찰 재개 — 이후 update/end가 정상 동작)하고,
     /// 불일치·만료·스냅샷 없음은 즉시 정리한다.
-    func reattachOrphans(snapshot: AlarmSessionSnapshot?, now: Date) async
+    func reattachOrphans(session: AlarmSession?, now: Date) async
     /// sync 성공 후 — 스냅샷은 살아 있는데(미만료·미확인) 활성 activity가 없고 dismiss
     /// 기록도 없으면 LA를 로컬 재시작한다. 8시간 한도로 시스템이 내린 세션·시작 실패
     /// 세션 커버 — push-to-start 금지 정책과 무관(그 정책은 유저가 지운 LA의 재생성 금지,
     /// dismiss 기록이 있으면 여기서도 재시작하지 않는다).
-    func restartIfNeeded(snapshot: AlarmSessionSnapshot, now: Date) async
+    func restartIfNeeded(session: AlarmSession, now: Date) async
 }
 
 /// ActivityKit → Domain `LastTrainActivityPort` 어댑터. ActivityKit을 import하는 곳은 App에서 이 파일뿐.
@@ -140,7 +140,7 @@ actor LastTrainLiveActivityAdapter: LastTrainActivityPort, LastTrainChangeAlerti
 
     // MARK: - LastTrainSessionRestoring (Phase 14)
 
-    func reattachOrphans(snapshot: AlarmSessionSnapshot?, now: Date) async {
+    func reattachOrphans(session: AlarmSession?, now: Date) async {
         // 살아 있는 세션을 이미 보관 중이면(이론상 재부착 전 start 경합) 손대지 않는다.
         var adopted = activity != nil
         for orphan in Activity<LastTrainActivityAttributes>.activities {
@@ -149,38 +149,34 @@ actor LastTrainLiveActivityAdapter: LastTrainActivityPort, LastTrainChangeAlerti
                // 어떤 경로로도 되살리지 않는 정책과 한 몸(정상 흐름에선 지워진 LA가
                // 목록에 없지만, 기록·상태가 어긋난 경우에도 지운 의사가 이긴다).
                !dismissedByUser,
-               let snapshot, !snapshot.expired,
-               orphan.attributes.routeId == snapshot.info.lastRouteId,
-               let departure = snapshot.info.departureTime,
-               !AlarmTiming.isSessionExpired(departureTime: departure, now: now),
+               let session, !session.isEnded,
+               orphan.attributes.routeId == session.server.lastRouteId,
+               !session.hasPassedDeparture(now: now),
                orphan.activityState == .active || orphan.activityState == .stale {
                 // adopt — 보관 + 상태 관찰 재개. 이후 update/end가 정상 동작한다.
                 activity = orphan
                 observeActivityState(orphan)
                 adopted = true
             } else {
-                // 불일치·만료·스냅샷 없음(고아) — 잠금화면에서 즉시 정리한다.
+                // 불일치·만료·세션 없음(고아) — 잠금화면에서 즉시 정리한다.
                 await orphan.end(nil, dismissalPolicy: .immediate)
             }
         }
     }
 
-    func restartIfNeeded(snapshot: AlarmSessionSnapshot, now: Date) async {
+    func restartIfNeeded(session: AlarmSession, now: Date) async {
         // dismiss 존중(유저가 지운 LA 재생성 금지)·확인된 세션(departed 소멸 예약 완료)
         // 재시작 금지. 활성 activity가 있으면 당연히 재시작하지 않는다 — adopt된 세션 포함.
+        // `allowsActivityRestart`가 수명 게이트를 담당한다(이전에는 expired·acknowledged
+        // 두 Bool을 여기서 각각 검사했다).
         guard activity == nil,
               !dismissedByUser,
-              !snapshot.expired,
-              !snapshot.acknowledged,
-              let departure = snapshot.info.departureTime,
-              !AlarmTiming.isSessionExpired(departureTime: departure, now: now),
-              ActivityAuthorizationInfo().areActivitiesEnabled
+              session.allowsActivityRestart,
+              let departure = session.server.departureTime,
+              !session.hasPassedDeparture(now: now),
+              ActivityAuthorizationInfo().areActivitiesEnabled,
+              let alarmTime = session.fireDate
         else { return }
-
-        let alarmTime = AlarmTiming.alarmFireDate(
-            departureTime: departure,
-            firstWalkSeconds: snapshot.firstWalkSeconds
-        )
         let state = LastTrainActivityState(
             departureTime: departure,
             alarmTime: alarmTime,
@@ -191,10 +187,11 @@ actor LastTrainLiveActivityAdapter: LastTrainActivityPort, LastTrainChangeAlerti
         do {
             let requested = try Activity.request(
                 attributes: LastTrainActivityAttributes(
-                    routeId: snapshot.info.lastRouteId,
-                    routeName: snapshot.routeDisplayName.isEmpty ? "막차" : snapshot.routeDisplayName,
-                    transportKind: Self.transportKind(from: snapshot.transportMode),
-                    firstWalkSeconds: snapshot.firstWalkSeconds
+                    routeId: session.server.lastRouteId,
+                    routeName: session.local.routeDisplayName.isEmpty
+                        ? "막차" : session.local.routeDisplayName,
+                    transportKind: Self.transportKind(from: session.local.transportMode),
+                    firstWalkSeconds: session.local.firstWalkSeconds
                 ),
                 content: ActivityContent(
                     state: Self.contentState(from: state),
