@@ -57,10 +57,6 @@ final class SettingsViewController: SettingsScreen {
             DSListCell.Content(title: "피드백 보내기", accessory: .chevron)
         case let .version(text, hasUpdate):
             DSListCell.Content(title: "현재 버전 \(text)", accessory: hasUpdate ? .value("업데이트") : .none)
-        case .logout:
-            DSListCell.Content(title: "로그아웃")
-        case .withdraw:
-            DSListCell.Content(title: "계정 탈퇴")
         }
     }
 }
@@ -85,7 +81,7 @@ extension SettingsViewController: UITableViewDataSource, UITableViewDelegate {
     }
 
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        sections[section].title == nil ? DSSpacing.lg : UITableView.automaticDimension
+        UITableView.automaticDimension
     }
 
     func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
@@ -98,13 +94,6 @@ extension SettingsViewController: UITableViewDataSource, UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        let row = sections[indexPath.section].rows[indexPath.row]
-        if row == .logout {
-            confirm(title: "로그아웃하시겠어요?", confirmTitle: "로그아웃") { [weak self] in
-                self?.viewModel.logoutConfirmed()
-            }
-            return
-        }
-        viewModel.didSelect(row)
+        viewModel.didSelect(sections[indexPath.section].rows[indexPath.row])
     }
 }

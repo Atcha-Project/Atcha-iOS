@@ -3,7 +3,7 @@ import SafariServices
 import UIKit
 
 // NSObject 상속은 UINavigationControllerDelegate(NSObjectProtocol) 요구 — 이탈 경로
-// (백 버튼·스와이프 백·popToRoot·세션 만료의 setViewControllers)를 didShow 한 지점에서
+// (백 버튼·스와이프 백·popToRoot)를 didShow 한 지점에서
 // 정리한다(SearchCoordinator와 같은 규약).
 final class SettingsCoordinator: NSObject, Coordinator {
     var childCoordinators: [any Coordinator] = []
@@ -44,8 +44,6 @@ final class SettingsCoordinator: NSObject, Coordinator {
                 self.settingsViewModel?.homeAddressDidChange()
             }
             navigationController.pushViewController(viewController, animated: true)
-        case .withdraw:
-            navigationController.pushViewController(container.makeWithdrawViewController(), animated: true)
         case let .externalLink(url):
             if url.scheme?.hasPrefix("http") == true {
                 navigationController.present(SFSafariViewController(url: url), animated: true)

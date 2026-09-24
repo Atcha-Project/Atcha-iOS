@@ -27,27 +27,6 @@ final class StubGetUserProfileUseCase: GetUserProfileUseCase {
     }
 }
 
-final class SpyLogoutUseCase: LogoutUseCase {
-    private let count = Mutex(0)
-    var callCount: Int { count.withLock { $0 } }
-    func execute() async { count.withLock { $0 += 1 } }
-}
-
-final class SpyWithdrawUseCase: WithdrawUseCase {
-    private let log = Mutex<[String?]>([])
-    private let failing = Mutex(false)
-    var reasons: [String?] { log.withLock { $0 } }
-    var fails: Bool {
-        get { failing.withLock { $0 } }
-        set { failing.withLock { $0 = newValue } }
-    }
-
-    func execute(reason: String?) async throws {
-        log.withLock { $0.append(reason) }
-        if fails { throw StubFailure() }
-    }
-}
-
 struct StubCheckAppUpdateUseCase: CheckAppUpdateUseCase {
     let status: AppUpdateStatus
     func execute(currentVersion: String) async throws -> AppUpdateStatus { status }

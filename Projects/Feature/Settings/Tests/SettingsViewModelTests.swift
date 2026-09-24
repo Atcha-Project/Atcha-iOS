@@ -8,12 +8,10 @@ struct SettingsViewModelTests {
     private func makeSUT(
         address: String? = "서울 중구 세종대로 110",
         profileFails: Bool = false,
-        update: AppUpdateStatus = .upToDate,
-        logout: SpyLogoutUseCase = SpyLogoutUseCase()
+        update: AppUpdateStatus = .upToDate
     ) -> SettingsViewModel {
         SettingsViewModel(
             getUserProfileUseCase: StubGetUserProfileUseCase(address: address, fails: profileFails),
-            logoutUseCase: logout,
             checkAppUpdateUseCase: StubCheckAppUpdateUseCase(status: update),
             currentVersion: "2.0.0",
             appStoreURL: URL(string: "itms-apps://example")
@@ -53,19 +51,6 @@ struct SettingsViewModelTests {
         sut.didSelect(updatedRow)
 
         #expect(routes == [.externalLink(URL(string: "itms-apps://example")!)])
-    }
-
-    /// 중복 탭이 로그아웃을 두 번 보내지 않는다.
-    @Test
-    func logoutConfirmed_twice_executesOnce() async {
-        let logout = SpyLogoutUseCase()
-        let sut = makeSUT(logout: logout)
-
-        sut.logoutConfirmed()
-        sut.logoutConfirmed()
-        await waitUntil { logout.callCount == 1 }
-
-        #expect(logout.callCount == 1)
     }
 
     @Test

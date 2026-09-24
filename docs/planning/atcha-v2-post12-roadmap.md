@@ -39,7 +39,7 @@ Phase 1~12로 "검색 → 알람 등록 → 변경 인지"의 전반부는 완�
 
 ### 서버에 전달할 질문 리스트
 
-1. 익명 세션 **발급** 엔드포인트 스펙 (경로·요청·응답 — 레거시엔 소셜 로그인뿐, `/auth/reissue`만 실측됨)
+1. **(2026-09 재개 — 게스트 전용 MVP)** 게스트 토큰 발급 엔드포인트. 클라 제안: `POST /auth/guest`, body `{deviceId, fcmToken?}`, 응답은 로그인과 같은 envelope `{id, accessToken, refreshToken}`, 무토큰 호출. **같은 deviceId면 같은 게스트 회원 반환(멱등)** 필수 — 재설치·refresh 만료 후 알람·집 주소 유지의 전제. 게스트 회원이 `/routes/user-routes`·`/members/me`·home-address PATCH를 그대로 쓸 수 있는지도 확인
 2. FCM 토큰을 익명 체계에서 어떻게 등록하나 (엔드포인트·토큰 로테이션 처리)
 3. `GET /routes/last-routes`가 "오늘 막차 종료"와 "경로 없음"을 각각 어떤 responseCode로 주나 (실측값)
 4. 등록된 알람이 없을 때 `GET /routes/user-routes/refresh`가 무엇을 반환하나 (에러 코드? 빈 성공?)
@@ -62,7 +62,7 @@ Phase 1~12로 "검색 → 알람 등록 → 변경 인지"의 전반부는 완�
 | # | 항목 | 상태 (2026-08-23) |
 |---|---|---|
 | 1 | 실서버 base URL | **부분 해결** — dev/live 실주소 반영(`AppEnvironment.swift`, 레거시 trust-evaluator에서 복원·사용자 승인). Stage는 dev 호스트 공유 — 전용 호스트만 미정 |
-| 2 | 익명 인증 발급 엔드포인트 | **대체 해결 (2026-09)** — 소셜 로그인(카카오·애플)이 최초 토큰 소스. 익명 발급 스펙 질문은 철회 |
+| 2 | 익명 인증 발급 엔드포인트 | **재개 (2026-09-24)** — 소셜 로그인 제거, 게스트 전용 MVP로 전환. 클라는 제안 계약 `POST /auth/guest`로 구현 완료, 서버 구현·합의 대기(질문 #1) |
 | 3 | responseCode 실측 | **미해결 (S3)** — `.noRoute` 도달 불가 상태 |
 | 4 | 단일 알람 규약 | 미해결 — 클라 refresh→cancel→register 우회 동작 중 |
 | 5 | FCM 토큰 전달 | **부분 (2026-09)** — 로그인/가입 파라미터 전달 + 갱신 전달 UseCase·호출 지점 배선 완료, 서버 API 미확정이라 no-op 저장소(`UnconfirmedPushTokenRepository`) 주입 중. 질문 #2 |
