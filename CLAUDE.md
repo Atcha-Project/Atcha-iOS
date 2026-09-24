@@ -81,8 +81,12 @@ AtchaV2(앱, 조합 루트: 어댑터·스플래시·AlarmSyncService) ─► Ho
 - 다른 모듈에 노출하는 진입점은 Interface 타겟의 프로토콜(`HomeCoordinatorBuildable` 패턴)로만.
 - 테스트는 **Swift Testing**(`@Test`/`#expect`). Example 앱은 스텁 UseCase로 피처 단독 실행(Data 무의존). 스텁이 Tests/Example에 중복되는 것은 의도된 트레이드오프.
 - catch-all `Shared`/`Common` 모듈을 만들지 않는다. 로깅·캐싱 등이 필요해지면 목적별 단일 모듈(`Logger`, `Storage`)을 새로 판다.
+- 영속·캐시는 `CoreStorage`의 타입으로만 한다. `KeyValueStore`(Data 단위 추상) 위에 `DocumentStore`(단일 문서) / `CollectionStore`(상한 있는 목록) / `ExpiringCache`(TTL+지터) 셋을 올린다. **전부 actor다** — 목록·문서 갱신은 read-modify-write라 값 타입으로 두면 동시 쓰기가 서로를 덮어쓴다(실제로 최근 검색 1건이 조용히 사라지는 버그였다). 격리는 **인스턴스 단위**라 조합 루트에서 1회 생성해 공유해야 한다. 저장 매체는 값 크기로 가른다 — 단일 값 4KB 초과면 `FileKeyValueStore`(UserDefaults는 첫 접근에 plist 전체를 올린다), 서버에서 다시 받을 수 있는 값은 `.cache` 네임스페이스로 백업 제외.
+- 응답 캐시는 Data 레이어 **데코레이터**로 붙인다(`CachingPlaceRepository`) — 피처·Domain은 한 줄도 모른다. 대상 선정 기준은 "틀렸을 때의 피해"다: 역지오코딩 7일 · 장소 검색 1시간 · **서비스 지역 판정은 캐시 금지**(틀리면 되는 지역을 막는다). 좌표는 키로 쓰기 전에 반올림한다(GPS가 떨려서 원시 좌표는 적중률이 0). 만료에는 ±10% 지터 — 막차 시간대에 수천 기기의 만료가 한 점에 몰리면 안 된다. **실패는 캐시하지 않는다.**
 - 모듈명 `Data`는 금지(Foundation.Data 섀도잉) — Data 레이어 모듈명은 `AtchaData`(디렉터리는 `Projects/Data`).
 - UI는 UIKit 코드 기반(스토리보드 없음) + SnapKit + DesignSystem 토큰(`DSColor`/`DSFont`/`DSSpacing`).
+- **UseCase는 기본이 아니다.** 단일 Repository 메서드를 한 줄 위임하는 UseCase는 만들지 않는다 — 같은 프로토콜에 이름만 하나 더 입히는 계층이다. 새로 만들 조건은 ① 포트 2개 이상을 조합하거나 ② 비즈니스 규칙(순서·판정·폴백)을 담을 때. 해당 없으면 ViewModel이 Domain Repository/Service 프로토콜을 직접 주입받는다(경계는 유지된다 — 피처가 보는 건 여전히 Domain 프로토콜뿐). 2026-09-24 전면 재검토로 21 → 11개. 개발자가 5명을 넘거나 한 Repository 메서드를 4화면 초과가 쓰면 재검토.
+- **화면 상태 채널은 정확히 2개**: `onStateChange`(상태) + `onToast`(사건). `private(set) var state`는 `didSet`에서 `!= oldValue`일 때만 방출한다 — 같은 값 재방출은 배너 틱마다 셀을 리로드시킨다. State 밖에 상태를 따로 들지 않고, 두 번째 상태 콜백을 만들지 않는다(키 입력 diff는 계약이 아니라 VC의 일).
 
 ### 미완 상태 (작업 시 참고)
 
@@ -92,5 +96,6 @@ AtchaV2(앱, 조합 루트: 어댑터·스플래시·AlarmSyncService) ─► Ho
 - **네트워크 진단**: `URLSessionNetworkClient`가 DEBUG에서 `com.atcha.network` 서브시스템에 `메서드 · URL · 상태코드/에러 · 소요시간`을 남긴다(헤더·본문은 토큰이 실리므로 절대 로깅 금지). `NetworkError.debugDescription`이 URLError 코드를 노출해 타임아웃(-1001)·연결 불가(-1004)·TLS 실패(-1200)를 가른다 — 이전에는 전부 `.transport`로 뭉개져 원인 구분이 불가능했다. 부트스트랩 실패는 `BootstrapFailureMessage`를 거쳐 스플래시의 `showRetry`로 표면화된다(게스트 전환으로 부트스트랩이 비동기가 되면서 비로소 쓰이는 경로).
 - `Projects/App/Resources/GoogleService-Info.plist`는 **레거시 번들 ID(`com.atcha.iOS`)용 파일**이라 존재 가드만 통과할 뿐 V2(`com.atcha.iOS.v2`)로의 사일런트 푸시가 성립하지 않는다 — V2용 재발급·교체 필요. FCM 토큰은 로그인/가입 파라미터로만 서버에 가고, 갱신 전달은 `SyncPushTokenUseCase`까지 배선됐지만 서버 API 미확정이라 `UnconfirmedPushTokenRepository`(no-op)가 주입돼 있다. 그래서 갱신 채널은 현재 폴링(앱 시작·포그라운드 복귀)과 홈 pull-to-refresh(수동)뿐.
 - AtchaV2는 iOS 26 전용. AlarmKit(CoreAlarm)·Live Activity(CoreLiveActivity + AtchaWidget 익스텐션)는 Phase 9~12에서 구축 완료.
+- **막차 경로(`/routes/last-routes`) 응답 캐시는 의도적으로 미도입**이다. 장소·역지오코딩과 달리 틀렸을 때의 피해가 "막차를 놓친다"라서, 도입하려면 두 가지가 함께 와야 한다: ① 화면에 **"HH:mm 기준" 스탬프 필수**(스탬프 없이 표시 금지), ② **알람 등록 근거로는 캐시 사용 금지** — 지금 `RegisterAlarmUseCase`는 사용자가 고른 `LastRoute`를 그대로 받으므로, 이 규칙을 강제하려면 등록 시점 재조회가 필요해 시그니처가 바뀐다. TTL은 쓰지 않는다(막차의 유효 시간은 벽시계가 아니라 `departureTime` 자체다 — `RouteCardViewData.asPastTrain`이 이미 그 전환을 한다).
 - Phase 12 이후의 갭 분석·후속 로드맵: `docs/planning/atcha-v2-post12-roadmap.md` / Phase 13·14(알람 이후 + 재실행 정합성) 구현 프롬프트: `docs/prompts/atcha-v2-session-lifecycle-prompt.md`.
 - Phase 검수는 사람 검수 대신 **자동 검수 규약**(`docs/prompts/atcha-v2-auto-verification.md`)을 따른다 — 에이전트가 computer use로 시뮬레이터 검수를 직접 수행·증적 보고하고, 실기기 잔여 항목만 사용자에게 이관.
