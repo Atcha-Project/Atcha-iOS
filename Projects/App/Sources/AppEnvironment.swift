@@ -28,4 +28,9 @@ enum AppEnvironment {
         case .live: URL(string: "https://atcha.online")!
         }
     }
+
+    // TODO: [서버 확인] V2가 레거시 스토어 앱(id6747877903)을 잇는지 확정 — 별도 앱이면 교체.
+    var appStoreURL: URL {
+        URL(string: "itms-apps://itunes.apple.com/app/id6747877903")!
+    }
 }

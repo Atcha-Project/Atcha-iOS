@@ -65,6 +65,8 @@ let appTarget = Target.target(
         .project(target: "HomeFeatureInterface", path: "../Feature/Home"),
         .project(target: "SearchFeature", path: "../Feature/Search"),
         .project(target: "SearchFeatureInterface", path: "../Feature/Search"),
+        .project(target: "SettingsFeature", path: "../Feature/Settings"),
+        .project(target: "SettingsFeatureInterface", path: "../Feature/Settings"),
         .project(target: "Domain", path: "../Domain"),
         .project(target: "AtchaData", path: "../Data"),
         .project(target: "CoreNetwork", path: "../Core/Network"),
