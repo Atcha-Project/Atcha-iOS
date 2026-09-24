@@ -24,4 +24,8 @@ public struct PlaceRepositoryImpl: PlaceRepository {
         }
         return place
     }
+
+    public func isServiceRegion(_ coordinate: Coordinate) async throws -> Bool {
+        try await networkClient.requestEnveloped(PlaceEndpoint.serviceRegion(coordinate), as: Bool.self)
+    }
 }
