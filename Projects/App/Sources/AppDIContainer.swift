@@ -40,6 +40,8 @@ final class AppDIContainer {
     /// 인스턴스를 봐야 한다(actor 격리는 인스턴스 단위).
     let alarmSessionStore: AlarmSessionStore
     let alarmSyncService: AlarmSyncService
+    /// 변경 표출 — 홈의 변경 스트림(`AlarmChangeEvents`) 제공자.
+    let alarmChangePresenter: AlarmChangePresenter
     /// Phase 13 발화 이후 세션 수명 — stopIntent(AlarmAcknowledgeIntent)가 조합 루트를
     /// 거쳐 도달하는 지점. AppDelegate 경유로 인텐트 perform()이 접근한다.
     let alarmSessionLifecycle: AlarmSessionLifecycleService
@@ -122,16 +124,22 @@ final class AppDIContainer {
         )
         let localNotificationAdapter = LocalNotificationAdapter()
         self.localNotificationPort = localNotificationAdapter
+        // 변경 표출과 트리거 수집을 나눈다 — 셋(세션·표출·트리거)이 서로를 알 필요가 없다.
+        let presenter = AlarmChangePresenter(
+            evaluateChangeUseCase: DefaultEvaluateAlarmChangeUseCase(),
+            liveActivity: liveActivityAdapter,
+            localNotification: localNotificationAdapter,
+            alarmScheduler: alarmScheduler,
+            sessionStore: sessionStore
+        )
+        self.alarmChangePresenter = presenter
         self.alarmSyncService = AlarmSyncService(
             // 도보 초는 호출자가 세션으로 넘긴다 — refresh 응답에 도보 정보가 없다.
             refreshAlarmUseCase: DefaultRefreshAlarmUseCase(
                 repository: alarmRepository,
                 scheduler: alarmScheduler
             ),
-            evaluateChangeUseCase: DefaultEvaluateAlarmChangeUseCase(),
-            liveActivity: liveActivityAdapter,
-            localNotification: localNotificationAdapter,
-            alarmScheduler: alarmScheduler,
+            presenter: presenter,
             sessionStore: sessionStore,
             sessionRestorer: liveActivityAdapter
         )
@@ -270,7 +278,7 @@ final class AppDIContainer {
             ),
             // 세션 스트림은 소유자(Store)가 제공한다 — AlarmSyncService는 사건 채널만.
             observeAlarmUseCase: DefaultObserveAlarmUseCase(events: alarmSessionStore),
-            observeAlarmChangeUseCase: DefaultObserveAlarmChangeUseCase(events: alarmSyncService),
+            observeAlarmChangeUseCase: DefaultObserveAlarmChangeUseCase(events: alarmChangePresenter),
             // 홈 pull-to-refresh(Phase 16) — 4번째 트리거도 같은 동기화 한 곳으로 합류한다.
             requestAlarmSyncUseCase: DefaultRequestAlarmSyncUseCase(requesting: alarmSyncService),
             // 재실행 카드 복원(Phase 14) — 기존 미사용 자산(detail 엔드포인트) 재활용.

@@ -193,8 +193,7 @@ private func makeSUT(
     },
     recentFetch: @escaping @Sendable () async throws -> [Place] = { [] },
     recentSave: @escaping @Sendable (Place) async throws -> Void = { _ in },
-    now: @escaping @Sendable () -> Date = { fixedNow },
-    bannerTickInterval: Duration = .seconds(60)
+    now: @escaping @Sendable () -> Date = { fixedNow }
 ) -> HomeViewModel {
     HomeViewModel(
         getCurrentLocationUseCase: StubGetCurrentLocationUseCase(handler: location),
@@ -211,16 +210,15 @@ private func makeSUT(
         recentSearchesUseCase: StubRecentSearchesUseCase(
             fetchHandler: recentFetch, saveHandler: recentSave
         ),
-        now: now,
-        bannerTickInterval: bannerTickInterval
+        now: now
     )
 }
 
 /// 스트림 yield용 축약 — 확인 시각이 무관한 기존 시나리오는 checkedAt 없이 흘린다.
 private nonisolated func syncUpdate(
-    _ info: AlarmInfo, checkedAt: Date? = nil
+    _ info: AlarmInfo, checkedAt: Date? = nil, firstWalkSeconds: Int? = nil
 ) -> AlarmSyncUpdate {
-    AlarmSyncUpdate(info: info, checkedAt: checkedAt)
+    AlarmSyncUpdate(info: info, checkedAt: checkedAt, firstWalkSeconds: firstWalkSeconds)
 }
 
 // MARK: - 테스트
@@ -492,47 +490,58 @@ struct HomeViewModelTests {
         ) == nil)
     }
 
+    /// 유예 경과의 3단계 전이(배너 제거 + "지난 막차" 카드 + 버튼 숨김)는 이제
+    /// **세션 종료 이벤트**로 온다 — 이전에는 홈의 배너 타이머가 유예를 스스로 감지해
+    /// 세션을 끝냈고, 그게 만료 판정 주체가 여러 곳이던 원인이었다. 판정은 세션
+    /// 소유자(Store)가 하고 홈은 통지를 받아 화면만 정리한다.
     @Test
-    func bannerTimer_graceElapsed_transitionsToPastTrainState() async {
-        // 유예 경과 시 틱이 3단계 전이를 수행한다: 배너 제거 + "지난 막차" 카드(비활성 톤)
-        // + 알람 버튼 숨김 + 틱 종료.
-        let clock = NowBox(fixedNow)
+    func sessionEnded_transitionsToPastTrainState() async {
         let departure = fixedNow.addingTimeInterval(42 * 60)
         let route = makeRoute(id: "r1", departure: departure)
-        let sut = makeSUT(now: { clock.get() }, bannerTickInterval: .milliseconds(1))
+        let clock = NowBox(fixedNow)
+        let (changes, changeContinuation) = AsyncStream<AlarmChangeVerdict>.makeStream()
+        let sut = makeSUT(alarmChanges: { changes }, now: { clock.get() })
         let recorder = StateRecorder()
         recorder.attach(to: sut)
+        sut.viewDidLoad() // 변경 스트림 구독이 여기서 시작된다.
         sut.routeSelected(route, arrival: makeArrival())
         sut.registerAlarmTapped()
         await recorder.waitUntilLast { $0.banner != nil }
 
+        // 유예 경과 후의 종료 — Store의 틱이 감지해 이 이벤트로 알린다.
         clock.set(departure.addingTimeInterval(60))
+        changeContinuation.yield(.sessionEnded)
         await recorder.waitUntilLast { $0.banner == nil }
 
         #expect(sut.state.alarmButton == .hidden)
         #expect(sut.state.routeCard?.tone == .past)
         #expect(sut.state.routeCard?.badgeText == "지난 막차")
         #expect(sut.state.routeCard?.departureTimeText.hasSuffix("출발이었어요") == true)
-
-        // 틱이 종료됐다 — 살아 있다면 1ms 틱이 상태를 계속 다시 쓴다.
-        let stateCount = recorder.states.count
-        try? await Task.sleep(for: .milliseconds(30))
-        #expect(recorder.states.count == stateCount)
     }
 
+    /// 분 재계산은 **스트림 재방출**로 일어난다 — Store의 틱이 살아 있는 세션을 매
+    /// 틱 다시 흘리고, 홈은 그때의 시각으로 배너를 다시 그린다. 홈은 타이머를 갖지
+    /// 않으므로, 화면이 떠 있지 않아도 만료가 감지된다.
     @Test
-    func bannerTimer_ticksRecomputeMinutes() async {
+    func syncUpdate_recomputesBannerMinutes() async {
         let clock = NowBox(fixedNow)
-        let route = makeRoute(id: "r1", departure: fixedNow.addingTimeInterval(42 * 60))
-        let sut = makeSUT(now: { clock.get() }, bannerTickInterval: .milliseconds(1))
+        let departure = fixedNow.addingTimeInterval(42 * 60)
+        let route = makeRoute(id: "r1", departure: departure)
+        let (updates, continuation) = AsyncStream<AlarmSyncUpdate>.makeStream()
+        let sut = makeSUT(alarmUpdates: { updates }, now: { clock.get() })
         let recorder = StateRecorder()
         recorder.attach(to: sut)
-
+        sut.viewDidLoad() // 세션 스트림 구독이 여기서 시작된다.
         sut.routeSelected(route, arrival: makeArrival())
         sut.registerAlarmTapped()
         await recorder.waitUntilLast { $0.banner?.text == "출발까지 39분" }
 
+        // 시간이 흐른 뒤 같은 세션이 재방출되면 남은 분이 줄어든다.
         clock.set(fixedNow.addingTimeInterval(37 * 60))
+        continuation.yield(syncUpdate(
+            AlarmInfo(lastRouteId: "r1", departureTime: departure, updatedAt: nil, isReal: true),
+            firstWalkSeconds: route.firstWalkSectionSeconds
+        ))
         await recorder.waitUntilLast { $0.banner?.text == "출발까지 2분" }
 
         #expect(sut.state.banner?.urgency == .imminent)
@@ -703,7 +712,7 @@ struct HomeViewModelTests {
         // 운행 종료·경로 소멸: 배너 제거 + 등록 기록 삭제 + 버튼 리셋 + 원샷 안내.
         let route = makeRoute(id: "r1", departure: fixedNow.addingTimeInterval(42 * 60))
         let (stream, continuation) = AsyncStream<AlarmChangeVerdict>.makeStream()
-        let sut = makeSUT(alarmChanges: { stream }, bannerTickInterval: .milliseconds(1))
+        let sut = makeSUT(alarmChanges: { stream })
         let recorder = StateRecorder()
         recorder.attach(to: sut)
         sut.viewDidLoad()
@@ -732,8 +741,7 @@ struct HomeViewModelTests {
         let (stream, continuation) = AsyncStream<AlarmChangeVerdict>.makeStream()
         let sut = makeSUT(
             alarmChanges: { stream },
-            now: { clock.get() },
-            bannerTickInterval: .milliseconds(1)
+            now: { clock.get() }
         )
         let recorder = StateRecorder()
         recorder.attach(to: sut)
@@ -1227,8 +1235,7 @@ struct HomeViewModelTests {
         let (stream, continuation) = AsyncStream<AlarmChangeVerdict>.makeStream()
         let sut = makeSUT(
             alarmChanges: { stream },
-            now: { clock.get() },
-            bannerTickInterval: .milliseconds(1)
+            now: { clock.get() }
         )
         let recorder = StateRecorder()
         recorder.attach(to: sut)
@@ -1242,10 +1249,12 @@ struct HomeViewModelTests {
         await recorder.waitUntilLast { $0.banner == nil }
         #expect(sut.state.freshnessText == nil)
 
-        // 재등록 후 유예 경과(3단계 전이)도 스탬프를 정리한다.
+        // 재등록 후 유예 경과도 스탬프를 정리한다. 유예 감지는 이제 홈의 타이머가
+        // 아니라 세션 소유자(Store)의 틱이 하고, 홈에는 종료 이벤트로 도착한다.
         sut.registerAlarmTapped()
         await recorder.waitUntilLast { $0.banner != nil && $0.freshnessText != nil }
         clock.set(departure.addingTimeInterval(60))
+        continuation.yield(.sessionEnded)
         await recorder.waitUntilLast { $0.banner == nil && $0.freshnessText == nil }
         #expect(sut.state.routeCard?.tone == .past)
     }

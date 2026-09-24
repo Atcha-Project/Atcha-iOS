@@ -144,6 +144,8 @@ private actor RestorerSpy: LastTrainSessionRestoring {
 @MainActor
 private struct Harness {
     let sut: AlarmSyncService
+    /// 변경 스트림(`AlarmChangeEvents`)은 이제 Presenter가 제공한다.
+    let presenter: AlarmChangePresenter
     let refresh: RefreshStub
     let evaluate: EvaluateStub
     let activity: ActivitySpy
@@ -172,20 +174,26 @@ private func makeHarness(
     let store = AlarmSessionStore(store: MemoryKeyValueStore(seeded: seeded))
     let restorer = RestorerSpy()
     let active = ValueBox(isAppActive)
-    let sut = AlarmSyncService(
-        refreshAlarmUseCase: refresh,
+    // 표출과 트리거가 분리됐다 — 조립도 둘로 나뉜다.
+    let presenter = AlarmChangePresenter(
         evaluateChangeUseCase: evaluate,
         liveActivity: activity,
         localNotification: noti,
         alarmScheduler: scheduler,
         sessionStore: store,
-        sessionRestorer: restorer,
         isAppActive: { active.get() },
         now: { fixedNow }
     )
+    let sut = AlarmSyncService(
+        refreshAlarmUseCase: refresh,
+        presenter: presenter,
+        sessionStore: store,
+        sessionRestorer: restorer,
+        now: { fixedNow }
+    )
     return Harness(
-        sut: sut, refresh: refresh, evaluate: evaluate, activity: activity,
-        noti: noti, scheduler: scheduler, store: store, active: active
+        sut: sut, presenter: presenter, refresh: refresh, evaluate: evaluate,
+        activity: activity, noti: noti, scheduler: scheduler, store: store, active: active
     )
 }
 
@@ -355,7 +363,7 @@ struct AlarmSyncServiceTests {
             local: .empty,
             syncedAt: fixedNow.addingTimeInterval(-3600)
         ))
-        var changeIterator = harness.sut.changes().makeAsyncIterator()
+        var changeIterator = harness.presenter.changes().makeAsyncIterator()
         for _ in 0..<20 { await Task.yield() } // 구독 등록 드레인(변경 스트림은 replay 없음)
 
         await harness.sut.syncNow() // refresh 큐 비어 있음 → 실패여도 만료는 확정된다.

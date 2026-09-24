@@ -13,13 +13,22 @@ private final class InMemoryKeyValueStore: KeyValueStore {
     func removeValue(forKey key: String) throws { storage.withLock { $0[key] = nil } }
 }
 
+/// 틱 콜백은 메인 액터 밖에서도 읽히므로 락으로 감싼다.
+private final class ValueBox<Value: Sendable>: @unchecked Sendable {
+    private let lock = NSLock()
+    private var value: Value
+    init(_ value: Value) { self.value = value }
+    func get() -> Value { lock.lock(); defer { lock.unlock() }; return value }
+    func set(_ newValue: Value) { lock.lock(); value = newValue; lock.unlock() }
+}
+
 @MainActor
 struct AlarmSessionStoreTests {
     private let now = Date(timeIntervalSince1970: 1_700_000_000)
     private let store = InMemoryKeyValueStore()
 
-    private func makeSUT() -> AlarmSessionStore {
-        AlarmSessionStore(store: store)
+    private func makeSUT(now: @escaping @Sendable () -> Date = { Date() }) -> AlarmSessionStore {
+        AlarmSessionStore(store: store, now: now)
     }
 
     private func session(
@@ -181,6 +190,62 @@ struct AlarmSessionStoreTests {
         await sut.reset()
 
         #expect(sut.current == nil)
+    }
+
+    // MARK: - 시계 틱
+    //
+    // 홈 ViewModel의 배너 타이머가 하던 일을 Store가 가져왔다 — 화면이 세션을 끝내는
+    // 구조를 없애고, 홈이 떠 있지 않아도 만료가 감지되게 한다.
+
+    /// 출발 + 유예가 지나면 틱이 세션을 끝내고 콜백으로 알린다.
+    @Test
+    func tick_pastDeparture_expiresAndNotifies() async {
+        let sut = makeSUT(now: { self.now })
+        // 이미 지난 막차 — 다음 틱에서 만료돼야 한다.
+        await sut.register(session: session(departureOffset: -120))
+        let expired = ValueBox<AlarmSession?>(nil)
+
+        sut.startTicking(interval: .milliseconds(10)) { session in
+            expired.set(session)
+        }
+        for _ in 0..<80 where expired.get() == nil { try? await Task.sleep(for: .milliseconds(10)) }
+        sut.stopTicking()
+
+        #expect(expired.get()?.lifecycle == .ended)
+        #expect(sut.current?.lifecycle == .ended)
+    }
+
+    /// 살아 있는 세션은 끝내지 않는다 — 대신 매 틱 재방출해 "출발까지 N분"이 갱신된다.
+    @Test
+    func tick_liveSession_doesNotExpire() async {
+        let sut = makeSUT(now: { self.now })
+        await sut.register(session: session(departureOffset: 900))
+        let expired = ValueBox<AlarmSession?>(nil)
+
+        sut.startTicking(interval: .milliseconds(10)) { session in
+            expired.set(session)
+        }
+        try? await Task.sleep(for: .milliseconds(120))
+        sut.stopTicking()
+
+        #expect(expired.get() == nil)
+        #expect(sut.current?.lifecycle == .active)
+    }
+
+    /// 이미 끝난 세션을 반복 통지하면 구독자가 같은 종료를 여러 번 처리한다.
+    @Test
+    func tick_endedSession_doesNotNotifyAgain() async {
+        let sut = makeSUT(now: { self.now })
+        await sut.register(session: session(departureOffset: -120, lifecycle: .ended))
+        let expired = ValueBox<AlarmSession?>(nil)
+
+        sut.startTicking(interval: .milliseconds(10)) { session in
+            expired.set(session)
+        }
+        try? await Task.sleep(for: .milliseconds(120))
+        sut.stopTicking()
+
+        #expect(expired.get() == nil)
     }
 
     // MARK: - 구독 (replay-1)

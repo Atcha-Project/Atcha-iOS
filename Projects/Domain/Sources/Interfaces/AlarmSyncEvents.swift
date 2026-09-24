@@ -8,10 +8,16 @@ public struct AlarmSyncUpdate: Sendable, Equatable {
     /// 서버 확인 시각. 스냅샷 시딩 복원이면 직전 세션의 마지막 확인 시각(스냅샷의
     /// syncedAt), 그것도 없으면 nil — nil이면 스탬프를 표시하지 않는다(정직한 기본값).
     public let checkedAt: Date?
+    /// 등록 시점 경로의 첫 도보 구간(초). 서버가 주지 않는 값이라 세션이 유일한
+    /// 출처다 — 구독자(홈)가 배너 시각을 계산하려면 이 값이 함께 와야 한다.
+    /// 이전에는 홈이 화면에 떠 있는 경로(`selectedRoute`)에서 추측했고, 재실행
+    /// 복원처럼 카드가 없는 상황에서는 버퍼만 적용된 시각을 그렸다.
+    public let firstWalkSeconds: Int?
 
-    public init(info: AlarmInfo, checkedAt: Date?) {
+    public init(info: AlarmInfo, checkedAt: Date?, firstWalkSeconds: Int? = nil) {
         self.info = info
         self.checkedAt = checkedAt
+        self.firstWalkSeconds = firstWalkSeconds
     }
 }
 

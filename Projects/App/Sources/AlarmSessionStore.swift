@@ -40,9 +40,12 @@ final class AlarmSessionStore: AlarmSessionStoring, AlarmSyncEvents {
     /// 메모리 캐시 = 동기 읽기의 근거. 디스크 로드는 `bootstrap()`에서 1회만 한다.
     private(set) var current: AlarmSession?
     private var didBootstrap = false
+    private var tickTask: Task<Void, Never>?
+    private let now: @Sendable () -> Date
 
-    init(store: any KeyValueStore) {
+    init(store: any KeyValueStore, now: @escaping @Sendable () -> Date = { Date() }) {
         document = DocumentStore(store: store, key: Self.storageKey)
+        self.now = now
     }
 
     /// 앱 시작 직후 1회. **sync보다 먼저 불러야 한다** — 그래야 오프라인 콜드스타트에서도
@@ -137,6 +140,38 @@ final class AlarmSessionStore: AlarmSessionStoring, AlarmSyncEvents {
         await clear()
     }
 
+    // MARK: - 시계 틱
+
+    /// 앱이 켜져 있는 동안 **시간 경과만으로** 세션이 죽는 것을 감지한다.
+    ///
+    /// 이전에는 홈 ViewModel의 배너 타이머가 이 역할을 겸했다 — 화면이 세션을 끝내는
+    /// 구조라 만료 판정이 또 하나의 주체를 갖게 됐고, 홈이 떠 있지 않으면 감지도 되지
+    /// 않았다. 세션 소유자가 틱도 갖는 게 맞다.
+    ///
+    /// 만료가 아니어도 매 틱 재방출한다 — 구독자(홈)가 "출발까지 N분"을 다시 계산해야
+    /// 하기 때문이다. 값이 같으면 구독자 쪽 동등성 게이트가 걸러낸다.
+    func startTicking(interval: Duration, onExpiry: @escaping @MainActor (AlarmSession) async -> Void) {
+        tickTask?.cancel()
+        tickTask = Task { @MainActor [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: interval)
+                guard let self, !Task.isCancelled else { return }
+                let outcome = AlarmSessionReconciler.tick(current: current, now: now())
+                if case let .expired(session) = outcome {
+                    await apply(outcome)
+                    await onExpiry(session)
+                } else if case .refreshed = outcome {
+                    broadcast()
+                }
+            }
+        }
+    }
+
+    func stopTicking() {
+        tickTask?.cancel()
+        tickTask = nil
+    }
+
     // MARK: - 구독
 
     /// `AlarmSyncEvents` — 구독자(홈)가 보는 계약. 세션 스트림을 그대로 매핑한다.
@@ -190,7 +225,12 @@ final class AlarmSessionStore: AlarmSessionStoring, AlarmSyncEvents {
         }
         // 끝난 세션은 홈 계약으로 흘리지 않는다(위 updates() 주석 참조).
         guard let session = current, !session.isEnded else { return }
-        let update = AlarmSyncUpdate(info: session.server, checkedAt: session.syncedAt)
+        let update = AlarmSyncUpdate(
+            info: session.server,
+            checkedAt: session.syncedAt,
+            // 배너 시각 계산의 재료 — 세션이 유일한 출처다.
+            firstWalkSeconds: session.local.firstWalkSeconds
+        )
         lastUpdate.withLock { $0 = update }
         for continuation in updateSubscribers.withLock({ Array($0.values) }) {
             continuation.yield(update)
