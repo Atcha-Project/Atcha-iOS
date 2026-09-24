@@ -6,8 +6,14 @@ import Testing
 import UIKit
 
 // 코디네이터 조립용 최소 스텁 — Tests/Example 중복은 의도된 트레이드오프(기존 규약).
-private struct StubSearchPlacesUseCase: SearchPlacesUseCase {
-    func execute(keyword: String, near coordinate: Coordinate?) async throws -> [Place] { [] }
+private struct StubPlaceRepository: PlaceRepository {
+    func searchPlaces(keyword: String, near coordinate: Coordinate?) async throws -> [Place] { [] }
+
+    func reverseGeocode(_ coordinate: Coordinate) async throws -> Place {
+        Place(name: "강남역", address: "서울 강남구 강남대로 396", coordinate: coordinate)
+    }
+
+    func isServiceRegion(_ coordinate: Coordinate) async throws -> Bool { true }
 }
 
 private struct StubSearchLastRoutesUseCase: SearchLastRoutesUseCase {
@@ -16,8 +22,8 @@ private struct StubSearchLastRoutesUseCase: SearchLastRoutesUseCase {
     }
 }
 
-private struct StubRecentSearchesUseCase: RecentSearchesUseCase {
-    func fetch() async throws -> [Place] { [] }
+private struct StubRecentSearchRepository: RecentSearchRepository {
+    func recentSearches() async throws -> [Place] { [] }
     func save(_ place: Place) async throws {}
     func remove(_ place: Place) async throws {}
 }
@@ -36,9 +42,9 @@ private func makeCoordinator(navigationController: UINavigationController) -> Se
     SearchCoordinator(
         navigationController: navigationController,
         container: SearchDIContainer(
-            searchPlacesUseCase: StubSearchPlacesUseCase(),
+            placeRepository: StubPlaceRepository(),
             searchLastRoutesUseCase: StubSearchLastRoutesUseCase(),
-            recentSearchesUseCase: StubRecentSearchesUseCase()
+            recentSearchRepository: StubRecentSearchRepository()
         ),
         initialField: .departure,
         onRouteSelected: { _, _ in }

@@ -9,8 +9,8 @@ import UIKit
 /// screen/ViewModel assembly stays here so adding screens never bloats
 /// coordinator initializers.
 public final class HomeDIContainer: HomeCoordinatorBuildable {
-    private let getCurrentLocationUseCase: any GetCurrentLocationUseCase
-    private let reverseGeocodeUseCase: any ReverseGeocodeUseCase
+    private let locationService: any LocationService
+    private let placeRepository: any PlaceRepository
     private let registerAlarmUseCase: any RegisterAlarmUseCase
     private let cancelAlarmUseCase: any CancelAlarmUseCase
     private let alarmSyncEvents: any AlarmSyncEvents
@@ -18,14 +18,14 @@ public final class HomeDIContainer: HomeCoordinatorBuildable {
     private let alarmSyncRequesting: any AlarmSyncRequesting
     private let lastRouteRepository: any LastRouteRepository
     private let searchLastRoutesUseCase: any SearchLastRoutesUseCase
-    private let recentSearchesUseCase: any RecentSearchesUseCase
+    private let recentSearchRepository: any RecentSearchRepository
     private let searchCoordinatorBuildable: any SearchCoordinatorBuildable
     /// nil이면 톱니바퀴가 아무 일도 하지 않는다(Example 구성 호환).
     private let settingsCoordinatorBuildable: (any SettingsCoordinatorBuildable)?
 
     public init(
-        getCurrentLocationUseCase: any GetCurrentLocationUseCase,
-        reverseGeocodeUseCase: any ReverseGeocodeUseCase,
+        locationService: any LocationService,
+        placeRepository: any PlaceRepository,
         registerAlarmUseCase: any RegisterAlarmUseCase,
         cancelAlarmUseCase: any CancelAlarmUseCase,
         alarmSyncEvents: any AlarmSyncEvents,
@@ -33,12 +33,12 @@ public final class HomeDIContainer: HomeCoordinatorBuildable {
         alarmSyncRequesting: any AlarmSyncRequesting,
         lastRouteRepository: any LastRouteRepository,
         searchLastRoutesUseCase: any SearchLastRoutesUseCase,
-        recentSearchesUseCase: any RecentSearchesUseCase,
+        recentSearchRepository: any RecentSearchRepository,
         searchCoordinatorBuildable: any SearchCoordinatorBuildable,
         settingsCoordinatorBuildable: (any SettingsCoordinatorBuildable)? = nil
     ) {
-        self.getCurrentLocationUseCase = getCurrentLocationUseCase
-        self.reverseGeocodeUseCase = reverseGeocodeUseCase
+        self.locationService = locationService
+        self.placeRepository = placeRepository
         self.registerAlarmUseCase = registerAlarmUseCase
         self.cancelAlarmUseCase = cancelAlarmUseCase
         self.alarmSyncEvents = alarmSyncEvents
@@ -46,7 +46,7 @@ public final class HomeDIContainer: HomeCoordinatorBuildable {
         self.alarmSyncRequesting = alarmSyncRequesting
         self.lastRouteRepository = lastRouteRepository
         self.searchLastRoutesUseCase = searchLastRoutesUseCase
-        self.recentSearchesUseCase = recentSearchesUseCase
+        self.recentSearchRepository = recentSearchRepository
         self.searchCoordinatorBuildable = searchCoordinatorBuildable
         self.settingsCoordinatorBuildable = settingsCoordinatorBuildable
     }
@@ -63,8 +63,8 @@ public final class HomeDIContainer: HomeCoordinatorBuildable {
         onSettingsRequested: @escaping () -> Void
     ) -> UIViewController {
         let viewModel = HomeViewModel(
-            getCurrentLocationUseCase: getCurrentLocationUseCase,
-            reverseGeocodeUseCase: reverseGeocodeUseCase,
+            locationService: locationService,
+            placeRepository: placeRepository,
             registerAlarmUseCase: registerAlarmUseCase,
             cancelAlarmUseCase: cancelAlarmUseCase,
             alarmSyncEvents: alarmSyncEvents,
@@ -72,7 +72,7 @@ public final class HomeDIContainer: HomeCoordinatorBuildable {
             alarmSyncRequesting: alarmSyncRequesting,
             lastRouteRepository: lastRouteRepository,
             searchLastRoutesUseCase: searchLastRoutesUseCase,
-            recentSearchesUseCase: recentSearchesUseCase
+            recentSearchRepository: recentSearchRepository
         )
         viewModel.onSearchRequested = onSearchRequested
         viewModel.onSettingsRequested = onSettingsRequested

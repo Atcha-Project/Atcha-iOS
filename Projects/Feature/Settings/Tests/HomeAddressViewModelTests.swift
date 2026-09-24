@@ -14,9 +14,8 @@ struct HomeAddressViewModelTests {
         locationFails: Bool = false
     ) -> HomeAddressViewModel {
         HomeAddressViewModel(
-            searchPlacesUseCase: StubSearchPlacesUseCase(places: [place]),
-            getCurrentLocationUseCase: StubGetCurrentLocationUseCase(fails: locationFails),
-            reverseGeocodeUseCase: StubReverseGeocodeUseCase(),
+            placeRepository: StubPlaceRepository(places: [place]),
+            locationService: StubLocationService(fails: locationFails),
             updateHomeAddressUseCase: update,
             debounceInterval: .zero
         )

@@ -11,9 +11,8 @@ public final class SettingsDIContainer: SettingsCoordinatorBuildable {
     private let logoutUseCase: any LogoutUseCase
     private let withdrawUseCase: any WithdrawUseCase
     private let updateHomeAddressUseCase: any UpdateHomeAddressUseCase
-    private let searchPlacesUseCase: any SearchPlacesUseCase
-    private let getCurrentLocationUseCase: any GetCurrentLocationUseCase
-    private let reverseGeocodeUseCase: any ReverseGeocodeUseCase
+    private let placeRepository: any PlaceRepository
+    private let locationService: any LocationService
     private let checkAppUpdateUseCase: (any CheckAppUpdateUseCase)?
     private let currentVersion: String
     private let appStoreURL: URL?
@@ -23,9 +22,8 @@ public final class SettingsDIContainer: SettingsCoordinatorBuildable {
         logoutUseCase: any LogoutUseCase,
         withdrawUseCase: any WithdrawUseCase,
         updateHomeAddressUseCase: any UpdateHomeAddressUseCase,
-        searchPlacesUseCase: any SearchPlacesUseCase,
-        getCurrentLocationUseCase: any GetCurrentLocationUseCase,
-        reverseGeocodeUseCase: any ReverseGeocodeUseCase,
+        placeRepository: any PlaceRepository,
+        locationService: any LocationService,
         checkAppUpdateUseCase: (any CheckAppUpdateUseCase)? = nil,
         currentVersion: String,
         appStoreURL: URL? = nil
@@ -34,9 +32,8 @@ public final class SettingsDIContainer: SettingsCoordinatorBuildable {
         self.logoutUseCase = logoutUseCase
         self.withdrawUseCase = withdrawUseCase
         self.updateHomeAddressUseCase = updateHomeAddressUseCase
-        self.searchPlacesUseCase = searchPlacesUseCase
-        self.getCurrentLocationUseCase = getCurrentLocationUseCase
-        self.reverseGeocodeUseCase = reverseGeocodeUseCase
+        self.placeRepository = placeRepository
+        self.locationService = locationService
         self.checkAppUpdateUseCase = checkAppUpdateUseCase
         self.currentVersion = currentVersion
         self.appStoreURL = appStoreURL
@@ -63,9 +60,8 @@ public final class SettingsDIContainer: SettingsCoordinatorBuildable {
 
     func makeHomeAddressViewController(onSaved: @escaping () -> Void) -> UIViewController {
         let viewModel = HomeAddressViewModel(
-            searchPlacesUseCase: searchPlacesUseCase,
-            getCurrentLocationUseCase: getCurrentLocationUseCase,
-            reverseGeocodeUseCase: reverseGeocodeUseCase,
+            placeRepository: placeRepository,
+            locationService: locationService,
             updateHomeAddressUseCase: updateHomeAddressUseCase
         )
         viewModel.onSaved = onSaved

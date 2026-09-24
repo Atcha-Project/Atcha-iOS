@@ -124,8 +124,8 @@ final class HomeViewModel {
         didSet { if state != oldValue { onStateChange?(state) } }
     }
 
-    private let getCurrentLocationUseCase: any GetCurrentLocationUseCase
-    private let reverseGeocodeUseCase: any ReverseGeocodeUseCase
+    private let locationService: any LocationService
+    private let placeRepository: any PlaceRepository
     private let registerAlarmUseCase: any RegisterAlarmUseCase
     private let cancelAlarmUseCase: any CancelAlarmUseCase
     // Domain 포트를 직접 받는다. 이전에는 같은 프로토콜을 한 겹 더 감싼 UseCase를
@@ -135,7 +135,7 @@ final class HomeViewModel {
     private let alarmSyncRequesting: any AlarmSyncRequesting
     private let lastRouteRepository: any LastRouteRepository
     private let searchLastRoutesUseCase: any SearchLastRoutesUseCase
-    private let recentSearchesUseCase: any RecentSearchesUseCase
+    private let recentSearchRepository: any RecentSearchRepository
     private let now: @Sendable () -> Date
 
     /// 화면에 떠 있는 경로. id는 State가 파생(알람 버튼)에 쓰므로 **함께 갱신한다** —
@@ -158,8 +158,8 @@ final class HomeViewModel {
     private var chipSearchTask: Task<Void, Never>?
 
     init(
-        getCurrentLocationUseCase: any GetCurrentLocationUseCase,
-        reverseGeocodeUseCase: any ReverseGeocodeUseCase,
+        locationService: any LocationService,
+        placeRepository: any PlaceRepository,
         registerAlarmUseCase: any RegisterAlarmUseCase,
         cancelAlarmUseCase: any CancelAlarmUseCase,
         alarmSyncEvents: any AlarmSyncEvents,
@@ -167,11 +167,11 @@ final class HomeViewModel {
         alarmSyncRequesting: any AlarmSyncRequesting,
         lastRouteRepository: any LastRouteRepository,
         searchLastRoutesUseCase: any SearchLastRoutesUseCase,
-        recentSearchesUseCase: any RecentSearchesUseCase,
+        recentSearchRepository: any RecentSearchRepository,
         now: @escaping @Sendable () -> Date = { Date() }
     ) {
-        self.getCurrentLocationUseCase = getCurrentLocationUseCase
-        self.reverseGeocodeUseCase = reverseGeocodeUseCase
+        self.locationService = locationService
+        self.placeRepository = placeRepository
         self.registerAlarmUseCase = registerAlarmUseCase
         self.cancelAlarmUseCase = cancelAlarmUseCase
         self.alarmSyncEvents = alarmSyncEvents
@@ -179,7 +179,7 @@ final class HomeViewModel {
         self.alarmSyncRequesting = alarmSyncRequesting
         self.lastRouteRepository = lastRouteRepository
         self.searchLastRoutesUseCase = searchLastRoutesUseCase
-        self.recentSearchesUseCase = recentSearchesUseCase
+        self.recentSearchRepository = recentSearchRepository
         self.now = now
     }
 
@@ -218,11 +218,11 @@ final class HomeViewModel {
         guard case .needsSearch = state.departure else { return }
         locationTask?.cancel()
         locationTask = Task { [weak self] in
-            guard let locationUseCase = self?.getCurrentLocationUseCase,
-                  let coordinate = try? await locationUseCase.execute() else { return }
+            guard let locationUseCase = self?.locationService,
+                  let coordinate = try? await locationUseCase.currentLocation() else { return }
             guard !Task.isCancelled,
-                  let geocodeUseCase = self?.reverseGeocodeUseCase,
-                  let place = try? await geocodeUseCase.execute(coordinate: coordinate)
+                  let geocodeUseCase = self?.placeRepository,
+                  let place = try? await geocodeUseCase.reverseGeocode(coordinate)
             else { return }
             guard !Task.isCancelled else { return }
             self?.state.departure = .current(name: place.name)
@@ -283,8 +283,8 @@ final class HomeViewModel {
 
             let start: Coordinate
             do {
-                guard let locationUseCase = self?.getCurrentLocationUseCase else { return }
-                start = try await locationUseCase.execute()
+                guard let locationUseCase = self?.locationService else { return }
+                start = try await locationUseCase.currentLocation()
             } catch let error as LocationError {
                 guard !Task.isCancelled else { return }
                 // 사유별 안내는 기존 3분기 이벤트 재사용(Phase 17 문구·액션 그대로).
@@ -522,9 +522,9 @@ final class HomeViewModel {
         guard chipSaveTask == nil else { return }
         chipTask?.cancel()
         chipTask = Task { [weak self] in
-            guard let useCase = self?.recentSearchesUseCase else { return }
+            guard let repository = self?.recentSearchRepository else { return }
             // 로드 실패는 칩 없음으로 무해화한다 (검색 화면의 최근 목록과 같은 취급).
-            let latest = ((try? await useCase.fetch()) ?? []).first
+            let latest = ((try? await repository.recentSearches()) ?? []).first
             guard !Task.isCancelled, let self else { return }
             self.chipPlace = latest
             self.state.recentRouteChipText = latest.map { "→ \($0.name)" }
@@ -538,7 +538,7 @@ final class HomeViewModel {
     private func promoteChipDestination(_ place: Place) {
         chipSaveTask?.cancel()
         chipSaveTask = Task { [weak self] in
-            guard let useCase = self?.recentSearchesUseCase else { return }
+            guard let useCase = self?.recentSearchRepository else { return }
             try? await useCase.save(place)
             guard !Task.isCancelled else { return }
             self?.chipSaveTask = nil
@@ -550,11 +550,11 @@ final class HomeViewModel {
         state.departure = .loading
         locationTask = Task { [weak self] in
             do {
-                guard let locationUseCase = self?.getCurrentLocationUseCase else { return }
-                let coordinate = try await locationUseCase.execute()
+                guard let locationUseCase = self?.locationService else { return }
+                let coordinate = try await locationUseCase.currentLocation()
                 guard !Task.isCancelled,
-                      let geocodeUseCase = self?.reverseGeocodeUseCase else { return }
-                let place = try await geocodeUseCase.execute(coordinate: coordinate)
+                      let geocodeUseCase = self?.placeRepository else { return }
+                let place = try await geocodeUseCase.reverseGeocode(coordinate)
                 guard !Task.isCancelled else { return }
                 self?.state.departure = .current(name: place.name)
             } catch let error as LocationError {

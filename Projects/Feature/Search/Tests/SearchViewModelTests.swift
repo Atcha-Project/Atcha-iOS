@@ -4,11 +4,18 @@ import Foundation
 import SearchFeatureInterface
 import Testing
 
-private struct StubSearchPlacesUseCase: SearchPlacesUseCase {
+private struct StubPlaceRepository: PlaceRepository {
     let handler: @Sendable (String) async throws -> [Place]
-    func execute(keyword: String, near coordinate: Coordinate?) async throws -> [Place] {
+    func searchPlaces(keyword: String, near coordinate: Coordinate?) async throws -> [Place] {
         try await handler(keyword)
     }
+
+    // 검색은 장소 검색만 쓴다 — 나머지는 호출되지 않는다.
+    func reverseGeocode(_ coordinate: Coordinate) async throws -> Place {
+        Place(name: "강남역", address: "서울 강남구 강남대로 396", coordinate: coordinate)
+    }
+
+    func isServiceRegion(_ coordinate: Coordinate) async throws -> Bool { true }
 }
 
 private struct StubSearchLastRoutesUseCase: SearchLastRoutesUseCase {
@@ -18,9 +25,9 @@ private struct StubSearchLastRoutesUseCase: SearchLastRoutesUseCase {
     }
 }
 
-private struct StubGetCurrentLocationUseCase: GetCurrentLocationUseCase {
+private struct StubLocationService: LocationService {
     let handler: @Sendable () async throws -> Coordinate
-    func execute() async throws -> Coordinate { try await handler() }
+    func currentLocation() async throws -> Coordinate { try await handler() }
 }
 
 // 키워드 검색이 받은 near 좌표를 기록한다.
@@ -29,14 +36,20 @@ private actor NearLog {
     func append(_ coordinate: Coordinate?) { coordinates.append(coordinate) }
 }
 
-private struct NearRecordingSearchPlacesUseCase: SearchPlacesUseCase {
+private struct NearRecordingPlaceRepository: PlaceRepository {
     let log: NearLog
     let places: [Place]
 
-    func execute(keyword: String, near coordinate: Coordinate?) async throws -> [Place] {
+    func searchPlaces(keyword: String, near coordinate: Coordinate?) async throws -> [Place] {
         await log.append(coordinate)
         return places
     }
+
+    func reverseGeocode(_ coordinate: Coordinate) async throws -> Place {
+        Place(name: "강남역", address: "서울 강남구 강남대로 396", coordinate: coordinate)
+    }
+
+    func isServiceRegion(_ coordinate: Coordinate) async throws -> Bool { true }
 }
 
 // save/remove 호출 기록 + fetch 응답을 한곳에서 관리.
@@ -63,9 +76,9 @@ private actor RecentStore {
     func fetch() -> [Place] { places }
 }
 
-private struct StubRecentSearchesUseCase: RecentSearchesUseCase {
+private struct StubRecentSearchRepository: RecentSearchRepository {
     let store: RecentStore
-    func fetch() async throws -> [Place] { await store.fetch() }
+    func recentSearches() async throws -> [Place] { await store.fetch() }
     func save(_ place: Place) async throws { await store.save(place) }
     func remove(_ place: Place) async throws { await store.remove(place) }
 }
@@ -139,10 +152,10 @@ private func makeSUT(
     initialField: SearchEntryField = .departure
 ) -> SearchViewModel {
     SearchViewModel(
-        searchPlacesUseCase: StubSearchPlacesUseCase(handler: placesHandler),
+        placeRepository: StubPlaceRepository(handler: placesHandler),
         searchLastRoutesUseCase: StubSearchLastRoutesUseCase(handler: routesHandler),
-        recentSearchesUseCase: StubRecentSearchesUseCase(store: store),
-        getCurrentLocationUseCase: location.map(StubGetCurrentLocationUseCase.init(handler:)),
+        recentSearchRepository: StubRecentSearchRepository(store: store),
+        locationService: location.map(StubLocationService.init(handler:)),
         initialField: initialField,
         now: { fixedNow },
         debounceInterval: .zero
@@ -390,10 +403,10 @@ struct SearchViewModelTests {
         let coordinate = Coordinate(latitude: 37.49, longitude: 127.02)
         let log = NearLog()
         let sut = SearchViewModel(
-            searchPlacesUseCase: NearRecordingSearchPlacesUseCase(log: log, places: [makePlace("회사")]),
+            placeRepository: NearRecordingPlaceRepository(log: log, places: [makePlace("회사")]),
             searchLastRoutesUseCase: StubSearchLastRoutesUseCase(handler: { .available([]) }),
-            recentSearchesUseCase: StubRecentSearchesUseCase(store: RecentStore()),
-            getCurrentLocationUseCase: StubGetCurrentLocationUseCase(handler: { coordinate }),
+            recentSearchRepository: StubRecentSearchRepository(store: RecentStore()),
+            locationService: StubLocationService(handler: { coordinate }),
             debounceInterval: .zero
         )
         let recorder = StateRecorder()

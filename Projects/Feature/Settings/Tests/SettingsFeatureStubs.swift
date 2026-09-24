@@ -61,22 +61,25 @@ struct StubCheckAppUpdateUseCase: CheckAppUpdateUseCase {
     func execute(currentVersion: String) async throws -> AppUpdateStatus { status }
 }
 
-struct StubSearchPlacesUseCase: SearchPlacesUseCase {
+struct StubPlaceRepository: PlaceRepository {
     var places: [Place] = []
-    func execute(keyword: String, near coordinate: Coordinate?) async throws -> [Place] { places }
+
+    func searchPlaces(keyword: String, near coordinate: Coordinate?) async throws -> [Place] {
+        places
+    }
+
+    func reverseGeocode(_ coordinate: Coordinate) async throws -> Place {
+        Place(name: "서울시청", address: "서울 중구 세종대로 110", coordinate: coordinate)
+    }
+
+    func isServiceRegion(_ coordinate: Coordinate) async throws -> Bool { true }
 }
 
-struct StubGetCurrentLocationUseCase: GetCurrentLocationUseCase {
+struct StubLocationService: LocationService {
     var fails = false
-    func execute() async throws -> Coordinate {
+    func currentLocation() async throws -> Coordinate {
         if fails { throw StubFailure() }
         return Coordinate(latitude: 37.5665, longitude: 126.9780)
-    }
-}
-
-struct StubReverseGeocodeUseCase: ReverseGeocodeUseCase {
-    func execute(coordinate: Coordinate) async throws -> Place {
-        Place(name: "서울시청", address: "서울 중구 세종대로 110", coordinate: coordinate)
     }
 }
 

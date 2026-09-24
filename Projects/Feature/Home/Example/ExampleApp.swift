@@ -35,8 +35,8 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let windowScene = scene as? UIWindowScene else { return }
         let navigationController = UINavigationController()
         let container = HomeDIContainer(
-            getCurrentLocationUseCase: PreviewGetCurrentLocationUseCase(),
-            reverseGeocodeUseCase: PreviewReverseGeocodeUseCase(),
+            locationService: PreviewLocationService(),
+            placeRepository: PreviewPlaceRepository(),
             registerAlarmUseCase: PreviewRegisterAlarmUseCase(),
             cancelAlarmUseCase: PreviewCancelAlarmUseCase(),
             alarmSyncEvents: PreviewAlarmSyncEvents(),
@@ -44,7 +44,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             alarmSyncRequesting: PreviewAlarmSyncRequesting(),
             lastRouteRepository: PreviewLastRouteRepository(),
             searchLastRoutesUseCase: PreviewSearchLastRoutesUseCase(),
-            recentSearchesUseCase: PreviewRecentSearchesUseCase(),
+            recentSearchRepository: PreviewRecentSearchRepository(),
             searchCoordinatorBuildable: PreviewSearchCoordinatorBuildable()
         )
         let coordinator = container.makeHomeCoordinator(navigationController: navigationController)
@@ -60,18 +60,22 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 // Example apps wire stub use cases — no Data/network dependency.
 
-struct PreviewGetCurrentLocationUseCase: GetCurrentLocationUseCase {
-    func execute() async throws -> Coordinate {
+struct PreviewLocationService: LocationService {
+    func currentLocation() async throws -> Coordinate {
         try? await Task.sleep(for: .milliseconds(400))
         return Coordinate(latitude: 37.4979, longitude: 127.0276)
     }
 }
 
-struct PreviewReverseGeocodeUseCase: ReverseGeocodeUseCase {
-    func execute(coordinate: Coordinate) async throws -> Place {
+struct PreviewPlaceRepository: PlaceRepository {
+    func reverseGeocode(_ coordinate: Coordinate) async throws -> Place {
         try? await Task.sleep(for: .milliseconds(200))
         return Place(name: "강남역", address: "서울 강남구 강남대로 396", coordinate: coordinate)
     }
+
+    // 홈은 역지오코딩만 쓴다 — 나머지는 프리뷰에서 호출되지 않는다.
+    func searchPlaces(keyword: String, near coordinate: Coordinate?) async throws -> [Place] { [] }
+    func isServiceRegion(_ coordinate: Coordinate) async throws -> Bool { true }
 }
 
 struct PreviewRegisterAlarmUseCase: RegisterAlarmUseCase {
@@ -130,8 +134,8 @@ struct PreviewSearchLastRoutesUseCase: SearchLastRoutesUseCase {
 }
 
 /// 최근 검색 스텁(Phase 18) — canned 1건으로 칩이 즉시 표출된다. save/remove는 no-op.
-struct PreviewRecentSearchesUseCase: RecentSearchesUseCase {
-    func fetch() async throws -> [Place] {
+struct PreviewRecentSearchRepository: RecentSearchRepository {
+    func recentSearches() async throws -> [Place] {
         [PreviewSearchCoordinator.makeCannedArrival()]
     }
 

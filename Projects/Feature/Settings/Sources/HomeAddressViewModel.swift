@@ -36,9 +36,8 @@ final class HomeAddressViewModel {
     }
 
     private var listedPlaces: [Place] = []
-    private let searchPlacesUseCase: any SearchPlacesUseCase
-    private let getCurrentLocationUseCase: any GetCurrentLocationUseCase
-    private let reverseGeocodeUseCase: any ReverseGeocodeUseCase
+    private let placeRepository: any PlaceRepository
+    private let locationService: any LocationService
     private let updateHomeAddressUseCase: any UpdateHomeAddressUseCase
     private let debounceInterval: Duration
 
@@ -46,15 +45,13 @@ final class HomeAddressViewModel {
     private var saveTask: Task<Void, Never>?
 
     init(
-        searchPlacesUseCase: any SearchPlacesUseCase,
-        getCurrentLocationUseCase: any GetCurrentLocationUseCase,
-        reverseGeocodeUseCase: any ReverseGeocodeUseCase,
+        placeRepository: any PlaceRepository,
+        locationService: any LocationService,
         updateHomeAddressUseCase: any UpdateHomeAddressUseCase,
         debounceInterval: Duration = .milliseconds(300)
     ) {
-        self.searchPlacesUseCase = searchPlacesUseCase
-        self.getCurrentLocationUseCase = getCurrentLocationUseCase
-        self.reverseGeocodeUseCase = reverseGeocodeUseCase
+        self.placeRepository = placeRepository
+        self.locationService = locationService
         self.updateHomeAddressUseCase = updateHomeAddressUseCase
         self.debounceInterval = debounceInterval
     }
@@ -75,12 +72,12 @@ final class HomeAddressViewModel {
         // [weak self]: the in-flight task must not keep the ViewModel alive.
         searchTask = Task { [weak self] in
             guard let interval = self?.debounceInterval,
-                  let useCase = self?.searchPlacesUseCase else { return }
+                  let useCase = self?.placeRepository else { return }
             try? await Task.sleep(for: interval)
             guard !Task.isCancelled else { return }
             self?.state.content = .loading
             do {
-                let places = try await useCase.execute(keyword: trimmed, near: nil)
+                let places = try await useCase.searchPlaces(keyword: trimmed, near: nil)
                 guard !Task.isCancelled else { return }
                 self?.listedPlaces = places
                 self?.state.content = places.isEmpty
@@ -103,11 +100,11 @@ final class HomeAddressViewModel {
         guard !state.isSaving else { return }
         state.isSaving = true
         saveTask = Task { [weak self] in
-            guard let locate = self?.getCurrentLocationUseCase,
-                  let geocode = self?.reverseGeocodeUseCase else { return }
+            guard let locate = self?.locationService,
+                  let geocode = self?.placeRepository else { return }
             do {
-                let coordinate = try await locate.execute()
-                let place = try await geocode.execute(coordinate: coordinate)
+                let coordinate = try await locate.currentLocation()
+                let place = try await geocode.reverseGeocode(coordinate)
                 guard !Task.isCancelled else { return }
                 self?.state.isSaving = false
                 self?.save(place)
