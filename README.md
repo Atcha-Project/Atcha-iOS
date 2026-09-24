@@ -1,6 +1,6 @@
 # 🚌 앗차 (Atcha)
 
-> 이제 클릭 한 번으로 막차 확인하고, 택시비를 아끼는 스마트한 대중교통 동반자
+> 막차 시간을 확인하고, 떠나야 할 때 알려주는 막차 알람 앱
 
 <div align="center">
 
@@ -13,16 +13,10 @@
 
 ## 📱 프로젝트 소개
 
-**앗차**는 막차 시간을 놓칠까 걱정하는 모든 이들을 위한 iOS 애플리케이션입니다.  
-내 위치를 기반으로 빠르게 막차 정보를 찾고, 출발해야 할 시점에 알림으로 알려줍니다.  
-더 이상 막차를 놓치는 일은 없을 거예요!
+**앗차**는 막차를 놓칠까 걱정하는 사람들을 위한 iOS 앱입니다.  
+현재 위치에서 우리집까지 가는 막차를 찾아 주고, 출발해야 하는 순간 시스템 알람과 Live Activity로 알려줍니다.
 
-<img width="3840" height="2160" alt="앗차 소개" src="https://github.com/user-attachments/assets/bd8037c3-362b-4b32-80df-6fa662b5817a" />
-
-> 이 레포는 현재 **앗차 2.0(AtchaV2)** 을 Tuist 기반 모듈러 구조로 새로 만드는 중입니다.
-> 기존 1.x 앱(레거시)은 스토어 배포를 위해 그대로 함께 유지됩니다 — [레거시 앱](#-레거시-1x-앱) 참고.
-
-## ✨ 주요 기능 (2.0)
+## ✨ 주요 기능
 
 ### 🚏 막차 확인
 - **위치 기반 검색**: 현재 위치에서 우리집까지 버스·지하철 막차 경로를 한 번에
@@ -138,24 +132,12 @@ Atcha-iOS/
 │   ├── Domain/
 │   ├── Data/           # AtchaData 모듈
 │   ├── Core/           # Network · Storage · Auth · Alarm · LiveActivity · Coordinator · Concurrency
-│   ├── DesignSystem/
-│   └── Legacy/         # 1.x 앱을 Tuist 타겟으로 감싼 것
+│   └── DesignSystem/
 ├── Tuist/
 │   ├── Package.swift                # 외부 SPM 의존성
 │   └── ProjectDescriptionHelpers/   # Project.feature / Project.layer DSL
-├── Atcha-iOS/          # 레거시 1.x 소스
-├── Atcha-iOS.xcodeproj # 레거시 프로젝트 (CI · fastlane 빌드 대상)
 ├── Scripts/bootstrap.sh
 └── docs/               # 아키텍처 다이어그램 · 로드맵 · 정책 문서
-```
-
-## 🗂 레거시 (1.x) 앱
-
-현재 스토어에 배포된 1.x 앱은 `Atcha-iOS.xcodeproj` + `Atcha-iOS/` 소스입니다. CI와 fastlane이 이 프로젝트를 직접 빌드하므로 **삭제하거나 수정하지 않습니다.** 구조는 MVVM + Clean Architecture 단일 타겟이고, TMapSDK · Kakao SDK · Lottie · Amplitude를 씁니다. TMapSDK가 arm64 디바이스 전용이라 **시뮬레이터 빌드는 되지 않습니다.**
-
-```bash
-xcodebuild -workspace Atcha.xcworkspace -scheme Atcha-Dev -configuration Debug \
-  -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
 ```
 
 ## 🔗 링크
