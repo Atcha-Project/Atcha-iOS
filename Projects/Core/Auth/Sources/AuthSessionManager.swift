@@ -1,45 +1,77 @@
 import CoreNetwork
 
-/// Owns the anonymous session lifecycle: first-launch issuance, token refresh
-/// via GET /auth/reissue, and the 401-recovery chain. Single-flight is
-/// guaranteed by keeping the in-progress recovery task on the actor — the
-/// legacy interceptor's waiting-queue semantics without the queue.
+/// Whether a stored session exists at launch. The splash decides between the
+/// home flow (`active`) and the login flow (`loginRequired`) on this alone —
+/// token validity is proven lazily by the first authenticated request.
+public enum SessionState: Sendable, Equatable {
+    case active
+    case loginRequired
+}
+
+/// Owns the session lifecycle: adopting server tokens after social login,
+/// token refresh via GET /auth/reissue, and the 401-recovery chain.
+/// Single-flight is guaranteed by keeping the in-progress recovery task on
+/// the actor — the legacy interceptor's waiting-queue semantics without the
+/// queue.
 public actor AuthSessionManager {
     /// Read synchronously by the decorator on every request (no actor hop);
     /// TokenStore is a Sendable value and the keychain store locks internally.
     public nonisolated let tokenStore: TokenStore
 
+    /// Yields once each time the session dies for good (no refresh token, or
+    /// the server rejected the refresh). Single-consumer stream — the app
+    /// coordinator subscribes and routes back to login; yields are buffered
+    /// until consumed.
+    public nonisolated let sessionExpired: AsyncStream<Void>
+
     /// Must be the plain (undecorated) client — the legacy setup used a
     /// separate interceptor-free session for reissue to break recursion.
     private let networkClient: any NetworkClient
-    private let issuer: any AnonymousSessionIssuing
+    private let expiryContinuation: AsyncStream<Void>.Continuation
     private var recoveryTask: Task<Void, any Error>?
 
-    public init(
-        tokenStore: TokenStore,
-        networkClient: any NetworkClient,
-        issuer: any AnonymousSessionIssuing
-    ) {
+    public init(tokenStore: TokenStore, networkClient: any NetworkClient) {
         self.tokenStore = tokenStore
         self.networkClient = networkClient
-        self.issuer = issuer
+        (sessionExpired, expiryContinuation) = AsyncStream.makeStream(of: Void.self)
     }
 
-    /// Splash-time bootstrap. Issues an anonymous session only when no access
-    /// token is stored. `issuerNotConfigured` is non-fatal (미확정 입력 #2's
-    /// interim behavior: proceed without tokens); other failures propagate so
-    /// the splash can offer retry.
-    public func bootstrap() async throws {
-        if (try? tokenStore.accessToken()) != nil { return }
-        do {
-            try tokenStore.save(try await issuer.issueSession())
-        } catch AuthError.issuerNotConfigured {
-            return
+    /// Splash-time check: no network, no throw — a keychain read failure just
+    /// means there is no usable session.
+    public nonisolated func bootstrapState() -> SessionState {
+        ((try? tokenStore.accessToken()) != nil) ? .active : .loginRequired
+    }
+
+    /// Adopts the server token pair obtained by social login. Actor-isolated
+    /// so adoption serializes with any in-flight recovery.
+    public func adopt(_ tokens: TokenPair) throws {
+        try tokenStore.save(tokens)
+    }
+
+    /// Logout/withdrawal path (screens are a later phase — the clear path
+    /// ships now so callers never reach into TokenStore directly).
+    public func clearSession() throws {
+        try tokenStore.clear()
+    }
+
+    /// Logout: best-effort server call (legacy special case — the *refresh*
+    /// token rides as Bearer), then local expiry either way. Offline or a
+    /// server failure must never trap the user in a session they asked to end.
+    public func signOut() async {
+        if let refreshToken = try? tokenStore.refreshToken() {
+            _ = try? await networkClient.data(for: LogoutEndpoint(refreshToken: refreshToken))
         }
+        _ = expireSession()
     }
 
-    /// Single entry point for 401 recovery: refresh first, fall back to a
-    /// fresh anonymous session, throw when both are impossible. Concurrent
+    /// Post-withdrawal cleanup: the server already revoked the tokens, so no
+    /// network call — just local expiry and the login-routing yield.
+    public func invalidateSession() {
+        _ = expireSession()
+    }
+
+    /// Single entry point for 401 recovery: refresh, or declare the session
+    /// dead (`AuthError.loginRequired` + a `sessionExpired` yield). Concurrent
     /// callers join the in-flight recovery instead of starting another.
     public func recoverSession() async throws {
         if let existing = recoveryTask {
@@ -52,18 +84,32 @@ public actor AuthSessionManager {
     }
 
     private func performRecovery() async throws {
-        if let refreshToken = try? tokenStore.refreshToken() {
-            do {
-                return try await refreshTokens(with: refreshToken)
-            } catch {
-                // Refresh is dead (rejected, expired, transport) — fall back
-                // to re-issuing an anonymous session.
-            }
+        guard let refreshToken = try? tokenStore.refreshToken() else {
+            throw expireSession()
         }
-        // Existing tokens are never cleared here: save() overwrites on
-        // success, and a transient failure must not destroy the anonymous
-        // identity that owns server-side state.
-        try tokenStore.save(try await issuer.issueSession())
+        do {
+            try await refreshTokens(with: refreshToken)
+        } catch {
+            // Only a definitive server rejection kills the session. Transient
+            // failures (offline, 5xx, decoding) propagate untouched so the
+            // caller treats them as network errors — never as a logout.
+            guard isDefinitiveRejection(error) else { throw error }
+            throw expireSession()
+        }
+    }
+
+    /// Best-effort clear (a keychain failure must not mask the expiry),
+    /// notify the observer, and hand back the error to throw.
+    private func expireSession() -> AuthError {
+        try? tokenStore.clear()
+        expiryContinuation.yield()
+        return .loginRequired
+    }
+
+    private func isDefinitiveRejection(_ error: any Error) -> Bool {
+        if error is AuthError { return true }
+        if case NetworkError.unacceptableStatus(code: 401, data: _) = error { return true }
+        return false
     }
 
     private func refreshTokens(with refreshToken: String) async throws {

@@ -1,4 +1,6 @@
 import AtchaData
+import AuthFeature
+import AuthFeatureInterface
 import CoreAlarm
 import CoreAuth
 import CoreNetwork
@@ -14,6 +16,9 @@ import SearchFeatureInterface
 /// Presentation modules depend on Domain protocols only.
 final class AppDIContainer {
     private let networkClient: any NetworkClient
+    /// 데코레이터 미적용 클라이언트 — reissue(AuthSessionManager)와 소셜 Bearer를 실어야
+    /// 하는 로그인 API(AuthRepositoryImpl)만 쓴다.
+    private let plainNetworkClient: any NetworkClient
     let authSessionManager: AuthSessionManager
 
     // 알람 스택은 1회 생성해 공유한다 — AlarmSyncService(갱신 일원화)와
@@ -45,17 +50,6 @@ final class AppDIContainer {
     #endif
 
     init() {
-        #if DEV
-        // 검수용 임시 우회: 실서버(미확정 #1·#2)가 죽어 있어도 기본 60초 타임아웃 대기로
-        // 시연이 멈추지 않게 짧은 타임아웃을 쓴다. DevDemoFallbacks와 함께 제거한다.
-        let sessionConfiguration = URLSessionConfiguration.ephemeral
-        sessionConfiguration.timeoutIntervalForRequest = 3
-        sessionConfiguration.timeoutIntervalForResource = 5
-        let baseClient = URLSessionNetworkClient(
-            baseURL: AppEnvironment.current.apiBaseURL,
-            session: URLSession(configuration: sessionConfiguration)
-        )
-        #else
         // Phase 16 — 기본 60초 타임아웃은 심야의 약한 연결에서 1분 침묵이다. 빨리
         // 실패시키고(요청 10초) 멱등 GET 1회 재시도·신선도 스탬프가 정직성을 맡는다.
         let sessionConfiguration = URLSessionConfiguration.default
@@ -65,38 +59,35 @@ final class AppDIContainer {
             baseURL: AppEnvironment.current.apiBaseURL,
             session: URLSession(configuration: sessionConfiguration)
         )
-        #endif
+        self.plainNetworkClient = baseClient
         let sessionManager = AuthSessionManager(
             tokenStore: TokenStore(store: KeychainStore()),
             // The plain client, not the decorator — reissue must never recurse
             // into the 401-recovery path.
-            networkClient: baseClient,
-            // 미확정 입력 #2: swap in the real issuer here once the anonymous
-            // issuance endpoint spec is confirmed.
-            issuer: UnconfiguredAnonymousSessionIssuer()
+            networkClient: baseClient
         )
         self.authSessionManager = sessionManager
         let networkClient = AuthenticatedNetworkClient(
             base: baseClient,
-            sessionManager: sessionManager
+            sessionManager: sessionManager,
+            // /auth/* 는 전부 plain client 또는 CoreAuth 내부에서 특수 Bearer(소셜·refresh)로
+            // 호출되지만, 실수로 이 데코레이터를 타도 그 Authorization이 서버 access 토큰으로
+            // 조용히 덮이지 않도록 이중 방어로 전부 public 처리한다(레거시 allowlist 대응).
+            publicPathSuffixes: [
+                "/auth/reissue", "/auth/check", "/auth/login", "/auth/sign-up", "/auth/logout",
+            ]
         )
         self.networkClient = networkClient
 
+        self.placeRepository = PlaceRepositoryImpl(networkClient: networkClient)
+        self.lastRouteRepository = LastRouteRepositoryImpl(networkClient: networkClient)
         #if DEV
-        // 검수용 임시 우회 — 실서버(미확정 #1·#2) 부재 시에만 데모 데이터로 폴백.
-        // 실서버 확정 시 이 블록과 DevDemoFallbacks.swift를 제거한다.
-        self.placeRepository = DevDemoFallbackPlaceRepository(
-            base: PlaceRepositoryImpl(networkClient: networkClient)
-        )
-        self.lastRouteRepository = DevDemoFallbackLastRouteRepository(
-            base: LastRouteRepositoryImpl(networkClient: networkClient)
-        )
-        self.alarmRepository = DevDemoTolerantAlarmRepository(
+        // 막차 "변경"(앞당김/늦춤/운행종료)은 실서버가 임의로 재현해줄 수 없다 —
+        // refresh 주입 가로채기만 남긴 슬림 데코레이터(에러 은폐 없음, Phase 11 검수 수단).
+        self.alarmRepository = DevChangeSimulatingAlarmRepository(
             base: AlarmRepositoryImpl(networkClient: networkClient)
         )
         #else
-        self.placeRepository = PlaceRepositoryImpl(networkClient: networkClient)
-        self.lastRouteRepository = LastRouteRepositoryImpl(networkClient: networkClient)
         self.alarmRepository = AlarmRepositoryImpl(networkClient: networkClient)
         #endif
 
@@ -144,6 +135,41 @@ final class AppDIContainer {
     func reattachOrphanLiveActivities() async {
         let snapshot = await alarmSessionSnapshotStore.load()
         await liveActivityAdapter.reattachOrphans(snapshot: snapshot, now: Date())
+    }
+
+    func makeAuthDIContainer() -> any AuthCoordinatorBuildable {
+        AuthDIContainer(
+            signInUseCase: DefaultSignInUseCase(
+                socialLoginService: SocialLoginAdapter(),
+                // plain client — 소셜 Bearer 보존 + 401이 세션 복구를 촉발하지 않게.
+                authRepository: AuthRepositoryImpl(networkClient: plainNetworkClient),
+                sessionStore: AuthSessionStoreAdapter(sessionManager: authSessionManager),
+                pushTokenProvider: FCMPushTokenAdapter(),
+                // 최소 가입 폼 재료 — 신규 계정일 때만 쓰인다(현재 위치 + 역지오코딩 주소).
+                getCurrentLocationUseCase: DefaultGetCurrentLocationUseCase(
+                    locationService: CoreLocationServiceAdapter()
+                ),
+                reverseGeocodeUseCase: DefaultReverseGeocodeUseCase(repository: placeRepository)
+            )
+        )
+    }
+
+    // MARK: - 계정 스택 (설정 화면 前 단계 — 로그아웃은 DEV 디버그 메뉴가 유일한 진입점)
+
+    private var userRepository: any UserRepository {
+        UserRepositoryImpl(networkClient: networkClient)
+    }
+
+    private var sessionEnding: any SessionEnding {
+        AuthSessionEndingAdapter(sessionManager: authSessionManager)
+    }
+
+    func makeLogoutUseCase() -> any LogoutUseCase {
+        DefaultLogoutUseCase(sessionEnding: sessionEnding)
+    }
+
+    func makeWithdrawUseCase() -> any WithdrawUseCase {
+        DefaultWithdrawUseCase(userRepository: userRepository, sessionEnding: sessionEnding)
     }
 
     func makeHomeDIContainer() -> any HomeCoordinatorBuildable {

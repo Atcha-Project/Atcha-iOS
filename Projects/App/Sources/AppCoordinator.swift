@@ -10,7 +10,12 @@ final class AppCoordinator: Coordinator, CoordinatorFinishDelegate {
     private let container: AppDIContainer
 
     private weak var splashViewController: SplashViewController?
-    private var bootstrapTask: Task<Void, Never>?
+    private var sessionExpiryTask: Task<Void, Never>?
+    /// 로그인 플로우 표시 중 가드 — 만료 스트림의 중복 yield에 로그인을 겹치지 않는다.
+    private var isShowingLogin = false
+    /// 세션 만료 경유 재로그인이면 성공 직후 수동 동기화 1회 — activate()의 시작
+    /// 동기화는 최초 1회 가드라 재로그인 경로에선 돌지 않기 때문.
+    private var needsSyncAfterLogin = false
 
     init(navigationController: UINavigationController, container: AppDIContainer) {
         self.navigationController = navigationController
@@ -18,7 +23,7 @@ final class AppCoordinator: Coordinator, CoordinatorFinishDelegate {
     }
 
     deinit {
-        bootstrapTask?.cancel()
+        sessionExpiryTask?.cancel()
     }
 
     func start() {
@@ -26,28 +31,70 @@ final class AppCoordinator: Coordinator, CoordinatorFinishDelegate {
         splash.onRetryTapped = { [weak self] in self?.bootstrap() }
         splashViewController = splash
         navigationController.setViewControllers([splash], animated: false)
+        observeSessionExpiry()
         bootstrap()
     }
 
     private func bootstrap() {
-        bootstrapTask?.cancel()
         splashViewController?.showLoading()
-        bootstrapTask = Task { [weak self] in
-            guard let self else { return }
-            do {
-                try await self.container.authSessionManager.bootstrap()
-                guard !Task.isCancelled else { return }
+        // 세션 판정은 동기(키체인 존재 여부) — 토큰 유효성은 첫 인증 요청이 증명한다.
+        switch container.authSessionManager.bootstrapState() {
+        case .active:
+            startHome()
+            // 앱 시작 동기화 + 포그라운드 관찰 시작 — 세션이 준비된 뒤에만.
+            container.alarmSyncService.activate()
+        case .loginRequired:
+            showLogin()
+        }
+    }
+
+    /// 강제 로그인 — 스플래시를 root로 유지한 채 로그인 시트를 present한다
+    /// (스플래시 배경 위 바텀시트 = 레거시와 같은 시각 결과).
+    private func showLogin() {
+        guard !isShowingLogin else { return }
+        isShowingLogin = true
+        let loginCoordinator = container.makeAuthDIContainer().makeLoginCoordinator(
+            navigationController: navigationController,
+            onAuthenticated: { [weak self] in
+                guard let self else { return }
+                self.isShowingLogin = false
                 self.startHome()
-                // 앱 시작 동기화 + 포그라운드 관찰 시작 — 세션이 준비된 뒤에만.
                 self.container.alarmSyncService.activate()
-            } catch {
-                guard !Task.isCancelled else { return }
-                // 원인별 문구 분기(Phase 16) — 오프라인만 구분, 그 외는 일시 장애 안내.
-                self.splashViewController?.showRetry(
-                    message: BootstrapFailureMessage.text(for: error)
-                )
+                if self.needsSyncAfterLogin {
+                    self.needsSyncAfterLogin = false
+                    let syncService = self.container.alarmSyncService
+                    Task { await syncService.syncNow() }
+                }
+            }
+        )
+        loginCoordinator.finishDelegate = self
+        addChild(loginCoordinator)
+        loginCoordinator.start()
+    }
+
+    /// refresh 확정 사망(AuthSessionManager.sessionExpired) 관찰 — 홈을 접고 스플래시
+    /// 위 로그인으로 되돌린다. 스트림은 단일 소비자(이 코디네이터) 전제.
+    private func observeSessionExpiry() {
+        sessionExpiryTask = Task { [weak self] in
+            guard let stream = self?.container.authSessionManager.sessionExpired else { return }
+            for await _ in stream {
+                guard let self, !Task.isCancelled else { return }
+                self.handleSessionExpiry()
             }
         }
+    }
+
+    private func handleSessionExpiry() {
+        guard !isShowingLogin else { return }
+        needsSyncAfterLogin = true
+        navigationController.presentedViewController?.dismiss(animated: false)
+        // setViewControllers가 didShow를 태워 SearchCoordinator류의 정리 경로도 돈다.
+        let splash = SplashViewController()
+        splash.onRetryTapped = { [weak self] in self?.bootstrap() }
+        splashViewController = splash
+        navigationController.setViewControllers([splash], animated: false)
+        childCoordinators.removeAll()
+        showLogin()
     }
 
     private func startHome() {

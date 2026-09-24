@@ -30,6 +30,15 @@ final class ButtonsDemoViewController: GalleryScreenViewController {
         disabledChip.setText("→ 구로디지털단지역")
         disabledChip.isEnabled = false
         [chip, disabledChip].forEach { contentStack.addArrangedSubview(leadingRow($0)) }
+
+        addSectionTitle("DSPressEffect")
+        let pressButton = DSButton(title: "눌러 보세요 (스케일 다운)", style: .primary)
+        DSPressEffect.apply(to: pressButton)
+        contentStack.addArrangedSubview(pressButton)
+        let pressChip = DSChip()
+        pressChip.setText("→ 칩도 눌러 보세요")
+        DSPressEffect.apply(to: pressChip)
+        contentStack.addArrangedSubview(leadingRow(pressChip))
     }
 
     /// 칩은 자기 크기 컴포넌트 — 스택 전폭으로 늘리지 않고 leading에 붙인다(홈과 같은 배치).
@@ -55,6 +64,15 @@ final class FieldsDemoViewController: GalleryScreenViewController {
         contentStack.addArrangedSubview(titleBar)
         let searchBar = DSNavigationBar(style: .search(placeholder: "장소 검색"))
         contentStack.addArrangedSubview(searchBar)
+
+        addSectionTitle("DSGroupedCard")
+        let grouped = DSGroupedCard(
+            rows: [
+                DSTextField(placeholder: "출발지 입력"),
+                DSTextField(placeholder: "도착지 입력", showsAccentDot: true),
+            ]
+        )
+        contentStack.addArrangedSubview(grouped)
     }
 }
 
