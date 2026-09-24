@@ -4,10 +4,21 @@ import Domain
 public struct AuthRepositoryImpl: AuthRepository {
     private let networkClient: any NetworkClient
 
-    /// plain client(AuthenticatedNetworkClient 미적용)를 주입할 것 — Authorization에
-    /// 소셜 자격 증명을 실어야 하고, 401이 세션 복구를 촉발해서도 안 된다.
+    /// plain client(AuthenticatedNetworkClient 미적용)를 주입할 것 — 게스트는 토큰이
+    /// 없고 소셜 경로는 Authorization에 소셜 자격 증명을 실어야 하며, 어느 쪽도
+    /// 401이 세션 복구를 촉발해서는 안 된다.
     public init(networkClient: any NetworkClient) {
         self.networkClient = networkClient
+    }
+
+    public func signInAsGuest(deviceID: String, fcmToken: String?) async throws -> LoginSession {
+        // 응답 계약은 /auth/login과 동일한 토큰 쌍 — LoginResponseDTO 재사용.
+        let dto: LoginResponseDTO = try await networkClient.requestEnveloped(
+            GuestAuthEndpoint(
+                request: GuestAuthRequestDTO(deviceId: deviceID, fcmToken: fcmToken)
+            )
+        )
+        return try dto.toEntity()
     }
 
     public func checkRegistration(credential: SocialCredential) async throws -> Bool {
