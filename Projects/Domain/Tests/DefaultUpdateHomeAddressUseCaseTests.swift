@@ -30,7 +30,6 @@ private struct StubUserRepository: UserRepository {
         recorder.record("patch(\(address ?? "nil"))")
     }
     func updateAlertFrequencies(_ frequencies: [Int]) async throws {}
-    func withdraw(reason: String?) async throws {}
 }
 
 private struct StubFailure: Error {}

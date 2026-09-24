@@ -6,6 +6,4 @@ public protocol UserRepository: Sendable {
     func updateHomeAddress(address: String?, coordinate: Coordinate?) async throws
     /// PATCH /members/me/alert-frequency — 알림 빈도 변경.
     func updateAlertFrequencies(_ frequencies: [Int]) async throws
-    /// DELETE /members/me — 회원탈퇴. 성공하면 서버 세션은 이미 무효다.
-    func withdraw(reason: String?) async throws
 }

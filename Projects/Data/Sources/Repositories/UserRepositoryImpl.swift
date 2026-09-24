@@ -32,10 +32,4 @@ public struct UserRepositoryImpl: UserRepository {
             UserEndpoint.updateAlertFrequencies(AlertFrequencyPatchRequestDTO(alertFrequencies: frequencies))
         )
     }
-
-    public func withdraw(reason: String?) async throws {
-        let _: APIEmptyResult = try await networkClient.requestEnveloped(
-            UserEndpoint.withdraw(WithdrawRequestDTO(reason: reason))
-        )
-    }
 }
