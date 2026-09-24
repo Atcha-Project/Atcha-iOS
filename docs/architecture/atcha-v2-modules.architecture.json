@@ -1,0 +1,456 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "AtchaV2 모듈 아키텍처",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/Atcha-Project/Atcha-iOS",
+      "provider": "github",
+      "revision": "3dbd748a54c2d99ca4e9c33c724edaf765d0bc18"
+    },
+    "views": [
+      {
+        "id": "clean-arch",
+        "label": "Presentation → Domain ← Data",
+        "focus": [
+          "home",
+          "search",
+          "settings",
+          "domain",
+          "data"
+        ],
+        "note": "피처는 Domain 프로토콜만 보고, AtchaData가 그 프로토콜을 구현한다."
+      },
+      {
+        "id": "composition-root",
+        "label": "조합 루트",
+        "focus": [
+          "app",
+          "data",
+          "auth",
+          "home",
+          "search",
+          "settings"
+        ],
+        "note": "구체 Data/Network 타입을 보는 곳은 앱의 AppDIContainer뿐이다."
+      },
+      {
+        "id": "alarm-la",
+        "label": "알람 · Live Activity",
+        "focus": [
+          "app",
+          "alarm",
+          "liveactivity",
+          "widget"
+        ],
+        "note": "AlarmKit은 CoreAlarm에서만 import, LA 계약은 앱과 위젯이 공유한다."
+      }
+    ],
+    "viewBox": [
+      1390,
+      720
+    ]
+  },
+  "components": [
+    {
+      "id": "app",
+      "type": "frontend",
+      "label": "AtchaV2",
+      "sublabel": "App · 조합 루트",
+      "tag": "AppDIContainer",
+      "pos": [
+        240,
+        290
+      ],
+      "size": [
+        150,
+        70
+      ],
+      "sources": [
+        {
+          "path": "Projects/App/Project.swift",
+          "line": 27
+        }
+      ]
+    },
+    {
+      "id": "home",
+      "type": "frontend",
+      "label": "HomeFeature",
+      "sublabel": "막차 · 알람 홈",
+      "pos": [
+        460,
+        130
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "Projects/Feature/Home/Project.swift"
+        }
+      ]
+    },
+    {
+      "id": "search",
+      "type": "frontend",
+      "label": "SearchFeature",
+      "sublabel": "장소 검색",
+      "pos": [
+        460,
+        293
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "Projects/Feature/Search/Project.swift"
+        }
+      ]
+    },
+    {
+      "id": "settings",
+      "type": "frontend",
+      "label": "SettingsFeature",
+      "sublabel": "우리집 · 탈퇴",
+      "pos": [
+        460,
+        456
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "Projects/Feature/Settings/Project.swift"
+        }
+      ]
+    },
+    {
+      "id": "domain",
+      "type": "backend",
+      "label": "Domain",
+      "sublabel": "Entity · UseCase · Port",
+      "tag": "무의존",
+      "pos": [
+        690,
+        293
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "sources": [
+        {
+          "path": "Projects/Domain/Project.swift"
+        }
+      ]
+    },
+    {
+      "id": "data",
+      "type": "backend",
+      "label": "AtchaData",
+      "sublabel": "RepositoryImpl · DTO",
+      "pos": [
+        920,
+        293
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "sources": [
+        {
+          "path": "Projects/Data/Project.swift"
+        }
+      ]
+    },
+    {
+      "id": "network",
+      "type": "cloud",
+      "label": "CoreNetwork",
+      "sublabel": "URLSession client",
+      "pos": [
+        1160,
+        130
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "Projects/Core/Network/Project.swift"
+        }
+      ]
+    },
+    {
+      "id": "storage",
+      "type": "database",
+      "label": "CoreStorage",
+      "sublabel": "actor stores · cache",
+      "pos": [
+        1160,
+        360
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "Projects/Core/Storage/Project.swift"
+        }
+      ]
+    },
+    {
+      "id": "auth",
+      "type": "security",
+      "label": "CoreAuth",
+      "sublabel": "세션 · 토큰",
+      "pos": [
+        1160,
+        590
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "sources": [
+        {
+          "path": "Projects/Core/Auth/Project.swift"
+        }
+      ]
+    },
+    {
+      "id": "alarm",
+      "type": "external",
+      "label": "CoreAlarm",
+      "sublabel": "AlarmKit 유일 지점",
+      "pos": [
+        40,
+        140
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "Projects/Core/Alarm/Project.swift"
+        }
+      ]
+    },
+    {
+      "id": "liveactivity",
+      "type": "messagebus",
+      "label": "CoreLiveActivity",
+      "sublabel": "ActivityAttributes",
+      "pos": [
+        40,
+        450
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "Projects/Core/LiveActivity/Project.swift"
+        }
+      ]
+    },
+    {
+      "id": "widget",
+      "type": "frontend",
+      "label": "AtchaWidget",
+      "sublabel": "LA UI (SwiftUI)",
+      "pos": [
+        40,
+        620
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "sources": [
+        {
+          "path": "Projects/App/Project.swift",
+          "line": 87
+        }
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Presentation (uFeatures)",
+      "wraps": [
+        "home",
+        "search",
+        "settings"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "app-home",
+      "from": "app",
+      "to": "home",
+      "variant": "emphasis"
+    },
+    {
+      "id": "app-search",
+      "from": "app",
+      "to": "search",
+      "variant": "emphasis"
+    },
+    {
+      "id": "app-settings",
+      "from": "app",
+      "to": "settings",
+      "variant": "emphasis"
+    },
+    {
+      "id": "home-domain",
+      "from": "home",
+      "to": "domain"
+    },
+    {
+      "id": "search-domain",
+      "from": "search",
+      "to": "domain"
+    },
+    {
+      "id": "settings-domain",
+      "from": "settings",
+      "to": "domain"
+    },
+    {
+      "id": "data-domain",
+      "from": "data",
+      "to": "domain",
+      "label": "구현",
+      "variant": "dashed"
+    },
+    {
+      "id": "data-network",
+      "from": "data",
+      "to": "network"
+    },
+    {
+      "id": "data-storage",
+      "from": "data",
+      "to": "storage"
+    },
+    {
+      "id": "auth-network",
+      "from": "auth",
+      "to": "network",
+      "fromSide": "right",
+      "toSide": "right",
+      "via": [
+        [
+          1340,
+          622
+        ],
+        [
+          1340,
+          162
+        ]
+      ]
+    },
+    {
+      "id": "auth-storage",
+      "from": "auth",
+      "to": "storage",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "app-auth",
+      "from": "app",
+      "to": "auth",
+      "label": "게스트 세션",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "left",
+      "via": [
+        [
+          315,
+          622
+        ]
+      ]
+    },
+    {
+      "id": "app-data",
+      "from": "app",
+      "to": "data",
+      "label": "DI 조립",
+      "fromSide": "top",
+      "toSide": "top",
+      "via": [
+        [
+          315,
+          60
+        ],
+        [
+          1000,
+          60
+        ]
+      ]
+    },
+    {
+      "id": "app-alarm",
+      "from": "app",
+      "to": "alarm"
+    },
+    {
+      "id": "app-la",
+      "from": "app",
+      "to": "liveactivity"
+    },
+    {
+      "id": "widget-la",
+      "from": "widget",
+      "to": "liveactivity",
+      "label": "계약 공유",
+      "variant": "dashed",
+      "fromSide": "top",
+      "toSide": "bottom"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "의존 규칙",
+      "items": [
+        "Feature는 AtchaData를 import하지 않음",
+        "Domain은 무의존",
+        "외부 라이브러리는 앱 타겟에서만 링크"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "피처 공통 의존",
+      "items": [
+        "Feature → Domain 프로토콜만 의존",
+        "DesignSystem · CoreCoordinator · SnapKit",
+        "Home → Search/Settings Interface만 참조"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "인증",
+      "items": [
+        "POST /auth/guest 게스트 JWT",
+        "만료 시 같은 deviceId로 조용히 재인증"
+      ]
+    }
+  ]
+}
