@@ -91,6 +91,8 @@ final class HomeViewModel {
         _ initialField: SearchEntryField,
         _ onRouteSelected: @escaping (LastRoute, Place) -> Void
     ) -> Void)?
+    /// Set by the Coordinator: 설정 플로우 진입(홈 상단 톱니바퀴).
+    var onSettingsRequested: (() -> Void)?
 
     private(set) var state = State() {
         didSet { if state != oldValue { onStateChange?(state) } }
@@ -215,6 +217,10 @@ final class HomeViewModel {
             self.refreshTask = nil
             self.onManualSyncFinished?()
         }
+    }
+
+    func settingsTapped() {
+        onSettingsRequested?()
     }
 
     /// 탭한 필드가 그대로 검색 진입 슬롯이 된다(Phase 17) — 도착지 탭이면 도착지부터.

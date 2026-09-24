@@ -2,6 +2,7 @@ import CoreCoordinator
 import Domain
 import HomeFeatureInterface
 import SearchFeatureInterface
+import SettingsFeatureInterface
 import UIKit
 
 /// Assembles the Home feature's screens. Coordinators own flow only;
@@ -19,6 +20,8 @@ public final class HomeDIContainer: HomeCoordinatorBuildable {
     private let searchLastRoutesUseCase: any SearchLastRoutesUseCase
     private let recentSearchesUseCase: any RecentSearchesUseCase
     private let searchCoordinatorBuildable: any SearchCoordinatorBuildable
+    /// nil이면 톱니바퀴가 아무 일도 하지 않는다(Example 구성 호환).
+    private let settingsCoordinatorBuildable: (any SettingsCoordinatorBuildable)?
 
     public init(
         getCurrentLocationUseCase: any GetCurrentLocationUseCase,
@@ -31,7 +34,8 @@ public final class HomeDIContainer: HomeCoordinatorBuildable {
         getLastRouteDetailUseCase: any GetLastRouteDetailUseCase,
         searchLastRoutesUseCase: any SearchLastRoutesUseCase,
         recentSearchesUseCase: any RecentSearchesUseCase,
-        searchCoordinatorBuildable: any SearchCoordinatorBuildable
+        searchCoordinatorBuildable: any SearchCoordinatorBuildable,
+        settingsCoordinatorBuildable: (any SettingsCoordinatorBuildable)? = nil
     ) {
         self.getCurrentLocationUseCase = getCurrentLocationUseCase
         self.reverseGeocodeUseCase = reverseGeocodeUseCase
@@ -44,6 +48,7 @@ public final class HomeDIContainer: HomeCoordinatorBuildable {
         self.searchLastRoutesUseCase = searchLastRoutesUseCase
         self.recentSearchesUseCase = recentSearchesUseCase
         self.searchCoordinatorBuildable = searchCoordinatorBuildable
+        self.settingsCoordinatorBuildable = settingsCoordinatorBuildable
     }
 
     public func makeHomeCoordinator(navigationController: UINavigationController) -> any Coordinator {
@@ -54,7 +59,8 @@ public final class HomeDIContainer: HomeCoordinatorBuildable {
         onSearchRequested: @escaping (
             _ initialField: SearchEntryField,
             _ onRouteSelected: @escaping (LastRoute, Place) -> Void
-        ) -> Void
+        ) -> Void,
+        onSettingsRequested: @escaping () -> Void
     ) -> UIViewController {
         let viewModel = HomeViewModel(
             getCurrentLocationUseCase: getCurrentLocationUseCase,
@@ -69,6 +75,7 @@ public final class HomeDIContainer: HomeCoordinatorBuildable {
             recentSearchesUseCase: recentSearchesUseCase
         )
         viewModel.onSearchRequested = onSearchRequested
+        viewModel.onSettingsRequested = onSettingsRequested
         return HomeViewController(viewModel: viewModel)
     }
 
@@ -82,5 +89,9 @@ public final class HomeDIContainer: HomeCoordinatorBuildable {
             initialField: initialField,
             onRouteSelected: onRouteSelected
         )
+    }
+
+    func makeSettingsCoordinator(navigationController: UINavigationController) -> (any Coordinator)? {
+        settingsCoordinatorBuildable?.makeSettingsCoordinator(navigationController: navigationController)
     }
 }

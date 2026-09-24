@@ -27,6 +27,14 @@ final class HomeViewController: UIViewController {
         return label
     }()
 
+    private let settingsButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setImage(DSIcon.settings24.withRenderingMode(.alwaysTemplate), for: .normal)
+        button.tintColor = DSColor.Icon.default
+        button.accessibilityLabel = "설정"
+        return button
+    }()
+
     private let banner = DSBanner()
     private let departureRow = HomeFieldRow(
         icon: DSIcon.myLocation24, placeholder: "출발지를 검색해 주세요", showsAccentDot: true
@@ -195,7 +203,16 @@ final class HomeViewController: UIViewController {
             make.width.equalTo(scrollView.frameLayoutGuide).offset(-DSSpacing.md * 2)
         }
 
-        [brandLabel, banner, bigTitleLabel, fieldCard, recentSection, routeCard]
+        let brandRow = UIStackView(arrangedSubviews: [brandLabel, UIView(), settingsButton])
+        brandRow.alignment = .center
+        settingsButton.snp.makeConstraints { make in
+            make.size.equalTo(DSIconSize.lg)
+        }
+        settingsButton.addAction(
+            UIAction { [weak self] _ in self?.viewModel.settingsTapped() },
+            for: .touchUpInside
+        )
+        [brandRow, banner, bigTitleLabel, fieldCard, recentSection, routeCard]
             .forEach(contentStack.addArrangedSubview)
         contentStack.addArrangedSubview(makeCaptionStack())
         contentStack.setCustomSpacing(DSSpacing.lg20, after: bigTitleLabel)
