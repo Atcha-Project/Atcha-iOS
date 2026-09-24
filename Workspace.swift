@@ -13,6 +13,7 @@ let workspace = Workspace(
         "Projects/Core/Storage",
         "Projects/Core/Auth",
         "Projects/Core/Alarm",
+        "Projects/Core/Concurrency",
         "Projects/Core/Coordinator",
         "Projects/Core/LiveActivity",
         "Projects/DesignSystem",

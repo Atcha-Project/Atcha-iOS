@@ -29,9 +29,24 @@ final class WithdrawViewModel {
 
     struct State: Equatable {
         var selected: Reason?
-        var isOtherInputVisible: Bool { selected == .other }
-        var canSubmit = false
+        /// 기타 사유 입력값. State 밖에 두면 "선택은 기타인데 입력이 비어 있다" 같은
+        /// 조합이 상태 타입으로 표현되지 않아, 제출 가능 여부를 따로 계산해 저장하게 된다.
+        var otherText = ""
         var isSubmitting = false
+
+        var isOtherInputVisible: Bool { selected == .other }
+
+        /// 파생 — 저장하지 않는다. 저장하면 `selected`/`otherText`/`isSubmitting`이
+        /// 바뀔 때마다 갱신을 잊지 않아야 하고, 그 자체가 불일치의 원인이 된다.
+        var canSubmit: Bool { !isSubmitting && reasonText != nil }
+
+        /// 서버로 보낼 사유. 기타는 공백만 남으면 미선택과 같다.
+        var reasonText: String? {
+            guard let selected else { return nil }
+            guard selected == .other else { return selected.title }
+            let trimmed = otherText.trimmingCharacters(in: .whitespacesAndNewlines)
+            return trimmed.isEmpty ? nil : trimmed
+        }
     }
 
     /// Set by the ViewController; always invoked on the main actor.
@@ -42,7 +57,6 @@ final class WithdrawViewModel {
         didSet { if state != oldValue { onStateChange?(state) } }
     }
 
-    private var otherText = ""
     private let withdrawUseCase: any WithdrawUseCase
     private var submitTask: Task<Void, Never>?
 
@@ -56,19 +70,16 @@ final class WithdrawViewModel {
 
     func select(_ reason: Reason) {
         state.selected = reason
-        refreshCanSubmit()
     }
 
     func otherTextDidChange(_ text: String) {
-        otherText = text
-        refreshCanSubmit()
+        state.otherText = text
     }
 
     /// 확인 팝업을 통과한 뒤에만 호출된다. 성공하면 앱의 세션 만료 관찰이 로그인으로 보낸다.
     func withdrawConfirmed() {
-        guard state.canSubmit, !state.isSubmitting, let reason = reasonText() else { return }
+        guard state.canSubmit, let reason = state.reasonText else { return }
         state.isSubmitting = true
-        refreshCanSubmit()
         submitTask = Task { [weak self] in
             guard let useCase = self?.withdrawUseCase else { return }
             do {
@@ -77,20 +88,9 @@ final class WithdrawViewModel {
                 // 실패 시 세션이 보존된다(UseCase 계약) — 같은 화면에서 재시도할 수 있다.
                 guard !Task.isCancelled else { return }
                 self?.state.isSubmitting = false
-                self?.refreshCanSubmit()
                 self?.onToast?("탈퇴에 실패했어요. 다시 시도해 주세요")
             }
         }
     }
 
-    private func reasonText() -> String? {
-        guard let selected = state.selected else { return nil }
-        guard selected == .other else { return selected.title }
-        let trimmed = otherText.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed.isEmpty ? nil : trimmed
-    }
-
-    private func refreshCanSubmit() {
-        state.canSubmit = !state.isSubmitting && reasonText() != nil
-    }
 }

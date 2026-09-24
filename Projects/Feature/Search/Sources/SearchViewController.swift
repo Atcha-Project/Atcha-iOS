@@ -178,17 +178,26 @@ final class SearchViewController: UIViewController {
         viewModel.onStateChange = { [weak self] state in
             self?.render(state)
         }
-        viewModel.onFieldsChange = { [weak self] fields in
-            self?.renderFields(fields)
-        }
+
         emptyState.onAction = { [weak self] in
             self?.viewModel.didTapEmptyAction()
         }
         render(viewModel.state)
-        renderFields(viewModel.fields)
     }
 
+    /// 직전 상태 — 바뀐 것만 반영하기 위해 VC가 들고 있다. 특히 입력 슬롯은 매번
+    /// setText하면 `UITextField` 커서가 튀므로 값이 실제로 달라졌을 때만 쓴다.
+    private var rendered: SearchViewModel.State?
+
     private func render(_ state: SearchViewModel.State) {
+        defer { rendered = state }
+        if rendered?.fields != state.fields {
+            renderFields(state.fields)
+        }
+        renderContent(state.content)
+    }
+
+    private func renderContent(_ state: SearchViewModel.Content) {
         activityIndicator.stopAnimating()
         emptyState.isHidden = true
         showsRecentHeader = false

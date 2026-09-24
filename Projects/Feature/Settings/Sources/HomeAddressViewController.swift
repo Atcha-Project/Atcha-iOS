@@ -77,15 +77,6 @@ final class HomeAddressViewController: SettingsScreen {
         viewModel.onStateChange = { [weak self] state in
             self?.render(state)
         }
-        viewModel.onSavingChange = { [weak self] isSaving in
-            self?.currentLocationButton.isEnabled = !isSaving
-            self?.tableView.isUserInteractionEnabled = !isSaving
-            if isSaving {
-                self?.activityIndicator.startAnimating()
-            } else {
-                self?.activityIndicator.stopAnimating()
-            }
-        }
         viewModel.onToast = { [weak self] message in
             self?.showToast(message)
         }
@@ -93,9 +84,13 @@ final class HomeAddressViewController: SettingsScreen {
     }
 
     private func render(_ state: HomeAddressViewModel.State) {
+        // 저장 중에는 입력을 막는다 — 이전에는 별도 콜백이 하던 일이다.
+        currentLocationButton.isEnabled = !state.isSaving
+        tableView.isUserInteractionEnabled = !state.isSaving
+
         activityIndicator.stopAnimating()
         emptyState.isHidden = true
-        switch state {
+        switch state.content {
         case .idle:
             places = []
         case .loading:
@@ -112,6 +107,8 @@ final class HomeAddressViewController: SettingsScreen {
             emptyState.configure(with: .init(title: message))
             emptyState.isHidden = false
         }
+        // 저장 스피너는 콘텐츠 상태와 독립이다 — 목록이 무엇이든 저장 중이면 돈다.
+        if state.isSaving { activityIndicator.startAnimating() }
         tableView.reloadData()
     }
 }
