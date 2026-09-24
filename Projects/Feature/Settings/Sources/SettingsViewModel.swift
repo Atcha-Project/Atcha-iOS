@@ -47,7 +47,8 @@ final class SettingsViewModel {
     /// 상태에서 파생되는 렌더 모델 — 저장하지 않는다.
     var sections: [Section] { Self.sections(from: state, currentVersion: currentVersion) }
 
-    private let getUserProfileUseCase: any GetUserProfileUseCase
+    /// 위임만 하던 UseCase 대신 Repository를 직접 받는다 — 조합도 규칙도 없는 계층이었다.
+    private let userRepository: any UserRepository
     private let logoutUseCase: any LogoutUseCase
     private let checkAppUpdateUseCase: (any CheckAppUpdateUseCase)?
     private let currentVersion: String
@@ -58,13 +59,13 @@ final class SettingsViewModel {
     private var logoutTask: Task<Void, Never>?
 
     init(
-        getUserProfileUseCase: any GetUserProfileUseCase,
+        userRepository: any UserRepository,
         logoutUseCase: any LogoutUseCase,
         checkAppUpdateUseCase: (any CheckAppUpdateUseCase)? = nil,
         currentVersion: String,
         appStoreURL: URL? = nil
     ) {
-        self.getUserProfileUseCase = getUserProfileUseCase
+        self.userRepository = userRepository
         self.logoutUseCase = logoutUseCase
         self.checkAppUpdateUseCase = checkAppUpdateUseCase
         self.currentVersion = currentVersion
@@ -115,10 +116,10 @@ final class SettingsViewModel {
     private func loadProfile() {
         profileTask?.cancel()
         profileTask = Task { [weak self] in
-            guard let useCase = self?.getUserProfileUseCase else { return }
+            guard let repository = self?.userRepository else { return }
             let text: String
             do {
-                let profile = try await useCase.execute()
+                let profile = try await repository.fetchMe()
                 let address = profile.address?.trimmingCharacters(in: .whitespaces) ?? ""
                 text = address.isEmpty ? "집 주소를 등록해 주세요" : address
             } catch {

@@ -13,10 +13,10 @@ public final class HomeDIContainer: HomeCoordinatorBuildable {
     private let reverseGeocodeUseCase: any ReverseGeocodeUseCase
     private let registerAlarmUseCase: any RegisterAlarmUseCase
     private let cancelAlarmUseCase: any CancelAlarmUseCase
-    private let observeAlarmUseCase: any ObserveAlarmUseCase
-    private let observeAlarmChangeUseCase: any ObserveAlarmChangeUseCase
-    private let requestAlarmSyncUseCase: any RequestAlarmSyncUseCase
-    private let getLastRouteDetailUseCase: any GetLastRouteDetailUseCase
+    private let alarmSyncEvents: any AlarmSyncEvents
+    private let alarmChangeEvents: any AlarmChangeEvents
+    private let alarmSyncRequesting: any AlarmSyncRequesting
+    private let lastRouteRepository: any LastRouteRepository
     private let searchLastRoutesUseCase: any SearchLastRoutesUseCase
     private let recentSearchesUseCase: any RecentSearchesUseCase
     private let searchCoordinatorBuildable: any SearchCoordinatorBuildable
@@ -28,10 +28,10 @@ public final class HomeDIContainer: HomeCoordinatorBuildable {
         reverseGeocodeUseCase: any ReverseGeocodeUseCase,
         registerAlarmUseCase: any RegisterAlarmUseCase,
         cancelAlarmUseCase: any CancelAlarmUseCase,
-        observeAlarmUseCase: any ObserveAlarmUseCase,
-        observeAlarmChangeUseCase: any ObserveAlarmChangeUseCase,
-        requestAlarmSyncUseCase: any RequestAlarmSyncUseCase,
-        getLastRouteDetailUseCase: any GetLastRouteDetailUseCase,
+        alarmSyncEvents: any AlarmSyncEvents,
+        alarmChangeEvents: any AlarmChangeEvents,
+        alarmSyncRequesting: any AlarmSyncRequesting,
+        lastRouteRepository: any LastRouteRepository,
         searchLastRoutesUseCase: any SearchLastRoutesUseCase,
         recentSearchesUseCase: any RecentSearchesUseCase,
         searchCoordinatorBuildable: any SearchCoordinatorBuildable,
@@ -41,10 +41,10 @@ public final class HomeDIContainer: HomeCoordinatorBuildable {
         self.reverseGeocodeUseCase = reverseGeocodeUseCase
         self.registerAlarmUseCase = registerAlarmUseCase
         self.cancelAlarmUseCase = cancelAlarmUseCase
-        self.observeAlarmUseCase = observeAlarmUseCase
-        self.observeAlarmChangeUseCase = observeAlarmChangeUseCase
-        self.requestAlarmSyncUseCase = requestAlarmSyncUseCase
-        self.getLastRouteDetailUseCase = getLastRouteDetailUseCase
+        self.alarmSyncEvents = alarmSyncEvents
+        self.alarmChangeEvents = alarmChangeEvents
+        self.alarmSyncRequesting = alarmSyncRequesting
+        self.lastRouteRepository = lastRouteRepository
         self.searchLastRoutesUseCase = searchLastRoutesUseCase
         self.recentSearchesUseCase = recentSearchesUseCase
         self.searchCoordinatorBuildable = searchCoordinatorBuildable
@@ -67,10 +67,10 @@ public final class HomeDIContainer: HomeCoordinatorBuildable {
             reverseGeocodeUseCase: reverseGeocodeUseCase,
             registerAlarmUseCase: registerAlarmUseCase,
             cancelAlarmUseCase: cancelAlarmUseCase,
-            observeAlarmUseCase: observeAlarmUseCase,
-            observeAlarmChangeUseCase: observeAlarmChangeUseCase,
-            requestAlarmSyncUseCase: requestAlarmSyncUseCase,
-            getLastRouteDetailUseCase: getLastRouteDetailUseCase,
+            alarmSyncEvents: alarmSyncEvents,
+            alarmChangeEvents: alarmChangeEvents,
+            alarmSyncRequesting: alarmSyncRequesting,
+            lastRouteRepository: lastRouteRepository,
             searchLastRoutesUseCase: searchLastRoutesUseCase,
             recentSearchesUseCase: recentSearchesUseCase
         )

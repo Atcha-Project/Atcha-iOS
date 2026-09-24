@@ -12,7 +12,7 @@ func waitUntil(_ predicate: () -> Bool) async {
     }
 }
 
-final class StubGetUserProfileUseCase: GetUserProfileUseCase {
+final class StubUserRepository: UserRepository {
     let address: String?
     let fails: Bool
 
@@ -21,10 +21,18 @@ final class StubGetUserProfileUseCase: GetUserProfileUseCase {
         self.fails = fails
     }
 
-    func execute() async throws -> UserProfile {
+    func fetchMe() async throws -> UserProfile {
         if fails { throw StubFailure() }
-        return UserProfile(userID: 1, providerID: nil, nickname: nil, address: address, coordinate: nil, appVersion: nil)
+        return UserProfile(
+            userID: 1, providerID: nil, nickname: nil,
+            address: address, coordinate: nil, appVersion: nil
+        )
     }
+
+    // 설정 테스트는 조회만 쓴다 — 나머지는 no-op.
+    func updateHomeAddress(address: String?, coordinate: Coordinate?) async throws {}
+    func updateAlertFrequencies(_ frequencies: [Int]) async throws {}
+    func withdraw(reason: String?) async throws {}
 }
 
 final class SpyLogoutUseCase: LogoutUseCase {

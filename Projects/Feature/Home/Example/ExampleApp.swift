@@ -39,10 +39,10 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             reverseGeocodeUseCase: PreviewReverseGeocodeUseCase(),
             registerAlarmUseCase: PreviewRegisterAlarmUseCase(),
             cancelAlarmUseCase: PreviewCancelAlarmUseCase(),
-            observeAlarmUseCase: PreviewObserveAlarmUseCase(),
-            observeAlarmChangeUseCase: PreviewObserveAlarmChangeUseCase(),
-            requestAlarmSyncUseCase: PreviewRequestAlarmSyncUseCase(),
-            getLastRouteDetailUseCase: PreviewGetLastRouteDetailUseCase(),
+            alarmSyncEvents: PreviewAlarmSyncEvents(),
+            alarmChangeEvents: PreviewAlarmChangeEvents(),
+            alarmSyncRequesting: PreviewAlarmSyncRequesting(),
+            lastRouteRepository: PreviewLastRouteRepository(),
             searchLastRoutesUseCase: PreviewSearchLastRoutesUseCase(),
             recentSearchesUseCase: PreviewRecentSearchesUseCase(),
             searchCoordinatorBuildable: PreviewSearchCoordinatorBuildable()
@@ -89,33 +89,36 @@ struct PreviewCancelAlarmUseCase: CancelAlarmUseCase {
 }
 
 /// 등록된 알람이 없는 서버 상태를 흉내 낸다 — 동기화 이벤트가 오지 않으므로 화면을 건드리지 않는다.
-struct PreviewObserveAlarmUseCase: ObserveAlarmUseCase {
-    func execute() -> AsyncStream<AlarmSyncUpdate> {
+struct PreviewAlarmSyncEvents: AlarmSyncEvents {
+    func updates() -> AsyncStream<AlarmSyncUpdate> {
         AsyncStream { _ in }
     }
 }
 
 /// 수동 갱신(pull-to-refresh) 스텁 — 잠깐 도는 스피너만 흉내 낸다(결과 스트림 없음).
-struct PreviewRequestAlarmSyncUseCase: RequestAlarmSyncUseCase {
-    func execute() async {
+struct PreviewAlarmSyncRequesting: AlarmSyncRequesting {
+    func syncNow() async {
         try? await Task.sleep(for: .milliseconds(600))
     }
 }
 
 /// 막차 변경 판정이 없는 상태를 흉내 낸다 — 토스트·배너 강조는 발생하지 않는다.
-struct PreviewObserveAlarmChangeUseCase: ObserveAlarmChangeUseCase {
-    func execute() -> AsyncStream<AlarmChangeVerdict> {
+struct PreviewAlarmChangeEvents: AlarmChangeEvents {
+    func changes() -> AsyncStream<AlarmChangeVerdict> {
         AsyncStream { _ in }
     }
 }
 
 /// 재실행 카드 복원 경로 스텁 — 동기화 이벤트가 없어 호출되지 않지만, 호출돼도
 /// canned 경로를 돌려줘 플로우가 성립한다.
-struct PreviewGetLastRouteDetailUseCase: GetLastRouteDetailUseCase {
-    func execute(routeId: String) async throws -> LastRoute {
+struct PreviewLastRouteRepository: LastRouteRepository {
+    func lastRoute(id: String) async throws -> LastRoute {
         try? await Task.sleep(for: .milliseconds(300))
         return PreviewSearchCoordinator.makeCannedRoute()
     }
+
+    // 홈 프리뷰는 상세 조회만 쓴다.
+    func searchLastRoutes(start: Coordinate, end: Coordinate) async throws -> [LastRoute] { [] }
 }
 
 /// 원탭 칩 재검색 스텁(Phase 18) — canned 경로 1건을 돌려줘 칩 탭 → 카드 시연이 성립한다.

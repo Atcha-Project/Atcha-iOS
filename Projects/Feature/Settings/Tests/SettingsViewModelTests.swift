@@ -12,7 +12,7 @@ struct SettingsViewModelTests {
         logout: SpyLogoutUseCase = SpyLogoutUseCase()
     ) -> SettingsViewModel {
         SettingsViewModel(
-            getUserProfileUseCase: StubGetUserProfileUseCase(address: address, fails: profileFails),
+            userRepository: StubUserRepository(address: address, fails: profileFails),
             logoutUseCase: logout,
             checkAppUpdateUseCase: StubCheckAppUpdateUseCase(status: update),
             currentVersion: "2.0.0",
