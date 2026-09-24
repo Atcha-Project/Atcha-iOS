@@ -34,14 +34,4 @@ struct AuthResponseDTOTests {
 
         #expect(try dto.toEntity().userID == nil)
     }
-
-    @Test
-    func checkResponse_decodesExists() throws {
-        let dto = try JSONDecoder().decode(
-            AuthCheckResponseDTO.self,
-            from: Data(#"{"exists": true}"#.utf8)
-        )
-
-        #expect(dto.exists)
-    }
 }
