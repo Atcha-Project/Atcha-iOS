@@ -116,7 +116,9 @@ BaseConfig.xcconfig
 
 .claude
 
-Atcha-iOS/DesignSource/AtchaImage/Icon.xcassets/Onboarding/.DS_Store
+# Finder 메타데이터. 전역 규칙이 없어 개별 경로만 막고 있었고, 그래서 Projects/.DS_Store가
+# 실수로 커밋된 적이 있다(#371).
+.DS_Store
 
 # --- Tuist (generated artifacts only; legacy Atcha-iOS.xcodeproj stays tracked) ---
 /Atcha.xcworkspace/
