@@ -33,22 +33,33 @@ private nonisolated final class ValueBox<Value: Sendable>: @unchecked Sendable {
     }
 }
 
+/// 큐는 `AlarmInfo` 그대로 받는다 — 기존 케이스 대부분이 "서버에 세션이 있다"라서
+/// 매 호출처에 `.registered(...)`를 쓰게 하면 읽기만 나빠진다. 서버가 "없다"고 확정한
+/// 경우는 `enqueueNotRegistered()`로 명시한다(실패 = `.failure`와 구분되어야 한다).
 private final class RefreshStub: RefreshAlarmUseCase, @unchecked Sendable {
     private let lock = NSLock()
-    private var queue: [Result<AlarmInfo, any Error>]
-    init(_ results: [Result<AlarmInfo, any Error>]) { queue = results }
+    private var queue: [Result<AlarmRefreshOutcome, any Error>]
+    init(_ results: [Result<AlarmInfo, any Error>]) {
+        queue = results.map { $0.map { AlarmRefreshOutcome.registered($0) } }
+    }
     func enqueue(_ result: Result<AlarmInfo, any Error>) {
         lock.lock()
-        queue.append(result)
+        queue.append(result.map { AlarmRefreshOutcome.registered($0) })
+        lock.unlock()
+    }
+    /// 서버가 "등록된 알람 없음"(URT_001)을 확정한 응답.
+    func enqueueNotRegistered() {
+        lock.lock()
+        queue.append(.success(.notRegistered))
         lock.unlock()
     }
     // NSLock은 async 컨텍스트에서 직접 못 쓴다 — 동기 헬퍼로 분리.
-    private func dequeue() -> Result<AlarmInfo, any Error>? {
+    private func dequeue() -> Result<AlarmRefreshOutcome, any Error>? {
         lock.lock()
         defer { lock.unlock() }
         return queue.isEmpty ? nil : queue.removeFirst()
     }
-    func execute(current: AlarmSession?) async throws -> AlarmInfo {
+    func execute(current: AlarmSession?) async throws -> AlarmRefreshOutcome {
         guard let next = dequeue() else { throw StubError() }
         return try next.get()
     }
@@ -200,6 +211,42 @@ private func makeHarness(
 @MainActor
 struct AlarmSyncServiceTests {
     // MARK: - 신선도 스탬프 (Phase 16)
+
+    // MARK: - 서버가 "등록된 알람 없음"을 확정 (404 URT_001)
+
+    /// 서버가 세션 없음을 확정하면 로컬 기록도 정리된다. 이전에는 이 응답이 throw로
+    /// 흘러 **조회 실패와 같은 취급**을 받아, 서버에서 세션이 사라져도 앱은 낡은 세션을
+    /// 계속 붙들었다 — 사용자는 울리지 않을 알람을 믿게 된다.
+    @Test
+    func serverSaysNotRegistered_clearsLocalSession() async {
+        let harness = makeHarness(seeded: AlarmSession(
+            server: info(route: "r1", departure: fixedNow.addingTimeInterval(3600)),
+            local: .empty,
+            syncedAt: fixedNow.addingTimeInterval(-600)
+        ))
+        harness.refresh.enqueueNotRegistered()
+
+        await harness.sut.syncNow()
+
+        #expect(harness.store.current == nil)
+    }
+
+    /// 같은 "세션 없음" 결과라도 **조회 실패는 세션을 지킨다.** 둘이 구분되지 않으면
+    /// 지하철에서 앱을 여는 것만으로 알람이 사라진다.
+    @Test
+    func syncFailure_keepsLocalSession() async {
+        let seeded = AlarmSession(
+            server: info(route: "r1", departure: fixedNow.addingTimeInterval(3600)),
+            local: .empty,
+            syncedAt: fixedNow.addingTimeInterval(-600)
+        )
+        let harness = makeHarness(seeded: seeded)
+        harness.refresh.enqueue(.failure(StubError()))
+
+        await harness.sut.syncNow()
+
+        #expect(harness.store.current?.server.lastRouteId == "r1")
+    }
 
     @Test
     func syncSuccess_publishesCheckedAtAndPersistsSyncedAt() async {

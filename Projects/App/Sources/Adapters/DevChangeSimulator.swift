@@ -24,17 +24,19 @@ struct DevChangeSimulatingAlarmRepository: AlarmRepository {
         try await base.cancel(lastRouteId: lastRouteId)
     }
 
-    func refresh() async throws -> AlarmInfo {
+    func refresh() async throws -> AlarmRefreshOutcome {
         // 보류 중 변경 주입이 있으면 서버 대신 시뮬레이터가 응답한다(1회 소비).
         if let injected = await DevChangeSimulator.shared.consumeInjectedInfo() {
             print("⚠️ [DEV 변경 시뮬레이터] 변형 AlarmInfo 반환: departure=\(String(describing: injected.departureTime))")
-            return injected
+            return .registered(injected)
         }
-        let info = try await base.refresh()
-        await DevChangeSimulator.shared.noteKnownSession(
-            routeId: info.lastRouteId, departureTime: info.departureTime
-        )
-        return info
+        let outcome = try await base.refresh()
+        if case let .registered(info) = outcome {
+            await DevChangeSimulator.shared.noteKnownSession(
+                routeId: info.lastRouteId, departureTime: info.departureTime
+            )
+        }
+        return outcome
     }
 }
 
