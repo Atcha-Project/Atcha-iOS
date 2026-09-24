@@ -33,6 +33,32 @@ final class AppCoordinator: Coordinator, CoordinatorFinishDelegate {
         navigationController.setViewControllers([splash], animated: false)
         observeSessionExpiry()
         bootstrap()
+        checkForAppUpdate()
+    }
+
+    /// 부트스트랩과 병렬 — 결과가 늦거나 실패하면 아무 일도 없다(레거시 스플래시 정지 버그 방지).
+    private func checkForAppUpdate() {
+        let container = container
+        Task { [weak self] in
+            guard case .recommended = await container.checkForAppUpdate() else { return }
+            self?.presentUpdateRecommendation()
+        }
+    }
+
+    private func presentUpdateRecommendation() {
+        let alert = UIAlertController(
+            title: nil,
+            message: "더 좋아진 앗차를 사용하기 위해\n업데이트를 권장해요",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "나중에", style: .cancel))
+        alert.addAction(UIAlertAction(title: "업데이트", style: .default) { _ in
+            UIApplication.shared.open(AppEnvironment.current.appStoreURL)
+        })
+        // 로그인 시트가 떠 있으면 그 위에 — 가장 위의 presented에 얹는다.
+        var top: UIViewController = navigationController
+        while let presented = top.presentedViewController { top = presented }
+        top.present(alert, animated: true)
     }
 
     private func bootstrap() {
@@ -60,6 +86,7 @@ final class AppCoordinator: Coordinator, CoordinatorFinishDelegate {
                 self.isShowingLogin = false
                 self.startHome()
                 self.container.alarmSyncService.activate()
+                self.syncPushTokenAfterLogin()
                 if self.needsSyncAfterLogin {
                     self.needsSyncAfterLogin = false
                     let syncService = self.container.alarmSyncService
@@ -87,6 +114,12 @@ final class AppCoordinator: Coordinator, CoordinatorFinishDelegate {
     private func handleSessionExpiry() {
         guard !isShowingLogin else { return }
         needsSyncAfterLogin = true
+        // 로그아웃·탈퇴·강제 만료 공통 합류점 — 이전 계정의 알람이 로그인 화면에서 울리지 않게
+        // 로컬 정리를 여기서 한 번 더 보장한다(로그아웃 경로의 선행 정리와 겹쳐도 멱등).
+        let teardown = container.alarmSessionTeardown
+        Task { await teardown.tearDown(cancelOnServer: false) }
+        // 다음 계정에는 같은 FCM 토큰이라도 다시 전달해야 한다.
+        container.syncPushTokenUseCase.reset()
         navigationController.presentedViewController?.dismiss(animated: false)
         // setViewControllers가 didShow를 태워 SearchCoordinator류의 정리 경로도 돈다.
         let splash = SplashViewController()
@@ -95,6 +128,15 @@ final class AppCoordinator: Coordinator, CoordinatorFinishDelegate {
         navigationController.setViewControllers([splash], animated: false)
         childCoordinators.removeAll()
         showLogin()
+    }
+
+    /// 로그인 중에 토큰이 갱신됐을 수 있다 — 세션이 생긴 직후 현재 토큰을 한 번 맞춘다.
+    private func syncPushTokenAfterLogin() {
+        let syncPushToken = container.syncPushTokenUseCase
+        Task {
+            guard let token = await FCMPushTokenAdapter().currentPushToken() else { return }
+            await syncPushToken.execute(token: token)
+        }
     }
 
     private func startHome() {

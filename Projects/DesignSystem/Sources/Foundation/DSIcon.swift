@@ -12,6 +12,7 @@ public enum DSIcon {
     public static var myLocation24: UIImage { asset("icMyLocation24", fallback: "location.fill") }
     public static var place24: UIImage { asset("icPlace24", fallback: "mappin.and.ellipse") }
     public static var bell24: UIImage { asset("icBell24", fallback: "bell.fill") }
+    public static var settings24: UIImage { asset("icSettings24", fallback: "gearshape") }
     public static var info16: UIImage { asset("icInfo16", fallback: "info.circle") }
     public static var check20: UIImage { asset("icCheck20", fallback: "checkmark") }
     public static var illustCharacterGray: UIImage { asset("illustCharacterGray", fallback: "tram.fill") }

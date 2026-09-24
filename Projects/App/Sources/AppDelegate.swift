@@ -92,7 +92,11 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
 
 extension AppDelegate: MessagingDelegate {
     nonisolated func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
-        // TODO: [미확정 #5] 익명 체계에서의 FCM 토큰 서버 전달 방식 확정 전까지 로깅만 한다.
-        Self.fcmLogger.info("FCM 토큰 수신(서버 전달 보류): \(fcmToken ?? "nil", privacy: .private)")
+        guard let fcmToken else { return }
+        Task { @MainActor in
+            // 로그인 전 토큰은 로그인/가입 파라미터가 싣는다 — 여기선 세션이 있을 때의 갱신만.
+            guard container.authSessionManager.bootstrapState() == .active else { return }
+            await container.syncPushTokenUseCase.execute(token: fcmToken)
+        }
     }
 }

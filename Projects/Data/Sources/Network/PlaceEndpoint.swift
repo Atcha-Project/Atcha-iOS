@@ -5,17 +5,19 @@ import Foundation
 enum PlaceEndpoint: Endpoint {
     case search(keyword: String, near: Coordinate?)
     case reverseGeocode(Coordinate)
+    case serviceRegion(Coordinate)
 
     var path: String {
         switch self {
         case .search: "/locations"
         case .reverseGeocode: "/locations/rgeo"
+        case .serviceRegion: "/locations/is-service-region"
         }
     }
 
     var method: HTTPMethod {
         switch self {
-        case .search, .reverseGeocode: .get
+        case .search, .reverseGeocode, .serviceRegion: .get
         }
     }
 
@@ -28,7 +30,7 @@ enum PlaceEndpoint: Endpoint {
                 URLQueryItem(name: "lat", value: String(near?.latitude ?? 0.0)),
                 URLQueryItem(name: "lon", value: String(near?.longitude ?? 0.0)),
             ]
-        case let .reverseGeocode(coordinate):
+        case let .reverseGeocode(coordinate), let .serviceRegion(coordinate):
             [
                 URLQueryItem(name: "lat", value: String(coordinate.latitude)),
                 URLQueryItem(name: "lon", value: String(coordinate.longitude)),

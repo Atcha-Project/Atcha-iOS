@@ -11,6 +11,8 @@ import HomeFeature
 import HomeFeatureInterface
 import SearchFeature
 import SearchFeatureInterface
+import SettingsFeature
+import SettingsFeatureInterface
 
 /// Composition root — the only place that sees concrete Data/Network types.
 /// Presentation modules depend on Domain protocols only.
@@ -44,6 +46,9 @@ final class AppDIContainer {
     /// 노티 탭 라우팅 델리게이트(Phase 15) — AppDelegate가 launch 시 등록하고,
     /// SceneDelegate가 홈 랜딩 훅(onTap)을 배선한다.
     let notificationTapDelegate = NotificationTapRoutingDelegate()
+    /// FCM 토큰 갱신 전달 — 프로세스 내 중복 방지 상태를 갖으므로 1회 생성 공유한다.
+    let syncPushTokenUseCase: any SyncPushTokenUseCase =
+        DefaultSyncPushTokenUseCase(repository: UnconfirmedPushTokenRepository())
     #if DEV
     /// DEV 플로팅 디버그 메뉴가 dismiss 기록 강제 토글에 접근하는 유일한 통로 (Phase 12 검수).
     var devLiveActivityAdapter: LastTrainLiveActivityAdapter { liveActivityAdapter }
@@ -75,6 +80,8 @@ final class AppDIContainer {
             // 조용히 덮이지 않도록 이중 방어로 전부 public 처리한다(레거시 allowlist 대응).
             publicPathSuffixes: [
                 "/auth/reissue", "/auth/check", "/auth/login", "/auth/sign-up", "/auth/logout",
+                // 로그인 전 스플래시에서 호출된다 — 토큰이 없어 401 복구가 로그인 라우팅을 촉발하면 안 된다.
+                "/app/version",
             ]
         )
         self.networkClient = networkClient
@@ -154,7 +161,7 @@ final class AppDIContainer {
         )
     }
 
-    // MARK: - 계정 스택 (설정 화면 前 단계 — 로그아웃은 DEV 디버그 메뉴가 유일한 진입점)
+    // MARK: - 계정 스택 (설정 화면 + DEV 디버그 메뉴의 로그아웃)
 
     private var userRepository: any UserRepository {
         UserRepositoryImpl(networkClient: networkClient)
@@ -164,12 +171,69 @@ final class AppDIContainer {
         AuthSessionEndingAdapter(sessionManager: authSessionManager)
     }
 
+    /// 세션 종료 시 알람 정리 — 등록/취소 UseCase와 같은 공유 인스턴스를 봐야 한다.
+    var alarmSessionTeardown: any AlarmSessionTeardown {
+        AlarmSessionTeardownAdapter(
+            alarmRepository: alarmRepository,
+            scheduler: alarmScheduler,
+            activityPort: liveActivityPort,
+            snapshotStore: alarmSessionSnapshotStore,
+            syncService: alarmSyncService
+        )
+    }
+
     func makeLogoutUseCase() -> any LogoutUseCase {
-        DefaultLogoutUseCase(sessionEnding: sessionEnding)
+        DefaultLogoutUseCase(sessionEnding: sessionEnding, alarmTeardown: alarmSessionTeardown)
     }
 
     func makeWithdrawUseCase() -> any WithdrawUseCase {
         DefaultWithdrawUseCase(userRepository: userRepository, sessionEnding: sessionEnding)
+    }
+
+    func makeSettingsDIContainer(
+        getCurrentLocationUseCase: any GetCurrentLocationUseCase
+    ) -> any SettingsCoordinatorBuildable {
+        SettingsDIContainer(
+            getUserProfileUseCase: DefaultGetUserProfileUseCase(userRepository: userRepository),
+            logoutUseCase: makeLogoutUseCase(),
+            withdrawUseCase: makeWithdrawUseCase(),
+            updateHomeAddressUseCase: DefaultUpdateHomeAddressUseCase(
+                userRepository: userRepository,
+                placeRepository: placeRepository
+            ),
+            searchPlacesUseCase: DefaultSearchPlacesUseCase(repository: placeRepository),
+            getCurrentLocationUseCase: getCurrentLocationUseCase,
+            reverseGeocodeUseCase: DefaultReverseGeocodeUseCase(repository: placeRepository),
+            checkAppUpdateUseCase: DefaultCheckAppUpdateUseCase(
+                repository: AppVersionRepositoryImpl(networkClient: networkClient)
+            ),
+            currentVersion: Self.currentAppVersion ?? "-",
+            appStoreURL: AppEnvironment.current.appStoreURL
+        )
+    }
+
+    // MARK: - 앱 버전
+
+    private static var currentAppVersion: String? {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
+    }
+
+    /// 스플래시를 절대 막지 않는다 — 1.5초 안에 답이 없거나 실패하면 nil(체크 생략).
+    func checkForAppUpdate() async -> AppUpdateStatus? {
+        let useCase = DefaultCheckAppUpdateUseCase(
+            repository: AppVersionRepositoryImpl(networkClient: networkClient)
+        )
+        guard let current = Self.currentAppVersion else { return nil }
+        return await withTaskGroup(of: AppUpdateStatus?.self) { group in
+            group.addTask { try? await useCase.execute(currentVersion: current) }
+            group.addTask {
+                try? await Task.sleep(for: .milliseconds(1500))
+                return nil
+            }
+            let first = await group.next() ?? nil
+            group.cancelAll()
+            return first
+        }
     }
 
     func makeHomeDIContainer() -> any HomeCoordinatorBuildable {
@@ -220,7 +284,10 @@ final class AppDIContainer {
             // 원탭 칩(Phase 18) — 검색 화면과 같은 인스턴스 공유(위 주석 참조).
             searchLastRoutesUseCase: searchLastRoutes,
             recentSearchesUseCase: recentSearches,
-            searchCoordinatorBuildable: searchContainer
+            searchCoordinatorBuildable: searchContainer,
+            settingsCoordinatorBuildable: makeSettingsDIContainer(
+                getCurrentLocationUseCase: getCurrentLocation
+            )
         )
     }
 }

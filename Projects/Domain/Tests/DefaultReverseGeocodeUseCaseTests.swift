@@ -22,6 +22,8 @@ private struct SpyPlaceRepository: PlaceRepository {
         guard let place else { throw StubError() }
         return place
     }
+
+    func isServiceRegion(_ coordinate: Coordinate) async throws -> Bool { true }
 }
 
 struct DefaultReverseGeocodeUseCaseTests {

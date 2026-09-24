@@ -20,6 +20,9 @@ final class HomeCoordinator: Coordinator, CoordinatorFinishDelegate {
         let viewController = container.makeHomeViewController(
             onSearchRequested: { [weak self] initialField, onRouteSelected in
                 self?.startSearchFlow(initialField: initialField, onRouteSelected: onRouteSelected)
+            },
+            onSettingsRequested: { [weak self] in
+                self?.startSettingsFlow()
             }
         )
         navigationController?.pushViewController(viewController, animated: false)
@@ -43,7 +46,18 @@ final class HomeCoordinator: Coordinator, CoordinatorFinishDelegate {
         child.start()
     }
 
-    // SearchCoordinator가 스스로 pop 후 finish()하므로 여기서는 제거만 한다.
+    // MARK: - 설정 플로우
+
+    private func startSettingsFlow() {
+        guard let navigationController,
+              let child = container.makeSettingsCoordinator(navigationController: navigationController)
+        else { return }
+        child.finishDelegate = self
+        addChild(child)
+        child.start()
+    }
+
+    // 자식(Search·Settings) 코디네이터가 스스로 pop 후 finish()하므로 여기서는 제거만 한다.
     func coordinatorDidFinish(_ coordinator: any Coordinator) {
         removeChild(coordinator)
     }

@@ -40,4 +40,15 @@ struct PlaceEndpointTests {
             URLQueryItem(name: "lon", value: "126.921537"),
         ])
     }
+
+    @Test
+    func serviceRegion_composesQuery() {
+        let endpoint = PlaceEndpoint.serviceRegion(Coordinate(latitude: 37.560908, longitude: 126.921537))
+        #expect(endpoint.path == "/locations/is-service-region")
+        #expect(endpoint.method == .get)
+        #expect(endpoint.queryItems == [
+            URLQueryItem(name: "lat", value: "37.560908"),
+            URLQueryItem(name: "lon", value: "126.921537"),
+        ])
+    }
 }
