@@ -101,4 +101,25 @@ struct RecentSearchRepositoryImplTests {
         let other = RecentSearchRepositoryImpl(store: store)
         #expect(try await other.recentSearches() == [.fixture()])
     }
+
+    /// 회귀: save가 read-modify-write라 값 타입이던 시절에는 동시 저장 시 나중 쓰기가
+    /// 먼저 쓰기를 통째로 덮어써 1건이 사라졌다(홈의 목적지 승격 저장 ↔ 검색 화면 저장).
+    ///
+    /// **반드시 단일 인스턴스로 검증한다** — actor 격리는 인스턴스 단위라 `sut`(매번 새
+    /// 인스턴스를 만드는 computed property)로는 직렬화가 성립하지 않는다. 실제 앱도
+    /// `AppDIContainer`가 repository를 1회 생성해 홈·검색이 공유하므로 이쪽이 실조건이다.
+    @Test
+    func save_concurrentWrites_keepsBoth() async throws {
+        let shared = RecentSearchRepositoryImpl(store: store)
+
+        await withTaskGroup(of: Void.self) { group in
+            for name in ["서울역", "홍대입구역", "강남역", "잠실역"] {
+                group.addTask { try? await shared.save(.fixture(name: name)) }
+            }
+        }
+
+        let names = try await shared.recentSearches().map(\.name)
+        #expect(names.count == 4)
+        #expect(Set(names) == ["서울역", "홍대입구역", "강남역", "잠실역"])
+    }
 }

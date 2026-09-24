@@ -211,10 +211,13 @@ final class HomeViewModel {
     func refreshPulled() {
         guard refreshTask == nil else { return }
         refreshTask = Task { [weak self] in
+            // defer로 비워야 한다 — 아래 취소 가드에서 early return하면 refreshTask가
+            // 영원히 non-nil로 남아 진입 가드에 영구히 걸리고(당김 새로고침 영구 잠김)
+            // onManualSyncFinished도 불리지 않아 스피너가 멈추지 않는다.
+            defer { self?.refreshTask = nil }
             guard let useCase = self?.requestAlarmSyncUseCase else { return }
             await useCase.execute()
             guard let self, !Task.isCancelled else { return }
-            self.refreshTask = nil
             self.onManualSyncFinished?()
         }
     }
