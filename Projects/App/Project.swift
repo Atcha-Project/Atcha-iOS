@@ -1,12 +1,7 @@
 import ProjectDescription
 import ProjectDescriptionHelpers
 
-// 카카오 네이티브 앱 키 — xcconfig 금지 규약(AtchaV2) 하에서 env(TUIST_KAKAO_APP_KEY)로
-// 주입한다(mise [env] 또는 CI secret). 미주입이면 빈 문자열: generate/빌드는 통과하고
-// 카카오 로그인만 런타임 비활성(providerUnavailable → 실패 토스트)이다.
-let kakaoAppKey = Environment.kakaoAppKey.getString(default: "")
-
-var appInfoPlist: [String: Plist.Value] = [
+let appInfoPlist: [String: Plist.Value] = [
     "CFBundleDisplayName": "앗차",
     "UILaunchStoryboardName": "LaunchScreen",
     "NSAlarmKitUsageDescription": "막차 시간에 맞춰 알람을 울리기 위해 권한이 필요합니다.",
@@ -27,17 +22,7 @@ var appInfoPlist: [String: Plist.Value] = [
     ],
     "UISupportedInterfaceOrientations": ["UIInterfaceOrientationPortrait"],
     "ITSAppUsesNonExemptEncryption": false,
-    // 카카오톡 로그인 앱 전환 조회용(레거시 Info.plist 실측).
-    "LSApplicationQueriesSchemes": ["kakaokompassauth", "kakaolink"],
-    // 런타임(KakaoConfig)이 읽는 키 — 빈 값이면 KakaoSDK.initSDK를 건너뛴다.
-    "KAKAO_APP_KEY": .string(kakaoAppKey),
 ]
-// 키 미주입 시 무의미한 `kakao` 빈 스킴이 등록되지 않도록 조건 분기.
-if !kakaoAppKey.isEmpty {
-    appInfoPlist["CFBundleURLTypes"] = [
-        ["CFBundleURLSchemes": ["kakao\(kakaoAppKey)"]],
-    ]
-}
 
 let appTarget = Target.target(
     name: "AtchaV2",
@@ -54,13 +39,9 @@ let appTarget = Target.target(
         "aps-environment": "development",
         // 폴백 노티의 .timeSensitive interruptionLevel용(Phase 15) — 집중 모드 관통.
         "com.apple.developer.usernotifications.time-sensitive": true,
-        // 소셜 로그인(Apple) — App ID capability 활성 + 프로비저닝 갱신 필요(콘솔 작업).
-        "com.apple.developer.applesignin": ["Default"],
     ]),
     dependencies: [
         .target(name: "AtchaWidget"),
-        .project(target: "AuthFeature", path: "../Feature/Auth"),
-        .project(target: "AuthFeatureInterface", path: "../Feature/Auth"),
         .project(target: "HomeFeature", path: "../Feature/Home"),
         .project(target: "HomeFeatureInterface", path: "../Feature/Home"),
         .project(target: "SearchFeature", path: "../Feature/Search"),
@@ -79,11 +60,6 @@ let appTarget = Target.target(
         .external(name: "FirebaseCore"),
         .external(name: "FirebaseCrashlytics"),
         .external(name: "FirebaseMessaging"),
-        // 소셜 SDK는 앱 타겟에서만 링크(내부 모듈 static framework 중복 심볼 방지 규약)
-        // — import 지점은 SocialLoginAdapter·AppDelegate·SceneDelegate뿐.
-        .external(name: "KakaoSDKCommon"),
-        .external(name: "KakaoSDKAuth"),
-        .external(name: "KakaoSDKUser"),
     ],
     settings: .atchaV2(base: [
         // Firebase static libraries under XcodeProj-based integration need

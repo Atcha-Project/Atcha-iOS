@@ -20,21 +20,6 @@ private struct StubGuestAuthRepository: AuthRepository {
         if let guestError { throw guestError }
         return session
     }
-
-    // 게스트 스위트에서는 소셜 경로를 쓰지 않는다.
-    func checkRegistration(credential: SocialCredential) async throws -> Bool { true }
-
-    func login(credential: SocialCredential, fcmToken: String?) async throws -> LoginSession {
-        session
-    }
-
-    func signUp(
-        credential: SocialCredential,
-        form: SignUpForm,
-        fcmToken: String?
-    ) async throws -> LoginSession {
-        session
-    }
 }
 
 private struct StubGuestSessionStore: SessionStoring {

@@ -1,6 +1,4 @@
 import AtchaData
-import AuthFeature
-import AuthFeatureInterface
 import CoreAlarm
 import CoreAuth
 import CoreNetwork
@@ -154,23 +152,6 @@ final class AppDIContainer {
             sessionStore: AuthSessionStoreAdapter(sessionManager: authSessionManager),
             deviceIdentifierProvider: KeychainDeviceIdentifierAdapter(),
             pushTokenProvider: FCMPushTokenAdapter()
-        )
-    }
-
-    func makeAuthDIContainer() -> any AuthCoordinatorBuildable {
-        AuthDIContainer(
-            signInUseCase: DefaultSignInUseCase(
-                socialLoginService: SocialLoginAdapter(),
-                // plain client — 소셜 Bearer 보존 + 401이 세션 복구를 촉발하지 않게.
-                authRepository: AuthRepositoryImpl(networkClient: plainNetworkClient),
-                sessionStore: AuthSessionStoreAdapter(sessionManager: authSessionManager),
-                pushTokenProvider: FCMPushTokenAdapter(),
-                // 최소 가입 폼 재료 — 신규 계정일 때만 쓰인다(현재 위치 + 역지오코딩 주소).
-                getCurrentLocationUseCase: DefaultGetCurrentLocationUseCase(
-                    locationService: CoreLocationServiceAdapter()
-                ),
-                reverseGeocodeUseCase: DefaultReverseGeocodeUseCase(repository: placeRepository)
-            )
         )
     }
 
